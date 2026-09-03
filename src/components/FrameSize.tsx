@@ -45,6 +45,7 @@ export function FrameSize() {
           </>
         }
       >
+        {/* Rider inputs */}
         <div className="grid">
           <Field label="Method">
             <Select
@@ -77,6 +78,10 @@ export function FrameSize() {
               </Field>
             </>
           )}
+        </div>
+
+        {/* Frame style always on its own row, separate from the rider inputs */}
+        <div className="rows">
           <Field label="Frame style">
             <Select value={style} onChange={setStyle} options={styleOptions} />
           </Field>

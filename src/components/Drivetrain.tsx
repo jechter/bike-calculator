@@ -255,6 +255,7 @@ export function Drivetrain() {
           value={activeMetric.value}
           format={activeMetric.format}
           pointLabel={pointLabel}
+          cadenceRpm={rpm}
           isCrossChained={isCrossChained}
           extra={
             metric === "speed" ? (

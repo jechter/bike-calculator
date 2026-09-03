@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { checkCapacity, DERAILLEUR_SYSTEMS } from "../lib/derailleur";
-import { Field, NumberInput, Result, Note, Section } from "./ui";
+import { Field, NumberInput, Result, Section } from "./ui";
 
 export function Derailleur() {
   const [bigRing, setBigRing] = useState(50);
@@ -21,7 +21,16 @@ export function Derailleur() {
 
   return (
     <>
-      <Section title="Capacity & max-sprocket check">
+      <Section
+        title="Capacity & max-sprocket check"
+        info={
+          <>
+            Required capacity = (big ring − small ring) + (big cog − small cog). It
+            must be ≤ the derailleur's rated capacity, and the largest cog must not
+            exceed the derailleur's max sprocket.
+          </>
+        }
+      >
         <div className="grid">
           <Field label="Largest chainring">
             <NumberInput value={bigRing} onChange={setBigRing} suffix="T" />
@@ -66,20 +75,19 @@ export function Derailleur() {
             }
           />
         </div>
-        <Note>
-          Required capacity = (big ring − small ring) + (big cog − small cog). It
-          must be ≤ the derailleur's rated capacity, and the largest cog must not
-          exceed the derailleur's max sprocket.
-        </Note>
       </Section>
 
-      <Section title="Compatibility reference">
-        <Note tone="warn">
-          Actuation ratios below are approximate and marketing-obscured —{" "}
-          <strong>verify before relying on them</strong>. The reliable rule:
-          shifter and rear derailleur must share an actuation family, and the
-          cassette speed count must match the shifter.
-        </Note>
+      <Section
+        title="Compatibility reference"
+        info={
+          <>
+            Actuation ratios below are approximate and marketing-obscured —{" "}
+            <strong>verify before relying on them</strong>. The reliable rule:
+            shifter and rear derailleur must share an actuation family, and the
+            cassette speed count must match the shifter.
+          </>
+        }
+      >
         <div className="table-wrap">
           <table>
             <thead>

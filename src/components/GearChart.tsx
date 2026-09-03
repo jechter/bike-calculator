@@ -23,6 +23,8 @@ export interface GearChartProps {
   value: (g: GearResult) => number;
   format: (v: number) => string;
   pointLabel: (g: GearResult) => string;
+  /** Cadence used for the speed values, shown in the tooltip. */
+  cadenceRpm: number;
   /** Optional extra control rendered in the axis bar (e.g. cadence). */
   extra?: ReactNode;
   /** Mark a gear as cross-chained (greyed out; avoid shifting into it). */
@@ -37,6 +39,7 @@ export function GearChart({
   value,
   format,
   pointLabel,
+  cadenceRpm,
   extra,
   isCrossChained,
 }: GearChartProps) {
@@ -209,7 +212,7 @@ export function GearChart({
             <b>{hover.g.developmentM.toFixed(2)} m</b>
           </div>
           <div className="gc-tt-row">
-            <span>Speed</span>
+            <span>Speed @ {cadenceRpm} rpm</span>
             <b>
               {(units.speed === "mph" ? kmhToMph(hover.g.speedKmh) : hover.g.speedKmh).toFixed(1)}{" "}
               {speedUnitLabel(units.speed)}

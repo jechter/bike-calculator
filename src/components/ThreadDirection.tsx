@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { THREAD_ITEMS } from "../lib/threadDirection";
-import { Note, Section } from "./ui";
+import { Section } from "./ui";
 
 export function ThreadDirection() {
   const [query, setQuery] = useState("");
@@ -15,16 +15,21 @@ export function ThreadDirection() {
 
   return (
     <>
-      <Note>
-        <strong>Right-hand (normal):</strong> clockwise to tighten, anti-clockwise
-        to loosen. <strong>Left-hand (reverse):</strong> the opposite. “Clockwise”
-        is always as you <em>face that side of the bike</em>. The two big gotchas:
-        the <strong>left pedal</strong> and the <strong>drive-side cup of an
-        English/BSA bottom bracket</strong> are both left-hand (turn clockwise to
-        loosen).
-      </Note>
-
-      <Section title="Reference chart">
+      <Section
+        title="Reference chart"
+        info={
+          <>
+            <strong>Right-hand (normal):</strong> clockwise to tighten,
+            anti-clockwise to loosen. <strong>Left-hand (reverse):</strong> the
+            opposite. “Clockwise” is always as you <em>face that side of the
+            bike</em>. The two big gotchas: the <strong>left pedal</strong> and the{" "}
+            <strong>drive-side cup of an English/BSA bottom bracket</strong> are
+            both left-hand (turn clockwise to loosen). Older/regional bottom-bracket
+            and pedal variants have exceptions (French, Swiss, some Center Lock
+            lockrings) — verify against the specific standard when in doubt.
+          </>
+        }
+      >
         <input
           type="text"
           placeholder="Search parts… (pedal, bottom bracket, cassette…)"
@@ -68,11 +73,6 @@ export function ThreadDirection() {
             </tbody>
           </table>
         </div>
-        <Note tone="warn">
-          Older/regional bottom-bracket and pedal variants have exceptions
-          (French, Swiss, some Center Lock lockrings). Verify against the specific
-          standard when in doubt.
-        </Note>
       </Section>
     </>
   );

@@ -9,7 +9,7 @@ import {
 } from "../lib/power";
 import { kmhToMs, msToKmh, kmhToMph, mphToKmh } from "../lib/units";
 import { useUnits, speedUnitLabel } from "../units-context";
-import { Field, NumberInput, Select, Result, Note, Section } from "./ui";
+import { Field, NumberInput, Select, Result, Section } from "./ui";
 
 export function Power() {
   const units = useUnits();
@@ -93,7 +93,16 @@ export function Power() {
         </div>
       </Section>
 
-      <Section title="Rider & conditions">
+      <Section
+        title="Rider & conditions"
+        info={
+          <>
+            Steady-state model: power against gravity, rolling resistance and aero
+            drag, divided by drivetrain efficiency. The split shows where the watts
+            go — aero dominates on the flat, gravity on climbs.
+          </>
+        }
+      >
         <div className="grid">
           <Field label="Total mass" hint="rider + bike + kit">
             <NumberInput value={mass} onChange={setMass} suffix="kg" min={30} max={200} />
@@ -128,11 +137,6 @@ export function Power() {
             <NumberInput value={eff} onChange={setEff} step={0.01} min={0.9} max={1} />
           </Field>
         </div>
-        <Note>
-          Steady-state model: power against gravity, rolling resistance and aero
-          drag, divided by drivetrain efficiency. The split shows where the watts
-          go — aero dominates on the flat, gravity on climbs.
-        </Note>
       </Section>
     </>
   );

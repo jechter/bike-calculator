@@ -96,7 +96,8 @@ body {
 .main .subtitle { color: var(--muted); margin: 0 0 24px; }
 
 .section { margin-bottom: 24px; }
-.section-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+/* position+z-index so the info popover paints above sticky table headers below it */
+.section-head { position: relative; z-index: 5; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
 .section-head h3 { margin: 0; }
 .section h3 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 

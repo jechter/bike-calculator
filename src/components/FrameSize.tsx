@@ -27,13 +27,16 @@ export function FrameSize() {
 
   return (
     <>
-      <Note>
-        These are <strong>starting estimates</strong>, not prescriptions. Fit
-        depends on torso/arm length, riding style and brand geometry. Confirm on
-        a test ride. Prefer inseam over height when you have it.
-      </Note>
-
-      <Section title="Input">
+      <Section
+        title="Input"
+        info={
+          <>
+            These are <strong>starting estimates</strong>, not prescriptions. Fit
+            depends on torso/arm length, riding style and brand geometry. Confirm
+            on a test ride. Prefer inseam over height when you have it.
+          </>
+        }
+      >
         <div className="grid">
           <Field label="Method">
             <Select
@@ -61,7 +64,17 @@ export function FrameSize() {
       </Section>
 
       {mode === "inseam" ? (
-        <Section title="Recommendation">
+        <Section
+          title="Recommendation"
+          info={
+            <>
+              Saddle height is the LeMond estimate (inseam × 0.883), measured from
+              the centre of the bottom bracket to the top of the saddle along the
+              seat tube. Standover should sit a few cm below your inseam (more for
+              MTB).
+            </>
+          }
+        >
           <div className="results">
             <Result
               label={style === "mtb" ? "Frame size" : "Frame size (seat tube c–t)"}
@@ -85,15 +98,12 @@ export function FrameSize() {
             <Result label="Nominal" value={result.nominalSize} />
             <Result label="Saddle height (BB→top)" value={`${result.saddleHeightCm.toFixed(1)} cm`} />
           </div>
-          <Note>
-            Saddle height is the LeMond estimate (inseam × 0.883), measured from
-            the centre of the bottom bracket to the top of the saddle along the
-            seat tube. Standover should sit a few cm below your inseam (more for
-            MTB).
-          </Note>
         </Section>
       ) : (
-        <Section title="Recommendation (from height table)">
+        <Section
+          title="Recommendation (from height table)"
+          info={<>Height-only sizing is rougher than inseam; use it as a first pass.</>}
+        >
           {heightRow ? (
             <div className="results">
               <Result label="Road / endurance" value={`${heightRow.roadCm} cm`} big />
@@ -103,11 +113,19 @@ export function FrameSize() {
           ) : (
             <Note tone="warn">Height outside the table range — enter an inseam instead.</Note>
           )}
-          <Note>Height-only sizing is rougher than inseam; use it as a first pass.</Note>
         </Section>
       )}
 
-      <Section title="Crank length suggestion">
+      <Section
+        title="Crank length suggestion"
+        info={
+          <>
+            Published crank formulas disagree noticeably, so treat this as a
+            starting range and lean on fit/preference. Shorter cranks are a current
+            trend; also mind pedal/ground clearance and knee comfort.
+          </>
+        }
+      >
         <div className="results">
           <Result label="Suggested (nearest size)" value={`${crank.suggestedMm} mm`} big />
           <Result
@@ -115,11 +133,6 @@ export function FrameSize() {
             value={`${crank.rangeMm[0].toFixed(0)}–${crank.rangeMm[1].toFixed(0)} mm`}
           />
         </div>
-        <Note tone="warn">
-          Published crank formulas disagree noticeably, so treat this as a
-          starting range and lean on fit/preference. Shorter cranks are a current
-          trend; also mind pedal/ground clearance and knee comfort.
-        </Note>
       </Section>
     </>
   );

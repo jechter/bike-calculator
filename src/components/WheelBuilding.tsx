@@ -5,7 +5,7 @@ import {
   kgfToN,
   EXAMPLE_TENSION_CURVES,
 } from "../lib/spokes";
-import { Field, NumberInput, Select, Result, Note, Section } from "./ui";
+import { Field, NumberInput, Select, Result, Section } from "./ui";
 
 export function WheelBuilding() {
   const [erd, setErd] = useState(602);
@@ -85,7 +85,17 @@ export function WheelBuilding() {
         </div>
       </Section>
 
-      <Section title="Right / drive flange">
+      <Section
+        title="Right / drive flange"
+        info={
+          <>
+            Front and rear (and the two sides of a dished wheel) usually differ.
+            When between sizes most builders prefer ~1 mm short over long. Confirm
+            your ERD convention — a 1–2 mm error here is the usual cause of wrong
+            spokes.
+          </>
+        }
+      >
         <div className="grid">
           <Field label="Flange diameter">
             <NumberInput value={rightFlange} onChange={setRightFlange} suffix="mm" />
@@ -98,15 +108,19 @@ export function WheelBuilding() {
           </Field>
           <Result label="Right spoke length" value={`${right.toFixed(1)} mm`} big />
         </div>
-        <Note>
-          Front and rear (and the two sides of a dished wheel) usually differ.
-          When between sizes most builders prefer ~1 mm short over long. Confirm
-          your ERD convention — a 1–2 mm error here is the usual cause of wrong
-          spokes.
-        </Note>
       </Section>
 
-      <Section title="Spoke tension converter">
+      <Section
+        title="Spoke tension converter"
+        info={
+          <>
+            The built-in curves are examples only. Enter your own tool's chart data
+            for real builds, and check against the rim's max spoke tension
+            (typically ~100–120 kgf). On a dished wheel the two sides sit at
+            different tensions by design.
+          </>
+        }
+      >
         <div className="grid">
           <Field label="Tool / spoke" hint="illustrative curves — verify against the real chart">
             <Select
@@ -124,12 +138,6 @@ export function WheelBuilding() {
           <Result label="Tension" value={`${kgf.toFixed(0)} kgf`} big />
           <Result label="Tension" value={`${kgfToN(kgf).toFixed(0)} N`} />
         </div>
-        <Note tone="warn">
-          The built-in curves are examples only. Enter your own tool's chart data
-          for real builds, and check against the rim's max spoke tension
-          (typically ~100–120 kgf). On a dished wheel the two sides sit at
-          different tensions by design.
-        </Note>
       </Section>
     </>
   );

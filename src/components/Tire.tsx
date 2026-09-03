@@ -10,7 +10,7 @@ import {
   type Surface,
   type TubeType,
 } from "../lib/tirePressure";
-import { Field, NumberInput, TextInput, Select, Result, Note, Section } from "./ui";
+import { Field, NumberInput, TextInput, Select, Result, Section } from "./ui";
 
 export function Tire() {
   // Size conversion
@@ -38,12 +38,19 @@ export function Tire() {
 
   return (
     <>
-      <Section title="Size conversion">
-        <Note>
-          ISO/ETRTO bead diameter is what determines fit. Two tyres sharing a
-          name (e.g. “20”, “26”) can have different ISO diameters and{" "}
-          <strong>not fit the same rim</strong>.
-        </Note>
+      <Section
+        title="Size conversion"
+        info={
+          <>
+            ISO/ETRTO bead diameter is what determines fit. Two tyres sharing a
+            name (e.g. “20”, “26”) can have different ISO diameters and{" "}
+            <strong>not fit the same rim</strong>. The circumference doubles as the
+            wheel-size value to enter into a bike computer / speedometer; a measured
+            roll-out (mark the valve, roll one rev under rider weight) is more
+            accurate than this estimate.
+          </>
+        }
+      >
         <div className="grid">
           <Field label="Look up a name" hint='e.g. "700c", "26", "27.5", "650b"'>
             <TextInput value={query} onChange={setQuery} />
@@ -97,14 +104,19 @@ export function Tire() {
             value={`${circ.toFixed(0)} mm`}
           />
         </div>
-        <Note>
-          The circumference doubles as the wheel-size value to enter into a bike
-          computer / speedometer. A measured roll-out (mark the valve, roll one
-          rev under rider weight) is more accurate than this estimate.
-        </Note>
       </Section>
 
-      <Section title="Pressure recommendation">
+      <Section
+        title="Pressure recommendation"
+        info={
+          <>
+            A transparent ~15% tyre-drop estimate (Berto lineage) with tube/surface
+            modifiers — a starting point, adjust to feel. <strong>Never exceed</strong>{" "}
+            the tyre sidewall or rim max (hookless rims often cap at 5 bar / 72.5
+            psi).
+          </>
+        }
+      >
         <div className="grid">
           <Field label="System weight" hint="rider + bike + luggage">
             <NumberInput value={weight} onChange={setWeight} suffix="kg" min={30} max={200} />
@@ -151,12 +163,6 @@ export function Tire() {
             big
           />
         </div>
-        <Note tone="warn">
-          A transparent ~15% tyre-drop estimate (Berto lineage) with tube/surface
-          modifiers — a starting point, adjust to feel. <strong>Never exceed</strong>{" "}
-          the tyre sidewall or rim max (hookless rims often cap at 5 bar / 72.5
-          psi).
-        </Note>
       </Section>
     </>
   );

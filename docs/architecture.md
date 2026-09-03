@@ -26,8 +26,11 @@ A two-pane layout:
 - **Main view**: the inputs and live results for the selected calculator, or the
   chart for a reference page. Results update as inputs change (no explicit
   "calculate" button needed).
-- **Notes area**: each calculator shows the formula it uses and any caveats, so
-  results are auditable rather than magic.
+- **Section info**: each section can carry the formula/caveats behind a small
+  **ⓘ icon** next to its title, revealed in a popover on hover or click. This
+  keeps results auditable without cluttering the page with permanent note boxes.
+  (Live validation messages — e.g. "height outside the table range" — stay inline
+  rather than hiding in a popover.)
 
 ## Navigation & state
 

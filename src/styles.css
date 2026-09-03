@@ -394,6 +394,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .wd-legend { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
 .wd-legend span { display: flex; align-items: center; gap: 8px; }
 .wd-legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+.lacing-errors { margin: 6px 0 0; padding-left: 18px; }
+.lacing-errors li { margin: 2px 0; }
 
 .hamburger { display: none; }
 

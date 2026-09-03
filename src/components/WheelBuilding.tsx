@@ -3,11 +3,13 @@ import {
   spokeLength,
   readingToKgf,
   kgfToN,
+  maxCross,
+  checkWheelLacing,
   EXAMPLE_TENSION_CURVES,
   RIM_PRESETS,
   HUB_GEOMETRY_PRESETS,
 } from "../lib/spokes";
-import { Field, NumberInput, Select, PresetMenu, Result, Section } from "./ui";
+import { Field, NumberInput, Select, PresetMenu, Result, Note, Section } from "./ui";
 import { WheelDiagram } from "./WheelDiagram";
 
 const RIM_OPTIONS = RIM_PRESETS.map((p) => ({ value: String(p.erdMm), label: p.label }));
@@ -79,6 +81,13 @@ export function WheelBuilding() {
       }),
     [erd, spokes, rightCross, holeDia, rightFlange, rightOffset],
   );
+
+  // Lacing feasibility
+  const lacing = checkWheelLacing(spokes, leftCross, rightCross);
+  const kmax = maxCross(spokes);
+  const countOk = spokes >= 8 && spokes % 2 === 0;
+  const leftOk = countOk && leftCross >= 0 && leftCross <= kmax;
+  const rightOk = countOk && rightCross >= 0 && rightCross <= kmax;
 
   // Tension converter
   const [curveIdx, setCurveIdx] = useState(0);
@@ -179,19 +188,40 @@ export function WheelBuilding() {
         }
       >
         <div className="results" style={{ marginBottom: 16 }}>
-          <Result label="Left / non-drive" value={`${left.toFixed(1)} mm`} big accent="left" />
-          <Result label="Right / drive" value={`${right.toFixed(1)} mm`} big accent="right" />
+          <Result
+            label="Left / non-drive"
+            value={leftOk ? `${left.toFixed(1)} mm` : "—"}
+            big
+            accent="left"
+          />
+          <Result
+            label="Right / drive"
+            value={rightOk ? `${right.toFixed(1)} mm` : "—"}
+            big
+            accent="right"
+          />
         </div>
-        <WheelDiagram
-          erdMm={erd}
-          spokeCount={spokes}
-          leftFlangeDiaMm={leftFlange}
-          rightFlangeDiaMm={rightFlange}
-          leftOffsetMm={leftOffset}
-          rightOffsetMm={rightOffset}
-          leftCross={leftCross}
-          rightCross={rightCross}
-        />
+        {lacing.ok ? (
+          <WheelDiagram
+            erdMm={erd}
+            spokeCount={spokes}
+            leftFlangeDiaMm={leftFlange}
+            rightFlangeDiaMm={rightFlange}
+            leftOffsetMm={leftOffset}
+            rightOffsetMm={rightOffset}
+            leftCross={leftCross}
+            rightCross={rightCross}
+          />
+        ) : (
+          <Note tone="warn">
+            <strong>This lacing can't be built:</strong>
+            <ul className="lacing-errors">
+              {lacing.errors.map((e, i) => (
+                <li key={i}>{e}</li>
+              ))}
+            </ul>
+          </Note>
+        )}
       </Section>
 
       <Section

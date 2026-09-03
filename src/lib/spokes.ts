@@ -35,6 +35,49 @@ export function spokeLength(input: SpokeInput): number {
   return Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3) - holeDia / 2;
 }
 
+// --- Lacing feasibility -----------------------------------------------------
+// A k-cross spoke subtends 720°·k/n at the hub. Past 90° the spoke would have to
+// wrap backwards, which isn't buildable, so the max cross is floor(n/8) — the
+// same limit as the standard max-cross tables (e.g. 32h → 4x, 24h → 3x).
+
+export function maxCross(spokeCount: number): number {
+  return Math.floor(spokeCount / 8);
+}
+
+export interface LacingCheck {
+  ok: boolean;
+  errors: string[];
+}
+
+export function checkWheelLacing(
+  spokeCount: number,
+  leftCross: number,
+  rightCross: number,
+): LacingCheck {
+  const errors: string[] = [];
+  if (!Number.isFinite(spokeCount) || spokeCount < 8) {
+    errors.push("Spoke count should be at least 8.");
+  } else if (spokeCount % 2 !== 0) {
+    errors.push("Spoke count must be even — each side takes half the spokes.");
+  } else {
+    const kmax = maxCross(spokeCount);
+    const maxLabel = kmax === 0 ? "radial (0-cross)" : `${kmax}-cross`;
+    const sideCheck = (label: string, k: number) => {
+      if (!Number.isInteger(k) || k < 0) {
+        errors.push(`${label}: cross count must be 0 or a positive whole number.`);
+      } else if (k > kmax) {
+        errors.push(
+          `${label}: ${k}-cross isn't buildable with ${spokeCount} spokes ` +
+            `(the spoke angle would exceed 90°). Max is ${maxLabel}.`,
+        );
+      }
+    };
+    sideCheck("Left / non-drive", leftCross);
+    sideCheck("Right / drive", rightCross);
+  }
+  return { ok: errors.length === 0, errors };
+}
+
 // --- Spoke tension ----------------------------------------------------------
 
 /**

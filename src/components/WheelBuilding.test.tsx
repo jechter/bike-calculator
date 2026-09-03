@@ -58,6 +58,21 @@ describe("Wheel building page", () => {
     expect(lines.length).toBeGreaterThanOrEqual(32);
   });
 
+  it("shows an error and hides the diagram for an infeasible lacing", () => {
+    const { container, getByText } = render(<WheelBuilding />);
+    // set spoke count to 10 (default lacing is 3-cross -> infeasible)
+    const count = Array.from(container.querySelectorAll('input[type="number"]')).find(
+      (i) => (i as HTMLInputElement).value === "32",
+    ) as HTMLInputElement;
+    fireEvent.change(count, { target: { value: "10" } });
+    expect(getByText(/can't be built/i)).toBeTruthy();
+    expect(container.querySelector(".wheel-diagram")).toBeNull();
+    expect(container.textContent).toMatch(/isn't buildable with 10 spokes/);
+    // spoke length results show a dash rather than a bogus number
+    const values = Array.from(container.querySelectorAll(".result-value")).map((n) => n.textContent);
+    expect(values).toContain("—");
+  });
+
   it("updates the diagram when the spoke count changes", () => {
     const { container } = render(<WheelBuilding />);
     const before = container.querySelectorAll(".wheel-diagram line").length;

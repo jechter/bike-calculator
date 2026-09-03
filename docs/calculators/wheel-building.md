@@ -42,6 +42,16 @@ affect the spokes:
 - a **cross-section** — flanges at their L/R offsets showing the **dish** and
   bracing angles.
 
+### Lacing feasibility
+
+A `k`-cross spoke subtends `720°·k/n` at the hub; once that exceeds 90° the spoke
+would have to wrap backwards and the wheel isn't buildable. So the **maximum
+cross is `floor(n/8)`** (matching the standard tables: 32h → 4×, 24h → 3×,
+20h → 2×, 10h → 1×). The calculator validates the spoke count (even, ≥ 8) and each
+side's cross; for an infeasible combination it shows an error and hides the
+(meaningless) diagram and spoke lengths rather than drawing a wheel that can't
+exist.
+
 ## Outputs
 
 - Spoke length per side, rounded to the nearest mm (or nearest even mm depending

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { GearResult } from "../lib/drivetrain";
 import { kmhToMph } from "../lib/units";
+import { useUnits, speedUnitLabel } from "../units-context";
 
 // One horizontal line per chainring, with a dot for each gear placed along a
 // shared axis (speed, gear inches, ratio, …). The axis metric is chosen from a
@@ -39,6 +40,7 @@ export function GearChart({
   extra,
   isCrossChained,
 }: GearChartProps) {
+  const units = useUnits();
   const containerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<{ g: GearResult; left: number; top: number } | null>(null);
@@ -209,7 +211,8 @@ export function GearChart({
           <div className="gc-tt-row">
             <span>Speed</span>
             <b>
-              {hover.g.speedKmh.toFixed(1)} km/h · {kmhToMph(hover.g.speedKmh).toFixed(1)} mph
+              {(units.speed === "mph" ? kmhToMph(hover.g.speedKmh) : hover.g.speedKmh).toFixed(1)}{" "}
+              {speedUnitLabel(units.speed)}
             </b>
           </div>
           {isCrossChained?.(hover.g) && <div className="gc-tt-warn">cross-chained — avoid</div>}

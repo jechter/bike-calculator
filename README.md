@@ -48,6 +48,33 @@ and reference tools worth adding.
 - [`docs/additional-ideas.md`](docs/additional-ideas.md) — ideas beyond the
   initial six.
 
+## Running locally
+
+Requires Node 18+.
+
+```bash
+npm install
+npm run dev      # start the dev server (http://localhost:5173)
+npm run build    # type-check and build the static site into dist/
+npm run preview  # preview the production build
+npm test         # run the calculation unit tests (Vitest)
+```
+
+The build is a static site (`dist/`) that can be hosted anywhere or opened
+offline; `vite.config.ts` uses a relative base so it works from any subpath.
+
+## Tech
+
+- **Vite + React + TypeScript**, all math client-side (no backend).
+- Pure calculation modules live in [`src/lib/`](src/lib/) and are unit-tested
+  against the worked examples in the calculator specs (`npm test`).
+- UI components (one per calculator) live in [`src/components/`](src/components/);
+  the sidebar/routing shell is [`src/App.tsx`](src/App.tsx) with a hash router so
+  each calculator is bookmarkable (e.g. `#/drivetrain`).
+
 ## Status
 
-Early — documentation first. No implementation yet.
+All seven calculators implemented and building. Calculation functions are
+covered by unit tests. Reference data flagged in the specs (IGH ratios,
+tensiometer curves, derailleur actuation ratios) uses illustrative/placeholder
+values that should be replaced with cited sources before relying on them.

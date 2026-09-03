@@ -162,7 +162,7 @@ warrant earlier replacement than older 5–9-speed chains.
 - 50×11: ratio = 4.545; speed = 4.545 × 2.111 × 90 × 60/1000 ≈ **51.8 km/h**.
 - 34×28: ratio = 1.214; speed ≈ **13.8 km/h**.
 - Chain length, chainstay 410 mm: `2×(410/25.4) + 50/4 + 28/4 + 1`
-  `= 32.28 + 12.5 + 7 + 1 = 52.78` → round up to **54 inches → 108 links**.
+  `= 32.28 + 12.5 + 7 + 1 = 52.78` → round up to **53 inches → 106 links**.
 
 ## Reference data needed
 

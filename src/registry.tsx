@@ -44,8 +44,8 @@ export const CALCULATORS: CalculatorDef[] = [
   },
   {
     id: "tire",
-    title: "Tyre",
-    subtitle: "Convert tyre size formats and recommend a pressure.",
+    title: "Tire",
+    subtitle: "Convert tire size formats and recommend a pressure.",
     icon: "🔵",
     kind: "calc",
     Component: Tire,

@@ -20,9 +20,9 @@ worn chain.
   21, 24, 28`. Editable field with a preset button for common cassettes (11–28,
   11–34, 10–52, etc.). (Single speed / IGH: a single sprocket.)
 - **Rolling circumference** (mm): an editable field with an integrated preset
-  dropdown (combobox) that fills it from a tyre size (labelled by **ETRTO**,
+  dropdown (combobox) that fills it from a tire size (labelled by **ETRTO**,
   e.g. `25-622`). A measured roll-out is most accurate. Links across to the
-  [tyre calculator](tire.md) for size conversion.
+  [tire calculator](tire.md) for size conversion.
 - **Cadence** (rpm): lives in the **chart's control bar** (next to the axis
   selector), since it only affects the speed visualisation — a compact slider
   over 60–120 with a number field for values outside it. Default 90.
@@ -114,7 +114,7 @@ speed_mph    = speed_kmh × 0.621371
 ```
 
 Wheel diameter for gear inches can be taken as
-`circumference / π`, or from tyre size.
+`circumference / π`, or from tire size.
 
 ## Chain length
 
@@ -190,4 +190,4 @@ possibly chainrings) may skip with a new chain.
 ## Reference data needed
 
 - Common cassette presets (tooth lists).
-- Wheel/tyre rolling circumferences — shared with the [tyre calculator](tire.md).
+- Wheel/tire rolling circumferences — shared with the [tire calculator](tire.md).

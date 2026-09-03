@@ -1,17 +1,17 @@
-# Tyre Calculator
+# Tire Calculator
 
 Two jobs:
 
-1. **Convert tyre size** between the formats you find stamped on tyres and rims.
-2. **Recommend a tyre pressure** for a given rider, tyre, and use.
+1. **Convert tire size** between the formats you find stamped on tires and rims.
+2. **Recommend a tire pressure** for a given rider, tire, and use.
 
 ## Part 1 — Size conversion
 
-Tyre and rim sizing is a mess of legacy systems. The reliable one is **ETRTO /
+Tire and rim sizing is a mess of legacy systems. The reliable one is **ETRTO /
 ISO** (`width-bead_diameter`, e.g. `25-622`). Everything else maps to it.
 
 ### Inputs
-- A tyre size in any supported format, or width + ISO bead diameter.
+- A tire size in any supported format, or width + ISO bead diameter.
 
 ### Outputs
 - The equivalent in the other formats, and the **ISO bead diameter** (which is
@@ -33,7 +33,7 @@ ISO** (`width-bead_diameter`, e.g. `25-622`). Everything else maps to it.
 | 451 mm | 20" (some folders/recumbents — **not** interchangeable with 406) |
 | 349 mm | 16" (Brompton) |
 
-> Warning to surface in the UI: two tyres can both say `20"` (or `26"`) yet have
+> Warning to surface in the UI: two tires can both say `20"` (or `26"`) yet have
 > different ISO bead diameters and **not fit the same rim**. ISO is the truth.
 
 ### Format notes
@@ -45,8 +45,8 @@ ISO** (`width-bead_diameter`, e.g. `25-622`). Everything else maps to it.
   `26 × 1 3/8` (590 mm) ≠ `26 × 1.375` decimal. Handle carefully.
 
 ### Rolling circumference (also = speedometer / bike-computer calibration value)
-Approximate outer diameter: `bead_diameter + 2 × tyre_height`, where tyre height
-≈ tyre width (round-ish casing) — adjust with a section-height factor if known.
+Approximate outer diameter: `bead_diameter + 2 × tire_height`, where tire height
+≈ tire width (round-ish casing) — adjust with a section-height factor if known.
 `circumference = π × outer_diameter`. Prefer a **measured roll-out** when the
 number matters. Maintain a small table of measured circumferences for common
 sizes.
@@ -60,37 +60,37 @@ calculated value.
 
 ## Part 2 — Pressure recommendation
 
-Correct pressure depends mainly on **load on the tyre** (rider + bike + gear,
-split by weight distribution) and **tyre width**; wider tyres need less
-pressure. Modern guidance targets a tyre "drop" (sag) of ~15%.
+Correct pressure depends mainly on **load on the tire** (rider + bike + gear,
+split by weight distribution) and **tire width**; wider tires need less
+pressure. Modern guidance targets a tire "drop" (sag) of ~15%.
 
 ### Inputs
 - Total system weight (rider + bike + luggage), or rider weight + bike weight.
 - Weight distribution front/rear (default ~40/60 for road, adjustable).
-- Tyre width (mm) per wheel; wheel/ISO size.
+- Tire width (mm) per wheel; wheel/ISO size.
 - Tube type: clincher w/ tube, tubeless, tubular.
 - Surface / use: smooth tarmac, rough tarmac, gravel, off-road.
 
 ### Outputs
 - Recommended **front** and **rear** pressures (bar and psi), typically rear
   higher than front because it carries more load.
-- A sensible **range**, and never exceed the tyre's or rim's stated max.
+- A sensible **range**, and never exceed the tire's or rim's stated max.
 
 ### Method
-No single closed formula is authoritative; implement a load-based model and be
-explicit about it:
+No single closed formula is authoritative; we implement a simple, transparent
+load-based model (Berto ~15%-drop lineage) and say so:
 
-- Base the target on the **Frank Berto 15%-drop** tension data (the basis of most
-  online tyre-pressure charts): for each tyre width, pressure scales with the
-  load carried by that wheel.
-- Then apply modifiers: **−10–15%** for tubeless, **lower** for rougher surfaces
-  (rougher → lower for grip/comfort/lower rolling resistance), respect min/max.
+- `pressure_bar ≈ 3.2 × (load_on_wheel_kg / tire_width_mm)`, clamped to a sane
+  1.5–8.5 bar. The coefficient is calibrated so typical setups land in the right
+  ballpark (e.g. ~40 kg on 25 mm ≈ 5 bar / ~75 psi; wide tires much lower).
+- Then apply modifiers: tubeless ×0.88, tubular ×0.95; surface smooth ×1.0,
+  rough ×0.92, gravel ×0.85, off-road ×0.78.
+- Rear gets more load than front, so it comes out higher.
 
-Present it as: "based on ~15% tyre drop for your load and width; adjust to feel."
-Cite the model (Berto / a reputable tyre-pressure guide) in the notes so the
-number is defensible.
+It's a **starting estimate**, presented as "adjust to feel". Not a manufacturer
+chart — worth swapping for cited chart data later.
 
 ### Hard limits
-- Clamp to the **tyre sidewall min/max** and the **rim's max pressure** (esp.
+- Clamp to the **tire sidewall min/max** and the **rim's max pressure** (esp.
   hooked vs hookless — hookless rims often cap at 72.5 psi / 5 bar). Warn loudly
   near limits.

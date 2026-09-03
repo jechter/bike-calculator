@@ -1,5 +1,5 @@
-// Tyre pressure recommendation. There is no single authoritative closed-form
-// model; this implements a transparent load-based estimate targeting ~15% tyre
+// Tire pressure recommendation. There is no single authoritative closed-form
+// model; this implements a transparent load-based estimate targeting ~15% tire
 // drop (Frank Berto lineage), with modifiers for tube type and surface. Always
 // clamp to sidewall/rim limits. See docs/calculators/tire.md.
 
@@ -39,18 +39,20 @@ const TUBE_FACTOR: Record<TubeType, number> = {
 };
 
 /**
- * Estimate pressure for one wheel from the load it carries and tyre width.
+ * Estimate pressure for one wheel from the load it carries and tire width.
  *
  * Empirical fit in the Berto spirit: pressure rises with load-per-mm-of-width.
  * pressure_bar ~= k * (loadKg / widthMm) with a small offset, then modified.
  * This is deliberately simple and transparent, not a manufacturer chart.
  */
 function wheelPressureBar(loadKg: number, widthMm: number): number {
-  // Tuned so that e.g. ~35 kg on a 25 mm tyre lands ~6.5 bar, and a 50 mm tyre
-  // at similar load lands far lower — matching the shape of published charts.
+  // Pressure scales with load carried per mm of tire width. The coefficient is
+  // calibrated to land in the right ballpark: e.g. ~40 kg on a 25 mm tire ≈ 5 bar
+  // (~75 psi), ~50 kg on a 28 mm tire ≈ 5.7 bar, wide tires much lower. A
+  // transparent starting estimate, not a manufacturer chart.
   const loadPerMm = loadKg / widthMm;
-  const bar = 8.5 * loadPerMm - 0.6;
-  return Math.max(1.0, bar);
+  const bar = 3.2 * loadPerMm;
+  return Math.min(8.5, Math.max(1.5, bar));
 }
 
 export function recommendTirePressure(input: TirePressureInput): TirePressureResult {

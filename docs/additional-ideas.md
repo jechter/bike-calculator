@@ -38,14 +38,14 @@ These were originally listed here but now live inside an existing calculator:
   a starting position.
 - **Headset / bearing size reference.** Standards (e.g. IS/ZS/EC), common
   cartridge bearing numbers by dimension.
-- **Tyre/rim width compatibility.** Recommended tyre-width range for a given
+- **Tire/rim width compatibility.** Recommended tire-width range for a given
   internal rim width (ETRTO/ISO guidance), and vice-versa.
 
 ## Nice to have
 
 - **E-bike range estimator.** From battery Wh, assist level, rider power, terrain
   — reuses the power model.
-- **Ideal tyre pressure logbook.** Save the shop's or a rider's preferred numbers.
+- **Ideal tire pressure logbook.** Save the shop's or a rider's preferred numbers.
 - **Component weight comparison / build weight tally.**
 - **Ratio finder for fixed/singlespeed** including magic-gear chain-tension check
   for horizontal dropouts.

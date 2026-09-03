@@ -15,7 +15,7 @@ always overridable, and clearly flagged as starting points to measure against.
 
 - **ERD** — Effective Rim Diameter (mm). The diameter at which the spoke ends
   sit (nipple seat), the single most important and error-prone number. Must be
-  measured or taken from the rim spec, **not** the bead/tyre diameter. The rim
+  measured or taken from the rim spec, **not** the bead/tire diameter. The rim
   preset fills a rough ERD by wheel size.
 
 **Hub** section (spoke count, hole diameter, and per side L/R):

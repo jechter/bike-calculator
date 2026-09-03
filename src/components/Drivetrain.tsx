@@ -205,7 +205,7 @@ export function Drivetrain() {
               <>
                 measured roll-out is most accurate ·{" "}
                 <a className="inline-link" href="#/tire">
-                  open the Tyre calculator for sizes &amp; conversion →
+                  open the Tire calculator for sizes &amp; conversion →
                 </a>
               </>
             }
@@ -213,7 +213,7 @@ export function Drivetrain() {
             <div className="combo">
               <NumberInput value={circ} onChange={setCirc} min={800} />
               <PresetMenu
-                title="Fill from a tyre size (ETRTO)"
+                title="Fill from a tire size (ETRTO)"
                 options={TIRE_OPTIONS}
                 onPick={(v) => setCirc(parseFloat(v))}
               />

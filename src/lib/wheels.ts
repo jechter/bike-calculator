@@ -1,4 +1,4 @@
-// Wheel / tyre size reference data, shared by the tyre and drivetrain
+// Wheel / tire size reference data, shared by the tire and drivetrain
 // calculators. ISO/ETRTO bead diameter is the source of truth for what fits
 // what; everything else is a naming convention that maps onto it.
 //
@@ -11,7 +11,7 @@ export interface BeadStandard {
   names: string[]; // common names for this bead diameter
 }
 
-// ISO bead diameters and the names people use for them. Two tyres sharing a
+// ISO bead diameters and the names people use for them. Two tires sharing a
 // popular name (e.g. "20") can have different ISO diameters and NOT be
 // interchangeable — hence listing names per exact ISO value.
 export const BEAD_STANDARDS: BeadStandard[] = [
@@ -61,7 +61,7 @@ export const TIRE_PRESETS: TirePreset[] = [
 ];
 
 /**
- * Approximate outer diameter (mm) from bead diameter and tyre width, assuming a
+ * Approximate outer diameter (mm) from bead diameter and tire width, assuming a
  * roughly round casing (section height ~= width). Rough; a measured value is
  * better.
  */

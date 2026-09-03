@@ -87,8 +87,8 @@ export const CDA_PRESETS = [
 ];
 
 export const CRR_PRESETS = [
-  { label: 'Fast road tyre, smooth', crr: 0.004 },
-  { label: 'Road tyre, average', crr: 0.006 },
+  { label: 'Fast road tire, smooth', crr: 0.004 },
+  { label: 'Road tire, average', crr: 0.006 },
   { label: 'Rough tarmac', crr: 0.008 },
   { label: 'Gravel', crr: 0.012 },
   { label: 'Off-road / knobbly', crr: 0.02 },

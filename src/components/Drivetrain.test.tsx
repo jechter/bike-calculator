@@ -140,7 +140,7 @@ describe("Drivetrain page", () => {
     expect(getByText("1.00%")).toBeTruthy();
   });
 
-  it("links to the tyre calculator", () => {
+  it("links to the tire calculator", () => {
     const { container } = render(<Drivetrain />);
     const link = container.querySelector('a[href="#/tire"]');
     expect(link).toBeTruthy();

@@ -1,10 +1,6 @@
 import { useState } from "react";
-import {
-  BEAD_STANDARDS,
-  findBeadStandardsByName,
-  estimatedOuterDiameterMm,
-  estimatedCircumferenceMm,
-} from "../lib/wheels";
+import { parseTireSize, formatDesignations, commonNamesFor } from "../lib/tireSizes";
+import { estimatedOuterDiameterMm, estimatedCircumferenceMm } from "../lib/wheels";
 import {
   recommendTirePressure,
   type Surface,
@@ -12,18 +8,19 @@ import {
 } from "../lib/tirePressure";
 import { Field, NumberInput, TextInput, Select, Result, Section } from "./ui";
 
+const EXAMPLES = ["700x28C", "28-622", "26x2.1", "27.5x2.4", "28x1 3/8", "650b x 47"];
+
 export function Tire() {
-  // Size conversion
-  const [query, setQuery] = useState("700c");
-  const [iso, setIso] = useState(622);
-  const [width, setWidth] = useState(28);
-  const matches = findBeadStandardsByName(query);
-  const outer = estimatedOuterDiameterMm(iso, width);
-  const circ = estimatedCircumferenceMm(iso, width);
+  const [query, setQuery] = useState("700x28C");
+  const parsed = parseTireSize(query);
+  const designations = parsed ? formatDesignations(parsed.iso, parsed.widthMm) : [];
+  const names = parsed ? commonNamesFor(parsed.iso) : [];
+  const outer = parsed ? estimatedOuterDiameterMm(parsed.iso, parsed.widthMm) : 0;
+  const circ = parsed ? estimatedCircumferenceMm(parsed.iso, parsed.widthMm) : 0;
 
   // Pressure
-  const [weight, setWeight] = useState(90);
-  const [frontPct, setFrontPct] = useState(40);
+  const [weight, setWeight] = useState(82);
+  const [frontPct, setFrontPct] = useState(45);
   const [pWidth, setPWidth] = useState(28);
   const [tube, setTube] = useState<TubeType>("tube");
   const [surface, setSurface] = useState<Surface>("smooth");
@@ -39,80 +36,85 @@ export function Tire() {
   return (
     <>
       <Section
-        title="Size conversion"
+        title="Convert a tire size"
         info={
           <>
-            ISO/ETRTO bead diameter is what determines fit. Two tyres sharing a
+            Enter a tire size in any format — <strong>ETRTO/ISO</strong> (e.g.
+            25-622), <strong>French</strong> (700 × 28C), or <strong>inch</strong>{" "}
+            (26 × 2.1, 28 × 1⅜) — and see the equivalents. ISO bead diameter is the
+            only unambiguous part and is what determines fit: two tires sharing a
             name (e.g. “20”, “26”) can have different ISO diameters and{" "}
-            <strong>not fit the same rim</strong>. The circumference doubles as the
-            wheel-size value to enter into a bike computer / speedometer; a measured
-            roll-out (mark the valve, roll one rev under rider weight) is more
-            accurate than this estimate.
+            <strong>not fit the same rim</strong>. Legacy fractional sizes are
+            especially ambiguous.
           </>
         }
       >
-        <div className="grid">
-          <Field label="Look up a name" hint='e.g. "700c", "26", "27.5", "650b"'>
-            <TextInput value={query} onChange={setQuery} />
+        <div className="rows">
+          <Field
+            label="Tire size (any format)"
+            hint="e.g. 28-622 · 700x28C · 26x2.1 · 28x1 3/8 · 650b x 47"
+          >
+            <TextInput value={query} onChange={setQuery} placeholder="e.g. 700x28C" />
           </Field>
         </div>
-        {matches.length > 0 && (
-          <div className="table-wrap" style={{ marginTop: 10 }}>
-            <table>
-              <thead>
-                <tr>
-                  <th className="num">ISO bead</th>
-                  <th>Known as</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {matches.map((m) => (
-                  <tr key={m.iso}>
-                    <td className="num">{m.iso} mm</td>
-                    <td>{m.names.join(", ")}</td>
-                    <td>
-                      <button className="chip" onClick={() => setIso(m.iso)}>
-                        use
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <div className="chips" style={{ marginTop: 4 }}>
+          {EXAMPLES.map((e) => (
+            <button key={e} className="chip" onClick={() => setQuery(e)}>
+              {e}
+            </button>
+          ))}
+        </div>
 
-        <div className="grid" style={{ marginTop: 14 }}>
-          <Field label="ISO bead diameter">
-            <Select
-              value={String(iso)}
-              onChange={(v) => setIso(parseFloat(v))}
-              options={BEAD_STANDARDS.map((s) => ({
-                value: String(s.iso),
-                label: `${s.iso} — ${s.names[0]}`,
-              }))}
-            />
-          </Field>
-          <Field label="Tyre width">
-            <NumberInput value={width} onChange={setWidth} suffix="mm" min={18} max={80} />
-          </Field>
-          <Result label="ETRTO" value={`${width}-${iso}`} big />
-          <Result label="Est. outer diameter" value={`${outer.toFixed(0)} mm`} />
-          <Result
-            label="Bike-computer wheel size"
-            value={`${circ.toFixed(0)} mm`}
-          />
-        </div>
+        {parsed ? (
+          <>
+            <div className="results" style={{ marginTop: 16 }}>
+              <Result label="ETRTO / ISO" value={`${Math.round(parsed.widthMm)}-${parsed.iso}`} big />
+              <Result label="Rim bead diameter" value={`${parsed.iso} mm`} />
+              <Result label="Est. outer diameter" value={`${outer.toFixed(0)} mm`} />
+              <Result label="Bike-computer size" value={`${circ.toFixed(0)} mm`} />
+            </div>
+
+            <div className="table-wrap" style={{ marginTop: 14 }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Format</th>
+                    <th>Designation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {designations.map((d) => (
+                    <tr key={d.format}>
+                      <td>{d.format}</td>
+                      <td>{d.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {names.length > 0 && (
+              <p className="field-hint" style={{ marginTop: 10 }}>
+                Bead diameter {parsed.iso} mm is also known as: {names.join(" · ")}
+              </p>
+            )}
+          </>
+        ) : query.trim() ? (
+          <p className="field-hint" style={{ marginTop: 12 }}>
+            Couldn't read that. Try a format like <code>28-622</code>,{" "}
+            <code>700x28C</code>, <code>26x2.1</code> or <code>28x1 3/8</code>.
+          </p>
+        ) : null}
       </Section>
 
       <Section
         title="Pressure recommendation"
         info={
           <>
-            A transparent ~15% tyre-drop estimate (Berto lineage) with tube/surface
+            A transparent estimate: pressure scales with the load each wheel carries
+            per mm of tire width (~15% tire-drop lineage) with tube/surface
             modifiers — a starting point, adjust to feel. <strong>Never exceed</strong>{" "}
-            the tyre sidewall or rim max (hookless rims often cap at 5 bar / 72.5
+            the tire sidewall or rim max (hookless rims often cap at 5 bar / 72.5
             psi).
           </>
         }
@@ -124,7 +126,7 @@ export function Tire() {
           <Field label="Front weight share">
             <NumberInput value={frontPct} onChange={setFrontPct} suffix="%" min={30} max={55} />
           </Field>
-          <Field label="Tyre width">
+          <Field label="Tire width">
             <NumberInput value={pWidth} onChange={setPWidth} suffix="mm" min={18} max={80} />
           </Field>
           <Field label="Tube type">

@@ -11,7 +11,7 @@ A two-pane layout:
 |  • Drivetrain        |   <title of selected calculator>          |
 |  • Wheel building    |                                           |
 |  • Frame size        |   [ inputs ]                              |
-|  • Tyre              |                                           |
+|  • Tire              |                                           |
 |  • Derailleur compat |   [ results ]                            |
 |  • Cycling power     |                                           |
 |  • Thread direction  |   [ notes / formula reference ]           |
@@ -43,9 +43,9 @@ A two-pane layout:
 
 - **Units.** A shared units helper handles mm↔inch, kg↔lb, km/h↔mph, bar↔psi,
   Nm↔in·lbf. Each calculator picks sensible defaults but lets the user switch.
-- **Shared reference data.** Wheel/tyre ISO (ETRTO) sizes, tyre circumferences,
+- **Shared reference data.** Wheel/tire ISO (ETRTO) sizes, tire circumferences,
   and component tables are shared modules used across calculators (the
-  drivetrain, tyre, and wheel calculators all need wheel dimensions).
+  drivetrain, tire, and wheel calculators all need wheel dimensions).
 - **Validation.** Guard against divide-by-zero and nonsensical inputs; show a
   clear message rather than `NaN`.
 - **Precision.** Show results to a practical precision (e.g. spoke lengths to

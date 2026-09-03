@@ -42,7 +42,7 @@ P_pedal = (F_gravity + F_rolling + F_aero) · v / η
 | `m` | total mass (rider + bike + kit), kg | e.g. 80 |
 | `g` | gravity | 9.81 m/s² |
 | `G` | gradient (rise/run) | −0.10 … 0.20 |
-| `Crr` | coefficient of rolling resistance | 0.004 (good road tyre) – 0.008 (rough), 0.012+ off-road |
+| `Crr` | coefficient of rolling resistance | 0.004 (good road tire) – 0.008 (rough), 0.012+ off-road |
 | `ρ` | air density, kg/m³ | 1.225 at sea level, 15 °C (varies with altitude/temp) |
 | `CdA` | drag area, m² | 0.30–0.40 hoods, ~0.25 drops, ~0.22 aero/TT |
 | `v_headwind` | head/tail wind component, m/s | + head, − tail |

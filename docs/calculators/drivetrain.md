@@ -19,12 +19,15 @@ worn chain.
 - **Cassette/cogs**: list of tooth counts, e.g. `11, 12, 13, 14, 15, 17, 19,
   21, 24, 28`. Editable field with a preset button for common cassettes (11–28,
   11–34, 10–52, etc.). (Single speed / IGH: a single sprocket.)
-- **Rolling circumference** (mm): an editable field with a small preset button
-  that fills it from a tyre size (labelled by **ETRTO**, e.g. `25-622`). A
-  measured roll-out is most accurate. Links across to the [tyre calculator](tire.md)
-  for size conversion.
-- **Cadence** (rpm): a slider over the usual 60–120 range, with a number field
-  for values outside it. Default 90.
+- **Rolling circumference** (mm): an editable field with an integrated preset
+  dropdown (combobox) that fills it from a tyre size (labelled by **ETRTO**,
+  e.g. `25-622`). A measured roll-out is most accurate. Links across to the
+  [tyre calculator](tire.md) for size conversion.
+- **Cadence** (rpm): lives in the **chart's control bar** (next to the axis
+  selector), since it only affects the speed visualisation — a compact slider
+  over 60–120 with a number field for values outside it. Default 90.
+- **Speed unit** (km/h / mph): the global switch in the sidebar footer, shared
+  with the [power calculator](power.md) — not a per-chart toggle.
 - **For chain length**: chainstay length (mm) OR the "big-big" measurement,
   plus largest chainring and largest cog.
 
@@ -88,6 +91,12 @@ glance. Also show the gear count and range (`highest ratio / lowest ratio`).
 > of an equivalent direct-drive high-wheeler — a wheel-size-independent way to
 > compare gearing; bigger = taller/harder. It's a classic metric but niche, hence
 > it's one of several selectable axes rather than the default (speed is default).
+
+**Cross-chaining.** With 2+ chainrings, the chart **greys out** the extreme
+cross-chained combinations to avoid shifting into: the big ring with the two
+largest cogs, and the small ring with the two smallest cogs (big-big /
+small-small). The hover tooltip flags them too. Single-speed and hub setups have
+no cross-chaining.
 
 ## Formulas
 

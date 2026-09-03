@@ -4,7 +4,14 @@ import { render, cleanup, fireEvent, within, waitFor } from "@testing-library/re
 import { App } from "./App";
 import { CALCULATORS } from "./registry";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  try {
+    localStorage.clear();
+  } catch {
+    /* ignore */
+  }
+});
 
 describe("App shell", () => {
   it("renders the sidebar with every calculator", () => {
@@ -12,6 +19,16 @@ describe("App shell", () => {
     for (const c of CALCULATORS) {
       expect(getByRole("button", { name: new RegExp(c.title) })).toBeTruthy();
     }
+  });
+
+  it("global speed unit switch changes speed display across the app", () => {
+    const { container, getByRole } = render(<App />);
+    // default drivetrain chart shows a km/h axis
+    expect(container.querySelector(".gc-axis-btn")!.textContent).toMatch(/km\/h/);
+    // open the sidebar unit switcher and choose mph
+    fireEvent.click(getByRole("button", { name: /Speed:/ }));
+    fireEvent.click(within(container.querySelector(".unit-list") as HTMLElement).getByText("mph"));
+    expect(container.querySelector(".gc-axis-btn")!.textContent).toMatch(/mph/);
   });
 
   it("navigates to and renders each calculator without crashing", async () => {

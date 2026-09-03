@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { GearResult } from "../lib/drivetrain";
 import { kmhToMph } from "../lib/units";
 
@@ -22,6 +22,10 @@ export interface GearChartProps {
   value: (g: GearResult) => number;
   format: (v: number) => string;
   pointLabel: (g: GearResult) => string;
+  /** Optional extra control rendered in the axis bar (e.g. cadence). */
+  extra?: ReactNode;
+  /** Mark a gear as cross-chained (greyed out; avoid shifting into it). */
+  isCrossChained?: (g: GearResult) => boolean;
 }
 
 export function GearChart({
@@ -32,6 +36,8 @@ export function GearChart({
   value,
   format,
   pointLabel,
+  extra,
+  isCrossChained,
 }: GearChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -122,23 +128,26 @@ export function GearChart({
                 {grp.ring}T
               </text>
               <line x1={x0} y1={y} x2={x1} y2={y} stroke={color} className="gc-row-line" />
-              {grp.points.map((p, j) => (
-                <g key={j}>
-                  <circle
-                    cx={x(p.v)}
-                    cy={y}
-                    r={6}
-                    fill={color}
-                    className="gc-dot"
-                    onMouseMove={showTip(p.g)}
-                    onMouseEnter={showTip(p.g)}
-                    onMouseLeave={() => setHover(null)}
-                  />
-                  <text x={x(p.v)} y={y - 12} className="gc-pt-label" textAnchor="middle">
-                    {pointLabel(p.g)}
-                  </text>
-                </g>
-              ))}
+              {grp.points.map((p, j) => {
+                const crossed = isCrossChained?.(p.g) ?? false;
+                return (
+                  <g key={j} className={crossed ? "gc-crossed" : undefined}>
+                    <circle
+                      cx={x(p.v)}
+                      cy={y}
+                      r={6}
+                      fill={crossed ? "var(--muted)" : color}
+                      className="gc-dot"
+                      onMouseMove={showTip(p.g)}
+                      onMouseEnter={showTip(p.g)}
+                      onMouseLeave={() => setHover(null)}
+                    />
+                    <text x={x(p.v)} y={y - 12} className="gc-pt-label" textAnchor="middle">
+                      {pointLabel(p.g)}
+                    </text>
+                  </g>
+                );
+              })}
             </g>
           );
         })}
@@ -177,6 +186,7 @@ export function GearChart({
             </ul>
           )}
         </div>
+        {extra && <div className="gc-axis-extra">{extra}</div>}
       </div>
 
       {hover && (
@@ -202,6 +212,7 @@ export function GearChart({
               {hover.g.speedKmh.toFixed(1)} km/h · {kmhToMph(hover.g.speedKmh).toFixed(1)} mph
             </b>
           </div>
+          {isCrossChained?.(hover.g) && <div className="gc-tt-warn">cross-chained — avoid</div>}
         </div>
       )}
     </div>

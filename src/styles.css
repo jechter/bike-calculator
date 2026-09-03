@@ -58,7 +58,10 @@ body {
   align-self: start;
   height: 100vh;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
+.sidebar-footer { margin-top: auto; padding-top: 14px; }
 .brand {
   font-weight: 700;
   font-size: 16px;
@@ -247,8 +250,34 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .gc-dot { cursor: pointer; }
 .gc-dot:hover { stroke: var(--panel); stroke-width: 3; }
 
+.gc-crossed .gc-dot { opacity: 0.5; }
+.gc-crossed .gc-pt-label { opacity: 0.45; }
+.gc-tt-warn { margin-top: 5px; color: var(--warn); font-weight: 600; }
+
 /* In-chart axis label + metric dropdown */
-.gc-axis { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; }
+.gc-axis { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 4px; flex-wrap: wrap; }
+.gc-axis-extra { display: flex; align-items: center; }
+.gc-cadence { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.gc-cadence label { font-weight: 600; }
+.gc-cadence input[type="range"] { width: 96px; accent-color: var(--accent); }
+.gc-cadence-num {
+  width: 54px; padding: 4px 6px;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--panel); color: var(--text); font: inherit; font-size: 13px;
+}
+
+/* Sidebar global unit switcher */
+.unit-switcher { position: relative; }
+.unit-btn {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font: inherit; font-size: 13px; padding: 8px 10px; cursor: pointer;
+}
+.unit-btn:hover { border-color: var(--accent); }
+.unit-btn .caret { margin-left: auto; color: var(--muted); transition: transform 0.15s ease; }
+.unit-btn.open .caret { transform: rotate(180deg); }
+.unit-icon { color: var(--accent); }
+.unit-list { top: auto; bottom: calc(100% + 4px); left: 0; right: auto; min-width: 150px; }
 .gc-axis-caption { color: var(--muted); font-size: 13px; }
 .gc-axis-menu { position: relative; }
 .gc-axis-btn {

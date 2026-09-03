@@ -37,18 +37,31 @@ describe("Drivetrain page", () => {
     expect(container.textContent).not.toMatch(/Gain/);
   });
 
-  it("switches the chart axis via the in-chart dropdown (incl. km/h vs mph)", () => {
+  it("switches the chart axis via the in-chart dropdown", () => {
     const { container } = render(<Drivetrain />);
     const axisBtn = container.querySelector(".gc-axis-btn") as HTMLButtonElement;
     expect(axisBtn.textContent).toMatch(/Speed at 90 rpm \(km\/h\)/);
-    // km/h and mph are options in the same dropdown, not a separate toggle
     fireEvent.click(axisBtn);
     const list = container.querySelector(".gc-axis-list") as HTMLElement;
-    expect(within(list).getByText(/Speed at 90 rpm \(mph\)/)).toBeTruthy();
     fireEvent.click(within(list).getByText("Gear inches"));
     expect((container.querySelector(".gc-axis-btn") as HTMLElement).textContent).toMatch(
       /Gear inches/,
     );
+  });
+
+  it("greys out cross-chained gears (big-big / small-small)", () => {
+    const { container } = render(<Drivetrain />);
+    // default 50/34, 11-28: 50x28,50x24 and 34x11,34x12 are cross-chained
+    const crossed = container.querySelectorAll(".gc-crossed");
+    expect(crossed.length).toBe(4);
+  });
+
+  it("has the cadence control in the chart bar (not the setup section)", () => {
+    const { container } = render(<Drivetrain />);
+    const range = container.querySelector('input[type="range"]') as HTMLInputElement;
+    expect(range).toBeTruthy();
+    // it lives inside the gear chart's axis bar
+    expect(container.querySelector(".gc-cadence input[type='range']")).toBeTruthy();
   });
 
   it("shows a hover tooltip with a gear's exact values", () => {

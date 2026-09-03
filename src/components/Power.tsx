@@ -7,10 +7,16 @@ import {
   CRR_PRESETS,
   type PowerInput,
 } from "../lib/power";
-import { kmhToMs, msToKmh, kmhToMph } from "../lib/units";
+import { kmhToMs, msToKmh, kmhToMph, mphToKmh } from "../lib/units";
+import { useUnits, speedUnitLabel } from "../units-context";
 import { Field, NumberInput, Select, Result, Note, Section } from "./ui";
 
 export function Power() {
+  const units = useUnits();
+  const unitLabel = speedUnitLabel(units.speed);
+  const toDisplay = (kmh: number) => (units.speed === "mph" ? kmhToMph(kmh) : kmh);
+  const fromDisplay = (v: number) => (units.speed === "mph" ? mphToKmh(v) : v);
+
   const [dir, setDir] = useState<"speed-from-power" | "power-from-speed">(
     "power-from-speed",
   );
@@ -58,7 +64,12 @@ export function Power() {
           </Field>
           {dir === "power-from-speed" ? (
             <Field label="Target speed">
-              <NumberInput value={speedKmh} onChange={setSpeedKmh} suffix="km/h" min={1} />
+              <NumberInput
+                value={Math.round(toDisplay(speedKmh) * 10) / 10}
+                onChange={(v) => setSpeedKmh(fromDisplay(v))}
+                suffix={unitLabel}
+                min={1}
+              />
             </Field>
           ) : (
             <Field label="Pedal power">
@@ -72,7 +83,7 @@ export function Power() {
           ) : (
             <Result
               label="Speed"
-              value={`${resultSpeedKmh.toFixed(1)} km/h · ${kmhToMph(resultSpeedKmh).toFixed(1)} mph`}
+              value={`${toDisplay(resultSpeedKmh).toFixed(1)} ${unitLabel}`}
               big
             />
           )}

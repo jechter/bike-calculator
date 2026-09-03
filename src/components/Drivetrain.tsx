@@ -12,11 +12,12 @@ import {
 } from "../lib/drivetrain";
 import { TIRE_PRESETS } from "../lib/wheels";
 import { kmhToMph } from "../lib/units";
+import { useUnits, speedUnitLabel } from "../units-context";
 import { Field, NumberInput, TextInput, Select, PresetMenu, Result, Note, Section } from "./ui";
 import { GearChart } from "./GearChart";
 
 type Mode = "cassette" | "single" | "hub";
-type Metric = "speedKmh" | "speedMph" | "gearInches" | "development" | "ratio";
+type Metric = "speed" | "gearInches" | "development" | "ratio";
 
 function parseList(s: string): number[] {
   return s
@@ -42,6 +43,7 @@ const CRANKSET_OPTIONS = CHAINRING_PRESETS.map((p) => ({
 }));
 
 export function Drivetrain() {
+  const units = useUnits();
   const [mode, setMode] = useState<Mode>("cassette");
   const [chainringStr, setChainringStr] = useState("50, 34");
   const [cogStr, setCogStr] = useState("11, 12, 13, 14, 15, 17, 19, 21, 24, 28");
@@ -50,7 +52,7 @@ export function Drivetrain() {
   const [hubIdx, setHubIdx] = useState(0);
   const [circ, setCirc] = useState(2111);
   const [cadence, setCadence] = useState(90);
-  const [metric, setMetric] = useState<Metric>("speedKmh");
+  const [metric, setMetric] = useState<Metric>("speed");
 
   const [chainstay, setChainstay] = useState(410);
 
@@ -80,21 +82,18 @@ export function Drivetrain() {
 
   const sliderCadence = Math.min(120, Math.max(60, cadence || 60));
 
-  // Axis definitions for the gear chart. The km/h vs mph choice is folded in as
-  // two speed options rather than a separate toggle.
+  // Axis definitions for the gear chart. Speed uses the global unit (set in the
+  // sidebar), so there's no per-chart unit toggle.
   const rpm = cadence || 90;
+  const unitLabel = speedUnitLabel(units.speed);
+  const toSpeed = (kmh: number) => (units.speed === "mph" ? kmhToMph(kmh) : kmh);
   const metricDefs: Record<
     Metric,
     { label: string; value: (g: GearResult) => number; format: (v: number) => string }
   > = {
-    speedKmh: {
-      label: `Speed at ${rpm} rpm (km/h)`,
-      value: (g) => g.speedKmh,
-      format: (v) => v.toFixed(1),
-    },
-    speedMph: {
-      label: `Speed at ${rpm} rpm (mph)`,
-      value: (g) => kmhToMph(g.speedKmh),
+    speed: {
+      label: `Speed at ${rpm} rpm (${unitLabel})`,
+      value: (g) => toSpeed(g.speedKmh),
       format: (v) => v.toFixed(1),
     },
     gearInches: { label: "Gear inches", value: (g) => g.gearInches, format: (v) => v.toFixed(0) },
@@ -111,6 +110,21 @@ export function Drivetrain() {
   }));
   const activeMetric = metricDefs[metric];
   const pointLabel = (g: GearResult) => (g.hubGear ? g.hubGear.name : String(g.cog));
+
+  // Cross-chaining: only meaningful with 2+ chainrings. Flag big ring + the two
+  // largest cogs, and small ring + the two smallest cogs, as gears to avoid.
+  const isCrossChained = (g: GearResult): boolean => {
+    if (mode !== "cassette" || chainrings.length < 2) return false;
+    const maxRing = Math.max(...chainrings);
+    const minRing = Math.min(...chainrings);
+    const sortedCogs = [...cogs].sort((a, b) => a - b);
+    const n = Math.min(2, Math.max(1, sortedCogs.length - 1));
+    const smallCogs = sortedCogs.slice(0, n);
+    const largeCogs = sortedCogs.slice(-n);
+    if (g.chainring === maxRing && largeCogs.includes(g.cog)) return true;
+    if (g.chainring === minRing && smallCogs.includes(g.cog)) return true;
+    return false;
+  };
 
   return (
     <>
@@ -183,10 +197,10 @@ export function Drivetrain() {
           )}
         </div>
 
-        {/* Wheel / cadence always on their own rows for a stable layout. */}
+        {/* Rolling circumference on its own row for a stable layout. */}
         <div className="rows">
           <Field
-            label="Rolling circumference"
+            label="Rolling circumference (mm)"
             hint={
               <>
                 measured roll-out is most accurate ·{" "}
@@ -197,26 +211,12 @@ export function Drivetrain() {
             }
           >
             <div className="combo">
-              <NumberInput value={circ} onChange={setCirc} suffix="mm" min={800} />
+              <NumberInput value={circ} onChange={setCirc} min={800} />
               <PresetMenu
                 title="Fill from a tyre size (ETRTO)"
                 options={TIRE_OPTIONS}
                 onPick={(v) => setCirc(parseFloat(v))}
               />
-            </div>
-          </Field>
-
-          <Field label="Cadence" hint="slider 60–120 rpm; type any value">
-            <div className="slider-row">
-              <input
-                type="range"
-                min={60}
-                max={120}
-                step={1}
-                value={sliderCadence}
-                onChange={(e) => setCadence(parseInt(e.target.value))}
-              />
-              <NumberInput value={cadence} onChange={setCadence} suffix="rpm" min={20} max={200} />
             </div>
           </Field>
         </div>
@@ -236,15 +236,48 @@ export function Drivetrain() {
           value={activeMetric.value}
           format={activeMetric.format}
           pointLabel={pointLabel}
+          isCrossChained={isCrossChained}
+          extra={
+            metric === "speed" ? (
+              <div className="gc-cadence">
+                <label htmlFor="cadence">Cadence</label>
+                <input
+                  id="cadence"
+                  type="range"
+                  min={60}
+                  max={120}
+                  step={1}
+                  value={sliderCadence}
+                  onChange={(e) => setCadence(parseInt(e.target.value))}
+                />
+                <input
+                  type="number"
+                  className="gc-cadence-num"
+                  value={Number.isFinite(cadence) ? cadence : ""}
+                  min={20}
+                  max={200}
+                  onChange={(e) => setCadence(parseInt(e.target.value))}
+                />
+                <span className="gc-cadence-unit">rpm</span>
+              </div>
+            ) : undefined
+          }
         />
 
         <Note>
           One line per chainring; each dot is a {mode === "hub" ? "hub gear" : "cog"}{" "}
           (labelled with its {mode === "hub" ? "gear" : "tooth count"}) — hover a dot
-          for its exact values. <strong>Gear inches</strong> = the drive-wheel
-          diameter (in) of an equivalent direct-drive high-wheeler — a
-          wheel-size-independent way to compare gears; bigger = taller/harder.
-          <strong> Development</strong> is metres travelled per pedal revolution.
+          for its exact values.{" "}
+          {mode === "cassette" && chainrings.length > 1 && (
+            <>
+              <strong>Greyed dots</strong> are cross-chained combinations (big-big /
+              small-small) to avoid shifting into.{" "}
+            </>
+          )}
+          <strong>Gear inches</strong> = the drive-wheel diameter (in) of an
+          equivalent direct-drive high-wheeler — a wheel-size-independent way to
+          compare gears; bigger = taller/harder. <strong>Development</strong> is
+          metres travelled per pedal revolution.
         </Note>
       </Section>
 

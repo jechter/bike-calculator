@@ -1,11 +1,11 @@
 import { useState } from "react";
 import {
   frameSizeFromInseam,
-  heightLookup,
+  inseamFromHeight,
   suggestCrankLength,
   type FrameStyle,
 } from "../lib/frameSize";
-import { Field, NumberInput, Select, Result, Note, Section } from "./ui";
+import { Field, NumberInput, Select, Result, Section } from "./ui";
 
 export function FrameSize() {
   const [mode, setMode] = useState<"inseam" | "height">("inseam");
@@ -13,9 +13,11 @@ export function FrameSize() {
   const [height, setHeight] = useState(178);
   const [style, setStyle] = useState<FrameStyle>("road");
 
-  const result = frameSizeFromInseam({ inseamCm: inseam, style });
-  const crank = suggestCrankLength(inseam);
-  const heightRow = heightLookup(height);
+  // Height is translated to an approximate inseam so both methods use the same
+  // (style-aware) logic.
+  const effectiveInseam = mode === "inseam" ? inseam : inseamFromHeight(height);
+  const result = frameSizeFromInseam({ inseamCm: effectiveInseam, style });
+  const crank = suggestCrankLength(effectiveInseam);
 
   const styleOptions: Array<{ value: FrameStyle; label: string }> = [
     { value: "road", label: "Road / Endurance" },
@@ -63,58 +65,51 @@ export function FrameSize() {
         </div>
       </Section>
 
-      {mode === "inseam" ? (
-        <Section
-          title="Recommendation"
-          info={
-            <>
-              Saddle height is the LeMond estimate (inseam × 0.883), measured from
-              the centre of the bottom bracket to the top of the saddle along the
-              seat tube. Standover should sit a few cm below your inseam (more for
-              MTB).
-            </>
-          }
-        >
-          <div className="results">
-            <Result
-              label={style === "mtb" ? "Frame size" : "Frame size (seat tube c–t)"}
-              value={
-                style === "mtb"
-                  ? `${result.frameInches.toFixed(1)} in`
-                  : `${result.frameCm.toFixed(0)} cm`
-              }
-              big
-            />
-            <Result
-              label="Range"
-              value={
-                style === "mtb"
-                  ? `${(result.frameCmRange[0] / 2.54).toFixed(1)}–${(
-                      result.frameCmRange[1] / 2.54
-                    ).toFixed(1)} in`
-                  : `${result.frameCmRange[0].toFixed(0)}–${result.frameCmRange[1].toFixed(0)} cm`
-              }
-            />
-            <Result label="Nominal" value={result.nominalSize} />
-            <Result label="Saddle height (BB→top)" value={`${result.saddleHeightCm.toFixed(1)} cm`} />
-          </div>
-        </Section>
-      ) : (
-        <Section
-          title="Recommendation (from height table)"
-          info={<>Height-only sizing is rougher than inseam; use it as a first pass.</>}
-        >
-          {heightRow ? (
-            <div className="results">
-              <Result label="Road / endurance" value={`${heightRow.roadCm} cm`} big />
-              <Result label="Mountain" value={heightRow.mtb} />
-              <Result label="Nominal" value={heightRow.nominal} />
-            </div>
-          ) : (
-            <Note tone="warn">Height outside the table range — enter an inseam instead.</Note>
+      <Section
+        title="Recommendation"
+        info={
+          <>
+            {mode === "height" && (
+              <>
+                Body height is translated to an approximate inseam (~47% of
+                height) and then sized like a measured inseam — measuring your
+                inseam is more accurate.{" "}
+              </>
+            )}
+            Saddle height is the LeMond estimate (inseam × 0.883), measured from
+            the centre of the bottom bracket to the top of the saddle along the
+            seat tube. Standover should sit a few cm below your inseam (more for
+            MTB).
+          </>
+        }
+      >
+        <div className="results">
+          <Result
+            label={style === "mtb" ? "Frame size" : "Frame size (seat tube c–t)"}
+            value={
+              style === "mtb"
+                ? `${result.frameInches.toFixed(1)} in`
+                : `${result.frameCm.toFixed(0)} cm`
+            }
+            big
+          />
+          <Result
+            label="Range"
+            value={
+              style === "mtb"
+                ? `${(result.frameCmRange[0] / 2.54).toFixed(1)}–${(
+                    result.frameCmRange[1] / 2.54
+                  ).toFixed(1)} in`
+                : `${result.frameCmRange[0].toFixed(0)}–${result.frameCmRange[1].toFixed(0)} cm`
+            }
+          />
+          <Result label="Nominal" value={result.nominalSize} />
+          <Result label="Saddle height (BB→top)" value={`${result.saddleHeightCm.toFixed(1)} cm`} />
+          {mode === "height" && (
+            <Result label="Est. inseam" value={`≈ ${effectiveInseam.toFixed(0)} cm`} />
           )}
-        </Section>
-      )}
+        </div>
+      </Section>
 
       <Section
         title="Crank length suggestion"

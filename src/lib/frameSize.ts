@@ -52,28 +52,15 @@ function nominalRoadSize(frameCm: number): string {
   return 'XXL';
 }
 
-// --- Height-based lookup ----------------------------------------------------
+// --- Height → inseam --------------------------------------------------------
 
-export interface HeightRow {
-  minCm: number;
-  maxCm: number;
-  roadCm: string;
-  mtb: string;
-  nominal: string;
-}
-
-export const HEIGHT_TABLE: HeightRow[] = [
-  { minCm: 148, maxCm: 152, roadCm: '47-48', mtb: 'XS', nominal: 'XXS' },
-  { minCm: 152, maxCm: 160, roadCm: '48-51', mtb: 'XS-S (13-15")', nominal: 'XS' },
-  { minCm: 160, maxCm: 168, roadCm: '51-53', mtb: 'S (15-16")', nominal: 'S' },
-  { minCm: 168, maxCm: 175, roadCm: '54-55', mtb: 'M (17-18")', nominal: 'M' },
-  { minCm: 175, maxCm: 183, roadCm: '55-57', mtb: 'M-L (18-19")', nominal: 'M-L' },
-  { minCm: 183, maxCm: 190, roadCm: '58-60', mtb: 'L (19-20")', nominal: 'L' },
-  { minCm: 190, maxCm: 198, roadCm: '61-63', mtb: 'XL (21-22")', nominal: 'XL' },
-];
-
-export function heightLookup(heightCm: number): HeightRow | undefined {
-  return HEIGHT_TABLE.find((r) => heightCm >= r.minCm && heightCm < r.maxCm);
+/**
+ * Approximate cycling inseam from body height. Cycling inseam is roughly 47% of
+ * height on average (it varies with build). Used so the height-based path feeds
+ * the same inseam logic as a measured inseam — measuring is still better.
+ */
+export function inseamFromHeight(heightCm: number): number {
+  return heightCm * 0.47;
 }
 
 // --- Crank length -----------------------------------------------------------

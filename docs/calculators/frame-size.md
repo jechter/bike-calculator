@@ -44,34 +44,17 @@ These constants are the widely-used rules of thumb (Hinault/LeMond lineage).
 Sources differ by a few percent; present the result as a small range
 (e.g. ±1 size).
 
-## Height-based sizing tables
+## From body height
 
-When only body height is known, use lookup tables (height → size). Example
-starting points (confirm against a maintained reference before shipping):
+When only body height is known, **translate it to an approximate inseam**
+(cycling inseam ≈ 47% of height) and then run the exact same inseam-based logic
+above. This keeps the two methods **consistent** and makes height sizing
+style-aware too (the old separate height→size table ignored frame style). Show
+the estimated inseam and note that a measured inseam is more accurate.
 
-**Road / endurance (seat tube, cm):**
-
-| Height | Frame size | Nominal |
-|--------|-----------|---------|
-| 155–163 cm | 48–51 cm | XS |
-| 163–170 cm | 51–53 cm | S |
-| 170–178 cm | 54–55 cm | M |
-| 178–185 cm | 56–58 cm | L |
-| 185–193 cm | 58–60 cm | XL |
-| 193–200 cm | 61–63 cm | XXL |
-
-**Mountain (frame, general):**
-
-| Height | Size |
-|--------|------|
-| 155–165 cm | S (15–16") |
-| 165–175 cm | M (17–18") |
-| 175–185 cm | L (19–20") |
-| 185–195 cm | XL (21–22") |
-
-Hybrid/city and gravel fall between these; gravel typically tracks road sizing,
-hybrids track MTB-ish sizing. Keep these tables in a single data module so they
-are easy to update, and cite the source.
+```
+inseam_cm ≈ height_cm × 0.47
+```
 
 ## Crank length suggestion
 

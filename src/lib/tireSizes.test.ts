@@ -14,10 +14,21 @@ describe("parseTireSize", () => {
     expect(parseTireSize("700C x 25")).toEqual({ iso: 622, widthMm: 25 });
   });
 
-  it("parses MTB decimal and 650B", () => {
-    expect(parseTireSize("26x2.1")).toEqual({ iso: 559, widthMm: 53 });
-    expect(parseTireSize("27.5x2.4")).toEqual({ iso: 584, widthMm: 61 });
+  it("parses MTB decimal and 650B (decimal width kept precise)", () => {
+    const a = parseTireSize("26x2.1")!;
+    expect(a.iso).toBe(559);
+    expect(a.widthMm).toBeCloseTo(53.34, 2);
+    const b = parseTireSize("27.5x2.4")!;
+    expect(b.iso).toBe(584);
+    expect(b.widthMm).toBeCloseTo(60.96, 2);
     expect(parseTireSize("650b x 47")).toEqual({ iso: 584, widthMm: 47 });
+  });
+
+  it("round-trips a decimal input exactly (no 2.1 -> 2.09 drift)", () => {
+    const p = parseTireSize("26x2.1")!;
+    const map = Object.fromEntries(formatDesignations(p.iso, p.widthMm).map((x) => [x.format, x.value]));
+    expect(map["Inch (decimal)"]).toBe("26 × 2.1″");
+    expect(map["ETRTO / ISO"]).toBe("53-559");
   });
 
   it("disambiguates fractional inch by width", () => {

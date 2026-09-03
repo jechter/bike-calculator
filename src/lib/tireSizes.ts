@@ -188,11 +188,12 @@ export function parseTireSize(raw: string): ParsedTire | null {
     if (iso) return { iso, widthMm: Math.round(+m[3]) };
   }
 
-  // Inch decimal: 26x2.1, 27.5x2.4, 29x2.3
+  // Inch decimal: 26x2.1, 27.5x2.4, 29x2.3. Keep the width precise (unrounded)
+  // so a decimal input round-trips back to exactly what was typed.
   m = s.match(/^(\d{2}(?:\.\d)?)\s*x\s*(\d(?:\.\d+)?)$/);
   if (m) {
     const iso = DECIMAL_DIA_ISO[m[1]];
-    if (iso) return { iso, widthMm: Math.round(+m[2] * 25.4) };
+    if (iso) return { iso, widthMm: +m[2] * 25.4 };
   }
 
   return null;
@@ -239,7 +240,10 @@ export function formatDesignations(iso: number, widthMm: number): Designation[] 
       if (d.format === "french") {
         out.push({ format: "French", value: `${d.dia} × ${w}${d.letter ?? ""}` });
       } else {
-        out.push({ format: "Inch (decimal)", value: `${d.dia} × ${(widthMm / 25.4).toFixed(2)}″` });
+        // trim a trailing zero (2.10 -> 2.1) but keep at least one decimal
+        let dec = (widthMm / 25.4).toFixed(2);
+        if (dec.endsWith("0")) dec = dec.slice(0, -1);
+        out.push({ format: "Inch (decimal)", value: `${d.dia} × ${dec}″` });
       }
     }
   }

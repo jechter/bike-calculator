@@ -127,7 +127,7 @@ export function Tire() {
             <NumberInput value={frontPct} onChange={setFrontPct} suffix="%" min={30} max={55} />
           </Field>
           <Field label="Tire width" hint={parsed ? "from the size above" : "enter a size above"}>
-            <div className="static-value">{pressureWidth} mm</div>
+            <div className="static-value">{Math.round(pressureWidth)} mm</div>
           </Field>
           <Field label="Tube type">
             <Select

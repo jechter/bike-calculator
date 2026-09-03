@@ -128,23 +128,31 @@ export const CHAIN_WEAR_THRESHOLDS: ChainWearThreshold[] = [
     note: 'Standard derailleur drivetrains.',
   },
   {
-    chainType: 'Single speed / internally geared (1/8")',
+    chainType: 'Single speed, narrow (3/32")',
+    replaceAtPercent: 0.75,
+    note: 'A derailleur-width chain run single speed — wears like a geared chain.',
+  },
+  {
+    chainType: 'Single speed / hub, wide (1/8")',
     replaceAtPercent: 1.0,
-    note: 'Wider, more wear-tolerant chains.',
+    note: 'Thicker, more wear-tolerant chain (track / BMX / most hub-geared).',
   },
 ];
 
 /**
- * Pick the replacement threshold for the current drivetrain. Cassette speed
- * count is inferred from the number of cogs; single-speed and hub-geared bikes
- * use the wider 1/8"-style chain row.
+ * Replacement thresholds relevant to the current drivetrain. A cassette resolves
+ * to a single row (speed inferred from the cog count). Single-speed and
+ * hub-geared bikes can run either a narrow 3/32" or a wide 1/8" chain, so both
+ * rows are returned to pick from.
  */
-export function chainWearThresholdFor(
+export function chainWearThresholdsFor(
   isDerailleurCassette: boolean,
   cogCount: number,
-): ChainWearThreshold {
-  if (!isDerailleurCassette) return CHAIN_WEAR_THRESHOLDS[2];
-  return cogCount >= 11 ? CHAIN_WEAR_THRESHOLDS[0] : CHAIN_WEAR_THRESHOLDS[1];
+): ChainWearThreshold[] {
+  if (isDerailleurCassette) {
+    return [cogCount >= 11 ? CHAIN_WEAR_THRESHOLDS[0] : CHAIN_WEAR_THRESHOLDS[1]];
+  }
+  return [CHAIN_WEAR_THRESHOLDS[2], CHAIN_WEAR_THRESHOLDS[3]];
 }
 
 // --- Common presets ---------------------------------------------------------

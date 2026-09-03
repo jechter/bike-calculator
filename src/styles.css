@@ -214,6 +214,24 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .inline-link { color: var(--accent); text-decoration: none; }
 .inline-link:hover { text-decoration: underline; }
 
+/* Gear chart */
+.chart-controls { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.chart-controls .field { margin-bottom: 0; }
+.chart-controls .result { padding: 6px 12px; }
+.gear-chart {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 4px;
+  overflow-x: auto;
+}
+.gc-grid { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 4; }
+.gc-tick { fill: var(--muted); font-size: 12px; }
+.gc-axis-label { fill: var(--muted); font-size: 12px; font-weight: 600; }
+.gc-row-label { fill: var(--text); font-size: 13px; font-weight: 700; }
+.gc-row-line { stroke-width: 2; opacity: 0.5; }
+.gc-pt-label { fill: var(--muted); font-size: 10px; }
+
 .hamburger { display: none; }
 
 /* Responsive */

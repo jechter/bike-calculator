@@ -3,7 +3,7 @@ import {
   computeGears,
   chainLength,
   gearRange,
-  chainWearThresholdFor,
+  chainWearThresholdsFor,
 } from './drivetrain';
 
 describe('computeGears', () => {
@@ -60,17 +60,17 @@ describe('gearRange', () => {
   });
 });
 
-describe('chainWearThresholdFor', () => {
-  it('11/12-speed cassette -> 0.5%', () => {
-    expect(chainWearThresholdFor(true, 12).replaceAtPercent).toBe(0.5);
-    expect(chainWearThresholdFor(true, 11).replaceAtPercent).toBe(0.5);
+describe('chainWearThresholdsFor', () => {
+  it('11/12-speed cassette -> single 0.5% row', () => {
+    expect(chainWearThresholdsFor(true, 12).map((t) => t.replaceAtPercent)).toEqual([0.5]);
+    expect(chainWearThresholdsFor(true, 11).map((t) => t.replaceAtPercent)).toEqual([0.5]);
   });
-  it('6-10 speed cassette -> 0.75%', () => {
-    expect(chainWearThresholdFor(true, 10).replaceAtPercent).toBe(0.75);
-    expect(chainWearThresholdFor(true, 8).replaceAtPercent).toBe(0.75);
+  it('6-10 speed cassette -> single 0.75% row', () => {
+    expect(chainWearThresholdsFor(true, 10).map((t) => t.replaceAtPercent)).toEqual([0.75]);
+    expect(chainWearThresholdsFor(true, 8).map((t) => t.replaceAtPercent)).toEqual([0.75]);
   });
-  it('single speed / hub -> 1.0%', () => {
-    expect(chainWearThresholdFor(false, 1).replaceAtPercent).toBe(1.0);
+  it('single speed / hub -> both narrow (0.75%) and wide (1.0%) rows', () => {
+    expect(chainWearThresholdsFor(false, 1).map((t) => t.replaceAtPercent)).toEqual([0.75, 1.0]);
   });
 });
 

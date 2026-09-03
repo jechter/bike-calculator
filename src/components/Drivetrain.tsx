@@ -3,17 +3,20 @@ import {
   CASSETTE_PRESETS,
   CHAINRING_PRESETS,
   HUB_PRESETS,
-  chainWearThresholdFor,
+  chainWearThresholdsFor,
   computeGears,
   gearRange,
   chainLength,
+  type GearResult,
   type HubGear,
 } from "../lib/drivetrain";
 import { TIRE_PRESETS } from "../lib/wheels";
 import { kmhToMph } from "../lib/units";
 import { Field, NumberInput, TextInput, Select, PresetMenu, Result, Note, Section } from "./ui";
+import { GearChart } from "./GearChart";
 
 type Mode = "cassette" | "single" | "hub";
+type Metric = "speed" | "gearInches" | "development" | "ratio";
 
 function parseList(s: string): number[] {
   return s
@@ -48,6 +51,7 @@ export function Drivetrain() {
   const [circ, setCirc] = useState(2111);
   const [cadence, setCadence] = useState(90);
   const [showMph, setShowMph] = useState(false);
+  const [metric, setMetric] = useState<Metric>("speed");
 
   const [chainstay, setChainstay] = useState(410);
 
@@ -75,9 +79,30 @@ export function Drivetrain() {
   const largestRing = Math.max(...chainrings, 0);
   const largestCog = Math.max(...cogs, 0);
   const chain = chainLength({ chainstayMm: chainstay, largestChainring: largestRing, largestCog });
-  const wearThreshold = chainWearThresholdFor(mode === "cassette", cogs.length);
+  const wearThresholds = chainWearThresholdsFor(mode === "cassette", cogs.length);
 
   const sliderCadence = Math.min(120, Math.max(60, cadence || 60));
+
+  // Axis definitions for the gear chart.
+  const metricDefs: Record<
+    Metric,
+    { label: string; value: (g: GearResult) => number; format: (v: number) => string }
+  > = {
+    speed: {
+      label: `Speed (${speedUnit})`,
+      value: (g) => speed(g.speedKmh),
+      format: (v) => v.toFixed(1),
+    },
+    gearInches: { label: "Gear inches", value: (g) => g.gearInches, format: (v) => v.toFixed(0) },
+    development: {
+      label: "Development (m)",
+      value: (g) => g.developmentM,
+      format: (v) => v.toFixed(2),
+    },
+    ratio: { label: "Gear ratio", value: (g) => g.ratio, format: (v) => v.toFixed(2) },
+  };
+  const activeMetric = metricDefs[metric];
+  const pointLabel = (g: GearResult) => (g.hubGear ? g.hubGear.name : String(g.cog));
 
   return (
     <>
@@ -190,46 +215,44 @@ export function Drivetrain() {
       </Section>
 
       <Section title="Gears">
-        <div className="results" style={{ marginBottom: 14 }}>
+        <div className="chart-controls">
+          <Field label="Show gears by">
+            <Select<Metric>
+              value={metric}
+              onChange={setMetric}
+              options={[
+                { value: "speed", label: `Speed at ${cadence || 90} rpm` },
+                { value: "gearInches", label: "Gear inches" },
+                { value: "development", label: "Development (m)" },
+                { value: "ratio", label: "Gear ratio" },
+              ]}
+            />
+          </Field>
+          {metric === "speed" && (
+            <button className="chip" onClick={() => setShowMph((v) => !v)}>
+              {speedUnit} — switch to {showMph ? "km/h" : "mph"}
+            </button>
+          )}
           <Result label="Gears" value={gears.length} />
-          <Result label="Gear range" value={`${range.toFixed(2)}× (${Math.round((range - 1) * 100)}%)`} />
-          <Result
-            label="Speed units"
-            value={
-              <button className="chip" onClick={() => setShowMph((v) => !v)}>
-                {speedUnit} — switch
-              </button>
-            }
-          />
+          <Result label="Range" value={`${range.toFixed(2)}× (${Math.round((range - 1) * 100)}%)`} />
         </div>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Ring</th>
-                <th>Cog</th>
-                {mode === "hub" && <th>Hub</th>}
-                <th className="num">Ratio</th>
-                <th className="num">Gear in.</th>
-                <th className="num">Dev (m)</th>
-                <th className="num">Speed ({speedUnit})</th>
-              </tr>
-            </thead>
-            <tbody>
-              {gears.map((g, i) => (
-                <tr key={i}>
-                  <td>{g.chainring}</td>
-                  <td>{g.cog}</td>
-                  {mode === "hub" && <td>{g.hubGear?.name}</td>}
-                  <td className="num">{g.ratio.toFixed(2)}</td>
-                  <td className="num">{g.gearInches.toFixed(1)}</td>
-                  <td className="num">{g.developmentM.toFixed(2)}</td>
-                  <td className="num">{speed(g.speedKmh).toFixed(1)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+
+        <GearChart
+          gears={gears}
+          value={activeMetric.value}
+          format={activeMetric.format}
+          axisLabel={activeMetric.label}
+          pointLabel={pointLabel}
+        />
+
+        <Note>
+          One line per chainring; each dot is a {mode === "hub" ? "hub gear" : "cog"}{" "}
+          (labelled with its {mode === "hub" ? "gear" : "tooth count"}), hover for
+          detail. <strong>Gear inches</strong> = the drive-wheel diameter (in) of an
+          equivalent direct-drive high-wheeler — a wheel-size-independent way to
+          compare gears; bigger = taller/harder. <strong>Development</strong> is
+          metres travelled per pedal revolution.
+        </Note>
       </Section>
 
       <Section title="Chain length">
@@ -264,15 +287,33 @@ export function Drivetrain() {
       </Section>
 
       <Section title="Chain wear — when to replace">
-        <div className="results">
-          <Result label="Your chain type" value={wearThreshold.chainType} />
-          <Result label="Replace at" value={`${wearThreshold.replaceAtPercent.toFixed(2)}%`} big />
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Chain type</th>
+                <th className="num">Replace at</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {wearThresholds.map((t) => (
+                <tr key={t.chainType}>
+                  <td>{t.chainType}</td>
+                  <td className="num">{t.replaceAtPercent.toFixed(2)}%</td>
+                  <td>{t.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
         <Note>
-          Measured at the bench with a chain-wear gauge. Shown for your current
-          drivetrain{mode === "cassette" ? ` (${cogs.length}-speed)` : ""}.
-          Narrower chains wear the cassette faster, so they get replaced earlier;
-          past the threshold the cassette may skip with a new chain.
+          Measured at the bench with a chain-wear gauge.{" "}
+          {mode === "cassette"
+            ? `Shown for your ${cogs.length}-speed cassette.`
+            : "Single-speed and hub bikes can run a narrow 3/32\" or wide 1/8\" chain — pick the row matching your chain."}{" "}
+          Past the threshold the cassette (and possibly chainrings) may skip with a
+          new chain.
         </Note>
       </Section>
     </>

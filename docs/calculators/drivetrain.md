@@ -78,10 +78,16 @@ per-gear overall ratio and speed, plus the **total gear range**
   `speed_kmh = ratio × circumference_m × cadence_rpm × 60 / 1000`.
 - **Chain length** (see below).
 
-Present the ratio/speed data as a **grid** (chainrings as rows, cogs as columns)
-and highlight useful things: duplicate/overlapping gears between chainrings, the
-overall gear range (`highest ratio / lowest ratio`), and any large jumps between
-adjacent gears.
+Present the gears as a **visualization**, not a table: a horizontal axis (the
+chosen metric — speed at cadence, gear inches, development, or ratio) with **one
+line per chainring** and a dot per gear (labelled with its cog / hub gear). This
+makes overlaps and gaps between chainrings, and the overall range, obvious at a
+glance. Also show the gear count and range (`highest ratio / lowest ratio`).
+
+> **Gear inches** (offered as a chart axis) = the drive-wheel diameter, in inches,
+> of an equivalent direct-drive high-wheeler — a wheel-size-independent way to
+> compare gearing; bigger = taller/harder. It's a classic metric but niche, hence
+> it's one of several selectable axes rather than the default (speed is default).
 
 ## Formulas
 
@@ -153,11 +159,15 @@ single-speed/hub bikes use the 1/8" row.
 |-----------|-----------|
 | 11- & 12-speed | 0.5% |
 | 6- to 10-speed | 0.75% |
-| Single speed / internally geared (1/8") | 1.0% |
+| Single speed, narrow (3/32") | 0.75% |
+| Single speed / hub, wide (1/8") | 1.0% |
 
-Narrower chains wear the cassette faster, so they get replaced earlier. Past the
-threshold the cassette (and possibly chainrings) are likely worn too and may skip
-with a new chain.
+For a **cassette** the app shows the one row matching the cog count. For
+**single-speed / hub** setups it shows **both** the narrow (3/32", derailleur-width
+— wears like a geared chain) and wide (1/8", track/BMX/most hubs) rows, since
+either can be fitted; the user picks the one matching their chain. Narrower chains
+wear faster, so they get replaced earlier; past the threshold the cassette (and
+possibly chainrings) may skip with a new chain.
 
 ## Worked example
 

@@ -179,8 +179,8 @@ export function WheelBuilding() {
         }
       >
         <div className="results" style={{ marginBottom: 16 }}>
-          <Result label="Left / non-drive" value={`${left.toFixed(1)} mm`} big />
-          <Result label="Right / drive" value={`${right.toFixed(1)} mm`} big />
+          <Result label="Left / non-drive" value={`${left.toFixed(1)} mm`} big accent="left" />
+          <Result label="Right / drive" value={`${right.toFixed(1)} mm`} big accent="right" />
         </div>
         <WheelDiagram
           erdMm={erd}

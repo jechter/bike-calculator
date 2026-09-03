@@ -136,9 +136,21 @@ export function Select<T extends string | number>(props: {
   );
 }
 
-export function Result(props: { label: string; value: React.ReactNode; big?: boolean }) {
+export function Result(props: {
+  label: string;
+  value: React.ReactNode;
+  big?: boolean;
+  /** Optional side colour accent (matches the wheel diagram). */
+  accent?: "left" | "right";
+}) {
   return (
-    <div className={"result" + (props.big ? " result-big" : "")}>
+    <div
+      className={
+        "result" +
+        (props.big ? " result-big" : "") +
+        (props.accent ? ` result-accent-${props.accent}` : "")
+      }
+    >
       <div className="result-label">{props.label}</div>
       <div className="result-value">{props.value}</div>
     </div>

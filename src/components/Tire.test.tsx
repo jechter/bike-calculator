@@ -21,6 +21,14 @@ describe("Tire converter", () => {
     expect(container.textContent).toContain("53-559");
   });
 
+  it("uses the entered tire width for the pressure recommendation", () => {
+    const { container } = render(<Tire />); // 700x28C
+    expect(container.querySelector(".static-value")?.textContent).toBe("28 mm");
+    const input = container.querySelector('input[type="text"]') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "700x45C" } });
+    expect(container.querySelector(".static-value")?.textContent).toBe("45 mm");
+  });
+
   it("shows a hint for unrecognized input", () => {
     const { container, getByText } = render(<Tire />);
     const input = container.querySelector('input[type="text"]') as HTMLInputElement;

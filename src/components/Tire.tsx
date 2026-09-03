@@ -18,17 +18,17 @@ export function Tire() {
   const outer = parsed ? estimatedOuterDiameterMm(parsed.iso, parsed.widthMm) : 0;
   const circ = parsed ? estimatedCircumferenceMm(parsed.iso, parsed.widthMm) : 0;
 
-  // Pressure
+  // Pressure — tire width comes from the size entered above (one source of truth).
   const [weight, setWeight] = useState(82);
   const [frontPct, setFrontPct] = useState(45);
-  const [pWidth, setPWidth] = useState(28);
   const [tube, setTube] = useState<TubeType>("tube");
   const [surface, setSurface] = useState<Surface>("smooth");
 
+  const pressureWidth = parsed?.widthMm ?? 28;
   const pressure = recommendTirePressure({
     systemWeightKg: weight,
     frontLoadFraction: frontPct / 100,
-    tireWidthMm: pWidth,
+    tireWidthMm: pressureWidth,
     tubeType: tube,
     surface,
   });
@@ -126,8 +126,8 @@ export function Tire() {
           <Field label="Front weight share">
             <NumberInput value={frontPct} onChange={setFrontPct} suffix="%" min={30} max={55} />
           </Field>
-          <Field label="Tire width">
-            <NumberInput value={pWidth} onChange={setPWidth} suffix="mm" min={18} max={80} />
+          <Field label="Tire width" hint={parsed ? "from the size above" : "enter a size above"}>
+            <div className="static-value">{pressureWidth} mm</div>
           </Field>
           <Field label="Tube type">
             <Select

@@ -60,6 +60,14 @@ npm run preview  # preview the production build
 npm test         # run the calculation unit tests (Vitest)
 ```
 
+For a quick visual check of a page (headless Chrome via `puppeteer-core`; set
+`CHROME_PATH` to override the browser):
+
+```bash
+npm run build && npm run preview -- --port 4320 &
+npm run screenshot -- '#/drivetrain' out.png '.gc-dot'   # route, output, optional hover selector
+```
+
 The build is a static site (`dist/`) that can be hosted anywhere or opened
 offline; `vite.config.ts` uses a relative base so it works from any subpath.
 

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach } from "vitest";
-import { render, cleanup, fireEvent } from "@testing-library/react";
+import { render, cleanup, fireEvent, within } from "@testing-library/react";
 import { Drivetrain } from "./Drivetrain";
 
 afterEach(cleanup);
@@ -22,22 +22,44 @@ describe("Drivetrain page", () => {
     // 2 rings x 10 cogs = 20 dots, all at finite positions (no NaN geometry)
     const dots = Array.from(container.querySelectorAll(".gear-chart circle"));
     expect(dots.length).toBe(20);
+    const cxs = dots.map((d) => parseFloat(d.getAttribute("cx")!));
     for (const d of dots) {
       expect(Number.isFinite(parseFloat(d.getAttribute("cx")!))).toBe(true);
       expect(Number.isFinite(parseFloat(d.getAttribute("cy")!))).toBe(true);
     }
+    // First/last gridlines align with the lowest/highest gear dots
+    const gridXs = Array.from(container.querySelectorAll(".gc-grid")).map((l) =>
+      parseFloat(l.getAttribute("x1")!),
+    );
+    expect(Math.min(...cxs)).toBeCloseTo(Math.min(...gridXs), 3);
+    expect(Math.max(...cxs)).toBeCloseTo(Math.max(...gridXs), 3);
     // no gain-ratio anywhere
     expect(container.textContent).not.toMatch(/Gain/);
   });
 
-  it("lets you switch the chart axis metric", () => {
+  it("switches the chart axis via the in-chart dropdown (incl. km/h vs mph)", () => {
     const { container } = render(<Drivetrain />);
-    const metricSelect = Array.from(container.querySelectorAll("select")).find((s) =>
-      Array.from(s.options).some((o) => o.textContent === "Gear inches"),
-    ) as HTMLSelectElement;
-    expect(metricSelect).toBeTruthy();
-    fireEvent.change(metricSelect, { target: { value: "gearInches" } });
-    expect(metricSelect.value).toBe("gearInches");
+    const axisBtn = container.querySelector(".gc-axis-btn") as HTMLButtonElement;
+    expect(axisBtn.textContent).toMatch(/Speed at 90 rpm \(km\/h\)/);
+    // km/h and mph are options in the same dropdown, not a separate toggle
+    fireEvent.click(axisBtn);
+    const list = container.querySelector(".gc-axis-list") as HTMLElement;
+    expect(within(list).getByText(/Speed at 90 rpm \(mph\)/)).toBeTruthy();
+    fireEvent.click(within(list).getByText("Gear inches"));
+    expect((container.querySelector(".gc-axis-btn") as HTMLElement).textContent).toMatch(
+      /Gear inches/,
+    );
+  });
+
+  it("shows a hover tooltip with a gear's exact values", () => {
+    const { container } = render(<Drivetrain />);
+    const dot = container.querySelector(".gc-dot") as SVGCircleElement;
+    fireEvent.mouseEnter(dot, { clientX: 100, clientY: 100 });
+    const tip = container.querySelector(".gc-tooltip");
+    expect(tip).toBeTruthy();
+    expect(tip!.textContent).toMatch(/Ratio/);
+    expect(tip!.textContent).toMatch(/Gear inches/);
+    expect(tip!.textContent).toMatch(/km\/h/);
   });
 
   it("fills the cassette field from the preset popup button", () => {

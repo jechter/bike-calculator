@@ -152,28 +152,41 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 /* Full-width stacked rows (fields that should never share a line) */
 .rows { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; max-width: 520px; }
 
-/* Editable input with an attached preset "fill" button */
-.input-with-preset { display: flex; align-items: stretch; gap: 6px; }
-.input-with-preset > .number-input,
-.input-with-preset > input[type="text"] { flex: 1; }
-
-.preset-menu { position: relative; flex: none; }
-.preset-btn {
-  height: 100%;
-  min-width: 38px;
-  padding: 0 10px;
+/* Combobox: an editable field with an integrated preset dropdown caret.
+   The wrapper carries the border; the input and caret sit inside it. */
+.combo {
+  display: flex;
+  align-items: stretch;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--panel-2);
-  color: var(--text);
+  background: var(--panel);
+}
+.combo:focus-within { border-color: var(--accent); }
+.combo > input[type="text"],
+.combo > .number-input { flex: 1; min-width: 0; }
+.combo > input[type="text"],
+.combo .number-input input {
+  border: none;
+  background: transparent;
+}
+.combo > input[type="text"]:focus,
+.combo .number-input input:focus { outline: none; }
+.combo .number-input { align-items: center; padding-right: 2px; }
+
+.preset-menu { position: relative; flex: none; display: flex; }
+.preset-btn {
+  border: none;
+  background: transparent;
+  color: var(--muted);
   cursor: pointer;
-  font-size: 13px;
-  line-height: 1;
+  padding: 0 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-size: 12px;
+  border-left: 1px solid var(--border);
 }
-.preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+.preset-btn:hover { color: var(--accent); }
 .preset-btn .caret { transition: transform 0.15s ease; }
 .preset-btn.open .caret { transform: rotate(180deg); }
 .preset-list {
@@ -219,18 +232,55 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .chart-controls .field { margin-bottom: 0; }
 .chart-controls .result { padding: 6px 12px; }
 .gear-chart {
+  position: relative;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 8px 4px;
-  overflow-x: auto;
 }
+.gc-scroll { overflow-x: auto; }
 .gc-grid { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 4; }
 .gc-tick { fill: var(--muted); font-size: 12px; }
-.gc-axis-label { fill: var(--muted); font-size: 12px; font-weight: 600; }
 .gc-row-label { fill: var(--text); font-size: 13px; font-weight: 700; }
 .gc-row-line { stroke-width: 2; opacity: 0.5; }
 .gc-pt-label { fill: var(--muted); font-size: 10px; }
+.gc-dot { cursor: pointer; }
+.gc-dot:hover { stroke: var(--panel); stroke-width: 3; }
+
+/* In-chart axis label + metric dropdown */
+.gc-axis { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; }
+.gc-axis-caption { color: var(--muted); font-size: 13px; }
+.gc-axis-menu { position: relative; }
+.gc-axis-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--panel); color: var(--text);
+  font: inherit; font-size: 13px; font-weight: 600;
+  padding: 6px 10px; cursor: pointer;
+}
+.gc-axis-btn:hover { border-color: var(--accent); }
+.gc-axis-btn .caret { color: var(--muted); transition: transform 0.15s ease; }
+.gc-axis-btn.open .caret { transform: rotate(180deg); }
+.gc-axis-list { left: 50%; right: auto; transform: translateX(-50%); min-width: 240px; }
+.preset-list button.active { color: var(--accent); font-weight: 600; }
+
+/* Hover tooltip for a gear dot */
+.gc-tooltip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 14px));
+  pointer-events: none;
+  z-index: 30;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  padding: 8px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.gc-tt-title { font-weight: 700; margin-bottom: 4px; }
+.gc-tt-row { display: flex; justify-content: space-between; gap: 18px; }
+.gc-tt-row span { color: var(--muted); }
 
 .hamburger { display: none; }
 

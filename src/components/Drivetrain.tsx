@@ -16,7 +16,7 @@ import { Field, NumberInput, TextInput, Select, PresetMenu, Result, Note, Sectio
 import { GearChart } from "./GearChart";
 
 type Mode = "cassette" | "single" | "hub";
-type Metric = "speed" | "gearInches" | "development" | "ratio";
+type Metric = "speedKmh" | "speedMph" | "gearInches" | "development" | "ratio";
 
 function parseList(s: string): number[] {
   return s
@@ -50,8 +50,7 @@ export function Drivetrain() {
   const [hubIdx, setHubIdx] = useState(0);
   const [circ, setCirc] = useState(2111);
   const [cadence, setCadence] = useState(90);
-  const [showMph, setShowMph] = useState(false);
-  const [metric, setMetric] = useState<Metric>("speed");
+  const [metric, setMetric] = useState<Metric>("speedKmh");
 
   const [chainstay, setChainstay] = useState(410);
 
@@ -73,8 +72,6 @@ export function Drivetrain() {
   );
 
   const range = gearRange(gears);
-  const speed = (kmh: number) => (showMph ? kmhToMph(kmh) : kmh);
-  const speedUnit = showMph ? "mph" : "km/h";
 
   const largestRing = Math.max(...chainrings, 0);
   const largestCog = Math.max(...cogs, 0);
@@ -83,24 +80,35 @@ export function Drivetrain() {
 
   const sliderCadence = Math.min(120, Math.max(60, cadence || 60));
 
-  // Axis definitions for the gear chart.
+  // Axis definitions for the gear chart. The km/h vs mph choice is folded in as
+  // two speed options rather than a separate toggle.
+  const rpm = cadence || 90;
   const metricDefs: Record<
     Metric,
     { label: string; value: (g: GearResult) => number; format: (v: number) => string }
   > = {
-    speed: {
-      label: `Speed (${speedUnit})`,
-      value: (g) => speed(g.speedKmh),
+    speedKmh: {
+      label: `Speed at ${rpm} rpm (km/h)`,
+      value: (g) => g.speedKmh,
+      format: (v) => v.toFixed(1),
+    },
+    speedMph: {
+      label: `Speed at ${rpm} rpm (mph)`,
+      value: (g) => kmhToMph(g.speedKmh),
       format: (v) => v.toFixed(1),
     },
     gearInches: { label: "Gear inches", value: (g) => g.gearInches, format: (v) => v.toFixed(0) },
     development: {
-      label: "Development (m)",
+      label: "Development (m/rev)",
       value: (g) => g.developmentM,
       format: (v) => v.toFixed(2),
     },
     ratio: { label: "Gear ratio", value: (g) => g.ratio, format: (v) => v.toFixed(2) },
   };
+  const metricOptions = (Object.keys(metricDefs) as Metric[]).map((k) => ({
+    value: k,
+    label: metricDefs[k].label,
+  }));
   const activeMetric = metricDefs[metric];
   const pointLabel = (g: GearResult) => (g.hubGear ? g.hubGear.name : String(g.cog));
 
@@ -123,7 +131,7 @@ export function Drivetrain() {
           {mode === "cassette" && (
             <>
               <Field label="Chainrings" hint="comma-separated tooth counts">
-                <div className="input-with-preset">
+                <div className="combo">
                   <TextInput value={chainringStr} onChange={setChainringStr} />
                   <PresetMenu
                     title="Fill from a common crankset"
@@ -133,7 +141,7 @@ export function Drivetrain() {
                 </div>
               </Field>
               <Field label="Cassette cogs" hint="comma-separated tooth counts">
-                <div className="input-with-preset">
+                <div className="combo">
                   <TextInput value={cogStr} onChange={setCogStr} />
                   <PresetMenu
                     title="Fill from a cassette preset"
@@ -188,7 +196,7 @@ export function Drivetrain() {
               </>
             }
           >
-            <div className="input-with-preset">
+            <div className="combo">
               <NumberInput value={circ} onChange={setCirc} suffix="mm" min={800} />
               <PresetMenu
                 title="Fill from a tyre size (ETRTO)"
@@ -216,42 +224,27 @@ export function Drivetrain() {
 
       <Section title="Gears">
         <div className="chart-controls">
-          <Field label="Show gears by">
-            <Select<Metric>
-              value={metric}
-              onChange={setMetric}
-              options={[
-                { value: "speed", label: `Speed at ${cadence || 90} rpm` },
-                { value: "gearInches", label: "Gear inches" },
-                { value: "development", label: "Development (m)" },
-                { value: "ratio", label: "Gear ratio" },
-              ]}
-            />
-          </Field>
-          {metric === "speed" && (
-            <button className="chip" onClick={() => setShowMph((v) => !v)}>
-              {speedUnit} — switch to {showMph ? "km/h" : "mph"}
-            </button>
-          )}
           <Result label="Gears" value={gears.length} />
           <Result label="Range" value={`${range.toFixed(2)}× (${Math.round((range - 1) * 100)}%)`} />
         </div>
 
         <GearChart
           gears={gears}
+          metric={metric}
+          options={metricOptions}
+          onMetricChange={(v) => setMetric(v as Metric)}
           value={activeMetric.value}
           format={activeMetric.format}
-          axisLabel={activeMetric.label}
           pointLabel={pointLabel}
         />
 
         <Note>
           One line per chainring; each dot is a {mode === "hub" ? "hub gear" : "cog"}{" "}
-          (labelled with its {mode === "hub" ? "gear" : "tooth count"}), hover for
-          detail. <strong>Gear inches</strong> = the drive-wheel diameter (in) of an
-          equivalent direct-drive high-wheeler — a wheel-size-independent way to
-          compare gears; bigger = taller/harder. <strong>Development</strong> is
-          metres travelled per pedal revolution.
+          (labelled with its {mode === "hub" ? "gear" : "tooth count"}) — hover a dot
+          for its exact values. <strong>Gear inches</strong> = the drive-wheel
+          diameter (in) of an equivalent direct-drive high-wheeler — a
+          wheel-size-independent way to compare gears; bigger = taller/harder.
+          <strong> Development</strong> is metres travelled per pedal revolution.
         </Note>
       </Section>
 

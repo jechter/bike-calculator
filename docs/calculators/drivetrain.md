@@ -12,10 +12,12 @@ worn chain.
   - **Single speed / fixed**: one chainring × one cog (see below).
   - **Internally geared hub (IGH)**: chainring × sprocket, then multiplied by the
     hub's internal gear ratios (see below).
-- **Chainrings**: list of tooth counts, e.g. `50, 34` or `48` for 1×.
+- **Chainrings**: list of tooth counts, e.g. `50, 34` or `48` for 1×. An
+  editable field with a preset button for **common cranksets** (compact 50/34,
+  standard 53/39, sub-compact, gravel 2×, triples, 1× options).
   (Single speed / IGH: a single chainring.)
 - **Cassette/cogs**: list of tooth counts, e.g. `11, 12, 13, 14, 15, 17, 19,
-  21, 24, 28`. Allow entering a range or a common cassette preset (11–28,
+  21, 24, 28`. Editable field with a preset button for common cassettes (11–28,
   11–34, 10–52, etc.). (Single speed / IGH: a single sprocket.)
 - **Rolling circumference** (mm): an editable field with a small preset button
   that fills it from a tyre size (labelled by **ETRTO**, e.g. `25-622`). A
@@ -118,6 +120,15 @@ Report the result to the user in **mm** (`links × 12.7`, i.e. `inches × 25.4`)
 and as a **link count** (`links = inches × 2`) — links being what you actually
 cut. The formula is inch-based internally only.
 
+> **Only shown for a derailleur (cassette) setup.** The `+ 1` term is the
+> rear-derailleur wrap, so this formula does **not** apply to single-speed or
+> hub-geared bikes — there's no cage to take up slack. For those, chain length
+> is set by the dropout/tensioner position: wrap the chain snug around ring and
+> cog and pick the shortest link that lets the wheel sit within its adjustment
+> range at correct tension; a half-link fine-tunes horizontal/track dropouts,
+> and a tensioner is used with vertical dropouts. The app shows this guidance
+> instead of a (misleading) number for single speed / IGH.
+
 **2. Largest-largest ("big-big") method:**
 
 Wrap the chain around the largest chainring and largest cog **without** routing
@@ -133,9 +144,10 @@ the procedure and, if the user enters the measured big-big link count, add 2.
 ## Chain wear — when to replace
 
 We do **not** calculate chain wear — in the workshop that's measured directly
-with a chain-wear gauge. This section is just the **replacement-threshold
-reference**, since the %-elongation at which to replace depends on chain type.
-Narrower chains wear the cassette faster, so they get replaced earlier.
+with a chain-wear gauge. This is just the **replace-at threshold**, which depends
+on chain type. Since the drivetrain is already known, the app shows only the
+relevant one: the cassette's cog count gives the speed (→ 0.5% or 0.75%), and
+single-speed/hub bikes use the 1/8" row.
 
 | Chain type | Replace at |
 |-----------|-----------|
@@ -143,8 +155,9 @@ Narrower chains wear the cassette faster, so they get replaced earlier.
 | 6- to 10-speed | 0.75% |
 | Single speed / internally geared (1/8") | 1.0% |
 
-Past the threshold the cassette (and possibly chainrings) are likely worn too and
-may skip with a new chain.
+Narrower chains wear the cassette faster, so they get replaced earlier. Past the
+threshold the cassette (and possibly chainrings) are likely worn too and may skip
+with a new chain.
 
 ## Worked example
 

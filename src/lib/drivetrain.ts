@@ -134,7 +134,41 @@ export const CHAIN_WEAR_THRESHOLDS: ChainWearThreshold[] = [
   },
 ];
 
+/**
+ * Pick the replacement threshold for the current drivetrain. Cassette speed
+ * count is inferred from the number of cogs; single-speed and hub-geared bikes
+ * use the wider 1/8"-style chain row.
+ */
+export function chainWearThresholdFor(
+  isDerailleurCassette: boolean,
+  cogCount: number,
+): ChainWearThreshold {
+  if (!isDerailleurCassette) return CHAIN_WEAR_THRESHOLDS[2];
+  return cogCount >= 11 ? CHAIN_WEAR_THRESHOLDS[0] : CHAIN_WEAR_THRESHOLDS[1];
+}
+
 // --- Common presets ---------------------------------------------------------
+
+export interface ChainringPreset {
+  label: string;
+  rings: number[];
+}
+
+// Common cranksets (chainring combinations) for a derailleur setup.
+export const CHAINRING_PRESETS: ChainringPreset[] = [
+  { label: 'Road compact 50/34', rings: [50, 34] },
+  { label: 'Road semi-compact 52/36', rings: [52, 36] },
+  { label: 'Road standard 53/39', rings: [53, 39] },
+  { label: 'Sub-compact 48/32', rings: [48, 32] },
+  { label: 'Gravel 2× 46/30', rings: [46, 30] },
+  { label: 'Road triple 50/39/30', rings: [50, 39, 30] },
+  { label: 'Touring triple 48/36/26', rings: [48, 36, 26] },
+  { label: 'MTB 2× 36/26', rings: [36, 26] },
+  { label: '1× 42', rings: [42] },
+  { label: '1× 40', rings: [40] },
+  { label: '1× 32', rings: [32] },
+  { label: '1× 30', rings: [30] },
+];
 
 export interface CassettePreset {
   label: string;

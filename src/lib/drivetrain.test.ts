@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { computeGears, chainLength, gearRange } from './drivetrain';
+import {
+  computeGears,
+  chainLength,
+  gearRange,
+  chainWearThresholdFor,
+} from './drivetrain';
 
 describe('computeGears', () => {
   const base = {
@@ -52,6 +57,20 @@ describe('gearRange', () => {
       crankLengthMm: 170,
     });
     expect(gearRange(gears)).toBeCloseTo(2.0, 5);
+  });
+});
+
+describe('chainWearThresholdFor', () => {
+  it('11/12-speed cassette -> 0.5%', () => {
+    expect(chainWearThresholdFor(true, 12).replaceAtPercent).toBe(0.5);
+    expect(chainWearThresholdFor(true, 11).replaceAtPercent).toBe(0.5);
+  });
+  it('6-10 speed cassette -> 0.75%', () => {
+    expect(chainWearThresholdFor(true, 10).replaceAtPercent).toBe(0.75);
+    expect(chainWearThresholdFor(true, 8).replaceAtPercent).toBe(0.75);
+  });
+  it('single speed / hub -> 1.0%', () => {
+    expect(chainWearThresholdFor(false, 1).replaceAtPercent).toBe(1.0);
   });
 });
 

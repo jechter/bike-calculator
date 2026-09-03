@@ -42,12 +42,13 @@ export function PresetMenu(props: {
     <div className="preset-menu" ref={ref}>
       <button
         type="button"
-        className="preset-btn"
+        className={"preset-btn" + (open ? " open" : "")}
         title={props.title ?? "Fill from a preset"}
         aria-label={props.title ?? "Fill from a preset"}
+        aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
-        ⋯
+        <span className="caret">▾</span>
       </button>
       {open && (
         <ul className="preset-list">

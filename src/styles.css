@@ -167,10 +167,15 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   background: var(--panel-2);
   color: var(--text);
   cursor: pointer;
-  font-size: 18px;
+  font-size: 13px;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+.preset-btn .caret { transition: transform 0.15s ease; }
+.preset-btn.open .caret { transform: rotate(180deg); }
 .preset-list {
   position: absolute;
   z-index: 20;

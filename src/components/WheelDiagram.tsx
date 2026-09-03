@@ -23,35 +23,40 @@ export function WheelDiagram(props: WheelDiagramProps) {
     return <p className="field-hint">Enter an even spoke count and rim ERD to see the wheel.</p>;
   }
 
-  const m = spokeCount / 2; // spokes per flange
+  const n = spokeCount;
   const rimR = 100;
-
-  // Face-on spokes for one flange.
-  const faceSpokes = (flangeDiaMm: number, cross: number, rot: number, color: string, key: string) => {
-    const fR = rimR * (flangeDiaMm / erdMm);
-    const theta = (2 * Math.PI * cross) / m; // crossing angle at the hub
-    const els = [];
-    for (let j = 0; j < m; j++) {
-      const af = j * ((2 * Math.PI) / m) + rot;
-      const dir = j % 2 === 0 ? 1 : -1;
-      const ar = af + dir * theta;
-      els.push(
-        <line
-          key={key + j}
-          x1={fR * Math.cos(af)}
-          y1={fR * Math.sin(af)}
-          x2={rimR * Math.cos(ar)}
-          y2={rimR * Math.sin(ar)}
-          stroke={color}
-          strokeWidth={0.7}
-        />,
-      );
-    }
-    return els;
-  };
-
   const lfR = rimR * (props.leftFlangeDiaMm / erdMm);
   const rfR = rimR * (props.rightFlangeDiaMm / erdMm);
+
+  // Face-on lacing, indexed by rim hole so each of the n rim holes is used
+  // exactly once. Rim holes alternate flanges (even = drive, odd = non-drive).
+  // A k-cross spoke's flange end is offset by θ = 4π·k/n, which lands on a real
+  // flange hole; leading/trailing alternates per side to make them cross.
+  const faceSpokes = [] as JSX.Element[];
+  const rimDots = [] as JSX.Element[];
+  for (let i = 0; i < n; i++) {
+    const isDrive = i % 2 === 0;
+    const fR = isDrive ? rfR : lfR;
+    const k = isDrive ? props.rightCross : props.leftCross;
+    const color = isDrive ? DRIVE : NDS;
+    const lead = Math.floor(i / 2) % 2 === 0 ? 1 : -1;
+    const rimA = (2 * Math.PI * i) / n;
+    const flA = rimA + lead * ((4 * Math.PI * k) / n);
+    const rx = rimR * Math.cos(rimA);
+    const ry = rimR * Math.sin(rimA);
+    faceSpokes.push(
+      <line
+        key={i}
+        x1={fR * Math.cos(flA)}
+        y1={fR * Math.sin(flA)}
+        x2={rx}
+        y2={ry}
+        stroke={color}
+        strokeWidth={0.7}
+      />,
+    );
+    rimDots.push(<circle key={"d" + i} className="wd-hole" cx={rx} cy={ry} r={1.4} fill={color} />);
+  }
 
   // Cross-section (dish) — true proportions: offsets share the rim's scale.
   const secH = 200; // px for the rim radius
@@ -71,8 +76,8 @@ export function WheelDiagram(props: WheelDiagramProps) {
           <circle r={rimR} className="wd-rim" />
           <circle r={rfR} className="wd-flange" />
           <circle r={lfR} className="wd-flange" />
-          {faceSpokes(props.rightFlangeDiaMm, props.rightCross, 0, DRIVE, "r")}
-          {faceSpokes(props.leftFlangeDiaMm, props.leftCross, Math.PI / m, NDS, "l")}
+          {faceSpokes}
+          {rimDots}
           <circle r={2.5} className="wd-hub" />
         </svg>
         <div className="wd-caption">

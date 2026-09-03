@@ -73,6 +73,26 @@ describe("Wheel building page", () => {
     expect(values).toContain("—");
   });
 
+  it("uses each rim hole exactly once (30 spokes, no shared/unused holes)", () => {
+    const { container } = render(<WheelBuilding />);
+    // 30 spokes needs at most 3-cross (30/8 = 3), default 3-cross is feasible
+    const count = Array.from(container.querySelectorAll('input[type="number"]')).find(
+      (i) => (i as HTMLInputElement).value === "32",
+    ) as HTMLInputElement;
+    fireEvent.change(count, { target: { value: "30" } });
+    const holes = Array.from(container.querySelectorAll(".wd-hole"));
+    expect(holes.length).toBe(30);
+    // every rim hole position is distinct (rounded to avoid fp noise)
+    const positions = new Set(
+      holes.map((h) => {
+        const x = Math.round(parseFloat(h.getAttribute("cx")!) * 100) / 100;
+        const y = Math.round(parseFloat(h.getAttribute("cy")!) * 100) / 100;
+        return `${x},${y}`;
+      }),
+    );
+    expect(positions.size).toBe(30);
+  });
+
   it("updates the diagram when the spoke count changes", () => {
     const { container } = render(<WheelBuilding />);
     const before = container.querySelectorAll(".wheel-diagram line").length;

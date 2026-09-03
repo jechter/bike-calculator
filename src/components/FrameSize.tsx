@@ -107,22 +107,29 @@ export function FrameSize() {
       >
         <div className="results">
           <Result
-            label={style === "mtb" ? "Frame size" : "Frame size (seat tube c–t)"}
+            label="Frame size (seat tube c–t)"
             value={
-              style === "mtb"
-                ? `${result.frameInches.toFixed(1)} in`
-                : `${result.frameCm.toFixed(0)} cm`
+              <>
+                {result.frameCm.toFixed(0)} cm
+                {style === "mtb" && (
+                  <span className="result-sub">{result.frameInches.toFixed(1)} in</span>
+                )}
+              </>
             }
             big
           />
           <Result
             label="Range"
             value={
-              style === "mtb"
-                ? `${(result.frameCmRange[0] / 2.54).toFixed(1)}–${(
-                    result.frameCmRange[1] / 2.54
-                  ).toFixed(1)} in`
-                : `${result.frameCmRange[0].toFixed(0)}–${result.frameCmRange[1].toFixed(0)} cm`
+              <>
+                {result.frameCmRange[0].toFixed(0)}–{result.frameCmRange[1].toFixed(0)} cm
+                {style === "mtb" && (
+                  <span className="result-sub">
+                    {(result.frameCmRange[0] / 2.54).toFixed(1)}–
+                    {(result.frameCmRange[1] / 2.54).toFixed(1)} in
+                  </span>
+                )}
+              </>
             }
           />
           <Result label="Nominal" value={result.nominalSize} />

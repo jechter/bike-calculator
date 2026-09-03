@@ -18,10 +18,10 @@ Estimates ideal frame size (and a starting saddle height and crank length) from
 
 ## Outputs
 
-- **Recommended frame size**, given in the unit that style is usually sold in:
-  - Road/gravel/touring: seat-tube length in **cm**, plus the nominal S/M/L etc.
-  - MTB: usually **inches** or S/M/L.
-  - Hybrid/city: cm or S/M/L.
+- **Recommended frame size** as seat-tube length, always in **cm** (that's how we
+  measure a frame at the bench), plus the nominal S/M/L. For **MTB** the inch size
+  (how MTB frames are usually labelled) is shown small underneath the cm value in
+  the same box.
 - A **range** rather than a single number, plus the neighbouring sizes.
 - **Nominal size** (XS/S/M/L/XL) is derived from the **rider's inseam**, not the
   style-scaled frame cm — so a given rider gets the same nominal label on a road

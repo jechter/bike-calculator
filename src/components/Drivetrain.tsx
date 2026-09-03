@@ -222,7 +222,26 @@ export function Drivetrain() {
         </div>
       </Section>
 
-      <Section title="Gears">
+      <Section
+        title="Gears"
+        info={
+          <>
+            One line per chainring; each dot is a {mode === "hub" ? "hub gear" : "cog"}{" "}
+            (labelled with its {mode === "hub" ? "gear" : "tooth count"}) — hover a dot
+            for its exact values.{" "}
+            {mode === "cassette" && chainrings.length > 1 && (
+              <>
+                <strong>Greyed dots</strong> are cross-chained combinations (big-big /
+                small-small) to avoid shifting into.{" "}
+              </>
+            )}
+            <strong>Gear inches</strong> = the drive-wheel diameter (in) of an
+            equivalent direct-drive high-wheeler — a wheel-size-independent way to
+            compare gears; bigger = taller/harder. <strong>Development</strong> is
+            metres travelled per pedal revolution.
+          </>
+        }
+      >
         <div className="chart-controls">
           <Result label="Gears" value={gears.length} />
           <Result label="Range" value={`${range.toFixed(2)}× (${Math.round((range - 1) * 100)}%)`} />
@@ -263,41 +282,29 @@ export function Drivetrain() {
             ) : undefined
           }
         />
-
-        <Note>
-          One line per chainring; each dot is a {mode === "hub" ? "hub gear" : "cog"}{" "}
-          (labelled with its {mode === "hub" ? "gear" : "tooth count"}) — hover a dot
-          for its exact values.{" "}
-          {mode === "cassette" && chainrings.length > 1 && (
-            <>
-              <strong>Greyed dots</strong> are cross-chained combinations (big-big /
-              small-small) to avoid shifting into.{" "}
-            </>
-          )}
-          <strong>Gear inches</strong> = the drive-wheel diameter (in) of an
-          equivalent direct-drive high-wheeler — a wheel-size-independent way to
-          compare gears; bigger = taller/harder. <strong>Development</strong> is
-          metres travelled per pedal revolution.
-        </Note>
       </Section>
 
-      <Section title="Chain length">
-        {mode === "cassette" ? (
-          <>
-            <div className="grid">
-              <Field label="Chainstay length">
-                <NumberInput value={chainstay} onChange={setChainstay} suffix="mm" min={350} max={500} />
-              </Field>
-              <Result label="Largest ring / cog" value={`${largestRing} / ${largestCog} T`} />
-              <Result label="Length" value={`${chain.mm} mm`} />
-              <Result label="Links" value={chain.links} big />
-            </div>
-            <Note>
+      <Section
+        title="Chain length"
+        info={
+          mode === "cassette" ? (
+            <>
               Park Tool formula, rounded up so the link count is even (each link ≈
               12.7 mm). It includes the +1 inch wrap for the rear derailleur. The
               big-big wrap method is more reliable for wide 1× and full-suspension.
-            </Note>
-          </>
+            </>
+          ) : undefined
+        }
+      >
+        {mode === "cassette" ? (
+          <div className="grid">
+            <Field label="Chainstay length">
+              <NumberInput value={chainstay} onChange={setChainstay} suffix="mm" min={350} max={500} />
+            </Field>
+            <Result label="Largest ring / cog" value={`${largestRing} / ${largestCog} T`} />
+            <Result label="Length" value={`${chain.mm} mm`} />
+            <Result label="Links" value={chain.links} big />
+          </div>
         ) : (
           <Note>
             {mode === "hub" ? "Hub-geared" : "Single-speed"} chains aren't sized
@@ -312,7 +319,19 @@ export function Drivetrain() {
         )}
       </Section>
 
-      <Section title="Chain wear — when to replace">
+      <Section
+        title="Chain wear — when to replace"
+        info={
+          <>
+            Measured at the bench with a chain-wear gauge.{" "}
+            {mode === "cassette"
+              ? `Shown for your ${cogs.length}-speed cassette.`
+              : "Single-speed and hub bikes can run a narrow 3/32\" or wide 1/8\" chain — pick the row matching your chain."}{" "}
+            Past the threshold the cassette (and possibly chainrings) may skip with a
+            new chain.
+          </>
+        }
+      >
         <div className="table-wrap">
           <table>
             <thead>
@@ -333,14 +352,6 @@ export function Drivetrain() {
             </tbody>
           </table>
         </div>
-        <Note>
-          Measured at the bench with a chain-wear gauge.{" "}
-          {mode === "cassette"
-            ? `Shown for your ${cogs.length}-speed cassette.`
-            : "Single-speed and hub bikes can run a narrow 3/32\" or wide 1/8\" chain — pick the row matching your chain."}{" "}
-          Past the threshold the cassette (and possibly chainrings) may skip with a
-          new chain.
-        </Note>
       </Section>
     </>
   );

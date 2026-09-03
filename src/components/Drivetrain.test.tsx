@@ -64,6 +64,16 @@ describe("Drivetrain page", () => {
     expect(container.querySelector(".gc-cadence input[type='range']")).toBeTruthy();
   });
 
+  it("keeps section info in a popover revealed by the info icon", () => {
+    const { container, getByText, queryByText } = render(<Drivetrain />);
+    // Gears explanation is hidden until its info tip is opened
+    expect(queryByText(/wheel-size-independent/)).toBeNull();
+    const infoBtn = container.querySelector(".section-head .infotip-btn") as HTMLButtonElement;
+    expect(infoBtn).toBeTruthy();
+    fireEvent.click(infoBtn);
+    expect(getByText(/wheel-size-independent/)).toBeTruthy();
+  });
+
   it("shows a hover tooltip with a gear's exact values", () => {
     const { container } = render(<Drivetrain />);
     const dot = container.querySelector(".gc-dot") as SVGCircleElement;

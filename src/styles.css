@@ -96,7 +96,35 @@ body {
 .main .subtitle { color: var(--muted); margin: 0 0 24px; }
 
 .section { margin-bottom: 24px; }
-.section h3 { margin: 0 0 12px; font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.section-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.section-head h3 { margin: 0; }
+.section h3 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+
+/* Info popover next to a section title */
+.infotip { position: relative; display: inline-flex; }
+.infotip-btn {
+  width: 18px; height: 18px; padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
+  font: italic 700 11px/1 Georgia, "Times New Roman", serif;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.infotip-btn:hover, .infotip-btn.open { border-color: var(--accent); color: var(--accent); }
+.infotip-pop {
+  position: absolute; z-index: 40;
+  top: calc(100% + 6px); left: 0;
+  width: 340px; max-width: 78vw;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  padding: 10px 12px;
+  font-size: 13px; line-height: 1.5; color: var(--text);
+  text-transform: none; letter-spacing: normal; font-weight: 400;
+}
 
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
 

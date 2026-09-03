@@ -145,10 +145,66 @@ export function Note(props: { children: React.ReactNode; tone?: "info" | "warn" 
   return <div className={"note note-" + (props.tone ?? "info")}>{props.children}</div>;
 }
 
-export function Section(props: { title: string; children: React.ReactNode }) {
+/**
+ * A small "i" icon that reveals supplementary info in a popover on hover (with a
+ * short close delay so you can move into it) or click (touch-friendly).
+ */
+export function InfoTip(props: { children: React.ReactNode; label?: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const timer = useRef<number | null>(null);
+
+  const show = () => {
+    if (timer.current) {
+      clearTimeout(timer.current);
+      timer.current = null;
+    }
+    setOpen(true);
+  };
+  const hide = () => {
+    timer.current = window.setTimeout(() => setOpen(false), 140);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  return (
+    <div className="infotip" ref={ref} onMouseEnter={show} onMouseLeave={hide}>
+      <button
+        type="button"
+        className={"infotip-btn" + (open ? " open" : "")}
+        aria-label={props.label ?? "More information"}
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        i
+      </button>
+      {open && (
+        <div className="infotip-pop" role="tooltip" onMouseEnter={show} onMouseLeave={hide}>
+          {props.children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function Section(props: {
+  title: string;
+  info?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <section className="section">
-      <h3>{props.title}</h3>
+      <div className="section-head">
+        <h3>{props.title}</h3>
+        {props.info && <InfoTip label={`About: ${props.title}`}>{props.info}</InfoTip>}
+      </div>
       {props.children}
     </section>
   );

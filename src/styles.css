@@ -223,6 +223,22 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .preset-btn:hover { color: var(--accent); }
 .preset-btn .caret { transition: transform 0.15s ease; }
 .preset-btn.open .caret { transform: rotate(180deg); }
+
+/* Labelled preset button (section-level, multi-field presets) */
+.preset-menu-labelled { display: inline-flex; }
+.preset-labelbtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--panel-2); color: var(--text);
+  font: inherit; font-size: 13px; padding: 6px 10px; cursor: pointer;
+}
+.preset-labelbtn:hover { border-color: var(--accent); }
+.preset-labelbtn .caret { color: var(--muted); transition: transform 0.15s ease; }
+.preset-labelbtn.open .caret { transform: rotate(180deg); }
+.preset-menu-labelled .preset-list { left: auto; right: 0; }
+
+/* Section header right-side action (e.g. preset picker) */
+.section-action { margin-left: auto; }
 .preset-list {
   position: absolute;
   z-index: 20;
@@ -341,6 +357,31 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .gc-tt-title { font-weight: 700; margin-bottom: 4px; }
 .gc-tt-row { display: flex; justify-content: space-between; gap: 18px; }
 .gc-tt-row span { color: var(--muted); }
+
+/* Wheel building: per-side input groups */
+.wb-sides { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 14px; }
+.wb-side { display: flex; flex-direction: column; gap: 10px; }
+.wb-side-title { margin: 0 0 2px; font-size: 13px; font-weight: 700; }
+
+/* Wheel diagram */
+.wheel-diagram {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 24px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+}
+.wd-view { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.wd-view svg { display: block; }
+.wd-view:not(.wd-section) svg { width: 300px; height: 300px; max-width: 70vw; }
+.wd-section svg { height: 300px; width: 120px; }
+.wd-caption { font-size: 12px; color: var(--muted); }
+.wd-rim { fill: none; stroke: var(--text); stroke-width: 3; }
+.wd-flange { fill: none; stroke: var(--border); stroke-width: 1; }
+.wd-hub { fill: var(--muted); }
+.wd-rim-edge { stroke: var(--text); stroke-width: 3; }
+.wd-axle { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 3; }
+.wd-legend { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+.wd-legend span { display: flex; align-items: center; gap: 8px; }
+.wd-legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
 
 .hamburger { display: none; }
 

@@ -7,23 +7,40 @@ need **different** lengths (and, by design, different tensions).
 
 ## Inputs
 
-Per hub side (left/non-drive and right/drive):
+Grouped into a **Rim** section and a **Hub** section, each with an
+approximate-preset picker (common rims / common hubs) that fills the fields —
+always overridable, and clearly flagged as starting points to measure against.
 
-- **Flange diameter** — the diameter of the circle through the spoke holes on
-  the flange (mm). Sometimes given as PCD (pitch circle diameter). Use radius
-  `R = flange_diameter / 2`.
-- **Flange offset / centre-to-flange** (`W`, mm) — distance from the wheel
-  centreline (hub centre) to the flange, per side. For rear wheels the drive
-  and non-drive offsets differ (dish).
-- **Spoke hole diameter** on the flange (usually 2.6 mm).
-
-Rim & lacing:
+**Rim** section:
 
 - **ERD** — Effective Rim Diameter (mm). The diameter at which the spoke ends
   sit (nipple seat), the single most important and error-prone number. Must be
-  measured or taken from the rim spec, **not** the bead/tyre diameter.
-- **Spoke count** `n` (e.g. 32, 36, 28, 24).
-- **Cross pattern** `k` (e.g. 3-cross, 2-cross, radial = 0).
+  measured or taken from the rim spec, **not** the bead/tyre diameter. The rim
+  preset fills a rough ERD by wheel size.
+
+**Hub** section (spoke count, hole diameter, and per side L/R):
+
+- **Spoke count** `n` (e.g. 32, 36, 28, 24) and **spoke hole diameter** on the
+  flange (usually 2.6 mm).
+- Per side (left/non-drive and right/drive):
+  - **Flange diameter** — the diameter of the circle through the spoke holes on
+    the flange (mm), a.k.a. PCD. Use radius `R = flange_diameter / 2`.
+  - **Flange offset / centre-to-flange** (`W`, mm) — distance from the wheel
+    centreline to the flange. Drive and non-drive differ on a dished wheel.
+  - **Cross pattern** `k` (e.g. 3-cross, 2-cross, radial = 0).
+- The **hub preset** fills flange diameters, offsets and hole size for common
+  hub types (road/MTB, front/rear, QR/Boost) — approximate; measure to confirm.
+
+### Wheel diagram
+
+The page renders the wheel **proportionally** so you can see how the inputs
+affect the spokes:
+
+- a **face-on lacing view** — rim at ERD with the hub flange drawn to scale,
+  and every spoke drawn in the chosen cross pattern (left = blue, right = red),
+  so spoke count, cross and rim-vs-flange proportions are visible; and
+- a **cross-section** — flanges at their L/R offsets showing the **dish** and
+  bracing angles.
 
 ## Outputs
 

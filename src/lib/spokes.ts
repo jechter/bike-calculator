@@ -69,6 +69,85 @@ export function readingToKgf(curve: TensionCurve, reading: number): number {
 export const KGF_TO_N = 9.80665;
 export const kgfToN = (kgf: number): number => kgf * KGF_TO_N;
 
+// --- Rim & hub presets ------------------------------------------------------
+// APPROXIMATE reference values only. ERD and hub flange geometry vary a lot
+// between models — always measure your actual parts. Presets are starting
+// points to sanity-check against.
+
+export interface RimPreset {
+  label: string;
+  erdMm: number;
+}
+
+export const RIM_PRESETS: RimPreset[] = [
+  { label: '700C / 29" box rim (~602)', erdMm: 602 },
+  { label: '700C mid-depth (~592)', erdMm: 592 },
+  { label: '700C deep aero (~575)', erdMm: 575 },
+  { label: '650B / 27.5" (~565)', erdMm: 565 },
+  { label: '26" MTB (~538)', erdMm: 538 },
+  { label: '20" (406) (~390)', erdMm: 390 },
+];
+
+export interface HubGeometryPreset {
+  label: string;
+  leftFlangeDiaMm: number;
+  rightFlangeDiaMm: number;
+  leftOffsetMm: number;
+  rightOffsetMm: number;
+  spokeHoleMm: number;
+}
+
+export const HUB_GEOMETRY_PRESETS: HubGeometryPreset[] = [
+  {
+    label: 'Road front — QR 100 mm',
+    leftFlangeDiaMm: 38,
+    rightFlangeDiaMm: 38,
+    leftOffsetMm: 34,
+    rightOffsetMm: 34,
+    spokeHoleMm: 2.5,
+  },
+  {
+    label: 'Road rear — QR 130 mm',
+    leftFlangeDiaMm: 45,
+    rightFlangeDiaMm: 45,
+    leftOffsetMm: 34,
+    rightOffsetMm: 17.5,
+    spokeHoleMm: 2.5,
+  },
+  {
+    label: 'MTB front — QR 100 mm',
+    leftFlangeDiaMm: 38,
+    rightFlangeDiaMm: 38,
+    leftOffsetMm: 34,
+    rightOffsetMm: 34,
+    spokeHoleMm: 2.6,
+  },
+  {
+    label: 'MTB rear — QR 135 mm',
+    leftFlangeDiaMm: 45,
+    rightFlangeDiaMm: 45,
+    leftOffsetMm: 36,
+    rightOffsetMm: 19,
+    spokeHoleMm: 2.6,
+  },
+  {
+    label: 'MTB front — Boost 110 mm',
+    leftFlangeDiaMm: 38,
+    rightFlangeDiaMm: 38,
+    leftOffsetMm: 39,
+    rightOffsetMm: 27,
+    spokeHoleMm: 2.6,
+  },
+  {
+    label: 'MTB rear — Boost 148 mm',
+    leftFlangeDiaMm: 45,
+    rightFlangeDiaMm: 45,
+    leftOffsetMm: 38,
+    rightOffsetMm: 21,
+    spokeHoleMm: 2.6,
+  },
+];
+
 // Illustrative curves only — VERIFY against the real tool chart before trusting.
 export const EXAMPLE_TENSION_CURVES: TensionCurve[] = [
   {

@@ -23,6 +23,9 @@ export function Field(props: {
  */
 export function PresetMenu(props: {
   title?: string;
+  /** When set, render a labelled button (for multi-field / section-level
+   *  presets) instead of the bare caret used inside a field. */
+  label?: string;
   options: Array<{ value: string; label: string }>;
   onPick: (value: string) => void;
 }) {
@@ -39,15 +42,16 @@ export function PresetMenu(props: {
   }, [open]);
 
   return (
-    <div className="preset-menu" ref={ref}>
+    <div className={"preset-menu" + (props.label ? " preset-menu-labelled" : "")} ref={ref}>
       <button
         type="button"
-        className={"preset-btn" + (open ? " open" : "")}
+        className={(props.label ? "preset-labelbtn" : "preset-btn") + (open ? " open" : "")}
         title={props.title ?? "Fill from a preset"}
         aria-label={props.title ?? "Fill from a preset"}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
+        {props.label && <span>{props.label}</span>}
         <span className="caret">▾</span>
       </button>
       {open && (
@@ -197,6 +201,8 @@ export function InfoTip(props: { children: React.ReactNode; label?: string }) {
 export function Section(props: {
   title: string;
   info?: React.ReactNode;
+  /** Optional control rendered on the right of the section header (e.g. presets). */
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -204,6 +210,7 @@ export function Section(props: {
       <div className="section-head">
         <h3>{props.title}</h3>
         {props.info && <InfoTip label={`About: ${props.title}`}>{props.info}</InfoTip>}
+        {props.action && <div className="section-action">{props.action}</div>}
       </div>
       {props.children}
     </section>

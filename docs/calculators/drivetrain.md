@@ -17,14 +17,19 @@ worn chain.
 - **Cassette/cogs**: list of tooth counts, e.g. `11, 12, 13, 14, 15, 17, 19,
   21, 24, 28`. Allow entering a range or a common cassette preset (11–28,
   11–34, 10–52, etc.). (Single speed / IGH: a single sprocket.)
-- **Wheel/tyre size**: to get rolling circumference. Either
-  - pick a preset (e.g. 700×25c ≈ 2111 mm, 700×28c ≈ 2136 mm, 26×2.1 ≈ 2073 mm),
-    see [tyre spec](tire.md) for a circumference table, or
-  - enter a measured roll-out circumference (most accurate).
-- **Cadence** (rpm): for the speed table, e.g. 90. Allow a few cadences.
-- **Crank length** (mm): only needed for gain ratio, e.g. 170.
+- **Rolling circumference** (mm): an editable field with a small preset button
+  that fills it from a tyre size (labelled by **ETRTO**, e.g. `25-622`). A
+  measured roll-out is most accurate. Links across to the [tyre calculator](tire.md)
+  for size conversion.
+- **Cadence** (rpm): a slider over the usual 60–120 range, with a number field
+  for values outside it. Default 90.
 - **For chain length**: chainstay length (mm) OR the "big-big" measurement,
   plus largest chainring and largest cog.
+
+> **Gain ratio** (Sheldon Brown's crank-length-aware measure) is intentionally
+> *not* shown — it's niche and needing a crank-length input for it added clutter.
+> The formula lives in the "Formulas" section and the calc library still exposes
+> it if we ever want to bring it back.
 
 ## Drivetrain types
 
@@ -66,9 +71,6 @@ per-gear overall ratio and speed, plus the **total gear range**
   (classic penny-farthing-equivalent measure).
 - **Development / metres of development**: distance travelled per crank
   revolution: `development_m = ratio × circumference_m`.
-- **Gain ratio** (Sheldon Brown, dimensionless, accounts for crank length):
-  `gain_ratio = (wheel_radius / crank_length) × (chainring / cog)`
-  with wheel_radius and crank_length in the same units.
 - **Speed at cadence**:
   `speed = ratio × circumference × cadence` →
   `speed_kmh = ratio × circumference_m × cadence_rpm × 60 / 1000`.
@@ -110,9 +112,11 @@ L_inches = 2 × (chainstay_length_in_inches)
          + 1
 ```
 
-Round **up** to the nearest whole inch (each inch = 2 links = 1 inner + 1 outer).
-Convert to number of links: `links = L_inches × 2`.
-`chainstay_length_in_inches = chainstay_mm / 25.4`.
+Round **up** to the nearest whole inch (each inch = 2 links = 1 inner + 1 outer),
+which keeps the link count even. `chainstay_length_in_inches = chainstay_mm / 25.4`.
+Report the result to the user in **mm** (`links × 12.7`, i.e. `inches × 25.4`)
+and as a **link count** (`links = inches × 2`) — links being what you actually
+cut. The formula is inch-based internally only.
 
 **2. Largest-largest ("big-big") method:**
 
@@ -126,43 +130,30 @@ the procedure and, if the user enters the measured big-big link count, add 2.
 > the big-big method is generally preferred. Always verify the result won't
 > over-extend the derailleur in big-big or go slack in small-small.
 
-## Chain wear (replacement check)
+## Chain wear — when to replace
 
-A worn ("stretched") chain accelerates cassette and chainring wear, so checking
-it belongs with the drivetrain. Chain wear is elongation from roller/pin wear,
-measured as a percentage over a nominal length.
+We do **not** calculate chain wear — in the workshop that's measured directly
+with a chain-wear gauge. This section is just the **replacement-threshold
+reference**, since the %-elongation at which to replace depends on chain type.
+Narrower chains wear the cassette faster, so they get replaced earlier.
 
-### Inputs
-- Either a **chain-checker tool reading** (e.g. 0.5 / 0.75 / 1.0), or
-- a **measured length over N links**. Nominal pitch is 0.5 inch (12.7 mm) per
-  link, so N links should measure `N × 12.7 mm` when new. A standard field
-  measurement is over 12 complete links (24 pins) = nominally 12 inches / 304.8 mm.
+| Chain type | Replace at |
+|-----------|-----------|
+| 11- & 12-speed | 0.5% |
+| 6- to 10-speed | 0.75% |
+| Single speed / internally geared (1/8") | 1.0% |
 
-### Formula
-```
-elongation_% = (measured_length − nominal_length) / nominal_length × 100
-             = (measured_length / (N_links × 12.7 mm) − 1) × 100
-```
-
-### Guidance (output thresholds)
-- **< 0.5%** — OK.
-- **0.5%–0.75%** — replace the chain soon; the cassette is usually still fine
-  (esp. 11/12-speed, where < 0.5% is the common replace point).
-- **> 0.75% (≈ 1.0% for older/wider chains)** — replace the chain; the cassette
-  (and possibly chainrings) are likely worn too and may skip with a new chain.
-
-State which thresholds you use and that narrower 11/12-speed chains generally
-warrant earlier replacement than older 5–9-speed chains.
+Past the threshold the cassette (and possibly chainrings) are likely worn too and
+may skip with a new chain.
 
 ## Worked example
 
-50/34 chainrings, 11–28 cassette, 700×25c (circ ≈ 2.111 m), cadence 90, crank
-170 mm.
+50/34 chainrings, 11–28 cassette, 700×25c (circ ≈ 2.111 m), cadence 90.
 
 - 50×11: ratio = 4.545; speed = 4.545 × 2.111 × 90 × 60/1000 ≈ **51.8 km/h**.
 - 34×28: ratio = 1.214; speed ≈ **13.8 km/h**.
 - Chain length, chainstay 410 mm: `2×(410/25.4) + 50/4 + 28/4 + 1`
-  `= 32.28 + 12.5 + 7 + 1 = 52.78` → round up to **53 inches → 106 links**.
+  `= 32.28 + 12.5 + 7 + 1 = 52.78` → round up to 53 inches → **1346 mm / 106 links**.
 
 ## Reference data needed
 

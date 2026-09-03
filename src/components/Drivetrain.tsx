@@ -2,15 +2,15 @@ import { useMemo, useState } from "react";
 import {
   CASSETTE_PRESETS,
   HUB_PRESETS,
+  CHAIN_WEAR_THRESHOLDS,
   computeGears,
   gearRange,
   chainLength,
-  chainWear,
   type HubGear,
 } from "../lib/drivetrain";
 import { TIRE_PRESETS } from "../lib/wheels";
 import { kmhToMph } from "../lib/units";
-import { Field, NumberInput, TextInput, Select, Result, Note, Section } from "./ui";
+import { Field, NumberInput, TextInput, Select, PresetMenu, Result, Note, Section } from "./ui";
 
 type Mode = "cassette" | "single" | "hub";
 
@@ -21,6 +21,17 @@ function parseList(s: string): number[] {
     .filter((x) => Number.isFinite(x) && x > 0);
 }
 
+// ETRTO-labelled options that fill the rolling circumference field.
+const TIRE_OPTIONS = TIRE_PRESETS.map((p) => ({
+  value: String(p.circumferenceMm),
+  label: `${p.widthMm}-${p.iso}  (${p.label})`,
+}));
+
+const CASSETTE_OPTIONS = CASSETTE_PRESETS.map((p) => ({
+  value: p.cogs.join(", "),
+  label: p.label,
+}));
+
 export function Drivetrain() {
   const [mode, setMode] = useState<Mode>("cassette");
   const [chainringStr, setChainringStr] = useState("50, 34");
@@ -30,14 +41,9 @@ export function Drivetrain() {
   const [hubIdx, setHubIdx] = useState(0);
   const [circ, setCirc] = useState(2111);
   const [cadence, setCadence] = useState(90);
-  const [crank, setCrank] = useState(170);
   const [showMph, setShowMph] = useState(false);
 
-  // chain length
   const [chainstay, setChainstay] = useState(410);
-  // chain wear
-  const [wearLinks, setWearLinks] = useState(12);
-  const [wearMm, setWearMm] = useState(304.8);
 
   const chainrings = mode === "cassette" ? parseList(chainringStr) : [singleRing];
   const cogs = mode === "cassette" ? parseList(cogStr) : [singleCog];
@@ -51,10 +57,9 @@ export function Drivetrain() {
         cogs,
         circumferenceMm: circ,
         cadenceRpm: cadence,
-        crankLengthMm: crank,
         hubGears,
       }),
-    [chainringStr, cogStr, singleRing, singleCog, mode, hubIdx, circ, cadence, crank],
+    [chainringStr, cogStr, singleRing, singleCog, mode, hubIdx, circ, cadence],
   );
 
   const range = gearRange(gears);
@@ -64,7 +69,8 @@ export function Drivetrain() {
   const largestRing = Math.max(...chainrings, 0);
   const largestCog = Math.max(...cogs, 0);
   const chain = chainLength({ chainstayMm: chainstay, largestChainring: largestRing, largestCog });
-  const wear = chainWear({ measuredMm: wearMm, links: wearLinks });
+
+  const sliderCadence = Math.min(120, Math.max(60, cadence || 60));
 
   return (
     <>
@@ -88,20 +94,14 @@ export function Drivetrain() {
                 <TextInput value={chainringStr} onChange={setChainringStr} />
               </Field>
               <Field label="Cassette cogs" hint="comma-separated tooth counts">
-                <TextInput value={cogStr} onChange={setCogStr} />
-              </Field>
-              <Field label="Cassette preset">
-                <Select
-                  value=""
-                  onChange={(v) => {
-                    const p = CASSETTE_PRESETS.find((x) => x.label === v);
-                    if (p) setCogStr(p.cogs.join(", "));
-                  }}
-                  options={[
-                    { value: "", label: "— pick —" },
-                    ...CASSETTE_PRESETS.map((p) => ({ value: p.label, label: p.label })),
-                  ]}
-                />
+                <div className="input-with-preset">
+                  <TextInput value={cogStr} onChange={setCogStr} />
+                  <PresetMenu
+                    title="Fill from a cassette preset"
+                    options={CASSETTE_OPTIONS}
+                    onPick={setCogStr}
+                  />
+                </div>
               </Field>
             </>
           )}
@@ -134,25 +134,43 @@ export function Drivetrain() {
               </Field>
             </>
           )}
+        </div>
 
-          <Field label="Wheel / tyre">
-            <Select
-              value={String(circ)}
-              onChange={(v) => setCirc(parseFloat(v))}
-              options={TIRE_PRESETS.map((p) => ({
-                value: String(p.circumferenceMm),
-                label: `${p.label} (${p.circumferenceMm} mm)`,
-              }))}
-            />
+        {/* Wheel / cadence always on their own rows for a stable layout. */}
+        <div className="rows">
+          <Field
+            label="Rolling circumference"
+            hint={
+              <>
+                measured roll-out is most accurate ·{" "}
+                <a className="inline-link" href="#/tire">
+                  open the Tyre calculator for sizes &amp; conversion →
+                </a>
+              </>
+            }
+          >
+            <div className="input-with-preset">
+              <NumberInput value={circ} onChange={setCirc} suffix="mm" min={800} />
+              <PresetMenu
+                title="Fill from a tyre size (ETRTO)"
+                options={TIRE_OPTIONS}
+                onPick={(v) => setCirc(parseFloat(v))}
+              />
+            </div>
           </Field>
-          <Field label="Rolling circumference" hint="measured roll-out is most accurate">
-            <NumberInput value={circ} onChange={setCirc} suffix="mm" min={800} />
-          </Field>
-          <Field label="Cadence">
-            <NumberInput value={cadence} onChange={setCadence} suffix="rpm" min={30} max={150} />
-          </Field>
-          <Field label="Crank length" hint="for gain ratio">
-            <NumberInput value={crank} onChange={setCrank} suffix="mm" min={100} max={220} />
+
+          <Field label="Cadence" hint="slider 60–120 rpm; type any value">
+            <div className="slider-row">
+              <input
+                type="range"
+                min={60}
+                max={120}
+                step={1}
+                value={sliderCadence}
+                onChange={(e) => setCadence(parseInt(e.target.value))}
+              />
+              <NumberInput value={cadence} onChange={setCadence} suffix="rpm" min={20} max={200} />
+            </div>
           </Field>
         </div>
       </Section>
@@ -180,7 +198,6 @@ export function Drivetrain() {
                 <th className="num">Ratio</th>
                 <th className="num">Gear in.</th>
                 <th className="num">Dev (m)</th>
-                <th className="num">Gain</th>
                 <th className="num">Speed ({speedUnit})</th>
               </tr>
             </thead>
@@ -193,7 +210,6 @@ export function Drivetrain() {
                   <td className="num">{g.ratio.toFixed(2)}</td>
                   <td className="num">{g.gearInches.toFixed(1)}</td>
                   <td className="num">{g.developmentM.toFixed(2)}</td>
-                  <td className="num">{g.gainRatio.toFixed(2)}</td>
                   <td className="num">{speed(g.speedKmh).toFixed(1)}</td>
                 </tr>
               ))}
@@ -208,40 +224,42 @@ export function Drivetrain() {
             <NumberInput value={chainstay} onChange={setChainstay} suffix="mm" min={350} max={500} />
           </Field>
           <Result label="Largest ring / cog" value={`${largestRing} / ${largestCog} T`} />
-          <Result label="Length" value={`${chain.inches} in`} />
+          <Result label="Length" value={`${chain.mm} mm`} />
           <Result label="Links" value={chain.links} big />
         </div>
         <Note>
-          Park Tool formula, rounded up to a whole inch (each inch = 2 links). The
-          big-big wrap method is more reliable for wide 1× and full-suspension —
-          see the drivetrain doc.
+          Park Tool formula, rounded up so the link count is even (each link ≈
+          12.7 mm). The big-big wrap method is more reliable for wide 1× and
+          full-suspension — see the drivetrain doc.
         </Note>
       </Section>
 
-      <Section title="Chain wear">
-        <div className="grid">
-          <Field label="Measured over (links)" hint="12 links = 12 in nominal">
-            <NumberInput value={wearLinks} onChange={setWearLinks} min={1} />
-          </Field>
-          <Field label="Measured length">
-            <NumberInput value={wearMm} onChange={setWearMm} suffix="mm" min={1} />
-          </Field>
-          <Result label="Elongation" value={`${wear.elongationPercent.toFixed(2)} %`} big />
-          <Result
-            label="Verdict"
-            value={
-              <span
-                className={
-                  "badge " +
-                  (wear.verdict === "ok" ? "ok" : wear.verdict === "replace-soon" ? "warn" : "danger")
-                }
-              >
-                {wear.verdict.replace("-", " ")}
-              </span>
-            }
-          />
+      <Section title="Chain wear — when to replace">
+        <Note>
+          Measure with a chain-wear gauge; replace at the %-elongation for your
+          drivetrain. Narrower chains wear the cassette faster, so replace them
+          earlier.
+        </Note>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Chain type</th>
+                <th className="num">Replace at</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {CHAIN_WEAR_THRESHOLDS.map((t) => (
+                <tr key={t.chainType}>
+                  <td>{t.chainType}</td>
+                  <td className="num">{t.replaceAtPercent.toFixed(2)}%</td>
+                  <td>{t.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <Note tone={wear.verdict === "ok" ? "info" : "warn"}>{wear.message}</Note>
       </Section>
     </>
   );

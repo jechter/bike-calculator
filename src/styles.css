@@ -149,6 +149,66 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .chip { border: 1px solid var(--border); background: var(--panel); border-radius: 999px; padding: 4px 12px; cursor: pointer; font: inherit; font-size: 13px; }
 .chip:hover { border-color: var(--accent); }
 
+/* Full-width stacked rows (fields that should never share a line) */
+.rows { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; max-width: 520px; }
+
+/* Editable input with an attached preset "fill" button */
+.input-with-preset { display: flex; align-items: stretch; gap: 6px; }
+.input-with-preset > .number-input,
+.input-with-preset > input[type="text"] { flex: 1; }
+
+.preset-menu { position: relative; flex: none; }
+.preset-btn {
+  height: 100%;
+  min-width: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+.preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+.preset-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 220px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.preset-list li { margin: 0; }
+.preset-list button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  padding: 7px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.preset-list button:hover { background: var(--accent-soft); color: var(--accent); }
+
+/* Slider + number combo */
+.slider-row { display: flex; align-items: center; gap: 12px; }
+.slider-row input[type="range"] { flex: 1; accent-color: var(--accent); }
+.slider-row .number-input { width: 120px; flex: none; }
+
+.inline-link { color: var(--accent); text-decoration: none; }
+.inline-link:hover { text-decoration: underline; }
+
 .hamburger { display: none; }
 
 /* Responsive */

@@ -1,18 +1,72 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 // Small shared UI primitives used across calculators.
 
 export function Field(props: {
   label: string;
-  hint?: string;
+  hint?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <label className="field">
+    <div className="field">
       <span className="field-label">{props.label}</span>
       {props.children}
       {props.hint && <span className="field-hint">{props.hint}</span>}
-    </label>
+    </div>
+  );
+}
+
+/**
+ * A small "⋯" button that opens a popover list of presets. Picking one calls
+ * onPick with its value — used to fill an adjacent editable field with a
+ * sensible default, while keeping that field freely editable.
+ */
+export function PresetMenu(props: {
+  title?: string;
+  options: Array<{ value: string; label: string }>;
+  onPick: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  return (
+    <div className="preset-menu" ref={ref}>
+      <button
+        type="button"
+        className="preset-btn"
+        title={props.title ?? "Fill from a preset"}
+        aria-label={props.title ?? "Fill from a preset"}
+        onClick={() => setOpen((o) => !o)}
+      >
+        ⋯
+      </button>
+      {open && (
+        <ul className="preset-list">
+          {props.options.map((o) => (
+            <li key={o.value}>
+              <button
+                type="button"
+                onClick={() => {
+                  props.onPick(o.value);
+                  setOpen(false);
+                }}
+              >
+                {o.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 

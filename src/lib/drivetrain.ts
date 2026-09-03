@@ -26,7 +26,8 @@ export interface DrivetrainInput {
   cogs: number[];
   circumferenceMm: number;
   cadenceRpm: number;
-  crankLengthMm: number;
+  /** Only needed for gain ratio; optional. */
+  crankLengthMm?: number;
   /** Optional internally-geared-hub gears; when present, each combo is
    *  multiplied through every hub gear. */
   hubGears?: HubGear[];
@@ -36,7 +37,8 @@ export interface DrivetrainInput {
  * Compute the gear table. Effective ratio = (chainring/cog) * hubRatio.
  */
 export function computeGears(input: DrivetrainInput): GearResult[] {
-  const { chainrings, cogs, circumferenceMm, cadenceRpm, crankLengthMm } = input;
+  const { chainrings, cogs, circumferenceMm, cadenceRpm } = input;
+  const crankLengthMm = input.crankLengthMm ?? 0;
   const circM = circumferenceMm / 1000;
   const wheelDiaInches = circumferenceMm / Math.PI / MM_PER_INCH;
   const wheelRadiusMm = circumferenceMm / Math.PI / 2;
@@ -85,64 +87,52 @@ export interface ChainLengthResult {
   rawInches: number; // before rounding
   inches: number; // rounded up to whole inch
   links: number; // whole links (inches * 2)
+  mm: number; // length in mm (inches * 25.4, rounded)
 }
 
 /**
  * Park Tool rigid-formula method:
  *   L = 2*(chainstay_in) + ring/4 + cog/4 + 1, rounded UP to a whole inch.
- * Each inch = 2 links.
+ * Rounding to a whole inch keeps the link count even (each inch = 2 links).
+ * We report the length in mm and the link count.
  */
 export function chainLength(input: ChainLengthInput): ChainLengthResult {
   const { chainstayMm, largestChainring, largestCog } = input;
   const chainstayIn = chainstayMm / MM_PER_INCH;
   const raw = 2 * chainstayIn + largestChainring / 4 + largestCog / 4 + 1;
   const inches = Math.ceil(raw);
-  return { rawInches: raw, inches, links: inches * 2 };
+  return { rawInches: raw, inches, links: inches * 2, mm: Math.round(inches * MM_PER_INCH) };
 }
 
-// --- Chain wear -------------------------------------------------------------
+// --- Chain wear replacement thresholds --------------------------------------
+// We don't calculate wear (a chain-wear gauge does that at the bench). This is
+// just the reference for the %-elongation at which to replace, which depends on
+// chain/drivetrain type. Narrower chains wear the cassette faster, so they get
+// replaced earlier.
 
-export interface ChainWearInput {
-  /** Measured length across the pins spanning `links` links, in mm. */
-  measuredMm: number;
-  /** Number of links measured over (12 links = 12 inches nominal). */
-  links: number;
+export interface ChainWearThreshold {
+  chainType: string;
+  replaceAtPercent: number;
+  note: string;
 }
 
-export type ChainWearVerdict = 'ok' | 'replace-soon' | 'replace-now';
-
-export interface ChainWearResult {
-  elongationPercent: number;
-  verdict: ChainWearVerdict;
-  message: string;
-}
-
-const NOMINAL_LINK_MM = 12.7; // 0.5 inch pitch
-
-/**
- * Chain elongation as a percentage over nominal. Thresholds follow the common
- * guidance in docs/calculators/drivetrain.md (conservative, suitable for
- * modern 11/12-speed where <0.5% is the usual replace point).
- */
-export function chainWear(input: ChainWearInput): ChainWearResult {
-  const nominal = input.links * NOMINAL_LINK_MM;
-  const elongationPercent = (input.measuredMm / nominal - 1) * 100;
-  let verdict: ChainWearVerdict;
-  let message: string;
-  if (elongationPercent < 0.5) {
-    verdict = 'ok';
-    message = 'Chain wear is within limits.';
-  } else if (elongationPercent < 0.75) {
-    verdict = 'replace-soon';
-    message =
-      'Replace the chain soon. On 11/12-speed, 0.5% is the usual replacement point; the cassette is likely still fine.';
-  } else {
-    verdict = 'replace-now';
-    message =
-      'Replace the chain now. Past ~0.75% the cassette (and possibly chainrings) are likely worn and may skip with a new chain.';
-  }
-  return { elongationPercent, verdict, message };
-}
+export const CHAIN_WEAR_THRESHOLDS: ChainWearThreshold[] = [
+  {
+    chainType: '11- & 12-speed',
+    replaceAtPercent: 0.5,
+    note: 'Narrow chains; replace early to protect the cassette.',
+  },
+  {
+    chainType: '6- to 10-speed',
+    replaceAtPercent: 0.75,
+    note: 'Standard derailleur drivetrains.',
+  },
+  {
+    chainType: 'Single speed / internally geared (1/8")',
+    replaceAtPercent: 1.0,
+    note: 'Wider, more wear-tolerant chains.',
+  },
+];
 
 // --- Common presets ---------------------------------------------------------
 

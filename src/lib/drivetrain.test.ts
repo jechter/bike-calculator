@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  computeGears,
-  chainLength,
-  chainWear,
-  gearRange,
-} from './drivetrain';
+import { computeGears, chainLength, gearRange } from './drivetrain';
 
 describe('computeGears', () => {
   const base = {
@@ -61,30 +56,11 @@ describe('gearRange', () => {
 });
 
 describe('chainLength', () => {
-  it('matches the worked example (410mm / 50 / 28 -> 53in / 106 links)', () => {
+  it('matches the worked example (410mm / 50 / 28 -> 53in / 106 links / ~1346mm)', () => {
     const r = chainLength({ chainstayMm: 410, largestChainring: 50, largestCog: 28 });
     expect(r.rawInches).toBeCloseTo(52.78, 1);
     expect(r.inches).toBe(53);
     expect(r.links).toBe(106);
-  });
-});
-
-describe('chainWear', () => {
-  it('flags a fresh chain as ok', () => {
-    const r = chainWear({ measuredMm: 12 * 12.7, links: 12 });
-    expect(r.elongationPercent).toBeCloseTo(0, 5);
-    expect(r.verdict).toBe('ok');
-  });
-
-  it('flags 0.6% as replace-soon', () => {
-    const nominal = 12 * 12.7;
-    const r = chainWear({ measuredMm: nominal * 1.006, links: 12 });
-    expect(r.verdict).toBe('replace-soon');
-  });
-
-  it('flags 1% as replace-now', () => {
-    const nominal = 12 * 12.7;
-    const r = chainWear({ measuredMm: nominal * 1.01, links: 12 });
-    expect(r.verdict).toBe('replace-now');
+    expect(r.mm).toBe(1346);
   });
 });

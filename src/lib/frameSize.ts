@@ -56,12 +56,25 @@ function nominalRoadSize(frameCm: number): string {
 
 /**
  * Approximate cycling inseam from body height. Cycling inseam is roughly 47% of
- * height on average (it varies with build). Used so the height-based path feeds
- * the same inseam logic as a measured inseam — measuring is still better.
+ * height on average, but leg-to-height proportion varies (on average women have
+ * proportionally longer legs, i.e. a higher ratio). The proportion is passed in
+ * so height-based sizing can be adjusted; measuring the inseam avoids the guess.
  */
-export function inseamFromHeight(heightCm: number): number {
-  return heightCm * 0.47;
+export function inseamFromHeight(heightCm: number, legProportion = 0.47): number {
+  return heightCm * legProportion;
 }
+
+// Leg-length proportion options for the height-based estimate.
+export interface LegProportion {
+  value: number;
+  label: string;
+}
+
+export const LEG_PROPORTIONS: LegProportion[] = [
+  { value: 0.47, label: "Average (≈47% of height)" },
+  { value: 0.49, label: "Longer legs (≈49%)" },
+  { value: 0.45, label: "Shorter legs (≈45%)" },
+];
 
 // --- Crank length -----------------------------------------------------------
 

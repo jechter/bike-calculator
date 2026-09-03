@@ -3,6 +3,7 @@ import {
   frameSizeFromInseam,
   inseamFromHeight,
   suggestCrankLength,
+  LEG_PROPORTIONS,
   type FrameStyle,
 } from "../lib/frameSize";
 import { Field, NumberInput, Select, Result, Section } from "./ui";
@@ -11,11 +12,12 @@ export function FrameSize() {
   const [mode, setMode] = useState<"inseam" | "height">("inseam");
   const [inseam, setInseam] = useState(82);
   const [height, setHeight] = useState(178);
+  const [legProp, setLegProp] = useState(0.47);
   const [style, setStyle] = useState<FrameStyle>("road");
 
   // Height is translated to an approximate inseam so both methods use the same
   // (style-aware) logic.
-  const effectiveInseam = mode === "inseam" ? inseam : inseamFromHeight(height);
+  const effectiveInseam = mode === "inseam" ? inseam : inseamFromHeight(height, legProp);
   const result = frameSizeFromInseam({ inseamCm: effectiveInseam, style });
   const crank = suggestCrankLength(effectiveInseam);
 
@@ -35,7 +37,11 @@ export function FrameSize() {
           <>
             These are <strong>starting estimates</strong>, not prescriptions. Fit
             depends on torso/arm length, riding style and brand geometry. Confirm
-            on a test ride. Prefer inseam over height when you have it.
+            on a test ride. Prefer inseam over height when you have it.{" "}
+            <strong>Gender</strong> isn't asked directly: what actually matters is
+            leg-length proportion (on average women have proportionally longer legs
+            for a given height) — set that below when sizing from height. It has no
+            effect once you measure the inseam.
           </>
         }
       >
@@ -55,9 +61,21 @@ export function FrameSize() {
               <NumberInput value={inseam} onChange={setInseam} suffix="cm" min={50} max={110} />
             </Field>
           ) : (
-            <Field label="Body height">
-              <NumberInput value={height} onChange={setHeight} suffix="cm" min={140} max={210} />
-            </Field>
+            <>
+              <Field label="Body height">
+                <NumberInput value={height} onChange={setHeight} suffix="cm" min={140} max={210} />
+              </Field>
+              <Field label="Leg proportion" hint="varies by build / on average by sex">
+                <Select
+                  value={String(legProp)}
+                  onChange={(v) => setLegProp(parseFloat(v))}
+                  options={LEG_PROPORTIONS.map((p) => ({ value: String(p.value), label: p.label }))}
+                />
+              </Field>
+              <Field label="Est. inseam" hint={`≈ ${Math.round(legProp * 100)}% of height`}>
+                <div className="static-value">≈ {effectiveInseam.toFixed(0)} cm</div>
+              </Field>
+            </>
           )}
           <Field label="Frame style">
             <Select value={style} onChange={setStyle} options={styleOptions} />
@@ -71,9 +89,8 @@ export function FrameSize() {
           <>
             {mode === "height" && (
               <>
-                Body height is translated to an approximate inseam (~47% of
-                height) and then sized like a measured inseam — measuring your
-                inseam is more accurate.{" "}
+                Sized from the inseam estimated above, then treated like a measured
+                inseam — measuring is more accurate.{" "}
               </>
             )}
             Saddle height is the LeMond estimate (inseam × 0.883), measured from
@@ -105,9 +122,6 @@ export function FrameSize() {
           />
           <Result label="Nominal" value={result.nominalSize} />
           <Result label="Saddle height (BB→top)" value={`${result.saddleHeightCm.toFixed(1)} cm`} />
-          {mode === "height" && (
-            <Result label="Est. inseam" value={`≈ ${effectiveInseam.toFixed(0)} cm`} />
-          )}
         </div>
       </Section>
 

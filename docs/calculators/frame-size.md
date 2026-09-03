@@ -46,15 +46,27 @@ Sources differ by a few percent; present the result as a small range
 
 ## From body height
 
-When only body height is known, **translate it to an approximate inseam**
-(cycling inseam ≈ 47% of height) and then run the exact same inseam-based logic
-above. This keeps the two methods **consistent** and makes height sizing
-style-aware too (the old separate height→size table ignored frame style). Show
-the estimated inseam and note that a measured inseam is more accurate.
+When only body height is known, **translate it to an approximate inseam** and
+then run the exact same inseam-based logic above. This keeps the two methods
+**consistent** and makes height sizing style-aware too (the old separate
+height→size table ignored frame style). The estimated inseam is shown next to
+the height input; a measured inseam is more accurate.
 
 ```
-inseam_cm ≈ height_cm × 0.47
+inseam_cm ≈ height_cm × leg_proportion   (leg_proportion default ≈ 0.47)
 ```
+
+### Gender / leg proportion
+
+Gender isn't asked directly, because it doesn't change the geometry — frame size
+follows from **leg length**. What differs on average is **proportion**: for a
+given height women tend to have proportionally longer legs (and shorter
+torso/reach). So the only place it matters here is the **height → inseam**
+estimate, offered as a *leg proportion* selector (Average ≈47%, Longer legs ≈49%,
+Shorter legs ≈45%) — the swing is large (a full frame size across the range), so
+it's worth setting. It has **no effect** once an inseam is measured. Torso/reach
+(the other "women's-specific" fit difference) isn't modelled here — this tool
+sizes the frame and saddle height, not reach/stack.
 
 ## Crank length suggestion
 

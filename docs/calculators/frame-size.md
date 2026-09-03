@@ -23,6 +23,11 @@ Estimates ideal frame size (and a starting saddle height and crank length) from
   - MTB: usually **inches** or S/M/L.
   - Hybrid/city: cm or S/M/L.
 - A **range** rather than a single number, plus the neighbouring sizes.
+- **Nominal size** (XS/S/M/L/XL) is derived from the **rider's inseam**, not the
+  style-scaled frame cm — so a given rider gets the same nominal label on a road
+  bike or an MTB (their seat-tube numbers differ, but "Medium" means the same
+  rider). Deriving it from the frame cm was a bug: MTB's smaller multiplier
+  pushed tall riders into XS.
 - **Starting saddle height** (LeMond method): `inseam × 0.883` measured from the
   centre of the bottom bracket to the top of the saddle, along the seat tube.
 - **Standover guidance**: note minimum standover clearance (a few cm below

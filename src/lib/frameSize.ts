@@ -39,16 +39,22 @@ export function frameSizeFromInseam(input: FrameSizeInput): FrameSizeResult {
     frameCmRange: [frameCm - 1.5, frameCm + 1.5],
     frameInches: frameCm / 2.54,
     saddleHeightCm,
-    nominalSize: nominalRoadSize(frameCm),
+    nominalSize: nominalSize(inseamCm),
   };
 }
 
-function nominalRoadSize(frameCm: number): string {
-  if (frameCm < 50) return 'XS';
-  if (frameCm < 53) return 'S';
-  if (frameCm < 56) return 'M';
-  if (frameCm < 58) return 'L';
-  if (frameCm < 61) return 'XL';
+/**
+ * Nominal S/M/L size from the rider's inseam (body size), NOT the style-scaled
+ * frame cm — a "Medium" rider is Medium on a road bike or an MTB, even though the
+ * seat-tube numbers differ. Thresholds derived from the usual height ranges via
+ * the ~0.47 inseam ratio.
+ */
+function nominalSize(inseamCm: number): string {
+  if (inseamCm < 77) return 'XS';
+  if (inseamCm < 80) return 'S';
+  if (inseamCm < 84) return 'M';
+  if (inseamCm < 87) return 'L';
+  if (inseamCm < 91) return 'XL';
   return 'XXL';
 }
 

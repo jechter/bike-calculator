@@ -21,6 +21,21 @@ describe('frameSizeFromInseam', () => {
     expect(viaHeight.frameCm).toBeCloseTo(viaInseam.frameCm, 6);
   });
 
+  it('nominal size is by rider, consistent across styles (not XS for a tall rider)', () => {
+    const inseam = inseamFromHeight(185); // ~87 cm
+    const road = frameSizeFromInseam({ inseamCm: inseam, style: 'road' });
+    const mtb = frameSizeFromInseam({ inseamCm: inseam, style: 'mtb' });
+    expect(mtb.nominalSize).toBe(road.nominalSize);
+    expect(mtb.nominalSize).not.toBe('XS');
+    expect(['L', 'XL']).toContain(mtb.nominalSize);
+  });
+
+  it('nominal scales with rider size', () => {
+    expect(frameSizeFromInseam({ inseamCm: 74, style: 'mtb' }).nominalSize).toBe('XS');
+    expect(frameSizeFromInseam({ inseamCm: 82, style: 'mtb' }).nominalSize).toBe('M');
+    expect(frameSizeFromInseam({ inseamCm: 93, style: 'road' }).nominalSize).toBe('XXL');
+  });
+
   it('saddle height is the LeMond 0.883 factor', () => {
     expect(frameSizeFromInseam({ inseamCm: 84, style: 'road' }).saddleHeightCm).toBeCloseTo(
       84 * 0.883,

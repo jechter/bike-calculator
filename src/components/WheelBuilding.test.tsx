@@ -23,15 +23,20 @@ describe("Wheel building page", () => {
     expect(labels.length).toBe(1);
   });
 
-  it("applies a hub preset from the section popup", () => {
+  it("applies a hub preset, shows its name, and reverts on edit", () => {
     const { getByText, container } = render(<WheelBuilding />);
-    fireEvent.click(getByText("Common hub"));
+    fireEvent.click(getByText("Common hub presets"));
     fireEvent.click(getByText("Road front — QR 100 mm"));
     // flanges become 38 mm (default was 45)
-    const has38 = Array.from(container.querySelectorAll('input[type="number"]')).some(
+    const flange = Array.from(container.querySelectorAll('input[type="number"]')).find(
       (i) => (i as HTMLInputElement).value === "38",
-    );
-    expect(has38).toBe(true);
+    ) as HTMLInputElement;
+    expect(flange).toBeTruthy();
+    // the button now reflects the chosen preset
+    expect(getByText("Road front — QR 100 mm")).toBeTruthy();
+    // editing a hub value reverts the label
+    fireEvent.change(flange, { target: { value: "40" } });
+    expect(getByText("Common hub presets")).toBeTruthy();
   });
 
   it("fills ERD from a rim preset", () => {

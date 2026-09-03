@@ -31,15 +31,31 @@ export function WheelBuilding() {
   const [rightOffset, setRightOffset] = useState(17.5);
   const [rightCross, setRightCross] = useState(3);
 
+  // Which hub preset is currently applied (null once a hub value is edited).
+  const [hubPreset, setHubPreset] = useState<number | null>(null);
+
   const applyHubPreset = (idx: string) => {
-    const p = HUB_GEOMETRY_PRESETS[parseInt(idx)];
+    const i = parseInt(idx);
+    const p = HUB_GEOMETRY_PRESETS[i];
     if (!p) return;
     setLeftFlange(p.leftFlangeDiaMm);
     setRightFlange(p.rightFlangeDiaMm);
     setLeftOffset(p.leftOffsetMm);
     setRightOffset(p.rightOffsetMm);
     setHoleDia(p.spokeHoleMm);
+    setHubPreset(i);
   };
+
+  // Editing any preset-controlled hub value clears the selected preset name.
+  const edited =
+    <T,>(setter: (v: T) => void) =>
+    (v: T) => {
+      setter(v);
+      setHubPreset(null);
+    };
+
+  const hubPresetLabel =
+    hubPreset !== null ? HUB_GEOMETRY_PRESETS[hubPreset].label : "Common hub presets";
 
   const left = useMemo(
     () =>
@@ -108,7 +124,7 @@ export function WheelBuilding() {
         }
         action={
           <PresetMenu
-            label="Common hub"
+            label={hubPresetLabel}
             title="Load a common hub (approximate)"
             options={HUB_OPTIONS}
             onPick={applyHubPreset}
@@ -120,34 +136,30 @@ export function WheelBuilding() {
             <NumberInput value={spokes} onChange={setSpokes} min={8} step={2} />
           </Field>
           <Field label="Flange hole diameter">
-            <NumberInput value={holeDia} onChange={setHoleDia} suffix="mm" step={0.1} />
+            <NumberInput value={holeDia} onChange={edited(setHoleDia)} suffix="mm" step={0.1} />
           </Field>
         </div>
 
         <div className="wb-sides">
-          <div className="wb-side">
-            <h4 className="wb-side-title" style={{ color: "#0b6bcb" }}>
-              Left / non-drive
-            </h4>
+          <div className="wb-side wb-side-left">
+            <h4 className="wb-side-title">Left / non-drive</h4>
             <Field label="Flange diameter">
-              <NumberInput value={leftFlange} onChange={setLeftFlange} suffix="mm" />
+              <NumberInput value={leftFlange} onChange={edited(setLeftFlange)} suffix="mm" />
             </Field>
             <Field label="Centre-to-flange offset">
-              <NumberInput value={leftOffset} onChange={setLeftOffset} suffix="mm" />
+              <NumberInput value={leftOffset} onChange={edited(setLeftOffset)} suffix="mm" />
             </Field>
             <Field label="Lacing">
               <Select value={leftCross} onChange={setLeftCross} options={crossOptions} />
             </Field>
           </div>
-          <div className="wb-side">
-            <h4 className="wb-side-title" style={{ color: "#c0392b" }}>
-              Right / drive
-            </h4>
+          <div className="wb-side wb-side-right">
+            <h4 className="wb-side-title">Right / drive</h4>
             <Field label="Flange diameter">
-              <NumberInput value={rightFlange} onChange={setRightFlange} suffix="mm" />
+              <NumberInput value={rightFlange} onChange={edited(setRightFlange)} suffix="mm" />
             </Field>
             <Field label="Centre-to-flange offset">
-              <NumberInput value={rightOffset} onChange={setRightOffset} suffix="mm" />
+              <NumberInput value={rightOffset} onChange={edited(setRightOffset)} suffix="mm" />
             </Field>
             <Field label="Lacing">
               <Select value={rightCross} onChange={setRightCross} options={crossOptions} />

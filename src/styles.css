@@ -162,7 +162,9 @@ input[type="number"], input[type="text"], select {
 table { border-collapse: collapse; width: 100%; font-size: 13px; }
 th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); }
 th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--panel); }
-.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel); }
+/* isolation traps the sticky <th> stacking context inside the table so it can't
+   paint over section info popovers that overlap the table from above */
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel); isolation: isolate; }
 tr.highlight td { background: var(--accent-soft); }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 

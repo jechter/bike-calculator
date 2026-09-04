@@ -13,7 +13,6 @@ export interface ThreadItem {
   loosenDirection: 'CW' | 'CCW';
   viewpoint: string; // where "clockwise" is defined from
   notes: string;
-  highlight?: boolean; // the common gotchas
 }
 
 // loosenDirection is the opposite of the tighten direction.
@@ -37,7 +36,6 @@ export const THREAD_ITEMS: ThreadItem[] = [
     loosenDirection: 'CW',
     viewpoint: 'facing the non-drive side',
     notes: 'The classic gotcha — reverse threaded.',
-    highlight: true,
   },
   // Bottom brackets
   {
@@ -48,7 +46,6 @@ export const THREAD_ITEMS: ThreadItem[] = [
     loosenDirection: 'CW',
     viewpoint: 'facing the drive side',
     notes: 'Drive-side cup is reverse threaded.',
-    highlight: true,
   },
   {
     category: 'bottom-bracket',
@@ -67,7 +64,6 @@ export const THREAD_ITEMS: ThreadItem[] = [
     loosenDirection: 'CCW',
     viewpoint: 'facing each side',
     notes: 'BOTH cups normal thread — common mix-up vs English.',
-    highlight: true,
   },
   {
     category: 'bottom-bracket',

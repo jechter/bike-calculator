@@ -29,7 +29,7 @@ export function ThreadDirection() {
         Pedals and bottom brackets are the only parts with left-hand threads —
         everything else on the bike is normal (right-hand) thread. Right-hand:
         clockwise to tighten. Left-hand: the opposite. “Clockwise” is as you face
-        that side of the bike.
+        that side of the bike. <strong>Highlighted rows are left-hand threaded.</strong>
       </p>
 
       <Section
@@ -55,7 +55,7 @@ export function ThreadDirection() {
             </thead>
             <tbody>
               {pedals.map((it, i) => (
-                <tr key={i} className={it.highlight ? "highlight" : ""}>
+                <tr key={i} className={it.thread === "LH" ? "highlight" : ""}>
                   <td>{it.side}</td>
                   <DirCells it={it} />
                 </tr>
@@ -89,7 +89,7 @@ export function ThreadDirection() {
             </thead>
             <tbody>
               {bbs.map((it, i) => (
-                <tr key={i} className={it.highlight ? "highlight" : ""}>
+                <tr key={i} className={it.thread === "LH" ? "highlight" : ""}>
                   <td>{it.part}</td>
                   <td>{it.side}</td>
                   <DirCells it={it} />

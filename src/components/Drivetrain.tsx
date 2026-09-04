@@ -111,7 +111,7 @@ export function Drivetrain() {
   const cogOver = derailleur ? largestCog - derailleur.maxSprocket : 0;
   const cogStatus: FitStatus = cogOver <= 0 ? "ok" : cogOver <= 4 ? "caution" : "over";
   const capOver = fit && derailleur ? fit.requiredCapacity - derailleur.totalCapacity : 0;
-  const capStatus: FitStatus = capOver <= 0 ? "ok" : capOver <= 6 ? "caution" : "over";
+  const capStatus: FitStatus = capOver <= 0 ? "ok" : capOver <= 4 ? "caution" : "over";
   const worst: FitStatus = [cogStatus, capStatus].includes("over")
     ? "over"
     : [cogStatus, capStatus].includes("caution")

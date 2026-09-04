@@ -34,11 +34,11 @@ worn chain.
   [derailleur database](derailleur-compatibility.md); the tool checks that your
   largest cog ≤ its max sprocket and required capacity ≤ its rated capacity, and
   shows its actuation/pull ratio. Both checks are **tri-state** — OK / caution /
-  over — since a little past spec usually still works: **max cog** up to **+4T**
-  (long hanger / extra B-tension) and **capacity** up to **+6T** (the extra slack
-  only appears in the small-small cross-chain gear you'd avoid anyway). The
-  caution band shows amber with a "proceed with caution" note; beyond it is a hard
-  fail. (Gear range isn't repeated here — it's in the Gears summary.)
+  over — since a little past spec usually still works: up to **+4T** over is a
+  caution (max cog: long hanger / extra B-tension; capacity: the extra slack only
+  appears in the small-small cross-chain gear you'd avoid anyway). The caution
+  band shows amber with a "proceed with caution" note; beyond it is a hard fail.
+  (Gear range isn't repeated here — it's in the Gears summary.)
 
 > **Gain ratio** (Sheldon Brown's crank-length-aware measure) is intentionally
 > *not* shown — it's niche and needing a crank-length input for it added clutter.

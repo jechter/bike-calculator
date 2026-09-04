@@ -10,13 +10,16 @@ const PULLEY = pr(11); // ~11T jockey wheels
 const CAGE = 70; // guide->tension pulley spacing, mm
 
 type V = { x: number; y: number };
-const sub = (a: V, b: V): V => ({ x: a.x - b.x, y: a.y - b.y });
-const add = (a: V, b: V): V => ({ x: a.x + b.x, y: a.y + b.y });
-const norm = (v: V): V => {
-  const m = Math.hypot(v.x, v.y) || 1;
-  return { x: v.x / m, y: v.y / m };
-};
-const edge = (c: V, r: number, toward: V): V => add(c, { x: r * norm(sub(toward, c)).x, y: r * norm(sub(toward, c)).y });
+const onCircle = (c: V, r: number, ang: number): V => ({ x: c.x + r * Math.cos(ang), y: c.y + r * Math.sin(ang) });
+// External-tangent touch points between two circles (chain wraps both the same
+// way, so all segments use the same side s = -1). Returns border-to-border points.
+function extTan(A: V, rA: number, B: V, rB: number, s: number): { a: V; b: V } {
+  const beta = Math.atan2(B.y - A.y, B.x - A.x);
+  const d = Math.hypot(B.x - A.x, B.y - A.y);
+  const g = Math.acos(Math.max(-1, Math.min(1, (rA - rB) / d)));
+  const phi = beta + s * g;
+  return { a: onCircle(A, rA, phi), b: onCircle(B, rB, phi) };
+}
 const tanLen = (c1: V, r1: number, c2: V, r2: number) => {
   const d = Math.hypot(c2.x - c1.x, c2.y - c1.y);
   return Math.sqrt(Math.max(0, d * d - (r1 - r2) ** 2));
@@ -70,7 +73,6 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
 
   // Upper (taut) run tangent points, top of chainring to top of cog.
   const gamma = Math.acos(Math.max(-1, Math.min(1, (rf - rr) / chainstayMm)));
-  const onCircle = (c: V, r: number, ang: number): V => ({ x: c.x + r * Math.cos(ang), y: c.y + r * Math.sin(ang) });
   const chainTop = onCircle(F, rf, -gamma);
   const cogTop = onCircle(R, rr, -gamma);
   const chainBot = onCircle(F, rf, gamma);
@@ -100,17 +102,17 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
     const T = circInt(G, CAGE, F, TF) ?? { x: G.x, y: G.y + CAGE };
     pulleys.push(G, T);
 
-    // Chain: upper run -> cog wrap -> down to guide -> cage -> tension -> chainring.
-    const eCog = edge(R, rr, G);
-    const gIn = edge(G, PULLEY, eCog);
-    const gOut = edge(G, PULLEY, T);
-    const tIn = edge(T, PULLEY, G);
-    const tOut = edge(T, PULLEY, F);
-    const fIn = edge(F, rf, T);
+    // Chain routed border-to-border via external tangents around every circle:
+    // chainring -> cog -> guide pulley -> tension pulley -> chainring.
+    const s = -1;
+    const fr = extTan(F, rf, R, rr, s);
+    const rg = extTan(R, rr, G, PULLEY, s);
+    const gt = extTan(G, PULLEY, T, PULLEY, s);
+    const tf = extTan(T, PULLEY, F, rf, s);
     paths.push(
-      `M ${pt(chainTop)} L ${pt(cogTop)} ${arc(R, rr, cogTop, eCog)} L ${pt(gIn)} ` +
-        `${arc(G, PULLEY, gIn, gOut)} L ${pt(tIn)} ${arc(T, PULLEY, tIn, tOut)} L ${pt(fIn)} ` +
-        `${arc(F, rf, fIn, chainTop)} Z`,
+      `M ${pt(fr.a)} L ${pt(fr.b)} ${arc(R, rr, fr.b, rg.a)} L ${pt(rg.b)} ` +
+        `${arc(G, PULLEY, rg.b, gt.a)} L ${pt(gt.b)} ${arc(T, PULLEY, gt.b, tf.a)} L ${pt(tf.b)} ` +
+        `${arc(F, rf, tf.b, fr.a)} Z`,
     );
   } else {
     // No derailleur (single speed / hub): a plain loop over the two gears.

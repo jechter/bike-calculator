@@ -95,9 +95,16 @@ body {
 .main h1 { margin: 0 0 4px; font-size: 24px; }
 .main .subtitle { color: var(--muted); margin: 0 0 24px; }
 
-.section { margin-bottom: 24px; }
+/* Each section is a card so the fields under one heading read as a group. */
+.section {
+  margin-bottom: 18px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px 18px;
+}
 /* position+z-index so the info popover paints above sticky table headers below it */
-.section-head { position: relative; z-index: 5; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.section-head { position: relative; z-index: 5; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
 .section-head h3 { margin: 0; }
 .section h3 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 
@@ -156,7 +163,7 @@ input[type="number"], input[type="text"], select {
 
 /* Results */
 .results { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-.result { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+.result { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
 .result-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
 .result-value { font-size: 18px; font-weight: 600; }
 .result-big .result-value { font-size: 26px; }
@@ -172,10 +179,10 @@ input[type="number"], input[type="text"], select {
 /* Tables */
 table { border-collapse: collapse; width: 100%; font-size: 13px; }
 th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); }
-th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--panel); }
+th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--panel-2); }
 /* isolation traps the sticky <th> stacking context inside the table so it can't
    paint over section info popovers that overlap the table from above */
-.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel); isolation: isolate; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel-2); isolation: isolate; }
 tr.highlight td { background: var(--accent-soft); }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
@@ -196,14 +203,14 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .td-diagram {
   flex: none; width: 240px;
-  background: var(--panel); border: 1px solid var(--border);
+  background: var(--panel-2); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 16px; text-align: center;
   position: sticky; top: 16px;
 }
 .td-dia-title { font-weight: 600; font-size: 14px; }
 .td-dia-sub { color: var(--muted); font-size: 13px; margin: 2px 0 8px; }
 .td-diagram svg { width: 190px; height: 190px; }
-.td-fastener { fill: var(--panel-2); stroke: var(--border); stroke-width: 2; }
+.td-fastener { fill: var(--panel); stroke: var(--border); stroke-width: 2; }
 .td-fastener-center { fill: var(--muted); stroke: none; }
 .td-loosen { color: var(--ok); }
 .td-tighten { color: var(--danger); }
@@ -329,7 +336,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .chart-controls .result { padding: 6px 12px; }
 .gear-chart {
   position: relative;
-  background: var(--panel);
+  background: var(--panel-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 8px 4px;
@@ -422,7 +429,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 /* Wheel diagram */
 .wheel-diagram {
   display: flex; flex-wrap: wrap; align-items: center; gap: 24px;
-  background: var(--panel); border: 1px solid var(--border);
+  background: var(--panel-2); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 16px;
 }
 .wd-view { display: flex; flex-direction: column; align-items: center; gap: 6px; }

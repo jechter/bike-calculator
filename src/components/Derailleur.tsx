@@ -1,79 +1,74 @@
 import { useState } from "react";
-import { checkCapacity, DERAILLEUR_SYSTEMS } from "../lib/derailleur";
-import { Field, NumberInput, Result, Section } from "./ui";
+import { DERAILLEUR_SYSTEMS, searchDerailleurs } from "../lib/derailleur";
+import { Field, TextInput, Section } from "./ui";
 
 export function Derailleur() {
-  const [bigRing, setBigRing] = useState(50);
-  const [smallRing, setSmallRing] = useState(34);
-  const [bigCog, setBigCog] = useState(32);
-  const [smallCog, setSmallCog] = useState(11);
-  const [capacity, setCapacity] = useState(37);
-  const [maxSprocket, setMaxSprocket] = useState(32);
-
-  const r = checkCapacity({
-    largestChainring: bigRing,
-    smallestChainring: smallRing,
-    largestCog: bigCog,
-    smallestCog: smallCog,
-    ratedCapacity: capacity,
-    maxSprocket,
-  });
+  const [query, setQuery] = useState("");
+  const results = searchDerailleurs(query);
 
   return (
     <>
       <Section
-        title="Capacity & max-sprocket check"
+        title="Derailleur database"
         info={
           <>
-            Required capacity = (big ring − small ring) + (big cog − small cog). It
-            must be ≤ the derailleur's rated capacity, and the largest cog must not
-            exceed the derailleur's max sprocket.
+            Search by brand, model, discipline or speeds (e.g. “shimano 11”,
+            “deore”, “gravel”). Specs are <strong>approximate, community-sourced</strong>
+            {" "}— verify against the manufacturer. To check whether one fits a given
+            cassette/crankset, pick it in the{" "}
+            <a className="inline-link" href="#/drivetrain">
+              drivetrain calculator
+            </a>
+            .
           </>
         }
       >
-        <div className="grid">
-          <Field label="Largest chainring">
-            <NumberInput value={bigRing} onChange={setBigRing} suffix="T" />
-          </Field>
-          <Field label="Smallest chainring" hint="= largest for 1×">
-            <NumberInput value={smallRing} onChange={setSmallRing} suffix="T" />
-          </Field>
-          <Field label="Largest cog">
-            <NumberInput value={bigCog} onChange={setBigCog} suffix="T" />
-          </Field>
-          <Field label="Smallest cog">
-            <NumberInput value={smallCog} onChange={setSmallCog} suffix="T" />
-          </Field>
-          <Field label="Derailleur rated capacity">
-            <NumberInput value={capacity} onChange={setCapacity} suffix="T" />
-          </Field>
-          <Field label="Derailleur max sprocket">
-            <NumberInput value={maxSprocket} onChange={setMaxSprocket} suffix="T" />
+        <div className="rows">
+          <Field label="Search" hint={`${results.length} of ${searchDerailleurs("").length} shown`}>
+            <TextInput
+              value={query}
+              onChange={setQuery}
+              placeholder="e.g. shimano 11, deore, gravel, tourney"
+            />
           </Field>
         </div>
-        <div className="results" style={{ marginTop: 8 }}>
-          <Result
-            label="Required capacity"
-            value={`${r.requiredCapacity} T`}
-            big
-          />
-          <Result label="Front / rear difference" value={`${r.frontDifference} + ${r.rearDifference} T`} />
-          <Result
-            label="Capacity"
-            value={
-              <span className={"badge " + (r.capacityOk ? "ok" : "danger")}>
-                {r.capacityOk ? "OK" : "over"}
-              </span>
-            }
-          />
-          <Result
-            label="Max sprocket"
-            value={
-              <span className={"badge " + (r.maxSprocketOk ? "ok" : "danger")}>
-                {r.maxSprocketOk ? "OK" : "too big"}
-              </span>
-            }
-          />
+        <div className="table-wrap" style={{ marginTop: 12 }}>
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Disc.</th>
+                <th>Speeds</th>
+                <th>Cage</th>
+                <th className="num">Max cog</th>
+                <th className="num">Capacity</th>
+                <th>Actuation</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((d) => (
+                <tr key={d.id}>
+                  <td>
+                    {d.model}
+                    {d.notes && <div className="dr-note">{d.notes}</div>}
+                  </td>
+                  <td>{d.discipline}</td>
+                  <td>{d.speeds}</td>
+                  <td>{d.cage}</td>
+                  <td className="num">{d.maxSprocket}T</td>
+                  <td className="num">{d.totalCapacity}T</td>
+                  <td>{d.actuation}</td>
+                </tr>
+              ))}
+              {results.length === 0 && (
+                <tr>
+                  <td colSpan={7} style={{ color: "var(--muted)" }}>
+                    No derailleurs match “{query}”.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </Section>
 
@@ -81,7 +76,7 @@ export function Derailleur() {
         title="Compatibility reference"
         info={
           <>
-            Actuation ratios below are approximate and marketing-obscured —{" "}
+            Actuation ratios are approximate and marketing-obscured —{" "}
             <strong>verify before relying on them</strong>. The reliable rule:
             shifter and rear derailleur must share an actuation family, and the
             cassette speed count must match the shifter.

@@ -114,6 +114,18 @@ describe("Drivetrain page", () => {
     expect(getByText("106")).toBeTruthy();
   });
 
+  it("checks a chosen rear derailleur against the drivetrain", () => {
+    const { container } = render(<Drivetrain />);
+    const derSelect = Array.from(container.querySelectorAll("select")).find((s) =>
+      Array.from(s.options).some((o) => o.textContent?.includes("105 RD-R7000 SS")),
+    ) as HTMLSelectElement;
+    expect(derSelect).toBeTruthy();
+    fireEvent.change(derSelect, { target: { value: "sh-105-r7000-ss" } });
+    // default 50/34 + 11-28 -> required capacity 33T, largest cog 28T
+    expect(container.textContent).toContain("Capacity needed");
+    expect(container.textContent).toContain("33T");
+  });
+
   it("does not apply the derailleur chain-length formula to single speed", () => {
     const { container, getByText, queryByText } = render(<Drivetrain />);
     const typeSelect = container.querySelector("select") as HTMLSelectElement;

@@ -179,6 +179,8 @@ th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background
 tr.highlight td { background: var(--accent-soft); }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
+.dr-note { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
 .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
 .badge.ok { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
 .badge.warn { background: color-mix(in srgb, var(--warn) 20%, transparent); color: var(--warn); }

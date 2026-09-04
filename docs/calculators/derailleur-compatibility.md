@@ -1,17 +1,30 @@
-# Derailleur Compatibility
+# Derailleur
 
-A reference chart plus a small compatibility check. Answers: will this shifter,
-derailleur, and cassette work together, and can the derailleur handle this gear
-range?
+Two things: a **searchable derailleur database** (look up the specs of a given
+derailleur) and a **compatibility reference** chart of actuation families.
 
-> **Actuation/pull ratios are notoriously fiddly and marketing-obscured.** The
-> tool must cite sources and let the user override values, rather than present
-> them as gospel. Treat the numbers below as a starting reference to verify, not
-> a final authority.
+The **capacity / max-sprocket fit check** lives in the
+[drivetrain calculator](drivetrain.md) instead — that's where you have a
+cassette and crankset to check against. There you can pick a derailleur from the
+database and it tells you whether your largest cog and total capacity are within
+its limits.
 
-## Part 1 — Reference chart
+> **All the spec data is approximate / community-sourced** (and actuation ratios
+> are marketing-obscured). Verify against the manufacturer before relying on it;
+> the database is a seed list to extend.
 
-A browsable/filterable table of rear derailleur (and shifter) families with:
+## Part 1 — Derailleur database
+
+A searchable table of rear derailleurs. Search by brand / model / discipline /
+speeds; each row shows the specs the tool knows: **brand + model**, discipline,
+speeds, **cage length**, **max sprocket**, **total capacity**, and **actuation
+family** (which ties into the compatibility reference below). Approximate,
+community-sourced — a seed list to extend. Fields per entry:
+`{ brand, model, discipline, speeds, cage, maxSprocket, minSprocket?, totalCapacity, actuation, oneBy?, notes? }`.
+
+## Part 2 — Compatibility reference
+
+A browsable table of rear derailleur (and shifter) families with:
 
 - **Actuation / cable-pull ratio** — how much cog-lateral movement per unit of
   cable pulled. Shifter and derailleur must share a system for indexing to work.
@@ -41,9 +54,11 @@ to lead with: *shifter and rear derailleur must be from the same actuation
 family, and the cassette speed-count must match the shifter.* Cross-brand
 "mullet"/hacked combos exist but should be flagged as non-standard.
 
-## Part 2 — Capacity / range check
+## Capacity / range check (lives in the drivetrain calculator)
 
-This part **is** exact and worth automating.
+This part **is** exact and worth automating — and it needs a cassette + crankset,
+so it's implemented on the [drivetrain page](drivetrain.md), where you pick a
+derailleur from the database and it checks the fit. Kept here for reference.
 
 ### Inputs
 - Chainrings: largest & smallest tooth count (1× → both equal).

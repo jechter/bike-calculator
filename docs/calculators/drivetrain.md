@@ -30,6 +30,10 @@ worn chain.
   with the [power calculator](power.md) — not a per-chart toggle.
 - **For chain length**: chainstay length (mm) OR the "big-big" measurement,
   plus largest chainring and largest cog.
+- **Rear derailleur** (cassette mode, optional): pick one from the
+  [derailleur database](derailleur-compatibility.md); the tool checks that your
+  largest cog ≤ its max sprocket and required capacity ≤ its rated capacity, and
+  shows the gear range — a green/red verdict per the formula in that doc.
 
 > **Gain ratio** (Sheldon Brown's crank-length-aware measure) is intentionally
 > *not* shown — it's niche and needing a crank-length input for it added clutter.

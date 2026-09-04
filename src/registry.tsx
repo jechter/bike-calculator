@@ -53,7 +53,7 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: "derailleur",
     title: "Derailleur",
-    subtitle: "Capacity / max-sprocket check and a compatibility reference chart.",
+    subtitle: "Look up derailleur specs, plus a compatibility reference.",
     icon: "🔗",
     kind: "calc",
     Component: Derailleur,

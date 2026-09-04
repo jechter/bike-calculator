@@ -10,6 +10,7 @@ import {
   type GearResult,
   type HubGear,
 } from "../lib/drivetrain";
+import { DERAILLEURS, derailleurById, checkCapacity } from "../lib/derailleur";
 import { TIRE_PRESETS } from "../lib/wheels";
 import { kmhToMph } from "../lib/units";
 import { useUnits, speedUnitLabel } from "../units-context";
@@ -42,6 +43,14 @@ const CRANKSET_OPTIONS = CHAINRING_PRESETS.map((p) => ({
   label: p.label,
 }));
 
+const DERAILLEUR_OPTIONS = [
+  { value: "", label: "— none —" },
+  ...DERAILLEURS.map((d) => ({
+    value: d.id,
+    label: `${d.brand} ${d.model} · ${d.speeds}sp · max ${d.maxSprocket}T`,
+  })),
+];
+
 export function Drivetrain() {
   const units = useUnits();
   const [mode, setMode] = useState<Mode>("cassette");
@@ -55,6 +64,7 @@ export function Drivetrain() {
   const [metric, setMetric] = useState<Metric>("speed");
 
   const [chainstay, setChainstay] = useState(410);
+  const [derailleurId, setDerailleurId] = useState("");
 
   const chainrings = mode === "cassette" ? parseList(chainringStr) : [singleRing];
   const cogs = mode === "cassette" ? parseList(cogStr) : [singleCog];
@@ -79,6 +89,20 @@ export function Drivetrain() {
   const largestCog = Math.max(...cogs, 0);
   const chain = chainLength({ chainstayMm: chainstay, largestChainring: largestRing, largestCog });
   const wearThresholds = chainWearThresholdsFor(mode === "cassette", cogs.length);
+
+  // Rear-derailleur fit check (cassette only).
+  const derailleur = derailleurById(derailleurId);
+  const fit =
+    derailleur && chainrings.length && cogs.length
+      ? checkCapacity({
+          largestChainring: largestRing,
+          smallestChainring: Math.min(...chainrings),
+          largestCog,
+          smallestCog: Math.min(...cogs),
+          ratedCapacity: derailleur.totalCapacity,
+          maxSprocket: derailleur.maxSprocket,
+        })
+      : null;
 
   const sliderCadence = Math.min(120, Math.max(60, cadence || 60));
 
@@ -284,6 +308,67 @@ export function Drivetrain() {
           }
         />
       </Section>
+
+      {mode === "cassette" && (
+        <Section
+          title="Rear derailleur fit"
+          info={
+            <>
+              Pick a derailleur to check it against this cassette/crankset. Needs
+              capacity ≥ (big ring − small ring) + (big cog − small cog), and its
+              max sprocket ≥ your largest cog. Specs are approximate — see the{" "}
+              <a className="inline-link" href="#/derailleur">
+                derailleur database
+              </a>
+              .
+            </>
+          }
+        >
+          <div className="rows">
+            <Field label="Rear derailleur (optional)">
+              <Select value={derailleurId} onChange={setDerailleurId} options={DERAILLEUR_OPTIONS} />
+            </Field>
+          </div>
+          {fit && derailleur && (
+            <>
+              <div className="results" style={{ marginTop: 8 }}>
+                <Result
+                  label="Largest cog"
+                  value={
+                    <>
+                      {largestCog}T{" "}
+                      <span className={"badge " + (fit.maxSprocketOk ? "ok" : "danger")}>
+                        {fit.maxSprocketOk ? "OK" : `over ${derailleur.maxSprocket}T`}
+                      </span>
+                    </>
+                  }
+                />
+                <Result
+                  label="Capacity needed"
+                  value={
+                    <>
+                      {fit.requiredCapacity}T{" "}
+                      <span className={"badge " + (fit.capacityOk ? "ok" : "danger")}>
+                        {fit.capacityOk ? "OK" : `over ${derailleur.totalCapacity}T`}
+                      </span>
+                    </>
+                  }
+                />
+                <Result label="Gear range" value={`${range.toFixed(2)}×`} />
+              </div>
+              <Note tone={fit.capacityOk && fit.maxSprocketOk ? "info" : "warn"}>
+                {fit.capacityOk && fit.maxSprocketOk
+                  ? `${derailleur.brand} ${derailleur.model} should handle this drivetrain (rated ${derailleur.totalCapacity}T capacity, ${derailleur.maxSprocket}T max cog).`
+                  : `${derailleur.brand} ${derailleur.model} is out of range here — ${
+                      !fit.maxSprocketOk ? `your ${largestCog}T cog exceeds its ${derailleur.maxSprocket}T max` : ""
+                    }${!fit.maxSprocketOk && !fit.capacityOk ? "; " : ""}${
+                      !fit.capacityOk ? `needs ${fit.requiredCapacity}T capacity vs its ${derailleur.totalCapacity}T` : ""
+                    }.`}
+              </Note>
+            </>
+          )}
+        </Section>
+      )}
 
       <Section
         title="Chain length"

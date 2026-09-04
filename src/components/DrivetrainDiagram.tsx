@@ -105,34 +105,33 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
     const refCog = pr(cs[Math.floor(cs.length / 2)]);
     const GRef: V = { x: R.x, y: R.y + refCog + 8 + PULLEY };
     const TRef: V = { x: GRef.x, y: GRef.y + CAGE };
-    // Chainring/cog use external tangents; the two pulleys are wrapped the other
-    // way, so cog->guide and tension->chainring are internal (crossing) tangents.
+    // Chain routing: right of cog (CW) -> left of guide (CCW) -> right of tension
+    // (CW) -> out the bottom to the chainring. So cog->guide and guide->tension
+    // are internal (crossing) tangents; the upper and lower runs are external.
+    const GT = Math.sqrt(Math.max(0, CAGE * CAGE - (2 * PULLEY) ** 2)); // internal cage tangent
     const Ltarget =
       extTanLen(F, refRing, R, refCog) +
       intTanLen(R, refCog, GRef, PULLEY) +
-      CAGE +
-      intTanLen(TRef, PULLEY, F, refRing);
+      GT +
+      extTanLen(TRef, PULLEY, F, refRing);
 
     // Solve the tension pulley so the length stays Ltarget.
-    const need = Ltarget - extTanLen(F, rf, R, rr) - intTanLen(R, rr, G, PULLEY) - CAGE;
-    let TF = Math.sqrt(Math.max(0, need * need + (PULLEY + rf) ** 2));
+    const need = Ltarget - extTanLen(F, rf, R, rr) - intTanLen(R, rr, G, PULLEY) - GT;
+    let TF = Math.sqrt(Math.max(0, need * need + (PULLEY - rf) ** 2));
     const FG = Math.hypot(G.x - F.x, G.y - F.y);
     TF = Math.max(FG - CAGE + 1, Math.min(FG + CAGE - 1, TF));
-    TF = Math.max(TF, PULLEY + rf + 1);
     const hits = circInt2(G, CAGE, F, TF);
-    // Pick the forward-and-down solution so the cage hangs down toward the crank.
-    const T = hits ? (hits[0].x < hits[1].x ? hits[0] : hits[1]) : { x: G.x, y: G.y + CAGE };
+    // Tension pulley hangs below the guide.
+    const T = hits ? (hits[0].y > hits[1].y ? hits[0] : hits[1]) : { x: G.x, y: G.y + CAGE };
     pulleys.push(G, T);
 
-    // Chainring & cog wrap clockwise; the pulleys wrap counter-clockwise, joined
-    // by internal (crossing) tangents. All border-to-border.
-    const fr = extTan(F, rf, R, rr, -1); // upper run (top)
-    const rg = intTan(R, rr, G, PULLEY, +1); // cog -> guide (cross)
-    const gt = extTan(G, PULLEY, T, PULLEY, +1); // guide -> tension (both CCW)
-    const tf = intTan(T, PULLEY, F, rf, +1); // tension -> chainring (cross)
+    const fr = extTan(F, rf, R, rr, -1); // upper run: top of chainring & cog
+    const rg = intTan(R, rr, G, PULLEY, -1); // right of cog -> left of guide (cross)
+    const gt = intTan(G, PULLEY, T, PULLEY, +1); // left of guide -> right of tension (cross)
+    const tf = extTan(T, PULLEY, F, rf, -1); // bottom of tension -> chainring
     paths.push(
       `M ${pt(fr.a)} L ${pt(fr.b)} ${arc(R, rr, fr.b, rg.a, true)} L ${pt(rg.b)} ` +
-        `${arc(G, PULLEY, rg.b, gt.a, false)} L ${pt(gt.b)} ${arc(T, PULLEY, gt.b, tf.a, false)} L ${pt(tf.b)} ` +
+        `${arc(G, PULLEY, rg.b, gt.a, false)} L ${pt(gt.b)} ${arc(T, PULLEY, gt.b, tf.a, true)} L ${pt(tf.b)} ` +
         `${arc(F, rf, tf.b, fr.a, true)} Z`,
     );
   } else {

@@ -195,6 +195,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .dt-gear-active { fill: none; stroke: var(--accent); stroke-width: 3; }
 .dt-hub { fill: var(--muted); }
 .dt-chain { fill: none; stroke: var(--text); stroke-width: 3; stroke-linejoin: round; }
+.dt-pulley { fill: var(--panel); stroke: var(--muted); stroke-width: 1.5; }
+.dt-cage { stroke: var(--muted); stroke-width: 4; stroke-linecap: round; }
 .dt-label { fill: var(--muted); font-size: 11px; font-weight: 600; }
 .dt-cap { text-align: center; color: var(--muted); font-size: 13px; margin-top: 6px; }
 

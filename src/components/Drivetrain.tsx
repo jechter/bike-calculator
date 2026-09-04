@@ -356,6 +356,8 @@ export function Drivetrain() {
           cogs={cogs}
           activeChainring={activeChainring}
           activeCog={activeCog}
+          chainstayMm={chainstay}
+          hasDerailleur={mode === "cassette"}
         />
       </Section>
 

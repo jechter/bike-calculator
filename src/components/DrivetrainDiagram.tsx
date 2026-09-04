@@ -6,13 +6,13 @@
 
 const PITCH = 12.7; // chain pitch, mm
 const pr = (teeth: number) => (teeth * PITCH) / (2 * Math.PI); // pitch radius, mm
-const PULLEY = pr(11); // ~11T jockey wheels
+const PULLEY = pr(9); // 9T jockey wheels
 const CAGE = 70; // guide->tension pulley spacing, mm
 
 type V = { x: number; y: number };
 const onCircle = (c: V, r: number, ang: number): V => ({ x: c.x + r * Math.cos(ang), y: c.y + r * Math.sin(ang) });
-// External-tangent touch points between two circles (chain wraps both the same
-// way, so all segments use the same side s = -1). Returns border-to-border points.
+
+// External-tangent touch points (both circles wrapped the same way).
 function extTan(A: V, rA: number, B: V, rB: number, s: number): { a: V; b: V } {
   const beta = Math.atan2(B.y - A.y, B.x - A.x);
   const d = Math.hypot(B.x - A.x, B.y - A.y);
@@ -20,12 +20,25 @@ function extTan(A: V, rA: number, B: V, rB: number, s: number): { a: V; b: V } {
   const phi = beta + s * g;
   return { a: onCircle(A, rA, phi), b: onCircle(B, rB, phi) };
 }
-const tanLen = (c1: V, r1: number, c2: V, r2: number) => {
+// Internal (crossing) tangent — used where the chain switches wrap direction,
+// e.g. cassette (wrapped one way) to a derailleur pulley (the other way).
+function intTan(A: V, rA: number, B: V, rB: number, s: number): { a: V; b: V } {
+  const beta = Math.atan2(B.y - A.y, B.x - A.x);
+  const d = Math.hypot(B.x - A.x, B.y - A.y);
+  const g = Math.acos(Math.max(-1, Math.min(1, (rA + rB) / d)));
+  const phi = beta + s * g;
+  return { a: onCircle(A, rA, phi), b: onCircle(B, rB, phi + Math.PI) };
+}
+const extTanLen = (c1: V, r1: number, c2: V, r2: number) => {
   const d = Math.hypot(c2.x - c1.x, c2.y - c1.y);
   return Math.sqrt(Math.max(0, d * d - (r1 - r2) ** 2));
 };
-// Lower intersection point of two circles (larger y), or null.
-function circInt(c0: V, r0: number, c1: V, r1: number): V | null {
+const intTanLen = (c1: V, r1: number, c2: V, r2: number) => {
+  const d = Math.hypot(c2.x - c1.x, c2.y - c1.y);
+  return Math.sqrt(Math.max(0, d * d - (r1 + r2) ** 2));
+};
+// Both intersection points of two circles, or null.
+function circInt2(c0: V, r0: number, c1: V, r1: number): [V, V] | null {
   const dx = c1.x - c0.x;
   const dy = c1.y - c0.y;
   const d = Math.hypot(dx, dy);
@@ -36,18 +49,19 @@ function circInt(c0: V, r0: number, c1: V, r1: number): V | null {
   const ym = c0.y + (a * dy) / d;
   const ox = (-dy / d) * h;
   const oy = (dx / d) * h;
-  const p1 = { x: xm + ox, y: ym + oy };
-  const p2 = { x: xm - ox, y: ym - oy };
-  return p1.y > p2.y ? p1 : p2;
+  return [
+    { x: xm + ox, y: ym + oy },
+    { x: xm - ox, y: ym - oy },
+  ];
 }
-// Clockwise (screen y-down) arc command from a to b on circle (c, r).
-function arc(c: V, r: number, a: V, b: V): string {
+// Arc command from a to b on circle (c, r), clockwise (cw) or counter-clockwise.
+function arc(c: V, r: number, a: V, b: V, cw: boolean): string {
   const aa = Math.atan2(a.y - c.y, a.x - c.x);
   const ab = Math.atan2(b.y - c.y, b.x - c.x);
-  let span = ab - aa;
+  let span = cw ? ab - aa : aa - ab;
   while (span < 0) span += 2 * Math.PI;
   const large = span > Math.PI ? 1 : 0;
-  return `A ${r} ${r} 0 ${large} 1 ${b.x} ${b.y}`;
+  return `A ${r} ${r} 0 ${large} ${cw ? 1 : 0} ${b.x} ${b.y}`;
 }
 const pt = (p: V) => `${p.x} ${p.y}`;
 
@@ -84,35 +98,42 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   if (hasDerailleur) {
     // Guide pulley just below the engaged cog (tracks it, ~B-gap), directly below
     // the hub so the cage swings around vertical.
-    const G: V = { x: R.x, y: R.y + rr + 6 + PULLEY };
+    const G: V = { x: R.x, y: R.y + rr + 8 + PULLEY };
     // Reference chain length: a middle gear with the cage hanging straight down,
     // so bigger cogs retract the cage and smaller cogs extend it symmetrically.
     const refRing = pr(rings[Math.floor(rings.length / 2)]);
     const refCog = pr(cs[Math.floor(cs.length / 2)]);
-    const GRef: V = { x: R.x, y: R.y + refCog + 6 + PULLEY };
+    const GRef: V = { x: R.x, y: R.y + refCog + 8 + PULLEY };
     const TRef: V = { x: GRef.x, y: GRef.y + CAGE };
+    // Chainring/cog use external tangents; the two pulleys are wrapped the other
+    // way, so cog->guide and tension->chainring are internal (crossing) tangents.
     const Ltarget =
-      tanLen(F, refRing, R, refCog) + tanLen(R, refCog, GRef, PULLEY) + CAGE + tanLen(TRef, PULLEY, F, refRing);
+      extTanLen(F, refRing, R, refCog) +
+      intTanLen(R, refCog, GRef, PULLEY) +
+      CAGE +
+      intTanLen(TRef, PULLEY, F, refRing);
 
     // Solve the tension pulley so the length stays Ltarget.
-    const need = Ltarget - tanLen(F, rf, R, rr) - tanLen(R, rr, G, PULLEY) - CAGE;
-    let TF = Math.sqrt(Math.max(0, need * need + (PULLEY - rf) ** 2));
+    const need = Ltarget - extTanLen(F, rf, R, rr) - intTanLen(R, rr, G, PULLEY) - CAGE;
+    let TF = Math.sqrt(Math.max(0, need * need + (PULLEY + rf) ** 2));
     const FG = Math.hypot(G.x - F.x, G.y - F.y);
     TF = Math.max(FG - CAGE + 1, Math.min(FG + CAGE - 1, TF));
-    const T = circInt(G, CAGE, F, TF) ?? { x: G.x, y: G.y + CAGE };
+    TF = Math.max(TF, PULLEY + rf + 1);
+    const hits = circInt2(G, CAGE, F, TF);
+    // Pick the forward-and-down solution so the cage hangs down toward the crank.
+    const T = hits ? (hits[0].x < hits[1].x ? hits[0] : hits[1]) : { x: G.x, y: G.y + CAGE };
     pulleys.push(G, T);
 
-    // Chain routed border-to-border via external tangents around every circle:
-    // chainring -> cog -> guide pulley -> tension pulley -> chainring.
-    const s = -1;
-    const fr = extTan(F, rf, R, rr, s);
-    const rg = extTan(R, rr, G, PULLEY, s);
-    const gt = extTan(G, PULLEY, T, PULLEY, s);
-    const tf = extTan(T, PULLEY, F, rf, s);
+    // Chainring & cog wrap clockwise; the pulleys wrap counter-clockwise, joined
+    // by internal (crossing) tangents. All border-to-border.
+    const fr = extTan(F, rf, R, rr, -1); // upper run (top)
+    const rg = intTan(R, rr, G, PULLEY, +1); // cog -> guide (cross)
+    const gt = extTan(G, PULLEY, T, PULLEY, +1); // guide -> tension (both CCW)
+    const tf = intTan(T, PULLEY, F, rf, +1); // tension -> chainring (cross)
     paths.push(
-      `M ${pt(fr.a)} L ${pt(fr.b)} ${arc(R, rr, fr.b, rg.a)} L ${pt(rg.b)} ` +
-        `${arc(G, PULLEY, rg.b, gt.a)} L ${pt(gt.b)} ${arc(T, PULLEY, gt.b, tf.a)} L ${pt(tf.b)} ` +
-        `${arc(F, rf, tf.b, fr.a)} Z`,
+      `M ${pt(fr.a)} L ${pt(fr.b)} ${arc(R, rr, fr.b, rg.a, true)} L ${pt(rg.b)} ` +
+        `${arc(G, PULLEY, rg.b, gt.a, false)} L ${pt(gt.b)} ${arc(T, PULLEY, gt.b, tf.a, false)} L ${pt(tf.b)} ` +
+        `${arc(F, rf, tf.b, fr.a, true)} Z`,
     );
   } else {
     // No derailleur (single speed / hub): a plain loop over the two gears.

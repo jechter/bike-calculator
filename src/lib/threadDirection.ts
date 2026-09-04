@@ -24,7 +24,7 @@ const RH: SideThread = { thread: 'RH', loosenDirection: 'CCW' };
 export const THREAD_COMPONENTS: ThreadComponent[] = [
   {
     name: 'Pedal',
-    left: { thread: 'LH', loosenDirection: 'CW', note: 'reverse thread — the classic gotcha' },
+    left: { thread: 'LH', loosenDirection: 'CW', note: 'reverse thread' },
     right: RH,
   },
   {

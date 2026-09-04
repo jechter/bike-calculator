@@ -201,12 +201,12 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .td-diagram svg { width: 190px; height: 190px; }
 .td-fastener { fill: var(--panel-2); stroke: var(--border); stroke-width: 2; }
 .td-fastener-center { fill: var(--muted); stroke: none; }
-.td-loosen { color: var(--ok); }
+.td-loosen { color: var(--danger); }
 .td-tighten { color: var(--muted); }
 .td-key { text-align: left; margin-top: 10px; font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
 .td-key-row { display: flex; align-items: center; gap: 8px; }
 .td-swatch { width: 14px; height: 6px; border-radius: 3px; flex: none; }
-.td-swatch.loosen { background: var(--ok); }
+.td-swatch.loosen { background: var(--danger); }
 .td-swatch.tighten { background: var(--muted); }
 .td-dia-foot { margin-top: 8px; font-size: 12px; color: var(--muted); }
 

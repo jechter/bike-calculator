@@ -74,6 +74,7 @@ export interface DrivetrainDiagramProps {
   activeCog: number;
   chainstayMm: number;
   hasDerailleur: boolean;
+  cadenceRpm: number;
 }
 
 export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
@@ -150,13 +151,20 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   const rrMax = pr(cs[0]);
   const topExtent = Math.max(rfMax, rrMax);
   const derailBottom = rrMax + 8 + PULLEY + CAGE + PULLEY;
+  const crankLen = rfMax + 38; // crank arm reaches just beyond the biggest ring
   const m = 10;
-  const minX = -rfMax - m;
+  const minX = -crankLen - m;
   const maxX = R.x + rrMax + PULLEY + m;
-  const minY = -topExtent - m - 10; // room for labels
-  const maxY = (hasDerailleur ? derailBottom : topExtent) + m;
+  const minY = Math.min(-topExtent, -crankLen) - m - 10; // room for labels
+  const maxY = Math.max(hasDerailleur ? derailBottom : topExtent, crankLen) + m;
   const W = maxX - minX;
   const H = maxY - minY;
+
+  const rpm = Math.max(20, Math.min(220, props.cadenceRpm || 90));
+  const period = 60 / rpm; // seconds per crank revolution
+  const reduceMotion =
+    typeof window !== "undefined" &&
+    !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
 
   // Selected-gear colour matches the chainring's line in the gear chart.
   const activeColor = PALETTE[Math.max(0, rings.indexOf(props.activeChainring)) % PALETTE.length];
@@ -186,6 +194,22 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
             style={r === props.activeChainring ? { stroke: activeColor } : undefined}
           />
         ))}
+        {/* crank arm + pedal, spinning at the cadence */}
+        <g key={Math.round(rpm)}>
+          <line x1={0} y1={0} x2={crankLen} y2={0} className="dt-crankarm" />
+          <line x1={crankLen} y1={-10} x2={crankLen} y2={10} className="dt-pedal" />
+          {!reduceMotion && (
+            <animateTransform
+              attributeName="transform"
+              attributeType="XML"
+              type="rotate"
+              from="0 0 0"
+              to="360 0 0"
+              dur={`${period}s`}
+              repeatCount="indefinite"
+            />
+          )}
+        </g>
         {/* rear derailleur cage + pulleys */}
         {pulleys.length === 2 && (
           <>

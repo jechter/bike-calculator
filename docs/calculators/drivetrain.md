@@ -108,7 +108,11 @@ gear**. Hovering a gear dot in the chart moves the chain (default: a middle gear
 For a **derailleur** setup a rear derailleur is simulated: the tension pulley
 swings on its cage (solved by circle intersection) so the **total chain length
 stays constant** as the gear changes — bigger cogs retract the cage, smaller cogs
-extend it. Single-speed/hub setups draw a plain chain loop (no derailleur).
+extend it. Single-speed/hub setups draw a plain chain loop (no derailleur). A
+**crank arm spins at the selected cadence** (rev = 60/rpm seconds) to give a feel
+for what e.g. 90 rpm looks like; it respects `prefers-reduced-motion`. The
+diagram keeps a **constant size** across gears, and the selected gear is coloured
+to match its chainring's line in the chart.
 
 **Cross-chaining.** With 2+ chainrings, the chart **greys out** the extreme
 cross-chained combinations to avoid shifting into: the big ring with the two

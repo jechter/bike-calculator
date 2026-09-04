@@ -358,6 +358,7 @@ export function Drivetrain() {
           activeCog={activeCog}
           chainstayMm={chainstay}
           hasDerailleur={mode === "cassette"}
+          cadenceRpm={rpm}
         />
       </Section>
 

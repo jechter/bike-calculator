@@ -197,7 +197,10 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .dt-chain { fill: none; stroke: var(--text); stroke-width: 3; stroke-linejoin: round; }
 .dt-pulley { fill: var(--panel); stroke: var(--muted); stroke-width: 1.5; }
 .dt-cage { stroke: var(--muted); stroke-width: 4; stroke-linecap: round; }
-.dt-spoke { stroke: var(--muted); stroke-width: 1.2; opacity: 0.4; }
+.dt-spoke { fill: none; stroke: var(--muted); stroke-width: 1.2; opacity: 0.45; }
+.dt-tire { fill: none; stroke: var(--muted); opacity: 0.18; }
+.dt-rim { fill: none; stroke: var(--muted); stroke-width: 1.5; opacity: 0.3; }
+.dt-wheel-spoke { fill: none; stroke: var(--muted); stroke-width: 1; opacity: 0.3; }
 .dt-label {
   fill: var(--text); font-size: 11px; font-weight: 700;
   paint-order: stroke; stroke: var(--panel-2); stroke-width: 3px; stroke-linejoin: round;

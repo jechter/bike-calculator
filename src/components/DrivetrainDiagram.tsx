@@ -77,6 +77,7 @@ export interface DrivetrainDiagramProps {
   cadenceRpm: number;
   speed: number; // active gear's speed in the display unit
   speedUnit: string;
+  wheelCircMm: number; // rolling circumference -> rear wheel size
 }
 
 export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
@@ -151,13 +152,20 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   // the largest gears and the derailleur's full downward reach.
   const rfMax = pr(rings[0]);
   const rrMax = pr(cs[0]);
+  // Rear wheel drawn to scale from the rolling circumference.
+  const wheelR = props.wheelCircMm > 0 ? props.wheelCircMm / (2 * Math.PI) : 0;
+  const tireW = Math.max(10, wheelR * 0.05);
+
+  // The viewBox stays focused on the drivetrain; the to-scale wheel is much
+  // larger and is deliberately culled by the SVG viewport, showing only as a
+  // faint arc + spoke stubs in the background.
   const topExtent = Math.max(rfMax, rrMax);
   const derailBottom = rrMax + 8 + PULLEY + CAGE + PULLEY;
   const m = 10;
   const minX = -rfMax - m;
   const maxX = R.x + rrMax + PULLEY + m;
   const minY = -topExtent - m - 10; // room for labels
-  const maxY = (hasDerailleur ? derailBottom : topExtent) + m;
+  const maxY = (hasDerailleur ? derailBottom : rrMax) + m;
   const W = maxX - minX;
   const H = maxY - minY;
 
@@ -170,11 +178,29 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   const reduceMotion =
     typeof window !== "undefined" &&
     !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-  const spokes = (cx: number, cy: number, r: number) =>
-    [0, 1, 2, 3].map((i) => {
-      const a = (i * Math.PI) / 2;
-      return <line key={i} x1={cx} y1={cy} x2={cx + r * Math.cos(a)} y2={cy + r * Math.sin(a)} className="dt-spoke" />;
-    });
+  // Wide outlined spoke "blades" (rounded bars) from rInner to rOuter, evenly
+  // spaced — used for the chainring and the three-spoke rear wheel.
+  const blades = (
+    cx: number,
+    cy: number,
+    rInner: number,
+    rOuter: number,
+    count: number,
+    w: number,
+    cls: string,
+  ) =>
+    Array.from({ length: count }, (_, i) => (
+      <rect
+        key={i}
+        x={cx + rInner}
+        y={cy - w / 2}
+        width={rOuter - rInner}
+        height={w}
+        rx={w / 2}
+        transform={`rotate(${(360 * i) / count} ${cx} ${cy})`}
+        className={cls}
+      />
+    ));
 
   // Selected-gear colour matches the chainring's line in the gear chart.
   const activeColor = PALETTE[Math.max(0, rings.indexOf(props.activeChainring)) % PALETTE.length];
@@ -182,6 +208,26 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   return (
     <div className="dt-diagram">
       <svg viewBox={`${minX} ${minY} ${W} ${H}`} width="100%" role="img" aria-label="Drivetrain view">
+        {/* rear wheel to scale (rolling circumference), spinning at wheel speed */}
+        {wheelR > 0 && (
+          <g key={"wh" + Math.round(rpm * ratio)}>
+            <circle cx={R.x} cy={R.y} r={wheelR - tireW / 2} className="dt-tire" style={{ strokeWidth: tireW }} />
+            <circle cx={R.x} cy={R.y} r={wheelR - tireW} className="dt-rim" />
+            {/* three-spoke design so the spin is legible */}
+            {blades(R.x, R.y, rrMax + 8, wheelR - tireW, 3, 18, "dt-wheel-spoke")}
+            {!reduceMotion && (
+              <animateTransform
+                attributeName="transform"
+                attributeType="XML"
+                type="rotate"
+                from={`0 ${R.x} ${R.y}`}
+                to={`-360 ${R.x} ${R.y}`}
+                dur={`${cogPeriod}s`}
+                repeatCount="indefinite"
+              />
+            )}
+          </g>
+        )}
         {/* cassette cogs */}
         {cs.map((c) => (
           <circle
@@ -204,9 +250,9 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
             style={r === props.activeChainring ? { stroke: activeColor } : undefined}
           />
         ))}
-        {/* chainring spokes, spinning at the cadence (CCW) */}
+        {/* chainring spokes (sized to the biggest ring), spinning at the cadence (CCW) */}
         <g key={"cr" + Math.round(rpm)}>
-          {spokes(F.x, F.y, rf)}
+          {blades(F.x, F.y, 4, rfMax, 4, 10, "dt-spoke")}
           {!reduceMotion && (
             <animateTransform
               attributeName="transform"
@@ -215,21 +261,6 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
               from={`0 ${F.x} ${F.y}`}
               to={`-360 ${F.x} ${F.y}`}
               dur={`${period}s`}
-              repeatCount="indefinite"
-            />
-          )}
-        </g>
-        {/* rear sprocket spokes, spinning at cadence × ratio (CCW) */}
-        <g key={"rs" + Math.round(rpm * ratio)}>
-          {spokes(R.x, R.y, rr)}
-          {!reduceMotion && (
-            <animateTransform
-              attributeName="transform"
-              attributeType="XML"
-              type="rotate"
-              from={`0 ${R.x} ${R.y}`}
-              to={`-360 ${R.x} ${R.y}`}
-              dur={`${cogPeriod}s`}
               repeatCount="indefinite"
             />
           )}

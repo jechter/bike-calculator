@@ -109,11 +109,18 @@ For a **derailleur** setup a rear derailleur is simulated: the tension pulley
 swings on its cage (solved by circle intersection) so the **total chain length
 stays constant** as the gear changes — bigger cogs retract the cage, smaller cogs
 extend it. Single-speed/hub setups draw a plain chain loop (no derailleur).
-**Four subtle spokes** spin inside the chainring (at the cadence) and inside the
-rear cog (at cadence × ratio, i.e. wheel speed) — counter-clockwise — so you can
-see how much faster the wheel turns in a taller gear. The animation respects
-`prefers-reduced-motion`. The diagram keeps a **constant size** across gears, and
-the selected gear is coloured to match its chainring's line in the chart.
+The **rear wheel is drawn to scale** from the rolling circumference (rim + tyre +
+a **three-spoke** design), centred on the rear hub. The viewBox stays **focused on
+the drivetrain** (the wheel is far larger), so the wheel is deliberately **culled
+by the SVG viewport** — it shows only as a faint background arc and three spoke
+blades. The three spokes make the wheel's rotation legible even though most of it
+is off-screen. **Four outlined spoke blades** spin inside
+the chainring at the cadence (sized to the **largest** chainring, not the selected
+one) and the **whole wheel** spins at cadence × ratio (i.e. wheel speed) — both
+counter-clockwise — so you can see how much faster the wheel turns in a taller
+gear. The animation respects `prefers-reduced-motion`. The diagram keeps a
+**constant size** across gears, and the selected gear is coloured to match its
+chainring's line in the chart.
 
 **Cross-chaining.** With 2+ chainrings, the chart **greys out** the extreme
 cross-chained combinations to avoid shifting into: the big ring with the two

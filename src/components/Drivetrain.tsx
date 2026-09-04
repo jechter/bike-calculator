@@ -359,6 +359,7 @@ export function Drivetrain() {
           activeChainring={activeChainring}
           activeCog={activeCog}
           chainstayMm={chainstay}
+          wheelCircMm={circ}
           hasDerailleur={mode === "cassette"}
           cadenceRpm={rpm}
           speed={toSpeed(activeSpeedKmh)}

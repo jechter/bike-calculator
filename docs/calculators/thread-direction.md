@@ -21,26 +21,26 @@ side. The chart below fixes the viewpoint per item.
 
 **Everything else on a bike is normal (right-hand) thread** — cassette lockrings,
 freewheels, rotor lockrings, freehub bolts, crank bolts, etc. all loosen
-anti-clockwise. So the page shows only the parts that actually have left-hand
-threads: **pedals** and **bottom brackets**, in two small tables. No search field
-is needed for so few rows.
+anti-clockwise. So the page lists only the parts that actually have left-hand
+threads: **pedals** and **bottom brackets**.
 
-### Pedals
+### Layout
 
-| Side | Thread | To LOOSEN | Notes |
-|------|--------|-----------|-------|
-| Right / drive | RH (normal) | Anti-clockwise | Viewed from the drive side. |
-| Left / non-drive | **LH (reverse)** | **Clockwise** | The classic gotcha. |
+**One row per component**, with a **Left / non-drive** and **Right / drive**
+column showing each side's thread hand (RH/LH). Left-hand cells are highlighted.
+Hovering (or tapping) a side updates a **big rotation diagram** that shows, from
+the correct viewpoint, which way to turn **to loosen** (green) and **to tighten**
+(grey).
 
-### Bottom brackets
+| Component | Left / non-drive | Right / drive |
+|-----------|------------------|---------------|
+| Pedal | **LH** (fixed side is the gotcha) | RH |
+| English / BSA (1.37"×24T) | RH (adjustable cup) | **LH** (fixed cup) |
+| Italian (36mm×24T) | RH | RH |
+| Swiss | RH | **LH** |
+| French | RH | RH |
 
-| Standard | Side | Thread | To LOOSEN | Notes |
-|----------|------|--------|-----------|-------|
-| English / BSA (1.37"×24T) | Right / drive (fixed cup) | **LH** | **Clockwise** | Drive-side cup is reverse-threaded. |
-| English / BSA | Left / non-drive (adjustable cup) | RH | Anti-clockwise | |
-| Italian (36mm×24T) | Both sides | RH | Anti-clockwise | *Both* cups normal — common mix-up vs English. |
-| Swiss | Right / drive | **LH** | **Clockwise** | Rare. Left side is RH. Verify. |
-| French | Both sides | RH | Anti-clockwise | Rare. Verify. |
+(LH = clockwise to loosen; RH = anti-clockwise to loosen, from the side you face.)
 
 > The two you'll reach for most: **left pedal** and the **drive-side cup of an
 > English bottom bracket** are both **left-hand** (turn clockwise to loosen).

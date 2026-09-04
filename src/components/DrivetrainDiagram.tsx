@@ -205,10 +205,11 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
         {/* crank spindle + rear axle */}
         <circle cx={F.x} cy={F.y} r={3} className="dt-hub" />
         <circle cx={R.x} cy={R.y} r={3} className="dt-hub" />
-        <text x={F.x} y={-rf - 3} className="dt-label" textAnchor="middle">
+        {/* labels above the largest gear so they clear all the sprocket circles */}
+        <text x={F.x} y={-rfMax - 4} className="dt-label" textAnchor="middle">
           {props.activeChainring}T
         </text>
-        <text x={R.x} y={-rr - 3} className="dt-label" textAnchor="middle">
+        <text x={R.x} y={-rrMax - 4} className="dt-label" textAnchor="middle">
           {props.activeCog}T
         </text>
       </svg>

@@ -358,7 +358,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   padding: 8px 4px;
 }
 .gc-scroll { overflow-x: auto; }
-.gc-grid { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 4; }
+.gc-grid { stroke: var(--muted); opacity: 0.4; stroke-width: 1; stroke-dasharray: 3 4; }
 .gc-tick { fill: var(--muted); font-size: 12px; }
 .gc-row-label { fill: var(--text); font-size: 13px; font-weight: 700; }
 .gc-row-line { stroke-width: 2; opacity: 0.5; }

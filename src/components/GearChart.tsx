@@ -100,12 +100,26 @@ export function GearChart({
   const axisY = mT + groups.length * rowH;
   const x = (v: number) => mL + ((v - min) / (max - min)) * plotW;
 
-  // First and last ticks are exactly the lowest / highest gear values.
-  const tickCount = 6;
-  const tickVals = Array.from(
-    { length: tickCount },
-    (_, i) => min + (i / (tickCount - 1)) * (max - min),
-  );
+  // Outer ticks are the exact lowest/highest gear; inner ticks are round
+  // numbers on a "nice" step (e.g. 20, 25, 30, …), skipping any that fall too
+  // close to the extremes.
+  const niceStep = (range: number) => {
+    const raw = range / 6;
+    const mag = 10 ** Math.floor(Math.log10(raw));
+    const n = raw / mag;
+    return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * mag;
+  };
+  const step = niceStep(max - min);
+  const inner: number[] = [];
+  for (let v = Math.ceil(min / step) * step; v < max; v += step) {
+    if (v - min >= step * 0.5 && max - v >= step * 0.5) inner.push(v);
+  }
+  const tickVals = [min, ...inner, max];
+  // Drop trailing zeros (20.0 -> 20) but keep the extremes' decimals (13.8).
+  const tickLabel = (v: number) => {
+    const s = format(v);
+    return s.includes(".") ? s.replace(/0+$/, "").replace(/\.$/, "") : s;
+  };
 
   const showTip = (g: GearResult) => (e: React.MouseEvent) => {
     const rect = containerRef.current?.getBoundingClientRect();
@@ -122,7 +136,7 @@ export function GearChart({
           <g key={`t${i}`}>
             <line x1={x(tv)} y1={mT} x2={x(tv)} y2={axisY} className="gc-grid" />
             <text x={x(tv)} y={axisY + 18} className="gc-tick" textAnchor="middle">
-              {format(tv)}
+              {tickLabel(tv)}
             </text>
           </g>
         ))}

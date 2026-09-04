@@ -104,28 +104,36 @@ export function Drivetrain() {
         })
       : null;
 
-  // Max-cog fit is tri-state: within a few teeth over spec it often still works
-  // with a long hanger / extra B-tension.
+  // Both checks are tri-state: a little over spec often still works (a big cog
+  // with a long hanger / extra B-tension; a little extra capacity only shows as
+  // slack in the small-small gear you'd avoid anyway).
+  type FitStatus = "ok" | "caution" | "over";
   const cogOver = derailleur ? largestCog - derailleur.maxSprocket : 0;
-  const cogStatus: "ok" | "caution" | "over" =
-    cogOver <= 0 ? "ok" : cogOver <= 4 ? "caution" : "over";
+  const cogStatus: FitStatus = cogOver <= 0 ? "ok" : cogOver <= 4 ? "caution" : "over";
+  const capOver = fit && derailleur ? fit.requiredCapacity - derailleur.totalCapacity : 0;
+  const capStatus: FitStatus = capOver <= 0 ? "ok" : capOver <= 6 ? "caution" : "over";
+  const worst: FitStatus = [cogStatus, capStatus].includes("over")
+    ? "over"
+    : [cogStatus, capStatus].includes("caution")
+      ? "caution"
+      : "ok";
 
-  let fitTone: "info" | "warn" = "info";
+  const fitTone: "info" | "warn" = worst === "ok" ? "info" : "warn";
   let fitMessage = "";
   if (fit && derailleur) {
-    if (fit.capacityOk && cogStatus === "ok") {
+    if (worst === "ok") {
       fitMessage = `${derailleur.brand} ${derailleur.model} should handle this drivetrain (rated ${derailleur.totalCapacity}T capacity, ${derailleur.maxSprocket}T max cog).`;
-    } else if (fit.capacityOk && cogStatus === "caution") {
-      fitTone = "warn";
-      fitMessage = `Your ${largestCog}T largest cog is ${cogOver}T past ${derailleur.brand} ${derailleur.model}'s rated ${derailleur.maxSprocket}T max. That's out of spec, but with a long derailleur hanger or extra B-tension it may still clear — look closely at the clearance and proceed with caution.`;
     } else {
-      fitTone = "warn";
-      const parts: string[] = [];
-      if (cogStatus === "over")
-        parts.push(`your ${largestCog}T cog is ${cogOver}T past its ${derailleur.maxSprocket}T max`);
-      if (!fit.capacityOk)
-        parts.push(`it needs ${fit.requiredCapacity}T capacity vs its ${derailleur.totalCapacity}T`);
-      fitMessage = `${derailleur.brand} ${derailleur.model} is out of range here — ${parts.join("; ")}.`;
+      const issues: string[] = [];
+      if (cogStatus !== "ok")
+        issues.push(`largest cog ${cogOver}T over the ${derailleur.maxSprocket}T max`);
+      if (capStatus !== "ok")
+        issues.push(`capacity ${capOver}T over the ${derailleur.totalCapacity}T rating`);
+      const joined = issues.join("; ");
+      fitMessage =
+        worst === "caution"
+          ? `Slightly out of spec — ${joined}. It may still work (a long hanger / extra B-tension, and avoiding the extreme cross-chain gears, can help) — look closely and proceed with caution.`
+          : `Out of range — ${joined}. This is beyond what ${derailleur.brand} ${derailleur.model} is designed for.`;
     }
   }
 
@@ -382,8 +390,17 @@ export function Drivetrain() {
                   value={
                     <>
                       {fit.requiredCapacity}T{" "}
-                      <span className={"badge " + (fit.capacityOk ? "ok" : "danger")}>
-                        {fit.capacityOk ? "OK" : `over ${derailleur.totalCapacity}T`}
+                      <span
+                        className={
+                          "badge " +
+                          (capStatus === "ok" ? "ok" : capStatus === "caution" ? "warn" : "danger")
+                        }
+                      >
+                        {capStatus === "ok"
+                          ? "OK"
+                          : capStatus === "caution"
+                            ? `+${capOver}T over`
+                            : `over ${derailleur.totalCapacity}T`}
                       </span>
                     </>
                   }

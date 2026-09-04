@@ -140,6 +140,20 @@ describe("Drivetrain page", () => {
     expect(container.textContent).toMatch(/proceed with caution/);
   });
 
+  it("flags slightly-over capacity as caution", () => {
+    const { container } = render(<Drivetrain />);
+    // 46/30 with 11-46: required 51T vs Deore M6000 rated 47T (+4T), cog 46 = max 46
+    const texts = container.querySelectorAll('input[type="text"]');
+    fireEvent.change(texts[0], { target: { value: "46, 30" } });
+    fireEvent.change(texts[1], { target: { value: "11, 46" } });
+    const derSelect = Array.from(container.querySelectorAll("select")).find((s) =>
+      Array.from(s.options).some((o) => o.textContent?.includes("M6000")),
+    ) as HTMLSelectElement;
+    fireEvent.change(derSelect, { target: { value: "sh-deore-m6000-sgs" } });
+    expect(container.textContent).toContain("+4T over");
+    expect(container.textContent).toMatch(/proceed with caution/);
+  });
+
   it("does not apply the derailleur chain-length formula to single speed", () => {
     const { container, getByText, queryByText } = render(<Drivetrain />);
     const typeSelect = container.querySelector("select") as HTMLSelectElement;

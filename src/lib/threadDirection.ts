@@ -31,23 +31,24 @@ export const THREAD_COMPONENTS: ThreadComponent[] = [
     name: 'Bottom bracket — English / BSA (1.37"×24T)',
     left: { ...RH, note: 'adjustable cup' },
     right: { thread: 'LH', loosenDirection: 'CW', note: 'fixed cup — reverse thread' },
+    note: 'The worldwide standard — nearly all modern threaded bikes, and most vintage British, US and Asian frames.',
   },
   {
     name: 'Bottom bracket — Italian (36mm×24T)',
     left: RH,
     right: RH,
-    note: 'Both cups normal thread — a common mix-up vs English.',
+    note: 'Mostly older and high-end Italian road frames (Colnago, Bianchi, De Rosa, etc.). Both cups normal thread — a common mix-up vs English.',
   },
   {
     name: 'Bottom bracket — Swiss',
     left: RH,
     right: { thread: 'LH', loosenDirection: 'CW' },
-    note: 'Rare. Verify.',
+    note: 'Rare, seen on some older French/Swiss frames. Drive side reverse, non-drive normal. Essentially obsolete — verify.',
   },
   {
     name: 'Bottom bracket — French',
     left: RH,
     right: RH,
-    note: 'Rare. Both cups normal thread. Verify.',
+    note: 'Older French frames (Peugeot, Gitane, Motobécane, ~1960s–80s). Both cups normal thread; now obsolete — verify.',
   },
 ];

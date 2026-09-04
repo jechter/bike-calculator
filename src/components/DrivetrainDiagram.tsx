@@ -75,6 +75,8 @@ export interface DrivetrainDiagramProps {
   chainstayMm: number;
   hasDerailleur: boolean;
   cadenceRpm: number;
+  speed: number; // active gear's speed in the display unit
+  speedUnit: string;
 }
 
 export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
@@ -260,7 +262,8 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
         </text>
       </svg>
       <div className="dt-cap">
-        {props.activeChainring} × {props.activeCog} · ratio {(props.activeChainring / props.activeCog).toFixed(2)}
+        {props.activeChainring} × {props.activeCog} · ratio {ratio.toFixed(2)} · {rpm} rpm ·{" "}
+        {props.speed.toFixed(1)} {props.speedUnit}
       </div>
     </div>
   );

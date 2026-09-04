@@ -176,6 +176,8 @@ export function Drivetrain() {
     activeGear && chainrings.includes(activeGear.chainring) ? activeGear.chainring : chainrings[0] ?? 0;
   const activeCog =
     activeGear && cogs.includes(activeGear.cog) ? activeGear.cog : defaultCog;
+  const activeSpeedKmh =
+    activeCog > 0 ? ((activeChainring / activeCog) * (circ / 1000) * (cadence || 90) * 60) / 1000 : 0;
 
   // Cross-chaining: only meaningful with 2+ chainrings. Flag big ring + the two
   // largest cogs, and small ring + the two smallest cogs, as gears to avoid.
@@ -359,6 +361,8 @@ export function Drivetrain() {
           chainstayMm={chainstay}
           hasDerailleur={mode === "cassette"}
           cadenceRpm={rpm}
+          speed={toSpeed(activeSpeedKmh)}
+          speedUnit={unitLabel}
         />
       </Section>
 

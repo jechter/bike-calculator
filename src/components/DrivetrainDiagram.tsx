@@ -151,20 +151,28 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   const rrMax = pr(cs[0]);
   const topExtent = Math.max(rfMax, rrMax);
   const derailBottom = rrMax + 8 + PULLEY + CAGE + PULLEY;
-  const crankLen = rfMax + 38; // crank arm reaches just beyond the biggest ring
   const m = 10;
-  const minX = -crankLen - m;
+  const minX = -rfMax - m;
   const maxX = R.x + rrMax + PULLEY + m;
-  const minY = Math.min(-topExtent, -crankLen) - m - 10; // room for labels
-  const maxY = Math.max(hasDerailleur ? derailBottom : topExtent, crankLen) + m;
+  const minY = -topExtent - m - 10; // room for labels
+  const maxY = (hasDerailleur ? derailBottom : topExtent) + m;
   const W = maxX - minX;
   const H = maxY - minY;
 
+  // Subtle spokes spin at the cadence (chainring) and cadence × ratio (rear),
+  // showing how much faster the wheel turns in the current gear. Counter-clockwise.
   const rpm = Math.max(20, Math.min(220, props.cadenceRpm || 90));
-  const period = 60 / rpm; // seconds per crank revolution
+  const ratio = props.activeChainring / props.activeCog;
+  const period = 60 / rpm;
+  const cogPeriod = Math.max(0.1, 60 / (rpm * ratio));
   const reduceMotion =
     typeof window !== "undefined" &&
     !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const spokes = (cx: number, cy: number, r: number) =>
+    [0, 1, 2, 3].map((i) => {
+      const a = (i * Math.PI) / 2;
+      return <line key={i} x1={cx} y1={cy} x2={cx + r * Math.cos(a)} y2={cy + r * Math.sin(a)} className="dt-spoke" />;
+    });
 
   // Selected-gear colour matches the chainring's line in the gear chart.
   const activeColor = PALETTE[Math.max(0, rings.indexOf(props.activeChainring)) % PALETTE.length];
@@ -194,18 +202,32 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
             style={r === props.activeChainring ? { stroke: activeColor } : undefined}
           />
         ))}
-        {/* crank arm + pedal, spinning at the cadence */}
-        <g key={Math.round(rpm)}>
-          <line x1={0} y1={0} x2={crankLen} y2={0} className="dt-crankarm" />
-          <line x1={crankLen} y1={-10} x2={crankLen} y2={10} className="dt-pedal" />
+        {/* chainring spokes, spinning at the cadence (CCW) */}
+        <g key={"cr" + Math.round(rpm)}>
+          {spokes(F.x, F.y, rf)}
           {!reduceMotion && (
             <animateTransform
               attributeName="transform"
               attributeType="XML"
               type="rotate"
-              from="0 0 0"
-              to="360 0 0"
+              from={`0 ${F.x} ${F.y}`}
+              to={`-360 ${F.x} ${F.y}`}
               dur={`${period}s`}
+              repeatCount="indefinite"
+            />
+          )}
+        </g>
+        {/* rear sprocket spokes, spinning at cadence × ratio (CCW) */}
+        <g key={"rs" + Math.round(rpm * ratio)}>
+          {spokes(R.x, R.y, rr)}
+          {!reduceMotion && (
+            <animateTransform
+              attributeName="transform"
+              attributeType="XML"
+              type="rotate"
+              from={`0 ${R.x} ${R.y}`}
+              to={`-360 ${R.x} ${R.y}`}
+              dur={`${cogPeriod}s`}
               repeatCount="indefinite"
             />
           )}

@@ -1,11 +1,14 @@
-// Thread direction reference data. See docs/calculators/thread-direction.md.
-// Verify older/regional BB and pedal variants against a standard.
+// Thread direction reference data. Only the parts that aren't always right-hand
+// threaded are worth listing: pedals and bottom brackets. Everything else on a
+// bike is normal (right-hand) thread. Verify older/regional variants.
 
 export type Thread = 'RH' | 'LH';
+export type ThreadCategory = 'pedal' | 'bottom-bracket';
 
 export interface ThreadItem {
-  part: string;
-  side: string; // e.g. "Left / non-drive", or "—"
+  category: ThreadCategory;
+  part: string; // standard/type (used for bottom brackets)
+  side: string;
   thread: Thread; // right-hand (normal) or left-hand (reverse)
   loosenDirection: 'CW' | 'CCW';
   viewpoint: string; // where "clockwise" is defined from
@@ -16,7 +19,9 @@ export interface ThreadItem {
 // loosenDirection is the opposite of the tighten direction.
 // RH: tighten CW, loosen CCW. LH: tighten CCW, loosen CW.
 export const THREAD_ITEMS: ThreadItem[] = [
+  // Pedals
   {
+    category: 'pedal',
     part: 'Pedal',
     side: 'Right / drive',
     thread: 'RH',
@@ -25,6 +30,7 @@ export const THREAD_ITEMS: ThreadItem[] = [
     notes: 'Normal thread. Righty-tighty.',
   },
   {
+    category: 'pedal',
     part: 'Pedal',
     side: 'Left / non-drive',
     thread: 'LH',
@@ -33,8 +39,10 @@ export const THREAD_ITEMS: ThreadItem[] = [
     notes: 'The classic gotcha — reverse threaded.',
     highlight: true,
   },
+  // Bottom brackets
   {
-    part: 'Bottom bracket — English / BSA (1.37"×24T)',
+    category: 'bottom-bracket',
+    part: 'English / BSA (1.37"×24T)',
     side: 'Right / drive (fixed cup)',
     thread: 'LH',
     loosenDirection: 'CW',
@@ -43,7 +51,8 @@ export const THREAD_ITEMS: ThreadItem[] = [
     highlight: true,
   },
   {
-    part: 'Bottom bracket — English / BSA (1.37"×24T)',
+    category: 'bottom-bracket',
+    part: 'English / BSA (1.37"×24T)',
     side: 'Left / non-drive (adjustable cup)',
     thread: 'RH',
     loosenDirection: 'CCW',
@@ -51,7 +60,8 @@ export const THREAD_ITEMS: ThreadItem[] = [
     notes: 'Normal thread.',
   },
   {
-    part: 'Bottom bracket — Italian (36mm×24T)',
+    category: 'bottom-bracket',
+    part: 'Italian (36mm×24T)',
     side: 'Both sides',
     thread: 'RH',
     loosenDirection: 'CCW',
@@ -60,60 +70,21 @@ export const THREAD_ITEMS: ThreadItem[] = [
     highlight: true,
   },
   {
-    part: 'Bottom bracket — Swiss',
+    category: 'bottom-bracket',
+    part: 'Swiss',
     side: 'Right / drive',
     thread: 'LH',
     loosenDirection: 'CW',
     viewpoint: 'facing the drive side',
-    notes: 'Rare. Left/non-drive side is RH. Verify by standard.',
+    notes: 'Rare. Left/non-drive side is normal (RH). Verify.',
   },
   {
-    part: 'Bottom bracket — French',
+    category: 'bottom-bracket',
+    part: 'French',
     side: 'Both sides',
     thread: 'RH',
     loosenDirection: 'CCW',
     viewpoint: 'facing each side',
-    notes: 'Rare. Both RH. Verify by standard.',
-  },
-  {
-    part: 'Cassette lockring',
-    side: '—',
-    thread: 'RH',
-    loosenDirection: 'CCW',
-    viewpoint: 'facing the cassette',
-    notes: 'Hold cassette with a chainwhip.',
-  },
-  {
-    part: 'Freewheel (thread-on)',
-    side: '—',
-    thread: 'RH',
-    loosenDirection: 'CCW',
-    viewpoint: 'facing the freewheel',
-    notes: 'Self-tightens while pedalling.',
-  },
-  {
-    part: 'Center Lock rotor lockring',
-    side: '—',
-    thread: 'RH',
-    loosenDirection: 'CCW',
-    viewpoint: 'facing the rotor',
-    notes:
-      'External-spline Shimano lockrings loosen CCW like a cassette lockring; some use a cassette tool.',
-  },
-  {
-    part: 'Freehub body fixing bolt',
-    side: '—',
-    thread: 'RH',
-    loosenDirection: 'CCW',
-    viewpoint: 'facing the fixing bolt',
-    notes: 'Normal thread (usually a large hex from inside the freehub).',
-  },
-  {
-    part: 'Crank bolt / most bolts (default)',
-    side: '—',
-    thread: 'RH',
-    loosenDirection: 'CCW',
-    viewpoint: 'facing the bolt head',
-    notes: 'Default assumption for anything not listed. Self-extracting caps vary.',
+    notes: 'Rare. Both cups normal thread. Verify.',
   },
 ];

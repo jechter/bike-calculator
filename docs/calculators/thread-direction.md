@@ -17,25 +17,30 @@ because it comes up constantly at the bench.
 face that side of the bike"), because the same part looks reversed from the other
 side. The chart below fixes the viewpoint per item.
 
-## Reference chart
+## Scope: only pedals and bottom brackets
 
-Present as a filterable/searchable table. For each part: thread hand per side,
-and the turn direction to **loosen/remove** (the thing people usually need).
+**Everything else on a bike is normal (right-hand) thread** — cassette lockrings,
+freewheels, rotor lockrings, freehub bolts, crank bolts, etc. all loosen
+anti-clockwise. So the page shows only the parts that actually have left-hand
+threads: **pedals** and **bottom brackets**, in two small tables. No search field
+is needed for so few rows.
 
-| Part | Side | Thread | To LOOSEN, turn… | Notes |
-|------|------|--------|------------------|-------|
-| **Pedals** | Right / drive | RH (normal) | Counter-clockwise | Viewed from the drive side. |
-| **Pedals** | Left / non-drive | **LH (reverse)** | **Clockwise** | The classic gotcha. |
-| **Bottom bracket (English / BSA / BSC, 1.37"×24T)** | Right / drive (fixed cup) | **LH (reverse)** | **Clockwise** | Viewed from drive side. Drive-side cup is reverse-threaded. |
-| **Bottom bracket (English / BSA)** | Left / non-drive (adjustable cup) | RH (normal) | Counter-clockwise | |
-| **Bottom bracket (Italian, 36mm×24T)** | Both sides | RH (normal) | Counter-clockwise | *Both* cups are normal thread — a common mix-up vs English. |
-| **Bottom bracket (French, Swiss, other)** | varies | varies | — | Rare; French = both RH, Swiss = drive side LH. Verify by standard. |
-| **Cassette lockring** | — | RH (normal) | Counter-clockwise | Needs a chainwhip to hold the cassette. |
-| **Freewheel (thread-on)** | — | RH (normal) | Counter-clockwise | It self-tightens when pedalling. |
-| **Disc rotor lockring (Center Lock)** | — | RH (normal) | Counter-clockwise | Except Shimano external-spline lockrings, which loosen counter-clockwise like a cassette lockring. |
-| **Right (drive) crank / non-square fixing bolts** | — | RH (normal) | Counter-clockwise | Self-extracting bolts vary; check. |
-| **Left pedal spindle on some track/BMX** | left | LH | Clockwise | Same as normal pedals. |
-| **Freehub body bolt / thru-axle / most bolts** | — | RH (normal) | Counter-clockwise | Default assumption when unlisted. |
+### Pedals
+
+| Side | Thread | To LOOSEN | Notes |
+|------|--------|-----------|-------|
+| Right / drive | RH (normal) | Anti-clockwise | Viewed from the drive side. |
+| Left / non-drive | **LH (reverse)** | **Clockwise** | The classic gotcha. |
+
+### Bottom brackets
+
+| Standard | Side | Thread | To LOOSEN | Notes |
+|----------|------|--------|-----------|-------|
+| English / BSA (1.37"×24T) | Right / drive (fixed cup) | **LH** | **Clockwise** | Drive-side cup is reverse-threaded. |
+| English / BSA | Left / non-drive (adjustable cup) | RH | Anti-clockwise | |
+| Italian (36mm×24T) | Both sides | RH | Anti-clockwise | *Both* cups normal — common mix-up vs English. |
+| Swiss | Right / drive | **LH** | **Clockwise** | Rare. Left side is RH. Verify. |
+| French | Both sides | RH | Anti-clockwise | Rare. Verify. |
 
 > The two you'll reach for most: **left pedal** and the **drive-side cup of an
 > English bottom bracket** are both **left-hand** (turn clockwise to loosen).
@@ -51,8 +56,8 @@ reverse-threaded so pedalling forces tighten rather than loosen them. Knowing th
 
 - **Big, unambiguous arrows** and the words "to loosen / to tighten", plus the
   viewpoint ("as you look at this side of the bike").
-- Let the user tap a part to expand notes and the *tighten* direction too.
-- A prominent search/filter — at the bench you want the answer in one tap.
+- Highlight the left-hand gotchas (left pedal, English drive-side cup, Italian
+  mix-up). No search — the list is short enough to scan.
 - Optional torque cross-link: if a **torque calculator / spec reference** is
   added (see [additional-ideas.md](../additional-ideas.md)), link each part to
   its torque spec.

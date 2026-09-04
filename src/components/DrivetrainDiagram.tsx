@@ -165,7 +165,10 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   const minX = -rfMax - m;
   const maxX = R.x + rrMax + PULLEY + m;
   const minY = -topExtent - m - 10; // room for labels
-  const maxY = (hasDerailleur ? derailBottom : rrMax) + m;
+  // Bottom must clear the lowest of: chainring, cog, and (if present) the
+  // derailleur's downward reach — otherwise a big chainring gets culled in
+  // single-speed/hub mode where there's no derailleur to extend the bounds.
+  const maxY = Math.max(rfMax, rrMax, hasDerailleur ? derailBottom : 0) + m;
   const W = maxX - minX;
   const H = maxY - minY;
 

@@ -93,3 +93,18 @@ export const CRR_PRESETS = [
   { label: 'Gravel', crr: 0.012 },
   { label: 'Off-road / knobbly', crr: 0.02 },
 ];
+
+export const DRIVETRAIN_EFF_PRESETS = [
+  { label: 'Clean & waxed', eff: 0.98 },
+  { label: 'Typical', eff: 0.97 },
+  { label: 'Worn / dirty', eff: 0.95 },
+];
+
+// Air density by altitude (approx, ~15 °C). Also drops with temperature/humidity.
+export const AIR_DENSITY_PRESETS = [
+  { label: 'Sea level, 15°C', rho: 1.225 },
+  { label: 'Sea level, 25°C', rho: 1.184 },
+  { label: '1000 m', rho: 1.112 },
+  { label: '2000 m', rho: 1.007 },
+  { label: '3000 m', rho: 0.909 },
+];

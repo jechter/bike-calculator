@@ -5,11 +5,24 @@ import {
   powerSplit,
   CDA_PRESETS,
   CRR_PRESETS,
+  DRIVETRAIN_EFF_PRESETS,
+  AIR_DENSITY_PRESETS,
   type PowerInput,
 } from "../lib/power";
 import { kmhToMs, msToKmh, kmhToMph, mphToKmh } from "../lib/units";
 import { useUnits, speedUnitLabel } from "../units-context";
-import { Field, NumberInput, Select, Result, Section } from "./ui";
+import { Field, NumberInput, PresetMenu, Result, Section } from "./ui";
+
+const CDA_OPTIONS = CDA_PRESETS.map((c) => ({ value: String(c.cda), label: `${c.label} (${c.cda})` }));
+const CRR_OPTIONS = CRR_PRESETS.map((c) => ({ value: String(c.crr), label: `${c.label} (${c.crr})` }));
+const EFF_OPTIONS = DRIVETRAIN_EFF_PRESETS.map((c) => ({
+  value: String(c.eff),
+  label: `${c.label} (${c.eff})`,
+}));
+const RHO_OPTIONS = AIR_DENSITY_PRESETS.map((c) => ({
+  value: String(c.rho),
+  label: `${c.label} (${c.rho})`,
+}));
 
 export function Power() {
   const units = useUnits();
@@ -17,9 +30,6 @@ export function Power() {
   const toDisplay = (kmh: number) => (units.speed === "mph" ? kmhToMph(kmh) : kmh);
   const fromDisplay = (v: number) => (units.speed === "mph" ? mphToKmh(v) : v);
 
-  const [dir, setDir] = useState<"speed-from-power" | "power-from-speed">(
-    "power-from-speed",
-  );
   const [mass, setMass] = useState(80);
   const [gradient, setGradient] = useState(0);
   const [crr, setCrr] = useState(0.005);
@@ -28,12 +38,15 @@ export function Power() {
   const [wind, setWind] = useState(0);
   const [eff, setEff] = useState(0.97);
 
+  // Speed and power are coupled: whichever was edited last is the independent
+  // one and stays fixed as conditions change; the other is derived.
   const [speedKmh, setSpeedKmh] = useState(30);
   const [watts, setWatts] = useState(200);
+  const [last, setLast] = useState<"speed" | "power">("speed");
 
   const p: PowerInput = {
     massKg: mass,
-    gradient: gradient / 100, // input as percent
+    gradient: gradient / 100,
     crr,
     rho,
     cda,
@@ -41,52 +54,50 @@ export function Power() {
     drivetrainEfficiency: eff,
   };
 
-  const vFromPower = speedForPower(watts, p);
-  const resultSpeedKmh = msToKmh(vFromPower);
-  const resultWatts = powerForSpeed(kmhToMs(speedKmh), p);
+  const derivedWatts = powerForSpeed(kmhToMs(speedKmh), p);
+  const derivedSpeedKmh = msToKmh(speedForPower(watts, p));
+  const shownSpeedKmh = last === "power" ? derivedSpeedKmh : speedKmh;
+  const shownWatts = last === "speed" ? derivedWatts : watts;
 
-  const evalV = dir === "power-from-speed" ? kmhToMs(speedKmh) : vFromPower;
-  const split = powerSplit(evalV, p);
+  const split = powerSplit(kmhToMs(shownSpeedKmh), p);
 
   return (
     <>
-      <Section title="Direction">
+      <Section
+        title="Speed ⇄ Power"
+        info={
+          <>
+            Edit <strong>either</strong> field — the other updates to match. When you
+            change a condition below, the value you edited <strong>last</strong> is
+            held fixed and the other is recomputed.
+          </>
+        }
+      >
         <div className="grid">
-          <Field label="Solve for">
-            <Select
-              value={dir}
-              onChange={(v) => setDir(v as typeof dir)}
-              options={[
-                { value: "power-from-speed", label: "Power needed for a speed" },
-                { value: "speed-from-power", label: "Speed from a power" },
-              ]}
+          <Field label="Speed" hint={last === "speed" ? "you set this" : "computed"}>
+            <NumberInput
+              value={Math.round(toDisplay(shownSpeedKmh) * 10) / 10}
+              onChange={(v) => {
+                setSpeedKmh(fromDisplay(v));
+                setLast("speed");
+              }}
+              suffix={unitLabel}
+              min={1}
             />
           </Field>
-          {dir === "power-from-speed" ? (
-            <Field label="Target speed">
-              <NumberInput
-                value={Math.round(toDisplay(speedKmh) * 10) / 10}
-                onChange={(v) => setSpeedKmh(fromDisplay(v))}
-                suffix={unitLabel}
-                min={1}
-              />
-            </Field>
-          ) : (
-            <Field label="Pedal power">
-              <NumberInput value={watts} onChange={setWatts} suffix="W" min={10} />
-            </Field>
-          )}
+          <Field label="Pedal power" hint={last === "power" ? "you set this" : "computed"}>
+            <NumberInput
+              value={Math.round(shownWatts)}
+              onChange={(v) => {
+                setWatts(v);
+                setLast("power");
+              }}
+              suffix="W"
+              min={5}
+            />
+          </Field>
         </div>
         <div className="results" style={{ marginTop: 8 }}>
-          {dir === "power-from-speed" ? (
-            <Result label="Power required" value={`${resultWatts.toFixed(0)} W`} big />
-          ) : (
-            <Result
-              label="Speed"
-              value={`${toDisplay(resultSpeedKmh).toFixed(1)} ${unitLabel}`}
-              big
-            />
-          )}
           <Result label="vs gravity" value={`${split.gravity.toFixed(0)} %`} />
           <Result label="vs rolling" value={`${split.rolling.toFixed(0)} %`} />
           <Result label="vs aero" value={`${split.aero.toFixed(0)} %`} />
@@ -99,7 +110,8 @@ export function Power() {
           <>
             Steady-state model: power against gravity, rolling resistance and aero
             drag, divided by drivetrain efficiency. The split shows where the watts
-            go — aero dominates on the flat, gravity on climbs.
+            go — aero dominates on the flat, gravity on climbs. Each coefficient is
+            editable, with a ⌄ button for common presets.
           </>
         }
       >
@@ -110,31 +122,49 @@ export function Power() {
           <Field label="Gradient">
             <NumberInput value={gradient} onChange={setGradient} suffix="%" step={0.5} />
           </Field>
-          <Field label="Position (CdA)">
-            <Select
-              value={String(cda)}
-              onChange={(v) => setCda(parseFloat(v))}
-              options={CDA_PRESETS.map((c) => ({ value: String(c.cda), label: `${c.label} (${c.cda})` }))}
-            />
-          </Field>
-          <Field label="CdA (m²)">
-            <NumberInput value={cda} onChange={setCda} step={0.01} min={0.15} max={0.6} />
-          </Field>
-          <Field label="Surface (Crr)">
-            <Select
-              value={String(crr)}
-              onChange={(v) => setCrr(parseFloat(v))}
-              options={CRR_PRESETS.map((c) => ({ value: String(c.crr), label: `${c.label} (${c.crr})` }))}
-            />
-          </Field>
-          <Field label="Air density ρ" hint="1.225 sea level 15°C">
-            <NumberInput value={rho} onChange={setRho} suffix="kg/m³" step={0.005} />
-          </Field>
           <Field label="Headwind" hint="+ head, − tail">
             <NumberInput value={wind} onChange={setWind} suffix="m/s" step={0.5} />
           </Field>
+
+          <Field label="CdA (drag area, m²)" hint="riding position">
+            <div className="combo">
+              <NumberInput value={cda} onChange={setCda} step={0.01} min={0.15} max={0.6} />
+              <PresetMenu
+                title="Fill CdA from a riding position"
+                options={CDA_OPTIONS}
+                onPick={(v) => setCda(parseFloat(v))}
+              />
+            </div>
+          </Field>
+          <Field label="Crr (rolling resistance)" hint="tire / surface">
+            <div className="combo">
+              <NumberInput value={crr} onChange={setCrr} step={0.001} min={0.002} max={0.03} />
+              <PresetMenu
+                title="Fill Crr from a tire / surface"
+                options={CRR_OPTIONS}
+                onPick={(v) => setCrr(parseFloat(v))}
+              />
+            </div>
+          </Field>
+          <Field label="Air density ρ (kg/m³)" hint="altitude / temperature">
+            <div className="combo">
+              <NumberInput value={rho} onChange={setRho} step={0.005} min={0.7} max={1.3} />
+              <PresetMenu
+                title="Fill air density from altitude"
+                options={RHO_OPTIONS}
+                onPick={(v) => setRho(parseFloat(v))}
+              />
+            </div>
+          </Field>
           <Field label="Drivetrain efficiency">
-            <NumberInput value={eff} onChange={setEff} step={0.01} min={0.9} max={1} />
+            <div className="combo">
+              <NumberInput value={eff} onChange={setEff} step={0.01} min={0.9} max={1} />
+              <PresetMenu
+                title="Fill drivetrain efficiency"
+                options={EFF_OPTIONS}
+                onPick={(v) => setEff(parseFloat(v))}
+              />
+            </div>
           </Field>
         </div>
       </Section>

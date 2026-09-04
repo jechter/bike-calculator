@@ -48,9 +48,18 @@ P_pedal = (F_gravity + F_rolling + F_aero) · v / η
 | `v_headwind` | head/tail wind component, m/s | + head, − tail |
 | `η` | drivetrain efficiency | ~0.97–0.98 |
 
-Let the user pick sensible presets (position → CdA, surface → Crr,
-altitude/temperature → ρ) with manual override, and expose the assumptions in
-the results so the number is interpretable.
+Each coefficient (CdA, Crr, ρ, drivetrain efficiency) is an **editable field with
+a preset dropdown** (combobox): pick a common value or type your own. Expose the
+assumptions so the number is interpretable.
+
+### Coupled speed ⇄ power fields
+
+Rather than a "solve for" switch, **speed and power are two editable fields that
+stay in sync**: edit one and the other updates via the model. When a *condition*
+(mass, gradient, CdA, …) changes, the field the user **edited last** is held
+fixed and the other is recomputed — the intuitive behaviour. Internally: track
+`last ∈ {speed, power}`; the independent one is stored, the other is derived
+(`powerForSpeed` / `speedForPower`).
 
 ## Power → speed
 

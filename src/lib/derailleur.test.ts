@@ -45,3 +45,12 @@ describe('searchDerailleurs / derailleurById', () => {
     expect(derailleurById(r[0].id)?.model).toMatch(/Tourney/);
   });
 });
+
+describe('pullRatioFor', () => {
+  it('returns the family pull ratio (11-sp road ≈1.4:1, electronic for AXS)', async () => {
+    const { pullRatioFor, derailleurById } = await import('./derailleur');
+    expect(pullRatioFor(derailleurById('sh-105-r7000-gs')!)).toBe('≈1.4:1');
+    expect(pullRatioFor(derailleurById('sh-tourney-ty300')!)).toBe('≈1.7:1');
+    expect(pullRatioFor(derailleurById('sram-force-axs')!)).toBe('electronic');
+  });
+});

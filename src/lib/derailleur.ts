@@ -171,6 +171,28 @@ export const DERAILLEURS: DerailleurSpec[] = [
   { id: 'campy-chorus-12', brand: 'Campagnolo', model: 'Chorus 12', discipline: 'Road', speeds: '12', cage: 'medium', maxSprocket: 34, minSprocket: 11, totalCapacity: 39, actuation: 'Campagnolo 9/10/11/12-speed' },
 ];
 
+// Approximate actuation ("pull") ratio by family — roughly the derailleur's
+// lateral movement per unit of cable pull. These are DISPUTED between sources and
+// definitions; treat as a rough guide and verify. Electronic groups have no
+// cable-pull ratio.
+export const PULL_RATIOS: Record<string, string> = {
+  'Shimano road 8/9/10-speed': '≈1.7:1',
+  'Shimano 4700 (own 10sp ratio)': '≈1.4:1',
+  'Shimano road 11-speed': '≈1.4:1',
+  'Shimano MTB 8/9-speed': '≈1.7:1',
+  'Shimano MTB 10-speed (Dynasys)': '≈1.2:1',
+  'Shimano MTB 11/12-speed (Hyperglide+ / Micro Spline)': '≈1.3:1',
+  'SRAM Exact Actuation': '≈1.1:1',
+  'SRAM AXS / eTap': 'electronic',
+  'SRAM Eagle (X-Actuation)': '≈1.3:1',
+  'Campagnolo 9/10/11/12-speed': 'Campagnolo-specific',
+};
+
+/** Approximate pull/actuation ratio for a derailleur, from its family. */
+export function pullRatioFor(d: DerailleurSpec): string {
+  return PULL_RATIOS[d.actuation] ?? '—';
+}
+
 export function searchDerailleurs(query: string): DerailleurSpec[] {
   const q = query.trim().toLowerCase();
   if (!q) return DERAILLEURS;

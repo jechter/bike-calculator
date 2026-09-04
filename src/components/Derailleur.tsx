@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DERAILLEUR_SYSTEMS, searchDerailleurs } from "../lib/derailleur";
+import { DERAILLEUR_SYSTEMS, searchDerailleurs, pullRatioFor } from "../lib/derailleur";
 import { Field, TextInput, Section } from "./ui";
 
 export function Derailleur() {
@@ -14,8 +14,9 @@ export function Derailleur() {
           <>
             Search by brand, model, discipline or speeds (e.g. “shimano 11”,
             “deore”, “gravel”). Specs are <strong>approximate, community-sourced</strong>
-            {" "}— verify against the manufacturer. To check whether one fits a given
-            cassette/crankset, pick it in the{" "}
+            {" "}— verify against the manufacturer. <strong>Pull ratios especially</strong>{" "}
+            are disputed between sources; treat them as a rough guide. To check
+            whether one fits a given cassette/crankset, pick it in the{" "}
             <a className="inline-link" href="#/drivetrain">
               drivetrain calculator
             </a>
@@ -43,6 +44,7 @@ export function Derailleur() {
                 <th className="num">Max cog</th>
                 <th className="num">Capacity</th>
                 <th>Actuation</th>
+                <th className="num">Pull ratio</th>
               </tr>
             </thead>
             <tbody>
@@ -58,11 +60,12 @@ export function Derailleur() {
                   <td className="num">{d.maxSprocket}T</td>
                   <td className="num">{d.totalCapacity}T</td>
                   <td>{d.actuation}</td>
+                  <td className="num">{pullRatioFor(d)}</td>
                 </tr>
               ))}
               {results.length === 0 && (
                 <tr>
-                  <td colSpan={7} style={{ color: "var(--muted)" }}>
+                  <td colSpan={8} style={{ color: "var(--muted)" }}>
                     No derailleurs match “{query}”.
                   </td>
                 </tr>

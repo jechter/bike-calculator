@@ -17,10 +17,17 @@ its limits.
 
 A searchable table of rear derailleurs. Search by brand / model / discipline /
 speeds; each row shows the specs the tool knows: **brand + model**, discipline,
-speeds, **cage length**, **max sprocket**, **total capacity**, and **actuation
-family** (which ties into the compatibility reference below). Approximate,
-community-sourced — a seed list to extend. Fields per entry:
+speeds, **cage length**, **max sprocket**, **total capacity**, **actuation
+family**, and **pull ratio**. Approximate, community-sourced — a seed list to
+extend. Fields per entry:
 `{ brand, model, discipline, speeds, cage, maxSprocket, minSprocket?, totalCapacity, actuation, oneBy?, notes? }`.
+
+**Pull ratio** (actuation ratio ≈ derailleur lateral movement per unit of cable
+pull) is a property of the **actuation family**, so it's stored once per family
+(`PULL_RATIOS`) and looked up per derailleur (`pullRatioFor`). The values are
+**disputed between sources and definitions** — a rough guide, not gospel
+(≈1.7:1 old Shimano, ≈1.4:1 Shimano 11-sp road, ≈1.1:1 SRAM Exact Actuation,
+electronic groups have none). Verify before relying on it.
 
 ## Part 2 — Compatibility reference
 

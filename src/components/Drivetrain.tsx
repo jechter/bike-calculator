@@ -10,7 +10,7 @@ import {
   type GearResult,
   type HubGear,
 } from "../lib/drivetrain";
-import { DERAILLEURS, derailleurById, checkCapacity } from "../lib/derailleur";
+import { DERAILLEURS, derailleurById, checkCapacity, pullRatioFor } from "../lib/derailleur";
 import { TIRE_PRESETS } from "../lib/wheels";
 import { kmhToMph } from "../lib/units";
 import { useUnits, speedUnitLabel } from "../units-context";
@@ -355,6 +355,8 @@ export function Drivetrain() {
                   }
                 />
                 <Result label="Gear range" value={`${range.toFixed(2)}×`} />
+                <Result label="Actuation" value={`${derailleur.actuation}`} />
+                <Result label="Pull ratio" value={pullRatioFor(derailleur)} />
               </div>
               <Note tone={fit.capacityOk && fit.maxSprocketOk ? "info" : "warn"}>
                 {fit.capacityOk && fit.maxSprocketOk

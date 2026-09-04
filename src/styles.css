@@ -185,9 +185,9 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .td-layout { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
 .td-table { flex: 0 1 auto; }
 .td-table table { width: auto; table-layout: fixed; }
-.td-table th:nth-child(1), .td-table td:nth-child(1) { width: 200px; }
+.td-table th:nth-child(1), .td-table td:nth-child(1) { width: 300px; }
 .td-table th:nth-child(2), .td-table td:nth-child(2),
-.td-table th:nth-child(3), .td-table td:nth-child(3) { width: 98px; }
+.td-table th:nth-child(3), .td-table td:nth-child(3) { width: 120px; }
 .td-cellnote { font-size: 12px; color: var(--muted); margin-top: 3px; }
 .td-cell { cursor: pointer; }
 .td-cell:hover { background: var(--panel-2); }

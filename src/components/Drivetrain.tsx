@@ -365,6 +365,38 @@ export function Drivetrain() {
           speed={toSpeed(activeSpeedKmh)}
           speedUnit={unitLabel}
         />
+
+        <div className="dt-controls">
+          <label htmlFor="chainstay">Chainstay</label>
+          <input
+            id="chainstay"
+            type="range"
+            min={350}
+            max={500}
+            step={5}
+            value={Number.isFinite(chainstay) ? chainstay : 410}
+            onChange={(e) => setChainstay(parseInt(e.target.value))}
+          />
+          <input
+            type="number"
+            className="gc-cadence-num"
+            value={Number.isFinite(chainstay) ? chainstay : ""}
+            min={350}
+            max={500}
+            onChange={(e) => setChainstay(parseInt(e.target.value))}
+          />
+          <span>mm</span>
+        </div>
+
+        <p className="dt-hint">
+          Want to know if this gearing will get you up a mountain? The{" "}
+          <a className="inline-link" href="#/power">
+            cycling power calculator
+          </a>{" "}
+          turns a speed and gradient into the watts you'd need — pair it with your
+          lowest gear's speed at a comfortable cadence to see if the climb is
+          realistic.
+        </p>
       </Section>
 
       {mode === "cassette" && (
@@ -453,9 +485,7 @@ export function Drivetrain() {
       >
         {mode === "cassette" ? (
           <div className="grid">
-            <Field label="Chainstay length">
-              <NumberInput value={chainstay} onChange={setChainstay} suffix="mm" min={350} max={500} />
-            </Field>
+            <Result label="Chainstay length" value={`${chainstay} mm`} />
             <Result label="Largest ring / cog" value={`${largestRing} / ${largestCog} T`} />
             <Result label="Length" value={`${chain.mm} mm`} />
             <Result label="Links" value={chain.links} big />

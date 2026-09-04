@@ -118,9 +118,14 @@ is off-screen. **Four outlined spoke blades** spin inside
 the chainring at the cadence (sized to the **largest** chainring, not the selected
 one) and the **whole wheel** spins at cadence × ratio (i.e. wheel speed) — both
 counter-clockwise — so you can see how much faster the wheel turns in a taller
-gear. The animation respects `prefers-reduced-motion`. The diagram keeps a
-**constant size** across gears, and the selected gear is coloured to match its
-chainring's line in the chart.
+gear. The animation respects `prefers-reduced-motion`. The selected gear is
+coloured to match its chainring's line in the chart. A **chainstay-length slider**
+sits under the diagram (350–500 mm) and re-spaces the chainring and cassette live;
+it's the same value used for the chain-length calculation.
+
+A hint under the diagram links to the [cycling power calculator](power.md): pair
+your lowest gear's speed at a comfortable cadence with a gradient there to check
+whether a climb is realistic on this gearing.
 
 **Cross-chaining.** With 2+ chainrings, the chart **greys out** the extreme
 cross-chained combinations to avoid shifting into: the big ring with the two

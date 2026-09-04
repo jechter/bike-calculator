@@ -385,6 +385,18 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   background: var(--panel); color: var(--text); font: inherit; font-size: 13px;
 }
 
+/* Chainstay slider under the drivetrain diagram */
+.dt-controls {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 10px; font-size: 13px; color: var(--muted);
+}
+.dt-controls label { font-weight: 600; }
+.dt-controls input[type="range"] { width: 140px; accent-color: var(--accent); }
+.dt-hint {
+  margin: 10px auto 0; max-width: 60ch; text-align: center;
+  font-size: 12px; color: var(--muted); line-height: 1.5;
+}
+
 /* Sidebar global unit switcher */
 .unit-switcher { position: relative; }
 .unit-btn {

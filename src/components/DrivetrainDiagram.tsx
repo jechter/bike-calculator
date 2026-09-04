@@ -4,6 +4,8 @@
 // setup a rear derailleur is simulated: the tension pulley swings on its cage so
 // the total chain length stays constant as the gear changes.
 
+import { PALETTE } from "./GearChart";
+
 const PITCH = 12.7; // chain pitch, mm
 const pr = (teeth: number) => (teeth * PITCH) / (2 * Math.PI); // pitch radius, mm
 const PULLEY = pr(9); // 9T jockey wheels
@@ -142,27 +144,47 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
     );
   }
 
-  // Bounds -> viewBox (mm), with a margin.
-  const xs = [F.x - rf, R.x + rr, ...pulleys.map((p) => p.x + PULLEY)];
-  const ys = [-Math.max(rf, rr), ...pulleys.map((p) => p.y + PULLEY), Math.max(rf, rr)];
-  const m = 8;
-  const minX = Math.min(...xs) - m;
-  const maxX = Math.max(...xs) + m;
-  const minY = Math.min(...ys) - m - 8; // room for labels
-  const maxY = Math.max(...ys) + m;
+  // Fixed viewBox so the diagram keeps a constant size across gears: sized from
+  // the largest gears and the derailleur's full downward reach.
+  const rfMax = pr(rings[0]);
+  const rrMax = pr(cs[0]);
+  const topExtent = Math.max(rfMax, rrMax);
+  const derailBottom = rrMax + 8 + PULLEY + CAGE + PULLEY;
+  const m = 10;
+  const minX = -rfMax - m;
+  const maxX = R.x + rrMax + PULLEY + m;
+  const minY = -topExtent - m - 10; // room for labels
+  const maxY = (hasDerailleur ? derailBottom : topExtent) + m;
   const W = maxX - minX;
   const H = maxY - minY;
+
+  // Selected-gear colour matches the chainring's line in the gear chart.
+  const activeColor = PALETTE[Math.max(0, rings.indexOf(props.activeChainring)) % PALETTE.length];
 
   return (
     <div className="dt-diagram">
       <svg viewBox={`${minX} ${minY} ${W} ${H}`} width="100%" role="img" aria-label="Drivetrain view">
         {/* cassette cogs */}
         {cs.map((c) => (
-          <circle key={"c" + c} cx={R.x} cy={R.y} r={pr(c)} className={c === props.activeCog ? "dt-gear-active" : "dt-gear"} />
+          <circle
+            key={"c" + c}
+            cx={R.x}
+            cy={R.y}
+            r={pr(c)}
+            className={c === props.activeCog ? "dt-gear-active" : "dt-gear"}
+            style={c === props.activeCog ? { stroke: activeColor } : undefined}
+          />
         ))}
         {/* chainrings */}
         {rings.map((r) => (
-          <circle key={"r" + r} cx={F.x} cy={F.y} r={pr(r)} className={r === props.activeChainring ? "dt-gear-active" : "dt-gear"} />
+          <circle
+            key={"r" + r}
+            cx={F.x}
+            cy={F.y}
+            r={pr(r)}
+            className={r === props.activeChainring ? "dt-gear-active" : "dt-gear"}
+            style={r === props.activeChainring ? { stroke: activeColor } : undefined}
+          />
         ))}
         {/* rear derailleur cage + pulleys */}
         {pulleys.length === 2 && (
@@ -192,7 +214,6 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
       </svg>
       <div className="dt-cap">
         {props.activeChainring} × {props.activeCog} · ratio {(props.activeChainring / props.activeCog).toFixed(2)}
-        {hasDerailleur && " · chain length held constant by the derailleur"}
       </div>
     </div>
   );

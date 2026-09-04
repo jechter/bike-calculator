@@ -8,7 +8,9 @@ import { useUnits, speedUnitLabel } from "../units-context";
 // dropdown built into the chart. The first/last gridlines align with the lowest
 // and highest gear so their values can be read straight off the axis.
 
-const PALETTE = ["#0b6bcb", "#c0392b", "#157347", "#b7791f", "#7b3fb0", "#0e8a8a"];
+// One colour per chainring line (largest ring first). Shared with the
+// drivetrain diagram so the selected gear matches the chart.
+export const PALETTE = ["#0b6bcb", "#c0392b", "#157347", "#b7791f", "#7b3fb0", "#0e8a8a"];
 
 export interface AxisOption {
   value: string;

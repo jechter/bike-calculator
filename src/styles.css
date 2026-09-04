@@ -191,7 +191,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 /* Drivetrain (crankset + cassette) diagram */
 .dt-diagram { margin-top: 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
 .dt-diagram svg { width: 100%; max-width: 520px; display: block; margin: 0 auto; }
-.dt-gear { fill: none; stroke: var(--border); stroke-width: 1.5; stroke-dasharray: 2 2.5; }
+.dt-gear { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 2 2.5; }
 .dt-gear-active { fill: none; stroke: var(--accent); stroke-width: 3; }
 .dt-hub { fill: var(--muted); }
 .dt-chain { fill: none; stroke: var(--text); stroke-width: 3; stroke-linejoin: round; }

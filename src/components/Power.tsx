@@ -74,7 +74,7 @@ export function Power() {
         }
       >
         <div className="grid">
-          <Field label="Speed" hint={last === "speed" ? "you set this" : "computed"}>
+          <Field label="Speed">
             <NumberInput
               value={Math.round(toDisplay(shownSpeedKmh) * 10) / 10}
               onChange={(v) => {
@@ -85,7 +85,7 @@ export function Power() {
               min={1}
             />
           </Field>
-          <Field label="Pedal power" hint={last === "power" ? "you set this" : "computed"}>
+          <Field label="Pedal power">
             <NumberInput
               value={Math.round(shownWatts)}
               onChange={(v) => {
@@ -123,7 +123,12 @@ export function Power() {
             <NumberInput value={gradient} onChange={setGradient} suffix="%" step={0.5} />
           </Field>
           <Field label="Headwind" hint="+ head, − tail">
-            <NumberInput value={wind} onChange={setWind} suffix="m/s" step={0.5} />
+            <NumberInput
+              value={Math.round(toDisplay(msToKmh(wind)) * 10) / 10}
+              onChange={(v) => setWind(kmhToMs(fromDisplay(v)))}
+              suffix={unitLabel}
+              step={1}
+            />
           </Field>
 
           <Field label="CdA (drag area, m²)" hint="riding position">

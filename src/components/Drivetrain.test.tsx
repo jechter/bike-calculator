@@ -74,6 +74,17 @@ describe("Drivetrain page", () => {
     expect(getByText(/wheel-size-independent/)).toBeTruthy();
   });
 
+  it("renders a drivetrain diagram and moves the chain on gear hover", () => {
+    const { container } = render(<Drivetrain />);
+    expect(container.querySelector(".dt-diagram")).toBeTruthy();
+    // hovering the first gear dot (50 x 28) updates the diagram caption
+    const dot = container.querySelector(".gear-chart circle") as SVGCircleElement;
+    fireEvent.mouseMove(dot, { clientX: 100, clientY: 100 });
+    expect(container.querySelector(".dt-cap")?.textContent).toMatch(/50 × 28 · ratio/);
+    // active gear is highlighted in the diagram
+    expect(container.querySelectorAll(".dt-diagram .dt-gear-active").length).toBe(2);
+  });
+
   it("shows a hover tooltip with a gear's exact values", () => {
     const { container } = render(<Drivetrain />);
     const dot = container.querySelector(".gc-dot") as SVGCircleElement;

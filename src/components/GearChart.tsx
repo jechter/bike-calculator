@@ -29,6 +29,8 @@ export interface GearChartProps {
   extra?: ReactNode;
   /** Mark a gear as cross-chained (greyed out; avoid shifting into it). */
   isCrossChained?: (g: GearResult) => boolean;
+  /** Called when a gear dot is hovered (for the drivetrain diagram). */
+  onHover?: (g: GearResult) => void;
 }
 
 export function GearChart({
@@ -42,6 +44,7 @@ export function GearChart({
   cadenceRpm,
   extra,
   isCrossChained,
+  onHover,
 }: GearChartProps) {
   const units = useUnits();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -106,6 +109,7 @@ export function GearChart({
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
     setHover({ g, left: e.clientX - rect.left, top: e.clientY - rect.top });
+    onHover?.(g);
   };
 
   return (

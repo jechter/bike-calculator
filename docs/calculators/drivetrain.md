@@ -101,6 +101,11 @@ glance. Also show the gear count and range (`highest ratio / lowest ratio`).
 > compare gearing; bigger = taller/harder. It's a classic metric but niche, hence
 > it's one of several selectable axes rather than the default (speed is default).
 
+**Drivetrain view.** Below the chart, a schematic side view draws the
+chainring(s) and cassette cogs **to scale by tooth count** as concentric circles,
+with the **chain looped over the currently-selected gear**. Hovering a gear dot
+in the chart moves the chain to that chainring × cog (default: a middle gear).
+
 **Cross-chaining.** With 2+ chainrings, the chart **greys out** the extreme
 cross-chained combinations to avoid shifting into: the big ring with the two
 largest cogs, and the small ring with the two smallest cogs (big-big /

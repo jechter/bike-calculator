@@ -16,6 +16,7 @@ import { kmhToMph } from "../lib/units";
 import { useUnits, speedUnitLabel } from "../units-context";
 import { Field, NumberInput, TextInput, Select, PresetMenu, Result, Note, Section } from "./ui";
 import { GearChart } from "./GearChart";
+import { DrivetrainDiagram } from "./DrivetrainDiagram";
 
 type Mode = "cassette" | "single" | "hub";
 type Metric = "speed" | "gearInches" | "development" | "ratio";
@@ -65,6 +66,7 @@ export function Drivetrain() {
 
   const [chainstay, setChainstay] = useState(410);
   const [derailleurId, setDerailleurId] = useState("");
+  const [activeGear, setActiveGear] = useState<{ chainring: number; cog: number } | null>(null);
 
   const chainrings = mode === "cassette" ? parseList(chainringStr) : [singleRing];
   const cogs = mode === "cassette" ? parseList(cogStr) : [singleCog];
@@ -167,6 +169,13 @@ export function Drivetrain() {
   }));
   const activeMetric = metricDefs[metric];
   const pointLabel = (g: GearResult) => (g.hubGear ? g.hubGear.name : String(g.cog));
+
+  // Active gear for the drivetrain diagram (default to a middle cog until hovered).
+  const defaultCog = cogs.length ? cogs[Math.floor(cogs.length / 2)] : 0;
+  const activeChainring =
+    activeGear && chainrings.includes(activeGear.chainring) ? activeGear.chainring : chainrings[0] ?? 0;
+  const activeCog =
+    activeGear && cogs.includes(activeGear.cog) ? activeGear.cog : defaultCog;
 
   // Cross-chaining: only meaningful with 2+ chainrings. Flag big ring + the two
   // largest cogs, and small ring + the two smallest cogs, as gears to avoid.
@@ -314,6 +323,7 @@ export function Drivetrain() {
           pointLabel={pointLabel}
           cadenceRpm={rpm}
           isCrossChained={isCrossChained}
+          onHover={(g) => setActiveGear({ chainring: g.chainring, cog: g.cog })}
           extra={
             metric === "speed" ? (
               <div className="gc-cadence">
@@ -339,6 +349,13 @@ export function Drivetrain() {
               </div>
             ) : undefined
           }
+        />
+
+        <DrivetrainDiagram
+          chainrings={chainrings}
+          cogs={cogs}
+          activeChainring={activeChainring}
+          activeCog={activeCog}
         />
       </Section>
 

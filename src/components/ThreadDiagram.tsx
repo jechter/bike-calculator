@@ -69,8 +69,8 @@ export function ThreadDiagram({ sel }: { sel: Selection }) {
         {/* loosen (outer) and tighten (inner). Both arcs occupy the same fixed
             place (a ring with a gap at the bottom); only the arrowhead end/direction
             flips with the thread hand. */}
-        <ArcArrow cx={100} cy={100} r={72} startDeg={loosenCW ? 110 : 70} sweep={320} clockwise={loosenCW} className="td-loosen" width={7} />
-        <ArcArrow cx={100} cy={100} r={46} startDeg={!loosenCW ? 110 : 70} sweep={320} clockwise={!loosenCW} className="td-tighten" width={7} />
+        <ArcArrow cx={100} cy={100} r={72} startDeg={loosenCW ? 170 : 10} sweep={200} clockwise={loosenCW} className="td-loosen" width={7} />
+        <ArcArrow cx={100} cy={100} r={46} startDeg={!loosenCW ? 170 : 10} sweep={200} clockwise={!loosenCW} className="td-tighten" width={7} />
       </svg>
       <div className="td-key">
         <div className="td-key-row">

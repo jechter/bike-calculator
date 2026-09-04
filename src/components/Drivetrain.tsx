@@ -104,6 +104,31 @@ export function Drivetrain() {
         })
       : null;
 
+  // Max-cog fit is tri-state: within a few teeth over spec it often still works
+  // with a long hanger / extra B-tension.
+  const cogOver = derailleur ? largestCog - derailleur.maxSprocket : 0;
+  const cogStatus: "ok" | "caution" | "over" =
+    cogOver <= 0 ? "ok" : cogOver <= 4 ? "caution" : "over";
+
+  let fitTone: "info" | "warn" = "info";
+  let fitMessage = "";
+  if (fit && derailleur) {
+    if (fit.capacityOk && cogStatus === "ok") {
+      fitMessage = `${derailleur.brand} ${derailleur.model} should handle this drivetrain (rated ${derailleur.totalCapacity}T capacity, ${derailleur.maxSprocket}T max cog).`;
+    } else if (fit.capacityOk && cogStatus === "caution") {
+      fitTone = "warn";
+      fitMessage = `Your ${largestCog}T largest cog is ${cogOver}T past ${derailleur.brand} ${derailleur.model}'s rated ${derailleur.maxSprocket}T max. That's out of spec, but with a long derailleur hanger or extra B-tension it may still clear — look closely at the clearance and proceed with caution.`;
+    } else {
+      fitTone = "warn";
+      const parts: string[] = [];
+      if (cogStatus === "over")
+        parts.push(`your ${largestCog}T cog is ${cogOver}T past its ${derailleur.maxSprocket}T max`);
+      if (!fit.capacityOk)
+        parts.push(`it needs ${fit.requiredCapacity}T capacity vs its ${derailleur.totalCapacity}T`);
+      fitMessage = `${derailleur.brand} ${derailleur.model} is out of range here — ${parts.join("; ")}.`;
+    }
+  }
+
   const sliderCadence = Math.min(120, Math.max(60, cadence || 60));
 
   // Axis definitions for the gear chart. Speed uses the global unit (set in the
@@ -337,8 +362,17 @@ export function Drivetrain() {
                   value={
                     <>
                       {largestCog}T{" "}
-                      <span className={"badge " + (fit.maxSprocketOk ? "ok" : "danger")}>
-                        {fit.maxSprocketOk ? "OK" : `over ${derailleur.maxSprocket}T`}
+                      <span
+                        className={
+                          "badge " +
+                          (cogStatus === "ok" ? "ok" : cogStatus === "caution" ? "warn" : "danger")
+                        }
+                      >
+                        {cogStatus === "ok"
+                          ? "OK"
+                          : cogStatus === "caution"
+                            ? `+${cogOver}T over`
+                            : `over ${derailleur.maxSprocket}T`}
                       </span>
                     </>
                   }
@@ -354,19 +388,10 @@ export function Drivetrain() {
                     </>
                   }
                 />
-                <Result label="Gear range" value={`${range.toFixed(2)}×`} />
                 <Result label="Actuation" value={`${derailleur.actuation}`} />
                 <Result label="Pull ratio" value={pullRatioFor(derailleur)} />
               </div>
-              <Note tone={fit.capacityOk && fit.maxSprocketOk ? "info" : "warn"}>
-                {fit.capacityOk && fit.maxSprocketOk
-                  ? `${derailleur.brand} ${derailleur.model} should handle this drivetrain (rated ${derailleur.totalCapacity}T capacity, ${derailleur.maxSprocket}T max cog).`
-                  : `${derailleur.brand} ${derailleur.model} is out of range here — ${
-                      !fit.maxSprocketOk ? `your ${largestCog}T cog exceeds its ${derailleur.maxSprocket}T max` : ""
-                    }${!fit.maxSprocketOk && !fit.capacityOk ? "; " : ""}${
-                      !fit.capacityOk ? `needs ${fit.requiredCapacity}T capacity vs its ${derailleur.totalCapacity}T` : ""
-                    }.`}
-              </Note>
+              <Note tone={fitTone}>{fitMessage}</Note>
             </>
           )}
         </Section>

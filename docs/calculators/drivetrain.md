@@ -33,7 +33,10 @@ worn chain.
 - **Rear derailleur** (cassette mode, optional): pick one from the
   [derailleur database](derailleur-compatibility.md); the tool checks that your
   largest cog ≤ its max sprocket and required capacity ≤ its rated capacity, and
-  shows the gear range — a green/red verdict per the formula in that doc.
+  shows its actuation/pull ratio. The max-cog check is **tri-state**: OK; up to
+  **+4T over → caution** (out of spec but often works with a long hanger / extra
+  B-tension — look closely); more than +4T → won't clear. (Gear range isn't
+  repeated here — it's in the Gears summary.)
 
 > **Gain ratio** (Sheldon Brown's crank-length-aware measure) is intentionally
 > *not* shown — it's niche and needing a crank-length input for it added clutter.

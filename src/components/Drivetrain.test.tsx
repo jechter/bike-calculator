@@ -126,6 +126,20 @@ describe("Drivetrain page", () => {
     expect(container.textContent).toContain("33T");
   });
 
+  it("flags a slightly-oversized cog as caution, not a hard failure", () => {
+    const { container } = render(<Drivetrain />);
+    // 1× 42 with an 11-32 keeps capacity small; 105 SS maxes at 30 -> 32 is +2T
+    const texts = container.querySelectorAll('input[type="text"]');
+    fireEvent.change(texts[0], { target: { value: "42" } });
+    fireEvent.change(texts[1], { target: { value: "11, 32" } });
+    const derSelect = Array.from(container.querySelectorAll("select")).find((s) =>
+      Array.from(s.options).some((o) => o.textContent?.includes("105 RD-R7000 SS")),
+    ) as HTMLSelectElement;
+    fireEvent.change(derSelect, { target: { value: "sh-105-r7000-ss" } });
+    expect(container.textContent).toContain("+2T over");
+    expect(container.textContent).toMatch(/proceed with caution/);
+  });
+
   it("does not apply the derailleur chain-length formula to single speed", () => {
     const { container, getByText, queryByText } = render(<Drivetrain />);
     const typeSelect = container.querySelector("select") as HTMLSelectElement;

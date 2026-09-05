@@ -26,7 +26,7 @@ const RHO_OPTIONS = AIR_DENSITY_PRESETS.map((c) => ({
 }));
 
 // Colours shared by the split's number cards and the stacked bar.
-const SPLIT_COLORS = { gravity: "#0b6bcb", rolling: "#b7791f", aero: "#0e8a8a" };
+const SPLIT_COLORS = { gravity: "#b7791f", rolling: "#0e8a8a", aero: "#0b6bcb" };
 
 /**
  * Stacked bar of where the pedal power goes. Only resisting (positive) forces

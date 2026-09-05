@@ -286,6 +286,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .combo > input[type="text"]:focus,
 .combo .number-input input:focus { outline: none; }
 .combo .number-input { align-items: center; padding-right: 2px; }
+.combo-suffix { display: inline-flex; align-items: center; padding-right: 10px; color: var(--muted); font-size: 13px; }
 
 .preset-menu { position: relative; flex: none; display: flex; }
 .preset-btn {

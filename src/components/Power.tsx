@@ -8,6 +8,7 @@ import {
   DRIVETRAIN_EFF_PRESETS,
   AIR_DENSITY_PRESETS,
   type PowerInput,
+  type ForceBreakdown,
 } from "../lib/power";
 import { kmhToMs, msToKmh, kmhToMph, mphToKmh } from "../lib/units";
 import { useUnits, speedUnitLabel } from "../units-context";
@@ -23,6 +24,40 @@ const RHO_OPTIONS = AIR_DENSITY_PRESETS.map((c) => ({
   value: String(c.rho),
   label: `${c.label} (${c.rho})`,
 }));
+
+// Colours shared by the split's number cards and the stacked bar.
+const SPLIT_COLORS = { gravity: "#0b6bcb", rolling: "#b7791f", aero: "#0e8a8a" };
+
+/**
+ * Stacked bar of where the pedal power goes. Only resisting (positive) forces
+ * get a segment, normalised to fill the bar; an assisting force (downhill
+ * gravity, strong tailwind) is ≤ 0 and simply takes no width.
+ */
+function SplitBar({ split }: { split: ForceBreakdown }) {
+  const parts = [
+    { key: "gravity", label: "Gravity", pct: split.gravity, color: SPLIT_COLORS.gravity },
+    { key: "rolling", label: "Rolling", pct: split.rolling, color: SPLIT_COLORS.rolling },
+    { key: "aero", label: "Aero", pct: split.aero, color: SPLIT_COLORS.aero },
+  ];
+  const positives = parts.filter((p) => p.pct > 0);
+  const total = positives.reduce((s, p) => s + p.pct, 0);
+  if (total <= 0) return null;
+  return (
+    <div
+      className="split-bar"
+      role="img"
+      aria-label={parts.map((p) => `${p.label} ${p.pct.toFixed(0)} percent`).join(", ")}
+    >
+      {positives.map((p) => (
+        <span
+          key={p.key}
+          className="split-seg"
+          style={{ width: `${(p.pct / total) * 100}%`, background: p.color }}
+        />
+      ))}
+    </div>
+  );
+}
 
 export function Power() {
   const units = useUnits();
@@ -98,10 +133,11 @@ export function Power() {
           </Field>
         </div>
         <div className="results" style={{ marginTop: 8 }}>
-          <Result label="vs gravity" value={`${split.gravity.toFixed(0)} %`} />
-          <Result label="vs rolling" value={`${split.rolling.toFixed(0)} %`} />
-          <Result label="vs aero" value={`${split.aero.toFixed(0)} %`} />
+          <Result label="vs gravity" value={`${split.gravity.toFixed(0)} %`} dotColor={SPLIT_COLORS.gravity} />
+          <Result label="vs rolling" value={`${split.rolling.toFixed(0)} %`} dotColor={SPLIT_COLORS.rolling} />
+          <Result label="vs aero" value={`${split.aero.toFixed(0)} %`} dotColor={SPLIT_COLORS.aero} />
         </div>
+        <SplitBar split={split} />
       </Section>
 
       <Section

@@ -142,6 +142,8 @@ export function Result(props: {
   big?: boolean;
   /** Optional side colour accent (matches the wheel diagram). */
   accent?: "left" | "right";
+  /** Optional colour swatch before the label (ties the card to a chart/bar). */
+  dotColor?: string;
 }) {
   return (
     <div
@@ -151,7 +153,10 @@ export function Result(props: {
         (props.accent ? ` result-accent-${props.accent}` : "")
       }
     >
-      <div className="result-label">{props.label}</div>
+      <div className="result-label">
+        {props.dotColor && <span className="result-dot" style={{ background: props.dotColor }} />}
+        {props.label}
+      </div>
       <div className="result-value">{props.value}</div>
     </div>
   );

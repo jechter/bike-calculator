@@ -173,6 +173,15 @@ input[type="number"], input[type="text"], select {
 .results { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
 .result { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
 .result-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.result-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: baseline; }
+
+/* Stacked bar visualising the power split (gravity / rolling / aero) */
+.split-bar {
+  display: flex; height: 14px; margin-top: 12px;
+  border-radius: 7px; overflow: hidden; background: var(--panel-2);
+}
+.split-seg { height: 100%; transition: width 0.15s ease; }
+.split-seg + .split-seg { box-shadow: -1px 0 0 var(--panel); }
 .result-value { font-size: 18px; font-weight: 600; }
 .result-big .result-value { font-size: 26px; }
 .result-sub { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 2px; }

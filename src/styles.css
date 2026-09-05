@@ -87,7 +87,16 @@ body {
 }
 .nav button:hover { background: var(--panel-2); }
 .nav button.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-.nav .icon { width: 20px; text-align: center; }
+.nav .icon {
+  width: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+.nav button.active .icon { color: var(--accent); }
+.nav button:hover .icon { color: var(--text); }
+.nav .icon svg { display: block; }
 
 /* Main */
 .main { padding: 28px 32px 60px; max-width: 900px; }

@@ -152,9 +152,11 @@ body {
    (e.g. Speed ⇄ Power) — a thicker top border matching the wheel-building
    side cards, to keep it uncluttered. */
 .field-highlight .field-label { color: var(--accent); }
-.field-highlight input {
-  border-top-width: 3px;
-  border-top-color: var(--accent);
+/* attribute selectors raise specificity above the base input rule, which
+   otherwise resets the border after this one */
+.field-highlight input[type="number"],
+.field-highlight input[type="text"] {
+  border-top: 3px solid var(--accent);
 }
 input[type="number"], input[type="text"], select {
   font: inherit;

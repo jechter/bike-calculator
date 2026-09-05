@@ -109,14 +109,16 @@ export function WheelBuilding() {
       >
         <div className="grid">
           <Field label="ERD (effective rim diameter)">
-            <div className="combo">
-              <NumberInput value={erd} onChange={setErd} min={200} max={720} />
-              <PresetMenu
-                title="Fill ERD from a common rim (approximate)"
-                options={RIM_OPTIONS}
-                onPick={(v) => setErd(parseFloat(v))}
-              />
-              <span className="combo-suffix">mm</span>
+            <div className="number-input">
+              <div className="combo">
+                <NumberInput value={erd} onChange={setErd} min={200} max={720} />
+                <PresetMenu
+                  title="Fill ERD from a common rim (approximate)"
+                  options={RIM_OPTIONS}
+                  onPick={(v) => setErd(parseFloat(v))}
+                />
+              </div>
+              <span className="suffix">mm</span>
             </div>
           </Field>
         </div>

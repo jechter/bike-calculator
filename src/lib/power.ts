@@ -37,18 +37,28 @@ export function powerForSpeed(v: number, p: PowerInput): number {
   return (totalForce * v) / p.drivetrainEfficiency;
 }
 
-/** Percentage split of the propulsive power at speed v. */
+/**
+ * Percentage split of the pedalling effort at speed v, as a share of the
+ * *resisting* power (the sum of the forces the rider must overcome).
+ *
+ * A force can be negative — gravity on a descent, or aero with a strong
+ * tailwind — meaning it *assists* rather than resists. Such a component comes
+ * out negative (it gives back that share of the resisting power) rather than
+ * distorting the split by dividing through a signed total. When nothing
+ * resists (`resisting` ≤ 0) the rider isn't pedalling, so the split is 0 and
+ * the caller should show a "coasting" message instead.
+ */
 export function powerSplit(v: number, p: PowerInput): ForceBreakdown {
   const f = forcesAt(v, p);
   const gravP = f.gravity * v;
   const rollP = f.rolling * v;
   const aeroP = f.aero * v;
-  const total = gravP + rollP + aeroP;
-  if (total === 0) return { gravity: 0, rolling: 0, aero: 0 };
+  const resisting = Math.max(0, gravP) + Math.max(0, rollP) + Math.max(0, aeroP);
+  if (resisting <= 0) return { gravity: 0, rolling: 0, aero: 0 };
   return {
-    gravity: (gravP / total) * 100,
-    rolling: (rollP / total) * 100,
-    aero: (aeroP / total) * 100,
+    gravity: (gravP / resisting) * 100,
+    rolling: (rollP / resisting) * 100,
+    aero: (aeroP / resisting) * 100,
   };
 }
 

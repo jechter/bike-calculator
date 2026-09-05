@@ -12,7 +12,7 @@ import {
 } from "../lib/power";
 import { kmhToMs, msToKmh, kmhToMph, mphToKmh } from "../lib/units";
 import { useUnits, speedUnitLabel } from "../units-context";
-import { Field, NumberInput, PresetMenu, Result, Section } from "./ui";
+import { Field, Note, NumberInput, PresetMenu, Result, Section } from "./ui";
 
 const CDA_OPTIONS = CDA_PRESETS.map((c) => ({ value: String(c.cda), label: `${c.label} (${c.cda})` }));
 const CRR_OPTIONS = CRR_PRESETS.map((c) => ({ value: String(c.crr), label: `${c.label} (${c.crr})` }));
@@ -27,6 +27,10 @@ const RHO_OPTIONS = AIR_DENSITY_PRESETS.map((c) => ({
 
 // Colours shared by the split's number cards and the stacked bar.
 const SPLIT_COLORS = { gravity: "#b7791f", rolling: "#0e8a8a", aero: "#0b6bcb" };
+
+// A force with a negative share is assisting (downhill gravity, tailwind), not
+// resisting — label it as such instead of showing a confusing negative %.
+const splitLabel = (pct: number) => (pct < -0.5 ? "assist" : `${Math.max(0, pct).toFixed(0)} %`);
 
 /**
  * Stacked bar of where the pedal power goes. Only resisting (positive) forces
@@ -132,12 +136,22 @@ export function Power() {
             />
           </Field>
         </div>
-        <div className="results" style={{ marginTop: 8 }}>
-          <Result label="vs gravity" value={`${split.gravity.toFixed(0)} %`} dotColor={SPLIT_COLORS.gravity} />
-          <Result label="vs rolling" value={`${split.rolling.toFixed(0)} %`} dotColor={SPLIT_COLORS.rolling} />
-          <Result label="vs aero" value={`${split.aero.toFixed(0)} %`} dotColor={SPLIT_COLORS.aero} />
-        </div>
-        <SplitBar split={split} />
+        {shownWatts > 0 ? (
+          <>
+            <div className="results" style={{ marginTop: 8 }}>
+              <Result label="vs gravity" value={splitLabel(split.gravity)} dotColor={SPLIT_COLORS.gravity} />
+              <Result label="vs rolling" value={splitLabel(split.rolling)} dotColor={SPLIT_COLORS.rolling} />
+              <Result label="vs aero" value={splitLabel(split.aero)} dotColor={SPLIT_COLORS.aero} />
+            </div>
+            <SplitBar split={split} />
+          </>
+        ) : (
+          <Note>
+            On this descent gravity overcomes rolling and air resistance on its own —
+            you'd coast (or brake to hold this speed), so there's no pedalling effort
+            to split.
+          </Note>
+        )}
       </Section>
 
       <Section

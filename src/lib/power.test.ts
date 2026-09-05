@@ -47,4 +47,15 @@ describe('powerSplit', () => {
     expect(s.gravity).toBeGreaterThan(s.aero);
     expect(s.gravity).toBeGreaterThan(s.rolling);
   });
+
+  it('shows gravity assisting (negative) on a descent, resisting forces summing to 100%', () => {
+    const s = powerSplit(kmhToMs(30), { ...flat, gradient: -0.015 });
+    // gravity assists (negative share) rather than distorting the split
+    expect(s.gravity).toBeLessThan(0);
+    // the forces actually resisting (rolling + aero) are shares of the
+    // resisting power, so they add up to ~100%
+    expect(s.rolling + s.aero).toBeCloseTo(100, 3);
+    expect(s.rolling).toBeGreaterThan(0);
+    expect(s.aero).toBeGreaterThan(0);
+  });
 });

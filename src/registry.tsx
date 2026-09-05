@@ -12,7 +12,6 @@ export interface CalculatorDef {
   title: string;
   subtitle: string;
   icon: string;
-  kind: "calc" | "ref";
   Component: React.ComponentType;
 }
 
@@ -23,7 +22,6 @@ export const CALCULATORS: CalculatorDef[] = [
     subtitle:
       "Gear ratios, speed at cadence, chain length and chain wear — cassette, single speed or geared hub.",
     icon: "⚙️",
-    kind: "calc",
     Component: Drivetrain,
   },
   {
@@ -31,7 +29,6 @@ export const CALCULATORS: CalculatorDef[] = [
     title: "Wheel Building",
     subtitle: "Spoke lengths for a hub + rim + lacing, plus a spoke-tension converter.",
     icon: "🛞",
-    kind: "calc",
     Component: WheelBuilding,
   },
   {
@@ -39,7 +36,6 @@ export const CALCULATORS: CalculatorDef[] = [
     title: "Frame Size",
     subtitle: "Frame size, saddle height and crank length from inseam or body height.",
     icon: "📏",
-    kind: "calc",
     Component: FrameSize,
   },
   {
@@ -47,7 +43,6 @@ export const CALCULATORS: CalculatorDef[] = [
     title: "Tire",
     subtitle: "Convert tire size formats and recommend a pressure.",
     icon: "🔵",
-    kind: "calc",
     Component: Tire,
   },
   {
@@ -55,7 +50,6 @@ export const CALCULATORS: CalculatorDef[] = [
     title: "Derailleur",
     subtitle: "Look up derailleur specs, plus a compatibility reference.",
     icon: "🔗",
-    kind: "calc",
     Component: Derailleur,
   },
   {
@@ -63,7 +57,6 @@ export const CALCULATORS: CalculatorDef[] = [
     title: "Cycling Power",
     subtitle: "Watts needed for a speed and gradient — and speed from watts.",
     icon: "⚡",
-    kind: "calc",
     Component: Power,
   },
   {
@@ -71,7 +64,6 @@ export const CALCULATORS: CalculatorDef[] = [
     title: "Thread Direction",
     subtitle: "Which parts are left-hand threaded, and which way to turn.",
     icon: "🔩",
-    kind: "ref",
     Component: ThreadDirection,
   },
 ];

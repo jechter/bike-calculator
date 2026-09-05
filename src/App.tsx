@@ -24,7 +24,6 @@ export function App() {
               >
                 <span className="icon">{c.icon}</span>
                 <span>{c.title}</span>
-                {c.kind === "ref" && <span className="kind">ref</span>}
               </button>
             ))}
           </nav>

@@ -6,11 +6,21 @@ export function Field(props: {
   label: string;
   hint?: React.ReactNode;
   children: React.ReactNode;
-  /** Highlight this field as the computed/solved-for one (e.g. Speed⇄Power). */
-  solved?: boolean;
+  /**
+   * When set, render the field as a card with a coloured top border (like the
+   * wheel-building side cards). `true` accents it (e.g. the field you last
+   * edited in a two-way solve); `false` leaves it neutral but still a card so a
+   * highlighted sibling stays aligned.
+   */
+  highlight?: boolean;
 }) {
+  const isCard = props.highlight !== undefined;
   return (
-    <div className={"field" + (props.solved ? " field-solved" : "")}>
+    <div
+      className={
+        "field" + (isCard ? " field-card" : "") + (props.highlight ? " field-highlight" : "")
+      }
+    >
       <span className="field-label">{props.label}</span>
       {props.children}
       {props.hint && <span className="field-hint">{props.hint}</span>}

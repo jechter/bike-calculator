@@ -12,8 +12,14 @@ export function Field(props: {
    */
   highlight?: boolean;
 }) {
+  // `field-solve` reserves the thick top-border space in both states so the
+  // input doesn't shift when the highlight moves between fields.
+  const cls =
+    "field" +
+    (props.highlight !== undefined ? " field-solve" : "") +
+    (props.highlight ? " field-highlight" : "");
   return (
-    <div className={"field" + (props.highlight ? " field-highlight" : "")}>
+    <div className={cls}>
       <span className="field-label">{props.label}</span>
       {props.children}
       {props.hint && <span className="field-hint">{props.hint}</span>}

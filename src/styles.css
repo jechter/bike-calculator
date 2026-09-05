@@ -151,12 +151,17 @@ body {
 /* Accent the input itself to mark the value you set in a two-way solve
    (e.g. Speed ⇄ Power) — a thicker top border matching the wheel-building
    side cards, to keep it uncluttered. */
+/* Reserve the thick top border in both states so the input keeps its position
+   when the highlight moves. Attribute selectors raise specificity above the
+   base input rule, which otherwise resets the border after this one. */
+.field-solve input[type="number"],
+.field-solve input[type="text"] {
+  border-top: 3px solid transparent;
+}
 .field-highlight .field-label { color: var(--accent); }
-/* attribute selectors raise specificity above the base input rule, which
-   otherwise resets the border after this one */
 .field-highlight input[type="number"],
 .field-highlight input[type="text"] {
-  border-top: 3px solid var(--accent);
+  border-top-color: var(--accent);
 }
 input[type="number"], input[type="text"], select {
   font: inherit;

@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { checkCapacity, searchDerailleurs, derailleurById, DERAILLEURS } from './derailleur';
+import {
+  checkCapacity,
+  searchDerailleurs,
+  derailleurById,
+  derailleurSpeeds,
+  speedMatches,
+  DERAILLEURS,
+} from './derailleur';
 
 describe('checkCapacity', () => {
   it('computes required capacity (worked example 50/34, 11-32 -> 37T)', () => {
@@ -43,6 +50,21 @@ describe('searchDerailleurs / derailleurById', () => {
     const r = searchDerailleurs('tourney');
     expect(r).toHaveLength(1);
     expect(derailleurById(r[0].id)?.model).toMatch(/Tourney/);
+  });
+});
+
+describe('derailleurSpeeds / speedMatches', () => {
+  it('parses single and multi-speed nominal counts', () => {
+    expect(derailleurSpeeds(derailleurById('sh-ultegra-r8000-gs')!)).toEqual([11]);
+    expect(derailleurSpeeds(derailleurById('sh-tourney-ty300')!)).toEqual([6, 7]);
+  });
+  it('matches a cassette cog count against the nominal speeds', () => {
+    const ultegra = derailleurById('sh-ultegra-r8000-gs')!; // 11-speed
+    expect(speedMatches(ultegra, 11)).toBe(true);
+    expect(speedMatches(ultegra, 10)).toBe(false);
+    const tourney = derailleurById('sh-tourney-ty300')!; // 6/7-speed
+    expect(speedMatches(tourney, 7)).toBe(true);
+    expect(speedMatches(tourney, 8)).toBe(false);
   });
 });
 

@@ -39,6 +39,14 @@ worn chain.
   appears in the small-small cross-chain gear you'd avoid anyway). The caution
   band shows amber with a "proceed with caution" note; beyond it is a hard fail.
   (Gear range isn't repeated here — it's in the Gears summary.)
+  It also compares the derailleur's **nominal speed count** (the database
+  `speeds` field, which may cover several — e.g. "8/9") against the cassette's cog
+  count. On a mismatch it shows an amber "Speeds" badge and a note explaining that
+  the derailleur itself only moves sideways — the cog-spacing indexing lives in
+  the *shifter* — so a different speed count can still work when the shifter's
+  actuation ratio suits it (some speed counts share a family) or with a **friction
+  shifter** (no indexing at all); an indexed shifter for the wrong speed count
+  just won't click cog-to-cog.
 
 > **Gain ratio** (Sheldon Brown's crank-length-aware measure) is intentionally
 > *not* shown — it's niche and needing a crank-length input for it added clutter.

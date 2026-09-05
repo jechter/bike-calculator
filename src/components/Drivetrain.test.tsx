@@ -137,6 +137,27 @@ describe("Drivetrain page", () => {
     expect(container.textContent).toContain("33T");
   });
 
+  it("warns when the derailleur's nominal speed count differs from the cassette", () => {
+    const { container } = render(<Drivetrain />);
+    // Default cassette has 10 cogs. Pick an 11-speed 105 RD-R7000 SS.
+    const derSelect = Array.from(container.querySelectorAll("select")).find((s) =>
+      Array.from(s.options).some((o) => o.textContent?.includes("105 RD-R7000 SS")),
+    ) as HTMLSelectElement;
+    fireEvent.change(derSelect, { target: { value: "sh-105-r7000-ss" } });
+    expect(container.textContent).toMatch(/≠ 10-sp cassette/);
+    expect(container.textContent).toMatch(/friction shifter/);
+  });
+
+  it("does not warn about speeds when the derailleur matches the cassette", () => {
+    const { container } = render(<Drivetrain />);
+    // 10-speed cassette + 10-speed Tiagra RD-4700 GS -> no speed warning.
+    const derSelect = Array.from(container.querySelectorAll("select")).find((s) =>
+      Array.from(s.options).some((o) => o.textContent?.includes("Tiagra RD-4700 GS")),
+    ) as HTMLSelectElement;
+    fireEvent.change(derSelect, { target: { value: "sh-tiagra-4700-gs" } });
+    expect(container.textContent).not.toMatch(/friction shifter/);
+  });
+
   it("flags a slightly-oversized cog as caution, not a hard failure", () => {
     const { container } = render(<Drivetrain />);
     // 1× 42 with an 11-32 keeps capacity small; 105 SS maxes at 30 -> 32 is +2T

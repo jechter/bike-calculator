@@ -10,7 +10,13 @@ import {
   type GearResult,
   type HubGear,
 } from "../lib/drivetrain";
-import { DERAILLEURS, derailleurById, checkCapacity, pullRatioFor } from "../lib/derailleur";
+import {
+  DERAILLEURS,
+  derailleurById,
+  checkCapacity,
+  pullRatioFor,
+  speedMatches,
+} from "../lib/derailleur";
 import { TIRE_PRESETS } from "../lib/wheels";
 import { kmhToMph } from "../lib/units";
 import { useUnits, speedUnitLabel } from "../units-context";
@@ -351,6 +357,11 @@ export function Drivetrain() {
     }
   }
 
+  // Speed-count match: the derailleur's nominal gear count vs the cassette's cog
+  // count. A mismatch doesn't mean it won't work — the derailleur just moves;
+  // the indexing lives in the shifter — but it's worth flagging.
+  const speedOk = derailleur ? speedMatches(derailleur, cogs.length) : true;
+
   const sliderCadence = Math.min(120, Math.max(60, cadence || 60));
 
   // Axis definitions for the gear chart. Speed uses the global unit (set in the
@@ -667,10 +678,33 @@ export function Drivetrain() {
                     </>
                   }
                 />
+                <Result
+                  label="Speeds"
+                  value={
+                    <>
+                      {derailleur.speeds}-speed{" "}
+                      <span className={"badge " + (speedOk ? "ok" : "warn")}>
+                        {speedOk ? "OK" : `≠ ${cogs.length}-sp cassette`}
+                      </span>
+                    </>
+                  }
+                />
                 <Result label="Actuation" value={`${derailleur.actuation}`} />
                 <Result label="Pull ratio" value={pullRatioFor(derailleur)} />
               </div>
               <Note tone={fitTone}>{fitMessage}</Note>
+              {!speedOk && (
+                <Note tone="warn">
+                  This is a nominally <strong>{derailleur.speeds}-speed</strong> derailleur,
+                  but your cassette has <strong>{cogs.length} cogs</strong>. The derailleur itself just moves
+                  sideways — the indexing that has to match the cog spacing lives in the{" "}
+                  <em>shifter</em>, not here. So it can still work when the shifter's
+                  pull/actuation ratio suits it (some speed counts share one actuation
+                  family), or with a <strong>friction shifter</strong>, which doesn't index at
+                  all and lets you position each gear by feel. With an indexed shifter for a
+                  different speed count, the clicks likely won't line up cog-to-cog.
+                </Note>
+              )}
             </>
           )}
         </Section>

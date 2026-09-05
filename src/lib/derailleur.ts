@@ -193,6 +193,23 @@ export function pullRatioFor(d: DerailleurSpec): string {
   return PULL_RATIOS[d.actuation] ?? '—';
 }
 
+/**
+ * The nominal speed counts a derailleur is sold for. The `speeds` field can list
+ * several (e.g. "8/9" -> [8, 9]) because some derailleurs cover a range of
+ * indexed drivetrains within one actuation family.
+ */
+export function derailleurSpeeds(d: DerailleurSpec): number[] {
+  return d.speeds
+    .split('/')
+    .map((s) => parseInt(s, 10))
+    .filter((n) => Number.isFinite(n));
+}
+
+/** Does the derailleur nominally match an N-cog (N-speed) cassette? */
+export function speedMatches(d: DerailleurSpec, cogCount: number): boolean {
+  return derailleurSpeeds(d).includes(cogCount);
+}
+
 export function searchDerailleurs(query: string): DerailleurSpec[] {
   const q = query.trim().toLowerCase();
   if (!q) return DERAILLEURS;

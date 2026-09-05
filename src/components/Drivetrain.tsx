@@ -293,7 +293,12 @@ export function Drivetrain() {
   // Which config the per-drivetrain detail sections (diagram, chain length,
   // derailleur fit, chain wear) describe. Only meaningful while comparing.
   const [focus, setFocus] = useState<"A" | "B">("A");
-  const [activeGear, setActiveGear] = useState<{ chainring: number; cog: number } | null>(null);
+  const [activeGear, setActiveGear] = useState<{
+    chainring: number;
+    cog: number;
+    hubName?: string;
+    hubRatio?: number;
+  } | null>(null);
 
   const derivedA = useDerived(configA, cadence);
   const derivedB = useDerived(configB, cadence);
@@ -404,15 +409,31 @@ export function Drivetrain() {
       ]
     : [{ id: "A", gears: derivedA.gears, isCrossChained: crossA }];
 
-  // Active gear for the drivetrain diagram (default to a middle cog until
+  // Active gear for the drivetrain diagram (default to a middle gear until
   // hovered). Only hovers on the focused config move the diagram.
   const defaultCog = cogs.length ? cogs[Math.floor(cogs.length / 2)] : 0;
   const activeChainring =
     activeGear && chainrings.includes(activeGear.chainring) ? activeGear.chainring : chainrings[0] ?? 0;
   const activeCog = activeGear && cogs.includes(activeGear.cog) ? activeGear.cog : defaultCog;
+  // Hub gear: use the hovered gear's hub step when it's valid for the focused
+  // config, else a middle hub gear. Cassette/single-speed have no hub ratio (1).
+  const focusHubGears = focusDerived.hubGears;
+  const defaultHubGear = focusHubGears?.length
+    ? focusHubGears[Math.floor(focusHubGears.length / 2)]
+    : undefined;
+  const activeHubGear =
+    activeGear?.hubName && focusHubGears?.some((h) => h.name === activeGear.hubName)
+      ? { name: activeGear.hubName, ratio: activeGear.hubRatio ?? 1 }
+      : defaultHubGear;
+  const activeHubRatio = activeHubGear?.ratio ?? 1;
   const activeSpeedKmh =
     activeCog > 0
-      ? ((activeChainring / activeCog) * (focusCfg.circ / 1000) * (cadence || 90) * 60) / 1000
+      ? ((activeChainring / activeCog) *
+          activeHubRatio *
+          (focusCfg.circ / 1000) *
+          (cadence || 90) *
+          60) /
+        1000
       : 0;
 
   const focusLabel = focus === "B" ? "Drivetrain B" : "Drivetrain A";
@@ -514,7 +535,12 @@ export function Drivetrain() {
             // Hovering a gear selects it in the diagram; if it belongs to the
             // other drivetrain, switch the diagram (and detail sections) to it.
             if (comparing && (seriesId === "A" || seriesId === "B")) setFocus(seriesId);
-            setActiveGear({ chainring: g.chainring, cog: g.cog });
+            setActiveGear({
+              chainring: g.chainring,
+              cog: g.cog,
+              hubName: g.hubGear?.name,
+              hubRatio: g.hubGear?.ratio,
+            });
           }}
           extra={
             metric === "speed" ? (
@@ -576,6 +602,8 @@ export function Drivetrain() {
           cadenceRpm={rpm}
           speed={toSpeed(activeSpeedKmh)}
           speedUnit={unitLabel}
+          hubRatio={activeHubRatio}
+          hubLabel={activeHubGear?.name}
         />
 
         <div className="dt-controls">

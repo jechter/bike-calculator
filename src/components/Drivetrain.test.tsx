@@ -85,6 +85,24 @@ describe("Drivetrain page", () => {
     expect(container.querySelectorAll(".dt-diagram .dt-gear-active").length).toBe(2);
   });
 
+  it("updates the diagram speed/ratio when hovering different hub gears", () => {
+    const { container } = render(<Drivetrain />);
+    const typeSelect = container.querySelector("select") as HTMLSelectElement;
+    fireEvent.change(typeSelect, { target: { value: "hub" } });
+    // Default hub is a 3-speed (ratios 0.75 / 1.0 / 1.333) — all share the same
+    // chainring/cog, so only the hub ratio distinguishes the gears.
+    const dots = container.querySelectorAll(".gc-dot");
+    expect(dots.length).toBeGreaterThanOrEqual(3);
+    fireEvent.mouseMove(dots[0], { clientX: 100, clientY: 100 });
+    const low = container.querySelector(".dt-cap")?.textContent;
+    fireEvent.mouseMove(dots[dots.length - 1], { clientX: 300, clientY: 100 });
+    const high = container.querySelector(".dt-cap")?.textContent;
+    // Different hub gears -> different caption (ratio + speed change).
+    expect(low).not.toBe(high);
+    // Caption names the hub gear.
+    expect(high).toMatch(/1st|2nd|3rd/);
+  });
+
   it("shows a hover tooltip with a gear's exact values", () => {
     const { container } = render(<Drivetrain />);
     const dot = container.querySelector(".gc-dot") as SVGCircleElement;

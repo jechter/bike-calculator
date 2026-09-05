@@ -126,7 +126,11 @@ is off-screen. **Four outlined spoke blades** spin inside
 the chainring at the cadence (sized to the **largest** chainring, not the selected
 one) and the **whole wheel** spins at cadence × ratio (i.e. wheel speed) — both
 counter-clockwise — so you can see how much faster the wheel turns in a taller
-gear. The animation respects `prefers-reduced-motion`. The selected gear is
+gear. For an **internally-geared hub** the chainring and cog don't change between
+gears, so the effective ratio (and hence the wheel-spin speed, the caption ratio,
+and the speed) uses the selected **hub gear's ratio** — hovering a different hub
+gear updates the diagram accordingly, and the caption names the hub gear (e.g.
+"3rd"). The animation respects `prefers-reduced-motion`. The selected gear is
 coloured to match its chainring's line in the chart. A **chainstay-length slider**
 sits under the diagram (350–500 mm) and re-spaces the chainring and cassette live;
 it's the same value used for the chain-length calculation.

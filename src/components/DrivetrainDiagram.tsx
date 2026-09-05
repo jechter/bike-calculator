@@ -78,6 +78,12 @@ export interface DrivetrainDiagramProps {
   speed: number; // active gear's speed in the display unit
   speedUnit: string;
   wheelCircMm: number; // rolling circumference -> rear wheel size
+  /** Internally-geared-hub ratio for the active gear (1 == direct drive). The
+   *  chainring/cog don't change between hub gears, so the hub ratio is what makes
+   *  the wheel spin faster/slower and shifts the effective ratio. */
+  hubRatio?: number;
+  /** Active hub gear's name (e.g. "3rd"), shown in the caption when present. */
+  hubLabel?: string;
 }
 
 export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
@@ -175,7 +181,9 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   // Subtle spokes spin at the cadence (chainring) and cadence × ratio (rear),
   // showing how much faster the wheel turns in the current gear. Counter-clockwise.
   const rpm = Math.max(20, Math.min(220, props.cadenceRpm || 90));
-  const ratio = props.activeChainring / props.activeCog;
+  // Effective ratio includes the hub ratio (1 for cassette/single-speed), so the
+  // rear wheel spins at the right speed for the selected hub gear.
+  const ratio = (props.activeChainring / props.activeCog) * (props.hubRatio ?? 1);
   const period = 60 / rpm;
   const cogPeriod = Math.max(0.1, 60 / (rpm * ratio));
   const reduceMotion =
@@ -296,7 +304,8 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
         </text>
       </svg>
       <div className="dt-cap">
-        {props.activeChainring} × {props.activeCog} · ratio {ratio.toFixed(2)} · {rpm} rpm ·{" "}
+        {props.activeChainring} × {props.activeCog}
+        {props.hubLabel ? ` · ${props.hubLabel}` : ""} · ratio {ratio.toFixed(2)} · {rpm} rpm ·{" "}
         {props.speed.toFixed(1)} {props.speedUnit}
       </div>
     </div>

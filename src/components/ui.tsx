@@ -6,9 +6,11 @@ export function Field(props: {
   label: string;
   hint?: React.ReactNode;
   children: React.ReactNode;
+  /** Highlight this field as the computed/solved-for one (e.g. Speed⇄Power). */
+  solved?: boolean;
 }) {
   return (
-    <div className="field">
+    <div className={"field" + (props.solved ? " field-solved" : "")}>
       <span className="field-label">{props.label}</span>
       {props.children}
       {props.hint && <span className="field-hint">{props.hint}</span>}

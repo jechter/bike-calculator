@@ -106,14 +106,15 @@ export function Power() {
         title="Speed ⇄ Power"
         info={
           <>
-            Edit <strong>either</strong> field — the other updates to match. When you
-            change a condition below, the value you edited <strong>last</strong> is
-            held fixed and the other is recomputed.
+            Edit <strong>either</strong> field — the other updates to match and is
+            <strong> highlighted</strong> as the computed one. When you change a
+            condition below, the value you edited <strong>last</strong> is held fixed
+            and the highlighted one is recomputed.
           </>
         }
       >
         <div className="grid">
-          <Field label="Speed">
+          <Field label="Speed" solved={last === "power"}>
             <NumberInput
               value={Math.round(toDisplay(shownSpeedKmh) * 10) / 10}
               onChange={(v) => {
@@ -124,7 +125,7 @@ export function Power() {
               min={1}
             />
           </Field>
-          <Field label="Pedal power">
+          <Field label="Pedal power" solved={last === "speed"}>
             <NumberInput
               value={Math.round(shownWatts)}
               onChange={(v) => {

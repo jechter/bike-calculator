@@ -133,6 +133,22 @@ largest cogs, and the small ring with the two smallest cogs (big-big /
 small-small). The hover tooltip flags them too. Single-speed and hub setups have
 no cross-chaining.
 
+**Compare two drivetrains.** A "Compare a second drivetrain" toggle in the Setup
+header reveals a second, fully independent config (**Drivetrain B**) alongside
+the first — each with its own type, chainrings/cogs (or single-speed / hub),
+derailleur, **and rolling circumference** (so a comparison can span two different
+bikes, or the same bike with a different wheel/tire). Only the **cadence** is
+shared, since it's just the speed-axis parameter, not part of a drivetrain. On
+the gear chart, both configs are plotted on **one shared axis** — B is drawn with
+**hollow dots on a dashed line** over a faint band, so differences in range, gaps
+and overlap line up directly. The summary shows each config's gear count and
+range side by side. The per-drivetrain detail sections below (drivetrain diagram,
+chain length, rear-derailleur fit, chain wear) apply to **one** config at a time,
+chosen with a small **A / B selector**. Hovering a gear dot selects it in the
+diagram; if that gear belongs to the **other** drivetrain, the diagram (and the
+detail sections) switch to it automatically, so the A / B focus follows whichever
+config you're pointing at.
+
 ## Formulas
 
 Let `C` = chainring teeth, `S` = sprocket (cog) teeth, `circ` = rolling

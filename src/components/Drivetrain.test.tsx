@@ -196,4 +196,62 @@ describe("Drivetrain page", () => {
     const link = container.querySelector('a[href="#/tire"]');
     expect(link).toBeTruthy();
   });
+
+  it("adds a second drivetrain to compare and overlays it on the chart", () => {
+    const { container, getByText } = render(<Drivetrain />);
+    // Off by default: only config A rows (50/34 -> 2 lines), no compared series.
+    expect(container.querySelectorAll(".gc-row-line").length).toBe(2);
+    expect(container.querySelector(".gc-row-line-b")).toBeNull();
+
+    fireEvent.click(getByText(/Compare a second drivetrain/));
+    // Two setup panels now.
+    expect(getByText("Drivetrain A")).toBeTruthy();
+    expect(getByText("Drivetrain B")).toBeTruthy();
+    // A (50/34 -> 2) + B (46/30 -> 2) = 4 rows; 2 of them are the hollow B rows.
+    expect(container.querySelectorAll(".gc-row-line").length).toBe(4);
+    expect(container.querySelectorAll(".gc-row-line-b").length).toBe(2);
+    // both configs' ranges are summarised
+    expect(container.textContent).toContain("A: gears / range");
+    expect(container.textContent).toContain("B: gears / range");
+  });
+
+  it("gives each drivetrain its own rolling circumference when comparing", () => {
+    const { getByText, getAllByText, queryAllByText } = render(<Drivetrain />);
+    // One wheel field on its own; a second appears for drivetrain B.
+    expect(queryAllByText("Rolling circumference (mm)").length).toBe(1);
+    fireEvent.click(getByText(/Compare a second drivetrain/));
+    expect(getAllByText("Rolling circumference (mm)").length).toBe(2);
+  });
+
+  it("switches the detail sections between drivetrain A and B", () => {
+    const { container, getByText } = render(<Drivetrain />);
+    fireEvent.click(getByText(/Compare a second drivetrain/));
+    // Focused on A: chain length uses A's 50/34 + 11-28 -> 1346 mm.
+    expect(getByText("1346 mm")).toBeTruthy();
+    // Switch the detail focus to B (46/30 + 11-42) and the chain length changes.
+    const seg = container.querySelector(".dt-focus-seg") as HTMLElement;
+    fireEvent.click(within(seg).getByText("B"));
+    expect(container.querySelector(".dt-focus-seg button.active")?.textContent).toBe("B");
+    expect(container.textContent).not.toContain("1346 mm");
+  });
+
+  it("switches the focused drivetrain when hovering the other one's gear", () => {
+    const { container, getByText } = render(<Drivetrain />);
+    fireEvent.click(getByText(/Compare a second drivetrain/));
+    // Focus starts on A.
+    expect(container.querySelector(".dt-focus-seg button.active")?.textContent).toBe("A");
+    // Rows are laid out A first then B, so the last dot belongs to a B row.
+    const dots = container.querySelectorAll(".gc-dot");
+    fireEvent.mouseMove(dots[dots.length - 1], { clientX: 100, clientY: 100 });
+    expect(container.querySelector(".dt-focus-seg button.active")?.textContent).toBe("B");
+  });
+
+  it("removes the comparison again", () => {
+    const { container, getByText, queryByText } = render(<Drivetrain />);
+    fireEvent.click(getByText(/Compare a second drivetrain/));
+    expect(queryByText("Drivetrain B")).toBeTruthy();
+    fireEvent.click(getByText(/Remove comparison/));
+    expect(queryByText("Drivetrain B")).toBeNull();
+    expect(container.querySelectorAll(".gc-row-line").length).toBe(2);
+  });
 });

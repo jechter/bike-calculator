@@ -15,7 +15,7 @@ import { TIRE_PRESETS } from "../lib/wheels";
 import { kmhToMph } from "../lib/units";
 import { useUnits, speedUnitLabel } from "../units-context";
 import { Field, NumberInput, TextInput, Select, PresetMenu, Result, Note, Section } from "./ui";
-import { GearChart } from "./GearChart";
+import { GearChart, type GearSeries } from "./GearChart";
 import { DrivetrainDiagram } from "./DrivetrainDiagram";
 
 type Mode = "cassette" | "single" | "hub";
@@ -52,48 +52,260 @@ const DERAILLEUR_OPTIONS = [
   })),
 ];
 
+// --- Per-drivetrain config --------------------------------------------------
+// All the state describing one drivetrain, including its wheel's rolling
+// circumference (so a comparison can span two different bikes, or the same bike
+// with a different wheel/tire). Cadence is shared across configs — it's just the
+// axis parameter for the speed visualisation, not part of a drivetrain.
+
+interface ConfigInit {
+  mode: Mode;
+  chainringStr: string;
+  cogStr: string;
+  singleRing: number;
+  singleCog: number;
+  hubIdx: number;
+  derailleurId: string;
+  circ: number;
+}
+
+interface DrivetrainConfig extends ConfigInit {
+  setMode: (m: Mode) => void;
+  setChainringStr: (s: string) => void;
+  setCogStr: (s: string) => void;
+  setSingleRing: (n: number) => void;
+  setSingleCog: (n: number) => void;
+  setHubIdx: (n: number) => void;
+  setDerailleurId: (s: string) => void;
+  setCirc: (n: number) => void;
+}
+
+function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
+  const [mode, setMode] = useState<Mode>(init.mode);
+  const [chainringStr, setChainringStr] = useState(init.chainringStr);
+  const [cogStr, setCogStr] = useState(init.cogStr);
+  const [singleRing, setSingleRing] = useState(init.singleRing);
+  const [singleCog, setSingleCog] = useState(init.singleCog);
+  const [hubIdx, setHubIdx] = useState(init.hubIdx);
+  const [derailleurId, setDerailleurId] = useState(init.derailleurId);
+  const [circ, setCirc] = useState(init.circ);
+  return {
+    mode,
+    chainringStr,
+    cogStr,
+    singleRing,
+    singleCog,
+    hubIdx,
+    derailleurId,
+    circ,
+    setMode,
+    setChainringStr,
+    setCogStr,
+    setSingleRing,
+    setSingleCog,
+    setHubIdx,
+    setDerailleurId,
+    setCirc,
+  };
+}
+
+interface Derived {
+  chainrings: number[];
+  cogs: number[];
+  hubGears?: HubGear[];
+  gears: GearResult[];
+}
+
+function useDerived(cfg: DrivetrainConfig, cadence: number): Derived {
+  return useMemo(() => {
+    const chainrings = cfg.mode === "cassette" ? parseList(cfg.chainringStr) : [cfg.singleRing];
+    const cogs = cfg.mode === "cassette" ? parseList(cfg.cogStr) : [cfg.singleCog];
+    const hubGears: HubGear[] | undefined =
+      cfg.mode === "hub" ? HUB_PRESETS[cfg.hubIdx].gears : undefined;
+    const gears = computeGears({
+      chainrings,
+      cogs,
+      circumferenceMm: cfg.circ,
+      cadenceRpm: cadence,
+      hubGears,
+    });
+    return { chainrings, cogs, hubGears, gears };
+  }, [cfg.mode, cfg.chainringStr, cfg.cogStr, cfg.singleRing, cfg.singleCog, cfg.hubIdx, cfg.circ, cadence]);
+}
+
+// Cross-chaining: only meaningful with 2+ chainrings. Flag big ring + the two
+// largest cogs, and small ring + the two smallest cogs, as gears to avoid.
+function makeCrossChained(mode: Mode, chainrings: number[], cogs: number[]) {
+  return (g: GearResult): boolean => {
+    if (mode !== "cassette" || chainrings.length < 2) return false;
+    const maxRing = Math.max(...chainrings);
+    const minRing = Math.min(...chainrings);
+    const sortedCogs = [...cogs].sort((a, b) => a - b);
+    const n = Math.min(2, Math.max(1, sortedCogs.length - 1));
+    const smallCogs = sortedCogs.slice(0, n);
+    const largeCogs = sortedCogs.slice(-n);
+    if (g.chainring === maxRing && largeCogs.includes(g.cog)) return true;
+    if (g.chainring === minRing && smallCogs.includes(g.cog)) return true;
+    return false;
+  };
+}
+
+// The mode + chainring/cog/hub inputs for one config (the shared rolling
+// circumference lives outside, on its own row).
+function SetupFields({ cfg }: { cfg: DrivetrainConfig }) {
+  return (
+    <div className="grid">
+      <Field label="Drivetrain type">
+        <Select<Mode>
+          value={cfg.mode}
+          onChange={cfg.setMode}
+          options={[
+            { value: "cassette", label: "Derailleur (cassette)" },
+            { value: "single", label: "Single speed / fixed" },
+            { value: "hub", label: "Internally geared hub" },
+          ]}
+        />
+      </Field>
+
+      {cfg.mode === "cassette" && (
+        <>
+          <Field label="Chainrings" hint="comma-separated tooth counts">
+            <div className="combo">
+              <TextInput value={cfg.chainringStr} onChange={cfg.setChainringStr} />
+              <PresetMenu
+                title="Fill from a common crankset"
+                options={CRANKSET_OPTIONS}
+                onPick={cfg.setChainringStr}
+              />
+            </div>
+          </Field>
+          <Field label="Cassette cogs" hint="comma-separated tooth counts">
+            <div className="combo">
+              <TextInput value={cfg.cogStr} onChange={cfg.setCogStr} />
+              <PresetMenu
+                title="Fill from a cassette preset"
+                options={CASSETTE_OPTIONS}
+                onPick={cfg.setCogStr}
+              />
+            </div>
+          </Field>
+        </>
+      )}
+
+      {cfg.mode === "single" && (
+        <>
+          <Field label="Chainring (teeth)">
+            <NumberInput value={cfg.singleRing} onChange={cfg.setSingleRing} min={20} />
+          </Field>
+          <Field label="Cog (teeth)">
+            <NumberInput value={cfg.singleCog} onChange={cfg.setSingleCog} min={8} />
+          </Field>
+        </>
+      )}
+
+      {cfg.mode === "hub" && (
+        <>
+          <Field label="Chainring (teeth)">
+            <NumberInput value={cfg.singleRing} onChange={cfg.setSingleRing} min={20} />
+          </Field>
+          <Field label="Sprocket (teeth)">
+            <NumberInput value={cfg.singleCog} onChange={cfg.setSingleCog} min={8} />
+          </Field>
+          <Field label="Hub" hint="internal ratios — verify against maker's data">
+            <Select
+              value={String(cfg.hubIdx)}
+              onChange={(v) => cfg.setHubIdx(parseInt(v))}
+              options={HUB_PRESETS.map((p, i) => ({ value: String(i), label: p.label }))}
+            />
+          </Field>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Rolling circumference lives per-config (each config is a bike/wheel), on its
+// own row for a stable layout, with a tire-size preset and a link to the Tire
+// calculator.
+function CircumferenceField({ cfg }: { cfg: DrivetrainConfig }) {
+  return (
+    <div className="rows">
+      <Field
+        label="Rolling circumference (mm)"
+        hint={
+          <>
+            measured roll-out is most accurate ·{" "}
+            <a className="inline-link" href="#/tire">
+              open the Tire calculator for sizes &amp; conversion →
+            </a>
+          </>
+        }
+      >
+        <div className="combo">
+          <NumberInput value={cfg.circ} onChange={cfg.setCirc} min={800} />
+          <PresetMenu
+            title="Fill from a tire size (ETRTO)"
+            options={TIRE_OPTIONS}
+            onPick={(v) => cfg.setCirc(parseFloat(v))}
+          />
+        </div>
+      </Field>
+    </div>
+  );
+}
+
 export function Drivetrain() {
   const units = useUnits();
-  const [mode, setMode] = useState<Mode>("cassette");
-  const [chainringStr, setChainringStr] = useState("50, 34");
-  const [cogStr, setCogStr] = useState("11, 12, 13, 14, 15, 17, 19, 21, 24, 28");
-  const [singleRing, setSingleRing] = useState(42);
-  const [singleCog, setSingleCog] = useState(18);
-  const [hubIdx, setHubIdx] = useState(0);
-  const [circ, setCirc] = useState(2111);
+
+  const configA = useDrivetrainConfig({
+    mode: "cassette",
+    chainringStr: "50, 34",
+    cogStr: "11, 12, 13, 14, 15, 17, 19, 21, 24, 28",
+    singleRing: 42,
+    singleCog: 18,
+    hubIdx: 0,
+    derailleurId: "",
+    circ: 2111,
+  });
+  const configB = useDrivetrainConfig({
+    mode: "cassette",
+    chainringStr: "46, 30",
+    cogStr: "11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42",
+    singleRing: 42,
+    singleCog: 18,
+    hubIdx: 0,
+    derailleurId: "",
+    circ: 2111,
+  });
+
+  // Shared across both configs — cadence is just the speed-axis parameter.
   const [cadence, setCadence] = useState(90);
+  const [chainstay, setChainstay] = useState(410);
   const [metric, setMetric] = useState<Metric>("speed");
 
-  const [chainstay, setChainstay] = useState(410);
-  const [derailleurId, setDerailleurId] = useState("");
+  const [comparing, setComparing] = useState(false);
+  // Which config the per-drivetrain detail sections (diagram, chain length,
+  // derailleur fit, chain wear) describe. Only meaningful while comparing.
+  const [focus, setFocus] = useState<"A" | "B">("A");
   const [activeGear, setActiveGear] = useState<{ chainring: number; cog: number } | null>(null);
 
-  const chainrings = mode === "cassette" ? parseList(chainringStr) : [singleRing];
-  const cogs = mode === "cassette" ? parseList(cogStr) : [singleCog];
-  const hubGears: HubGear[] | undefined =
-    mode === "hub" ? HUB_PRESETS[hubIdx].gears : undefined;
+  const derivedA = useDerived(configA, cadence);
+  const derivedB = useDerived(configB, cadence);
 
-  const gears = useMemo(
-    () =>
-      computeGears({
-        chainrings,
-        cogs,
-        circumferenceMm: circ,
-        cadenceRpm: cadence,
-        hubGears,
-      }),
-    [chainringStr, cogStr, singleRing, singleCog, mode, hubIdx, circ, cadence],
-  );
+  const focusCfg = comparing && focus === "B" ? configB : configA;
+  const focusDerived = comparing && focus === "B" ? derivedB : derivedA;
+  const { chainrings, cogs } = focusDerived;
 
-  const range = gearRange(gears);
+  const rangeA = gearRange(derivedA.gears);
+  const rangeB = gearRange(derivedB.gears);
 
   const largestRing = Math.max(...chainrings, 0);
   const largestCog = Math.max(...cogs, 0);
   const chain = chainLength({ chainstayMm: chainstay, largestChainring: largestRing, largestCog });
-  const wearThresholds = chainWearThresholdsFor(mode === "cassette", cogs.length);
+  const wearThresholds = chainWearThresholdsFor(focusCfg.mode === "cassette", cogs.length);
 
-  // Rear-derailleur fit check (cassette only).
-  const derailleur = derailleurById(derailleurId);
+  // Rear-derailleur fit check (cassette only), for the focused config.
+  const derailleur = derailleurById(focusCfg.derailleurId);
   const fit =
     derailleur && chainrings.length && cogs.length
       ? checkCapacity({
@@ -170,134 +382,79 @@ export function Drivetrain() {
   const activeMetric = metricDefs[metric];
   const pointLabel = (g: GearResult) => (g.hubGear ? g.hubGear.name : String(g.cog));
 
-  // Active gear for the drivetrain diagram (default to a middle cog until hovered).
+  // Chart series. One when not comparing (matches the diagram's palette);
+  // config B is added as a hollow overlay on the same axis when comparing.
+  const crossA = makeCrossChained(configA.mode, derivedA.chainrings, derivedA.cogs);
+  const crossB = makeCrossChained(configB.mode, derivedB.chainrings, derivedB.cogs);
+  const series: GearSeries[] = comparing
+    ? [
+        { id: "A", gears: derivedA.gears, isCrossChained: crossA },
+        { id: "B", gears: derivedB.gears, hollow: true, isCrossChained: crossB },
+      ]
+    : [{ id: "A", gears: derivedA.gears, isCrossChained: crossA }];
+
+  // Active gear for the drivetrain diagram (default to a middle cog until
+  // hovered). Only hovers on the focused config move the diagram.
   const defaultCog = cogs.length ? cogs[Math.floor(cogs.length / 2)] : 0;
   const activeChainring =
     activeGear && chainrings.includes(activeGear.chainring) ? activeGear.chainring : chainrings[0] ?? 0;
-  const activeCog =
-    activeGear && cogs.includes(activeGear.cog) ? activeGear.cog : defaultCog;
+  const activeCog = activeGear && cogs.includes(activeGear.cog) ? activeGear.cog : defaultCog;
   const activeSpeedKmh =
-    activeCog > 0 ? ((activeChainring / activeCog) * (circ / 1000) * (cadence || 90) * 60) / 1000 : 0;
+    activeCog > 0
+      ? ((activeChainring / activeCog) * (focusCfg.circ / 1000) * (cadence || 90) * 60) / 1000
+      : 0;
 
-  // Cross-chaining: only meaningful with 2+ chainrings. Flag big ring + the two
-  // largest cogs, and small ring + the two smallest cogs, as gears to avoid.
-  const isCrossChained = (g: GearResult): boolean => {
-    if (mode !== "cassette" || chainrings.length < 2) return false;
-    const maxRing = Math.max(...chainrings);
-    const minRing = Math.min(...chainrings);
-    const sortedCogs = [...cogs].sort((a, b) => a - b);
-    const n = Math.min(2, Math.max(1, sortedCogs.length - 1));
-    const smallCogs = sortedCogs.slice(0, n);
-    const largeCogs = sortedCogs.slice(-n);
-    if (g.chainring === maxRing && largeCogs.includes(g.cog)) return true;
-    if (g.chainring === minRing && smallCogs.includes(g.cog)) return true;
-    return false;
-  };
+  const focusLabel = focus === "B" ? "Drivetrain B" : "Drivetrain A";
 
   return (
     <>
-      <Section title="Setup">
-        <div className="grid">
-          <Field label="Drivetrain type">
-            <Select<Mode>
-              value={mode}
-              onChange={setMode}
-              options={[
-                { value: "cassette", label: "Derailleur (cassette)" },
-                { value: "single", label: "Single speed / fixed" },
-                { value: "hub", label: "Internally geared hub" },
-              ]}
-            />
-          </Field>
-
-          {mode === "cassette" && (
-            <>
-              <Field label="Chainrings" hint="comma-separated tooth counts">
-                <div className="combo">
-                  <TextInput value={chainringStr} onChange={setChainringStr} />
-                  <PresetMenu
-                    title="Fill from a common crankset"
-                    options={CRANKSET_OPTIONS}
-                    onPick={setChainringStr}
-                  />
-                </div>
-              </Field>
-              <Field label="Cassette cogs" hint="comma-separated tooth counts">
-                <div className="combo">
-                  <TextInput value={cogStr} onChange={setCogStr} />
-                  <PresetMenu
-                    title="Fill from a cassette preset"
-                    options={CASSETTE_OPTIONS}
-                    onPick={setCogStr}
-                  />
-                </div>
-              </Field>
-            </>
-          )}
-
-          {mode === "single" && (
-            <>
-              <Field label="Chainring (teeth)">
-                <NumberInput value={singleRing} onChange={setSingleRing} min={20} />
-              </Field>
-              <Field label="Cog (teeth)">
-                <NumberInput value={singleCog} onChange={setSingleCog} min={8} />
-              </Field>
-            </>
-          )}
-
-          {mode === "hub" && (
-            <>
-              <Field label="Chainring (teeth)">
-                <NumberInput value={singleRing} onChange={setSingleRing} min={20} />
-              </Field>
-              <Field label="Sprocket (teeth)">
-                <NumberInput value={singleCog} onChange={setSingleCog} min={8} />
-              </Field>
-              <Field label="Hub" hint="internal ratios — verify against maker's data">
-                <Select
-                  value={String(hubIdx)}
-                  onChange={(v) => setHubIdx(parseInt(v))}
-                  options={HUB_PRESETS.map((p, i) => ({ value: String(i), label: p.label }))}
-                />
-              </Field>
-            </>
-          )}
-        </div>
-
-        {/* Rolling circumference on its own row for a stable layout. */}
-        <div className="rows">
-          <Field
-            label="Rolling circumference (mm)"
-            hint={
-              <>
-                measured roll-out is most accurate ·{" "}
-                <a className="inline-link" href="#/tire">
-                  open the Tire calculator for sizes &amp; conversion →
-                </a>
-              </>
-            }
+      <Section
+        title="Setup"
+        action={
+          <button
+            type="button"
+            className="dt-compare-toggle"
+            onClick={() => setComparing((c) => !c)}
           >
-            <div className="combo">
-              <NumberInput value={circ} onChange={setCirc} min={800} />
-              <PresetMenu
-                title="Fill from a tire size (ETRTO)"
-                options={TIRE_OPTIONS}
-                onPick={(v) => setCirc(parseFloat(v))}
-              />
+            {comparing ? "✕ Remove comparison" : "+ Compare a second drivetrain"}
+          </button>
+        }
+      >
+        {comparing ? (
+          <div className="dt-configs">
+            <div className="dt-config dt-config-a">
+              <div className="dt-config-head">Drivetrain A</div>
+              <SetupFields cfg={configA} />
+              <CircumferenceField cfg={configA} />
             </div>
-          </Field>
-        </div>
+            <div className="dt-config dt-config-b">
+              <div className="dt-config-head">Drivetrain B</div>
+              <SetupFields cfg={configB} />
+              <CircumferenceField cfg={configB} />
+            </div>
+          </div>
+        ) : (
+          <>
+            <SetupFields cfg={configA} />
+            <CircumferenceField cfg={configA} />
+          </>
+        )}
       </Section>
 
       <Section
         title="Gears"
         info={
           <>
-            One line per chainring; each dot is a {mode === "hub" ? "hub gear" : "cog"}{" "}
-            (labelled with its {mode === "hub" ? "gear" : "tooth count"}) — hover a dot
+            One line per chainring; each dot is a {focusCfg.mode === "hub" ? "hub gear" : "cog"}{" "}
+            (labelled with its {focusCfg.mode === "hub" ? "gear" : "tooth count"}) — hover a dot
             for its exact values.{" "}
-            {mode === "cassette" && chainrings.length > 1 && (
+            {comparing && (
+              <>
+                <strong>Drivetrain B</strong> is drawn with hollow dots on a dashed line, sharing
+                the same axis so you can compare range, gaps and overlap directly.{" "}
+              </>
+            )}
+            {focusCfg.mode === "cassette" && chainrings.length > 1 && (
               <>
                 <strong>Greyed dots</strong> are cross-chained combinations (big-big /
                 small-small) to avoid shifting into.{" "}
@@ -311,12 +468,30 @@ export function Drivetrain() {
         }
       >
         <div className="chart-controls">
-          <Result label="Gears" value={gears.length} />
-          <Result label="Range" value={`${range.toFixed(2)}× (${Math.round((range - 1) * 100)}%)`} />
+          {comparing ? (
+            <>
+              <Result
+                label="A: gears / range"
+                value={`${derivedA.gears.length} · ${rangeA.toFixed(2)}× (${Math.round((rangeA - 1) * 100)}%)`}
+              />
+              <Result
+                label="B: gears / range"
+                value={`${derivedB.gears.length} · ${rangeB.toFixed(2)}× (${Math.round((rangeB - 1) * 100)}%)`}
+              />
+            </>
+          ) : (
+            <>
+              <Result label="Gears" value={derivedA.gears.length} />
+              <Result
+                label="Range"
+                value={`${rangeA.toFixed(2)}× (${Math.round((rangeA - 1) * 100)}%)`}
+              />
+            </>
+          )}
         </div>
 
         <GearChart
-          gears={gears}
+          series={series}
           metric={metric}
           options={metricOptions}
           onMetricChange={(v) => setMetric(v as Metric)}
@@ -324,8 +499,12 @@ export function Drivetrain() {
           format={activeMetric.format}
           pointLabel={pointLabel}
           cadenceRpm={rpm}
-          isCrossChained={isCrossChained}
-          onHover={(g) => setActiveGear({ chainring: g.chainring, cog: g.cog })}
+          onHover={(g, seriesId) => {
+            // Hovering a gear selects it in the diagram; if it belongs to the
+            // other drivetrain, switch the diagram (and detail sections) to it.
+            if (comparing && (seriesId === "A" || seriesId === "B")) setFocus(seriesId);
+            setActiveGear({ chainring: g.chainring, cog: g.cog });
+          }}
           extra={
             metric === "speed" ? (
               <div className="gc-cadence">
@@ -353,14 +532,36 @@ export function Drivetrain() {
           }
         />
 
+        {comparing && (
+          <div className="dt-focus">
+            <span>Diagram &amp; details below for drivetrain</span>
+            <div className="dt-focus-seg">
+              <button
+                type="button"
+                className={focus === "A" ? "active" : ""}
+                onClick={() => setFocus("A")}
+              >
+                A
+              </button>
+              <button
+                type="button"
+                className={focus === "B" ? "active" : ""}
+                onClick={() => setFocus("B")}
+              >
+                B
+              </button>
+            </div>
+          </div>
+        )}
+
         <DrivetrainDiagram
           chainrings={chainrings}
           cogs={cogs}
           activeChainring={activeChainring}
           activeCog={activeCog}
           chainstayMm={chainstay}
-          wheelCircMm={circ}
-          hasDerailleur={mode === "cassette"}
+          wheelCircMm={focusCfg.circ}
+          hasDerailleur={focusCfg.mode === "cassette"}
           cadenceRpm={rpm}
           speed={toSpeed(activeSpeedKmh)}
           speedUnit={unitLabel}
@@ -399,9 +600,9 @@ export function Drivetrain() {
         </p>
       </Section>
 
-      {mode === "cassette" && (
+      {focusCfg.mode === "cassette" && (
         <Section
-          title="Rear derailleur fit"
+          title={comparing ? `Rear derailleur fit · ${focusLabel}` : "Rear derailleur fit"}
           info={
             <>
               Pick a derailleur to check it against this cassette/crankset. Needs
@@ -416,7 +617,11 @@ export function Drivetrain() {
         >
           <div className="rows">
             <Field label="Rear derailleur (optional)">
-              <Select value={derailleurId} onChange={setDerailleurId} options={DERAILLEUR_OPTIONS} />
+              <Select
+                value={focusCfg.derailleurId}
+                onChange={focusCfg.setDerailleurId}
+                options={DERAILLEUR_OPTIONS}
+              />
             </Field>
           </div>
           {fit && derailleur && (
@@ -472,9 +677,9 @@ export function Drivetrain() {
       )}
 
       <Section
-        title="Chain length"
+        title={comparing ? `Chain length · ${focusLabel}` : "Chain length"}
         info={
-          mode === "cassette" ? (
+          focusCfg.mode === "cassette" ? (
             <>
               Park Tool formula, rounded up so the link count is even (each link ≈
               12.7 mm). It includes the +1 inch wrap for the rear derailleur. The
@@ -483,7 +688,7 @@ export function Drivetrain() {
           ) : undefined
         }
       >
-        {mode === "cassette" ? (
+        {focusCfg.mode === "cassette" ? (
           <div className="grid">
             <Result label="Chainstay length" value={`${chainstay} mm`} />
             <Result label="Largest ring / cog" value={`${largestRing} / ${largestCog} T`} />
@@ -492,7 +697,7 @@ export function Drivetrain() {
           </div>
         ) : (
           <Note>
-            {mode === "hub" ? "Hub-geared" : "Single-speed"} chains aren't sized
+            {focusCfg.mode === "hub" ? "Hub-geared" : "Single-speed"} chains aren't sized
             by the derailleur formula — there's no derailleur cage to take up
             slack, so length is set by the <strong>dropout / tensioner
             position</strong>. Wrap the chain around the ring and cog, pull it
@@ -505,11 +710,11 @@ export function Drivetrain() {
       </Section>
 
       <Section
-        title="Chain wear — when to replace"
+        title={comparing ? `Chain wear — when to replace · ${focusLabel}` : "Chain wear — when to replace"}
         info={
           <>
             Measured at the bench with a chain-wear gauge.{" "}
-            {mode === "cassette"
+            {focusCfg.mode === "cassette"
               ? `Shown for your ${cogs.length}-speed cassette.`
               : "Single-speed and hub bikes can run a narrow 3/32\" or wide 1/8\" chain — pick the row matching your chain."}{" "}
             Past the threshold the cassette (and possibly chainrings) may skip with a

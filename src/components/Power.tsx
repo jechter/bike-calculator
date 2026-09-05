@@ -2,13 +2,13 @@ import { useState } from "react";
 import {
   powerForSpeed,
   speedForPower,
-  powerSplit,
+  powerBreakdown,
   CDA_PRESETS,
   CRR_PRESETS,
   DRIVETRAIN_EFF_PRESETS,
   AIR_DENSITY_PRESETS,
   type PowerInput,
-  type ForceBreakdown,
+  type PowerBreakdown,
 } from "../lib/power";
 import { kmhToMs, msToKmh, kmhToMph, mphToKmh } from "../lib/units";
 import { useUnits, speedUnitLabel } from "../units-context";
@@ -25,38 +25,42 @@ const RHO_OPTIONS = AIR_DENSITY_PRESETS.map((c) => ({
   label: `${c.label} (${c.rho})`,
 }));
 
-// Colours shared by the split's number cards and the stacked bar.
-const SPLIT_COLORS = { gravity: "#b7791f", rolling: "#0e8a8a", aero: "#0b6bcb" };
+// Colours shared by the breakdown's number cards and the stacked bar.
+const SPLIT_COLORS = {
+  gravity: "#b7791f",
+  rolling: "#0e8a8a",
+  aero: "#0b6bcb",
+  drivetrain: "#7b3fb0",
+};
 
-// A force with a negative share is assisting (downhill gravity, tailwind), not
-// resisting — label it as such instead of showing a confusing negative %.
-const splitLabel = (pct: number) => (pct < -0.5 ? "assist" : `${Math.max(0, pct).toFixed(0)} %`);
+type SplitPart = { key: string; label: string; watts: number; color: string };
+
+// Build the four components (watts) from a breakdown, in display order.
+function splitParts(bd: PowerBreakdown): SplitPart[] {
+  return [
+    { key: "gravity", label: "Gravity", watts: bd.gravity, color: SPLIT_COLORS.gravity },
+    { key: "rolling", label: "Rolling", watts: bd.rolling, color: SPLIT_COLORS.rolling },
+    { key: "aero", label: "Aero", watts: bd.aero, color: SPLIT_COLORS.aero },
+    { key: "drivetrain", label: "Drivetrain", watts: bd.drivetrain, color: SPLIT_COLORS.drivetrain },
+  ];
+}
 
 /**
- * Stacked bar of where the pedal power goes. Only resisting (positive) forces
- * get a segment, normalised to fill the bar; an assisting force (downhill
+ * Stacked bar of where the pedal power goes. Only resisting (positive) parts
+ * get a segment, normalised to fill the bar; an assisting part (downhill
  * gravity, strong tailwind) is ≤ 0 and simply takes no width.
  */
-function SplitBar({ split }: { split: ForceBreakdown }) {
-  const parts = [
-    { key: "gravity", label: "Gravity", pct: split.gravity, color: SPLIT_COLORS.gravity },
-    { key: "rolling", label: "Rolling", pct: split.rolling, color: SPLIT_COLORS.rolling },
-    { key: "aero", label: "Aero", pct: split.aero, color: SPLIT_COLORS.aero },
-  ];
-  const positives = parts.filter((p) => p.pct > 0);
-  const total = positives.reduce((s, p) => s + p.pct, 0);
+function SplitBar({ parts }: { parts: SplitPart[] }) {
+  const positives = parts.filter((p) => p.watts > 0);
+  const total = positives.reduce((s, p) => s + p.watts, 0);
   if (total <= 0) return null;
   return (
-    <div
-      className="split-bar"
-      role="img"
-      aria-label={parts.map((p) => `${p.label} ${p.pct.toFixed(0)} percent`).join(", ")}
-    >
+    <div className="split-bar" role="img" aria-label="Power breakdown">
       {positives.map((p) => (
         <span
           key={p.key}
           className="split-seg"
-          style={{ width: `${(p.pct / total) * 100}%`, background: p.color }}
+          style={{ width: `${(p.watts / total) * 100}%`, background: p.color }}
         />
       ))}
     </div>
@@ -98,7 +102,10 @@ export function Power() {
   const shownSpeedKmh = last === "power" ? derivedSpeedKmh : speedKmh;
   const shownWatts = last === "speed" ? derivedWatts : watts;
 
-  const split = powerSplit(kmhToMs(shownSpeedKmh), p);
+  const parts = splitParts(powerBreakdown(kmhToMs(shownSpeedKmh), p));
+  // Percentages are shares of the resisting (positive) power, so an assisting
+  // part reads as "assist" rather than a confusing negative %.
+  const resistingW = parts.reduce((s, p) => s + Math.max(0, p.watts), 0);
 
   return (
     <>
@@ -140,11 +147,28 @@ export function Power() {
         {shownWatts > 0 ? (
           <>
             <div className="results" style={{ marginTop: 8 }}>
-              <Result label="vs gravity" value={splitLabel(split.gravity)} dotColor={SPLIT_COLORS.gravity} />
-              <Result label="vs rolling" value={splitLabel(split.rolling)} dotColor={SPLIT_COLORS.rolling} />
-              <Result label="vs aero" value={splitLabel(split.aero)} dotColor={SPLIT_COLORS.aero} />
+              {parts.map((pt) => {
+                const sub =
+                  pt.watts > 0.5
+                    ? `${Math.round((pt.watts / resistingW) * 100)} %`
+                    : pt.watts < -0.5
+                      ? "assist"
+                      : "0 %";
+                return (
+                  <Result
+                    key={pt.key}
+                    label={pt.label}
+                    dotColor={pt.color}
+                    value={
+                      <>
+                        {Math.round(pt.watts)} W<span className="result-sub">{sub}</span>
+                      </>
+                    }
+                  />
+                );
+              })}
             </div>
-            <SplitBar split={split} />
+            <SplitBar parts={parts} />
           </>
         ) : (
           <Note>
@@ -160,9 +184,11 @@ export function Power() {
         info={
           <>
             Steady-state model: power against gravity, rolling resistance and aero
-            drag, divided by drivetrain efficiency. The split shows where the watts
-            go — aero dominates on the flat, gravity on climbs. Each coefficient is
-            editable, with a ⌄ button for common presets.
+            drag, divided by drivetrain efficiency. The breakdown above shows where
+            your watts go — against gravity, rolling and aero, plus the drivetrain
+            loss — with the share of the total in each card. Aero dominates on the
+            flat, gravity on climbs. Each coefficient is editable, with a ⌄ button
+            for common presets.
           </>
         }
       >

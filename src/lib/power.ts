@@ -37,29 +37,32 @@ export function powerForSpeed(v: number, p: PowerInput): number {
   return (totalForce * v) / p.drivetrainEfficiency;
 }
 
+export interface PowerBreakdown {
+  gravity: number; // watts at the road
+  rolling: number;
+  aero: number;
+  drivetrain: number; // watts lost in the drivetrain
+  total: number; // pedal power = sum of the above
+}
+
 /**
- * Percentage split of the pedalling effort at speed v, as a share of the
- * *resisting* power (the sum of the forces the rider must overcome).
+ * Watts breakdown of the pedalling effort at speed v: the power delivered to
+ * the road against gravity, rolling and aero, plus the drivetrain loss. The
+ * four sum to the total pedal power (`powerForSpeed`).
  *
- * A force can be negative — gravity on a descent, or aero with a strong
- * tailwind — meaning it *assists* rather than resists. Such a component comes
- * out negative (it gives back that share of the resisting power) rather than
- * distorting the split by dividing through a signed total. When nothing
- * resists (`resisting` ≤ 0) the rider isn't pedalling, so the split is 0 and
- * the caller should show a "coasting" message instead.
+ * A road component can be negative — gravity on a descent, or aero with a
+ * strong tailwind — meaning it *assists* rather than resists. The drivetrain
+ * loss scales with the (net) road power, so it's ≤ 0 only when the rider isn't
+ * really pedalling (coasting), in which case the caller shows a note instead.
  */
-export function powerSplit(v: number, p: PowerInput): ForceBreakdown {
+export function powerBreakdown(v: number, p: PowerInput): PowerBreakdown {
   const f = forcesAt(v, p);
-  const gravP = f.gravity * v;
-  const rollP = f.rolling * v;
-  const aeroP = f.aero * v;
-  const resisting = Math.max(0, gravP) + Math.max(0, rollP) + Math.max(0, aeroP);
-  if (resisting <= 0) return { gravity: 0, rolling: 0, aero: 0 };
-  return {
-    gravity: (gravP / resisting) * 100,
-    rolling: (rollP / resisting) * 100,
-    aero: (aeroP / resisting) * 100,
-  };
+  const gravity = f.gravity * v;
+  const rolling = f.rolling * v;
+  const aero = f.aero * v;
+  const roadPower = gravity + rolling + aero;
+  const drivetrain = roadPower * (1 / p.drivetrainEfficiency - 1);
+  return { gravity, rolling, aero, drivetrain, total: roadPower + drivetrain };
 }
 
 /**

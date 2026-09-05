@@ -77,15 +77,18 @@ Direct substitution — plug `v` into the model above.
 ## Outputs
 
 - The answer (speed in km/h & mph, or power in W).
-- A **breakdown** of where the watts go: % against gravity, rolling, aero, drawn
-  as a colour-coded stacked bar under the numbers. This is genuinely instructive
-  (e.g. shows how aero dominates on the flat and gravity dominates on a climb) and
-  helps sanity-check inputs. The percentages are shares of the **resisting** power
-  (the forces the rider must overcome). On a descent gravity *assists* rather than
-  resists, so it's labelled "assist" and takes no bar width, while rolling and aero
-  still sum to 100 %. If gravity overcomes rolling and drag on its own (pedal power
-  ≤ 0), there's nothing to pedal against — the split is replaced by a note that
-  you'd coast or brake.
+- A **breakdown** of where the watts go, in **watts and %**, against gravity,
+  rolling and aero, plus the **drivetrain loss** — the four sum to the total pedal
+  power. It's drawn as a colour-coded stacked bar under the cards. This is
+  genuinely instructive (e.g. shows how aero dominates on the flat and gravity
+  dominates on a climb) and helps sanity-check inputs. The percentages are shares
+  of the **resisting** power (the parts the rider must overcome). On a descent
+  gravity *assists* rather than resists, so it shows negative watts labelled
+  "assist" and takes no bar width, while the rest still sum to 100 %. The
+  drivetrain loss is `road_power × (1/η − 1)`, so it shrinks as gravity assists on
+  a descent. If gravity overcomes rolling and drag on its own (pedal power ≤ 0),
+  there's nothing to pedal against — the breakdown is replaced by a note that you'd
+  coast or brake.
 - Optionally a small table: power at a range of speeds, or speed at a range of
   powers.
 

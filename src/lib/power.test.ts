@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { powerForSpeed, speedForPower, powerSplit } from './power';
+import { powerForSpeed, speedForPower, powerBreakdown } from './power';
 import { kmhToMs } from './units';
 
 const flat = {
@@ -35,27 +35,32 @@ describe('speedForPower', () => {
   });
 });
 
-describe('powerSplit', () => {
-  it('is dominated by aero on the flat', () => {
-    const s = powerSplit(kmhToMs(35), flat);
-    expect(s.aero).toBeGreaterThan(s.rolling);
-    expect(s.gravity).toBeCloseTo(0, 3);
+describe('powerBreakdown', () => {
+  it('is dominated by aero on the flat, and the parts sum to pedal power', () => {
+    const b = powerBreakdown(kmhToMs(35), flat);
+    expect(b.aero).toBeGreaterThan(b.rolling);
+    expect(b.gravity).toBeCloseTo(0, 3);
+    expect(b.drivetrain).toBeGreaterThan(0);
+    expect(b.gravity + b.rolling + b.aero + b.drivetrain).toBeCloseTo(b.total, 6);
+    expect(b.total).toBeCloseTo(powerForSpeed(kmhToMs(35), flat), 6);
   });
 
   it('is dominated by gravity on a steep climb', () => {
-    const s = powerSplit(kmhToMs(10), { ...flat, gradient: 0.08 });
-    expect(s.gravity).toBeGreaterThan(s.aero);
-    expect(s.gravity).toBeGreaterThan(s.rolling);
+    const b = powerBreakdown(kmhToMs(10), { ...flat, gradient: 0.08 });
+    expect(b.gravity).toBeGreaterThan(b.aero);
+    expect(b.gravity).toBeGreaterThan(b.rolling);
   });
 
-  it('shows gravity assisting (negative) on a descent, resisting forces summing to 100%', () => {
-    const s = powerSplit(kmhToMs(30), { ...flat, gradient: -0.015 });
-    // gravity assists (negative share) rather than distorting the split
-    expect(s.gravity).toBeLessThan(0);
-    // the forces actually resisting (rolling + aero) are shares of the
-    // resisting power, so they add up to ~100%
-    expect(s.rolling + s.aero).toBeCloseTo(100, 3);
-    expect(s.rolling).toBeGreaterThan(0);
-    expect(s.aero).toBeGreaterThan(0);
+  it('shows gravity assisting (negative watts) on a descent', () => {
+    const b = powerBreakdown(kmhToMs(30), { ...flat, gradient: -0.015 });
+    expect(b.gravity).toBeLessThan(0);
+    expect(b.rolling).toBeGreaterThan(0);
+    expect(b.aero).toBeGreaterThan(0);
+  });
+
+  it('drivetrain loss is the road power times (1/eff - 1)', () => {
+    const b = powerBreakdown(kmhToMs(30), flat);
+    const road = b.gravity + b.rolling + b.aero;
+    expect(b.drivetrain).toBeCloseTo(road * (1 / flat.drivetrainEfficiency - 1), 6);
   });
 });

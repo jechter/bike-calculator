@@ -95,7 +95,7 @@ export function checkWheelLacing(
  */
 export interface TensionCurve {
   tool: string;
-  spokeType: string; // e.g. "round 2.0mm", "bladed 2.0x1.2"
+  spokeType: string; // e.g. "steel round 2.0 mm", "steel blade 0.9 x 2.3 mm"
   points: Array<{ reading: number; kgf: number }>; // sorted by reading asc
 }
 

@@ -23,6 +23,20 @@ describe("Wheel building page", () => {
     expect(labels.length).toBe(1);
   });
 
+  it("flags an out-of-band tensiometer reading instead of capping it", () => {
+    const { container, getByText } = render(<WheelBuilding />);
+    const reading = Array.from(container.querySelectorAll('input[type="number"]')).find(
+      (i) => (i as HTMLInputElement).value === "20",
+    ) as HTMLInputElement;
+    fireEvent.change(reading, { target: { value: "0" } });
+    // warns rather than reporting the clamped floor tension
+    expect(getByText(/outside this curve's range/)).toBeTruthy();
+    const tensionCard = Array.from(container.querySelectorAll(".result")).find(
+      (n) => n.querySelector(".result-label")?.textContent === "Tension",
+    )!;
+    expect(tensionCard.querySelector(".result-value")?.textContent).toBe("—");
+  });
+
   it("applies a hub preset, shows its name, and reverts on edit", () => {
     const { getByText, container } = render(<WheelBuilding />);
     fireEvent.click(getByText("Common hub presets"));

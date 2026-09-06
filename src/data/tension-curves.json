@@ -1,7 +1,7 @@
 [
   {
     "tool": "Park Tool TM-1",
-    "spokeType": "round 1.4 mm",
+    "spokeType": "steel round 1.4 mm",
     "points": [
       {
         "reading": 4,
@@ -75,7 +75,7 @@
   },
   {
     "tool": "Park Tool TM-1",
-    "spokeType": "round 1.5 mm",
+    "spokeType": "steel round 1.5 mm",
     "points": [
       {
         "reading": 6,
@@ -145,7 +145,7 @@
   },
   {
     "tool": "Park Tool TM-1",
-    "spokeType": "round 1.6 mm",
+    "spokeType": "steel round 1.6 mm",
     "points": [
       {
         "reading": 7,
@@ -219,7 +219,7 @@
   },
   {
     "tool": "Park Tool TM-1",
-    "spokeType": "round 1.7 mm",
+    "spokeType": "steel round 1.7 mm",
     "points": [
       {
         "reading": 9,
@@ -289,7 +289,7 @@
   },
   {
     "tool": "Park Tool TM-1",
-    "spokeType": "round 1.8 mm",
+    "spokeType": "steel round 1.8 mm",
     "points": [
       {
         "reading": 11,
@@ -355,7 +355,7 @@
   },
   {
     "tool": "Park Tool TM-1",
-    "spokeType": "round 2.0 mm",
+    "spokeType": "steel round 2.0 mm",
     "points": [
       {
         "reading": 14,
@@ -421,7 +421,7 @@
   },
   {
     "tool": "Park Tool TM-1",
-    "spokeType": "round 2.3 mm",
+    "spokeType": "steel round 2.3 mm",
     "points": [
       {
         "reading": 19,
@@ -483,7 +483,7 @@
   },
   {
     "tool": "Park Tool TM-1",
-    "spokeType": "round 2.5 mm",
+    "spokeType": "steel round 2.5 mm",
     "points": [
       {
         "reading": 23,
@@ -541,7 +541,7 @@
   },
   {
     "tool": "Park Tool TM-1",
-    "spokeType": "round 2.6 mm",
+    "spokeType": "steel round 2.6 mm",
     "points": [
       {
         "reading": 24,
@@ -599,7 +599,7 @@
   },
   {
     "tool": "Park Tool TM-1",
-    "spokeType": "blade 0.9 x 2.0 mm",
+    "spokeType": "steel blade 0.9 x 2.0 mm",
     "points": [
       {
         "reading": 3,
@@ -665,7 +665,7 @@
   },
   {
     "tool": "Park Tool TM-1",
-    "spokeType": "blade 0.9 x 2.3 mm",
+    "spokeType": "steel blade 0.9 x 2.3 mm",
     "points": [
       {
         "reading": 3,
@@ -731,7 +731,7 @@
   },
   {
     "tool": "Park Tool TM-1",
-    "spokeType": "blade 1.0 x 2.3 mm",
+    "spokeType": "steel blade 1.0 x 2.3 mm",
     "points": [
       {
         "reading": 3,
@@ -805,7 +805,7 @@
   },
   {
     "tool": "Park Tool TM-1",
-    "spokeType": "blade 1.2 x 2.4 mm",
+    "spokeType": "steel blade 1.2 x 2.4 mm",
     "points": [
       {
         "reading": 6,
@@ -879,7 +879,7 @@
   },
   {
     "tool": "Park Tool TM-1",
-    "spokeType": "DT Revolite 1.27 x 2.21 mm",
+    "spokeType": "steel DT Revolite 1.27 x 2.21 mm",
     "points": [
       {
         "reading": 6,

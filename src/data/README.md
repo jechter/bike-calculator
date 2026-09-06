@@ -59,7 +59,7 @@ Each entry is a `HubGeometryPreset` (see `src/lib/spokes.ts`):
 ### `tension-curves.json`
 Each entry is a `TensionCurve` (see `src/lib/spokes.ts`):
 - `tool` — tensiometer name.
-- `spokeType` — e.g. `"round 2.0 mm"`.
+- `spokeType` — material + shape + size, e.g. `"steel round 2.0 mm"`.
 - `points` — array of `{ "reading": 10, "kgf": 40 }`, **sorted by `reading`
   ascending**. Readings between listed points are interpolated linearly.
 

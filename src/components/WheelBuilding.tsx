@@ -89,13 +89,35 @@ export function WheelBuilding() {
   const leftOk = countOk && leftCross >= 0 && leftCross <= kmax;
   const rightOk = countOk && rightCross >= 0 && rightCross <= kmax;
 
-  // Tension converter. Default to a common 2.0 mm round spoke if present.
-  const [curveIdx, setCurveIdx] = useState(() => {
-    const i = TENSION_CURVES.findIndex((c) => c.spokeType === "round 2.0 mm");
-    return i >= 0 ? i : 0;
-  });
+  // Tension converter. Tool and spoke type are picked separately. Default to a
+  // common 2.0 mm steel round spoke on the Park Tool TM-1 if present.
+  const tools = useMemo(() => {
+    const seen: string[] = [];
+    for (const c of TENSION_CURVES) if (!seen.includes(c.tool)) seen.push(c.tool);
+    return seen;
+  }, []);
+  const defaultCurve =
+    TENSION_CURVES.find((c) => c.spokeType === "steel round 2.0 mm") ?? TENSION_CURVES[0];
+  const [tool, setTool] = useState(defaultCurve.tool);
+  const [spokeType, setSpokeType] = useState(defaultCurve.spokeType);
   const [reading, setReading] = useState(20);
-  const curve = TENSION_CURVES[curveIdx];
+
+  const spokeOptions = useMemo(() => TENSION_CURVES.filter((c) => c.tool === tool), [tool]);
+  const curve = spokeOptions.find((c) => c.spokeType === spokeType) ?? spokeOptions[0];
+
+  // Switching tool keeps the spoke type if the new tool offers it, else falls
+  // back to that tool's first spoke.
+  function selectTool(next: string) {
+    setTool(next);
+    const opts = TENSION_CURVES.filter((c) => c.tool === next);
+    if (!opts.some((c) => c.spokeType === spokeType)) setSpokeType(opts[0].spokeType);
+  }
+
+  const tPts = curve.points;
+  const minReading = tPts[0].reading;
+  const maxReading = tPts[tPts.length - 1].reading;
+  const hasReading = Number.isFinite(reading);
+  const inBand = hasReading && reading >= minReading && reading <= maxReading;
   const kgf = readingToKgf(curve, reading);
 
   return (
@@ -234,29 +256,46 @@ export function WheelBuilding() {
         title="Spoke tension converter"
         info={
           <>
-            The built-in curves are examples only. Enter your own tool's chart data
-            for real builds, and check against the rim's max spoke tension
-            (typically ~100–120 kgf). On a dished wheel the two sides sit at
-            different tensions by design.
+            Reference curves generated from Park Tool's Wheel Tension App — spot-check
+            against the official chart before a real build, and check against the rim's
+            max spoke tension (typically ~100–120 kgf). On a dished wheel the two sides
+            sit at different tensions by design.
           </>
         }
       >
         <div className="grid">
-          <Field label="Tool / spoke" hint="reference curves — spot-check against the official chart">
+          <Field label="Tool">
             <Select
-              value={String(curveIdx)}
-              onChange={(v) => setCurveIdx(parseInt(v))}
-              options={TENSION_CURVES.map((c, i) => ({
-                value: String(i),
-                label: `${c.tool} — ${c.spokeType}`,
-              }))}
+              value={tool}
+              onChange={selectTool}
+              options={tools.map((t) => ({ value: t, label: t }))}
+            />
+          </Field>
+          <Field label="Spoke" hint="spot-check against the official chart">
+            <Select
+              value={spokeType}
+              onChange={setSpokeType}
+              options={spokeOptions.map((c) => ({ value: c.spokeType, label: c.spokeType }))}
             />
           </Field>
           <Field label="Tensiometer reading">
             <NumberInput value={reading} onChange={setReading} step={0.1} />
           </Field>
-          <Result label="Tension" value={`${kgf.toFixed(0)} kgf · ${kgfToN(kgf).toFixed(0)} N`} big />
+          <Result
+            label="Tension"
+            value={inBand ? `${kgf.toFixed(0)} kgf · ${kgfToN(kgf).toFixed(0)} N` : "—"}
+            big
+          />
         </div>
+        {hasReading && !inBand && (
+          <Note tone="warn">
+            A reading of {reading} is outside this curve's range. The {tool} only
+            converts {spokeType} between readings {minReading} and {maxReading} (
+            {tPts[0].kgf}–{tPts[tPts.length - 1].kgf} kgf). Outside that band the
+            reading isn't meaningful — choose the spoke size that puts your reading in
+            range.
+          </Note>
+        )}
       </Section>
     </>
   );

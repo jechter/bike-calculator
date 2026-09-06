@@ -5,7 +5,7 @@ import {
   kgfToN,
   maxCross,
   checkWheelLacing,
-  EXAMPLE_TENSION_CURVES,
+  TENSION_CURVES,
   RIM_PRESETS,
   HUB_GEOMETRY_PRESETS,
 } from "../lib/spokes";
@@ -89,10 +89,13 @@ export function WheelBuilding() {
   const leftOk = countOk && leftCross >= 0 && leftCross <= kmax;
   const rightOk = countOk && rightCross >= 0 && rightCross <= kmax;
 
-  // Tension converter
-  const [curveIdx, setCurveIdx] = useState(0);
+  // Tension converter. Default to a common 2.0 mm round spoke if present.
+  const [curveIdx, setCurveIdx] = useState(() => {
+    const i = TENSION_CURVES.findIndex((c) => c.spokeType === "round 2.0 mm");
+    return i >= 0 ? i : 0;
+  });
   const [reading, setReading] = useState(20);
-  const curve = EXAMPLE_TENSION_CURVES[curveIdx];
+  const curve = TENSION_CURVES[curveIdx];
   const kgf = readingToKgf(curve, reading);
 
   return (
@@ -239,11 +242,11 @@ export function WheelBuilding() {
         }
       >
         <div className="grid">
-          <Field label="Tool / spoke" hint="illustrative curves — verify against the real chart">
+          <Field label="Tool / spoke" hint="reference curves — spot-check against the official chart">
             <Select
               value={String(curveIdx)}
               onChange={(v) => setCurveIdx(parseInt(v))}
-              options={EXAMPLE_TENSION_CURVES.map((c, i) => ({
+              options={TENSION_CURVES.map((c, i) => ({
                 value: String(i),
                 label: `${c.tool} — ${c.spokeType}`,
               }))}

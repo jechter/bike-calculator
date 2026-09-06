@@ -14,8 +14,8 @@ describe("Wheel building page", () => {
 
   it("shows a single tension field with both kgf and N", () => {
     const { getByText, container } = render(<WheelBuilding />);
-    // reading 20 on the example 2.0mm curve -> 110 kgf -> 1079 N
-    expect(getByText(/110 kgf · 1079 N/)).toBeTruthy();
+    // reading 20 on the TM-1 round 2.0mm curve -> 70 kgf -> 686 N
+    expect(getByText(/70 kgf · 686 N/)).toBeTruthy();
     // exactly one Tension result label
     const labels = Array.from(container.querySelectorAll(".result-label")).filter(
       (n) => n.textContent === "Tension",

@@ -1,0 +1,50 @@
+[
+  {
+    "label": "Road front — QR 100 mm",
+    "leftFlangeDiaMm": 38,
+    "rightFlangeDiaMm": 38,
+    "leftOffsetMm": 34,
+    "rightOffsetMm": 34,
+    "spokeHoleMm": 2.5
+  },
+  {
+    "label": "Road rear — QR 130 mm",
+    "leftFlangeDiaMm": 45,
+    "rightFlangeDiaMm": 45,
+    "leftOffsetMm": 34,
+    "rightOffsetMm": 17.5,
+    "spokeHoleMm": 2.5
+  },
+  {
+    "label": "MTB front — QR 100 mm",
+    "leftFlangeDiaMm": 38,
+    "rightFlangeDiaMm": 38,
+    "leftOffsetMm": 34,
+    "rightOffsetMm": 34,
+    "spokeHoleMm": 2.6
+  },
+  {
+    "label": "MTB rear — QR 135 mm",
+    "leftFlangeDiaMm": 45,
+    "rightFlangeDiaMm": 45,
+    "leftOffsetMm": 36,
+    "rightOffsetMm": 19,
+    "spokeHoleMm": 2.6
+  },
+  {
+    "label": "MTB front — Boost 110 mm",
+    "leftFlangeDiaMm": 38,
+    "rightFlangeDiaMm": 38,
+    "leftOffsetMm": 39,
+    "rightOffsetMm": 27,
+    "spokeHoleMm": 2.6
+  },
+  {
+    "label": "MTB rear — Boost 148 mm",
+    "leftFlangeDiaMm": 45,
+    "rightFlangeDiaMm": 45,
+    "leftOffsetMm": 38,
+    "rightOffsetMm": 21,
+    "spokeHoleMm": 2.6
+  }
+]

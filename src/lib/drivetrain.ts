@@ -3,6 +3,9 @@
 // docs/calculators/drivetrain.md for formulas and worked examples.
 
 import { MM_PER_INCH } from './units';
+import hubGearsData from '../data/hub-gears.json';
+import chainringPresetsData from '../data/chainring-presets.json';
+import cassettePresetsData from '../data/cassette-presets.json';
 
 export interface GearResult {
   chainring: number;
@@ -157,78 +160,29 @@ export function chainWearThresholdsFor(
 
 // --- Common presets ---------------------------------------------------------
 
+// Common cranksets (chainring combinations) for a derailleur setup.
+// The rows live in data/chainring-presets.json — add or edit there (no code change).
 export interface ChainringPreset {
   label: string;
   rings: number[];
 }
 
-// Common cranksets (chainring combinations) for a derailleur setup.
-export const CHAINRING_PRESETS: ChainringPreset[] = [
-  { label: 'Road compact 50/34', rings: [50, 34] },
-  { label: 'Road semi-compact 52/36', rings: [52, 36] },
-  { label: 'Road standard 53/39', rings: [53, 39] },
-  { label: 'Sub-compact 48/32', rings: [48, 32] },
-  { label: 'Gravel 2× 46/30', rings: [46, 30] },
-  { label: 'Road triple 50/39/30', rings: [50, 39, 30] },
-  { label: 'Touring triple 48/36/26', rings: [48, 36, 26] },
-  { label: 'MTB 2× 36/26', rings: [36, 26] },
-  { label: '1× 42', rings: [42] },
-  { label: '1× 40', rings: [40] },
-  { label: '1× 32', rings: [32] },
-  { label: '1× 30', rings: [30] },
-];
+export const CHAINRING_PRESETS: ChainringPreset[] = chainringPresetsData as ChainringPreset[];
 
+// The rows live in data/cassette-presets.json — add or edit there (no code change).
 export interface CassettePreset {
   label: string;
   cogs: number[];
 }
 
-export const CASSETTE_PRESETS: CassettePreset[] = [
-  { label: '7sp 11-28', cogs: [11, 13, 15, 17, 19, 23, 28] },
-  { label: '8sp 11-32', cogs: [11, 13, 15, 18, 21, 24, 28, 32] },
-  { label: '9sp 11-34', cogs: [11, 13, 15, 17, 20, 23, 26, 30, 34] },
-  { label: '10sp 11-28', cogs: [11, 12, 13, 14, 15, 17, 19, 21, 24, 28] },
-  { label: '11sp 11-32', cogs: [11, 12, 13, 14, 16, 18, 20, 22, 25, 28, 32] },
-  { label: '11sp 11-42', cogs: [11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42] },
-  { label: '12sp 10-52', cogs: [10, 12, 14, 16, 18, 21, 24, 28, 32, 38, 44, 52] },
-  { label: 'Single speed 18t', cogs: [18] },
-];
+export const CASSETTE_PRESETS: CassettePreset[] = cassettePresetsData as CassettePreset[];
 
 // Internally geared hub presets. Ratios are widely-published nominal values;
 // treat as reference data to verify (see docs). 1.000 == direct drive.
+// The rows live in data/hub-gears.json — add or edit hubs there (no code change).
 export interface HubPreset {
   label: string;
   gears: HubGear[];
 }
 
-export const HUB_PRESETS: HubPreset[] = [
-  {
-    label: 'Sturmey-Archer AW (3-speed)',
-    gears: [
-      { name: '1st', ratio: 0.75 },
-      { name: '2nd', ratio: 1.0 },
-      { name: '3rd', ratio: 1.333 },
-    ],
-  },
-  {
-    label: 'Shimano Nexus (3-speed)',
-    gears: [
-      { name: '1st', ratio: 0.733 },
-      { name: '2nd', ratio: 1.0 },
-      { name: '3rd', ratio: 1.36 },
-    ],
-  },
-  {
-    label: 'Shimano Alfine (8-speed)',
-    gears: [
-      { name: '1st', ratio: 0.527 },
-      { name: '2nd', ratio: 0.644 },
-      { name: '3rd', ratio: 0.748 },
-      { name: '4th', ratio: 0.851 },
-      { name: '5th', ratio: 1.0 },
-      { name: '6th', ratio: 1.223 },
-      { name: '7th', ratio: 1.419 },
-      { name: '8th', ratio: 1.615 },
-    ],
-  },
-];
+export const HUB_PRESETS: HubPreset[] = hubGearsData as HubPreset[];

@@ -1,0 +1,31 @@
+[
+  {
+    "label": "Sturmey-Archer AW (3-speed)",
+    "gears": [
+      { "name": "1st", "ratio": 0.75 },
+      { "name": "2nd", "ratio": 1.0 },
+      { "name": "3rd", "ratio": 1.333 }
+    ]
+  },
+  {
+    "label": "Shimano Nexus (3-speed)",
+    "gears": [
+      { "name": "1st", "ratio": 0.733 },
+      { "name": "2nd", "ratio": 1.0 },
+      { "name": "3rd", "ratio": 1.36 }
+    ]
+  },
+  {
+    "label": "Shimano Alfine (8-speed)",
+    "gears": [
+      { "name": "1st", "ratio": 0.527 },
+      { "name": "2nd", "ratio": 0.644 },
+      { "name": "3rd", "ratio": 0.748 },
+      { "name": "4th", "ratio": 0.851 },
+      { "name": "5th", "ratio": 1.0 },
+      { "name": "6th", "ratio": 1.223 },
+      { "name": "7th", "ratio": 1.419 },
+      { "name": "8th", "ratio": 1.615 }
+    ]
+  }
+]

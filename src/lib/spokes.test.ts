@@ -4,7 +4,8 @@ import {
   readingToKgf,
   maxCross,
   checkWheelLacing,
-  EXAMPLE_TENSION_CURVES,
+  TENSION_CURVES,
+  type TensionCurve,
 } from './spokes';
 
 describe('spokeLength', () => {
@@ -68,7 +69,18 @@ describe('maxCross / checkWheelLacing', () => {
 });
 
 describe('readingToKgf', () => {
-  const curve = EXAMPLE_TENSION_CURVES[0];
+  // Local fixture so the interpolation logic is tested independently of the
+  // shipped data in data/tension-curves.json.
+  const curve: TensionCurve = {
+    tool: 'Test',
+    spokeType: 'test',
+    points: [
+      { reading: 10, kgf: 40 },
+      { reading: 15, kgf: 70 },
+      { reading: 20, kgf: 110 },
+      { reading: 24, kgf: 160 },
+    ],
+  };
 
   it('interpolates between table points', () => {
     // midpoint between reading 15 (70 kgf) and 20 (110 kgf) -> ~90 kgf
@@ -78,5 +90,14 @@ describe('readingToKgf', () => {
   it('clamps below/above the table', () => {
     expect(readingToKgf(curve, 5)).toBe(40);
     expect(readingToKgf(curve, 30)).toBe(160);
+  });
+
+  it('ships tension curves that are sorted and monotonically increasing', () => {
+    for (const c of TENSION_CURVES) {
+      for (let i = 1; i < c.points.length; i++) {
+        expect(c.points[i].reading).toBeGreaterThan(c.points[i - 1].reading);
+        expect(c.points[i].kgf).toBeGreaterThan(c.points[i - 1].kgf);
+      }
+    }
   });
 });

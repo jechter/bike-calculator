@@ -1,5 +1,12 @@
 // Spoke length geometry and spoke-tension conversion.
 // See docs/calculators/wheel-building.md.
+//
+// The hub geometry presets and tensiometer curves live in
+// data/hub-geometry.json and data/tension-curves.json so they can be added or
+// edited without touching code — see src/data/README.md.
+
+import hubGeometryData from '../data/hub-geometry.json';
+import tensionCurvesData from '../data/tension-curves.json';
 
 export interface SpokeSideInput {
   /** Flange diameter (mm): diameter of the circle through the spoke holes. */
@@ -140,77 +147,11 @@ export interface HubGeometryPreset {
   spokeHoleMm: number;
 }
 
-export const HUB_GEOMETRY_PRESETS: HubGeometryPreset[] = [
-  {
-    label: 'Road front — QR 100 mm',
-    leftFlangeDiaMm: 38,
-    rightFlangeDiaMm: 38,
-    leftOffsetMm: 34,
-    rightOffsetMm: 34,
-    spokeHoleMm: 2.5,
-  },
-  {
-    label: 'Road rear — QR 130 mm',
-    leftFlangeDiaMm: 45,
-    rightFlangeDiaMm: 45,
-    leftOffsetMm: 34,
-    rightOffsetMm: 17.5,
-    spokeHoleMm: 2.5,
-  },
-  {
-    label: 'MTB front — QR 100 mm',
-    leftFlangeDiaMm: 38,
-    rightFlangeDiaMm: 38,
-    leftOffsetMm: 34,
-    rightOffsetMm: 34,
-    spokeHoleMm: 2.6,
-  },
-  {
-    label: 'MTB rear — QR 135 mm',
-    leftFlangeDiaMm: 45,
-    rightFlangeDiaMm: 45,
-    leftOffsetMm: 36,
-    rightOffsetMm: 19,
-    spokeHoleMm: 2.6,
-  },
-  {
-    label: 'MTB front — Boost 110 mm',
-    leftFlangeDiaMm: 38,
-    rightFlangeDiaMm: 38,
-    leftOffsetMm: 39,
-    rightOffsetMm: 27,
-    spokeHoleMm: 2.6,
-  },
-  {
-    label: 'MTB rear — Boost 148 mm',
-    leftFlangeDiaMm: 45,
-    rightFlangeDiaMm: 45,
-    leftOffsetMm: 38,
-    rightOffsetMm: 21,
-    spokeHoleMm: 2.6,
-  },
-];
+// The rows live in data/hub-geometry.json — add or edit hubs there (no code change).
+export const HUB_GEOMETRY_PRESETS: HubGeometryPreset[] = hubGeometryData as HubGeometryPreset[];
 
-// Illustrative curves only — VERIFY against the real tool chart before trusting.
-export const EXAMPLE_TENSION_CURVES: TensionCurve[] = [
-  {
-    tool: 'Example tensiometer',
-    spokeType: 'round 2.0 mm',
-    points: [
-      { reading: 10, kgf: 40 },
-      { reading: 15, kgf: 70 },
-      { reading: 20, kgf: 110 },
-      { reading: 24, kgf: 160 },
-    ],
-  },
-  {
-    tool: 'Example tensiometer',
-    spokeType: 'round 1.8 mm',
-    points: [
-      { reading: 10, kgf: 35 },
-      { reading: 15, kgf: 62 },
-      { reading: 20, kgf: 100 },
-      { reading: 24, kgf: 145 },
-    ],
-  },
-];
+// Tensiometer conversion curves. The rows live in data/tension-curves.json — add
+// tools/spoke types there (no code change). Values are reference data generated
+// from the Park Tool TM-1 Wheel Tension App (parktool.com/wta) — spot-check
+// against the official chart/app for the exact tool before trusting.
+export const TENSION_CURVES: TensionCurve[] = tensionCurvesData as TensionCurve[];

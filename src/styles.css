@@ -373,6 +373,69 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .preset-list button:hover { background: var(--accent-soft); color: var(--accent); }
 
+/* Cassette browse-and-filter picker (foldout next to the cog field) */
+.cassette-picker { position: relative; flex: none; display: flex; }
+.cassette-picker .preset-btn { gap: 4px; font-weight: 500; }
+.cp-pop {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  right: 0;
+  width: min(420px, 88vw);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cp-search {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+}
+.cp-search:focus { outline: none; border-color: var(--accent); }
+.cp-filters { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.cp-filters select { width: 100%; min-width: 0; }
+.cp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.cp-list li { margin: 0; }
+.cp-list button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font: inherit;
+  padding: 7px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.cp-list li:last-child button { border-bottom: none; }
+.cp-list button:hover { background: var(--accent-soft); }
+.cp-list button.active { background: var(--accent-soft); }
+.cp-list button.active .cp-name { color: var(--accent); font-weight: 600; }
+.cp-name { font-size: 13px; }
+.cp-meta { font-size: 11px; color: var(--muted); }
+.cp-empty { padding: 12px 10px; color: var(--muted); font-size: 13px; }
+.cp-foot { font-size: 11px; color: var(--muted); padding: 0 2px; }
+
 /* Slider + number combo */
 .slider-row { display: flex; align-items: center; gap: 12px; }
 .slider-row input[type="range"] { flex: 1; accent-color: var(--accent); }

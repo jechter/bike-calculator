@@ -13,7 +13,7 @@ the manufacturer or your own measurements before relying on them.
 | `derailleurs.json` | Drivetrain calculator | Rear derailleur specs (capacity, max sprocket, actuation family). |
 | `hub-gears.json` | Drivetrain calculator | Internal-gear-hub, bottom-bracket-gearbox, and CVT gearing (Rohloff, Pinion, Nexus, Alfine, Enviolo, …), with a source per entry. |
 | `chainring-presets.json` | Drivetrain calculator | Common crankset chainring combinations. |
-| `cassette-presets.json` | Drivetrain calculator | Common cassette cog sets. |
+| `cassette-presets.json` | Drivetrain calculator | Cassette / sprocket sets by brand & model, with a source per entry. |
 | `hub-geometry.json` | Wheel-building calculator | Hub flange diameters / offsets for spoke-length presets. |
 | `tension-curves.json` | Wheel-building calculator | Tensiometer reading → tension (kgf) conversion tables. |
 
@@ -57,9 +57,22 @@ Each entry is a `ChainringPreset` (see `src/lib/drivetrain.ts`):
 - `rings` — array of chainring tooth counts, largest first (e.g. `[50, 34]`).
 
 ### `cassette-presets.json`
-Each entry is a `CassettePreset` (see `src/lib/drivetrain.ts`):
-- `label` — display name.
-- `cogs` — array of cog tooth counts, smallest first (e.g. `[11, 13, 15, …]`).
+An object with a `cassettes` array (plus `description` / `count` / `sources`
+metadata). Each entry is mapped to a `CassettePreset` at load time (see
+`src/lib/drivetrain.ts`); the drivetrain calculator has a **"Browse" foldout**
+next to the cog field that opens a searchable cassette picker with **brand /
+speeds / range** filters. Picking one fills the editable cog field:
+- `brand` — maker name; the picker's first dropdown.
+- `model` — model designation (`"-"` when the source lists none).
+- `freehub` — freehub-body standard(s) the cassette fits (e.g. `"HG 11"`,
+  `"XD"`, `"Micro Spline"`).
+- `speeds` — number of sprockets (equals `sprockets.length`).
+- `sprockets` — cog tooth counts, **smallest first** (e.g. `[11, 13, 15, …]`).
+- `weightGrams`, `priceUsd` — approximate weight (g) and price (USD); either may
+  be `null`.
+- `special` — special drivetrain family if any, e.g. `"LinkGlide"` or `"T-Type"`.
+- `source` — `{ url, sourceType: "primary" | "secondary", note }` citing where
+  the tooth counts came from.
 
 ### `hub-geometry.json`
 Each entry is a `HubGeometryPreset` (see `src/lib/spokes.ts`):

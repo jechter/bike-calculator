@@ -148,15 +148,15 @@ describe("Drivetrain page", () => {
     expect(labels[labels.length - 1]).toMatch(/Inter 11 · 11-speed/);
   });
 
-  it("links the hub model to its ratio source", () => {
+  it("links the hub model (by name) to its ratio source", () => {
     const { container } = render(<Drivetrain />);
     const selects = Array.from(container.querySelectorAll("select"));
     fireEvent.change(selects[0], { target: { value: "hub" } });
+    // Default hub is the Sturmey-Archer S3 -> the link is labelled with its name.
     const link = Array.from(container.querySelectorAll("a")).find((a) =>
-      /ratio source/.test(a.textContent || ""),
+      /Sturmey Archer S3/.test(a.textContent || ""),
     ) as HTMLAnchorElement;
     expect(link).toBeTruthy();
-    // Default hub is the Sturmey-Archer S3 -> its manufacturer source URL.
     expect(link.getAttribute("href")).toMatch(/^https?:\/\//);
     expect(link.getAttribute("href")).toContain("sturmey-archer.com");
   });
@@ -172,15 +172,69 @@ describe("Drivetrain page", () => {
     expect(tip!.textContent).toMatch(/km\/h/);
   });
 
-  it("fills the cassette field from the preset popup button", () => {
-    const { getByTitle, getByText, container } = render(<Drivetrain />);
-    fireEvent.click(getByTitle("Fill from a cassette preset"));
-    fireEvent.click(getByText("12sp 10-52"));
-    // The cogs text input should now hold the preset's tooth list.
+  const findSelectWithOption = (container: HTMLElement, pred: (label: string) => boolean) =>
+    Array.from(container.querySelectorAll("select")).find((s) =>
+      Array.from(s.options).some((o) => pred(o.textContent ?? "")),
+    ) as HTMLSelectElement;
+
+  it("browses, filters, and fills cogs from the cassette picker", () => {
+    const { container, getByTitle } = render(<Drivetrain />);
+    fireEvent.click(getByTitle("Browse the cassette database"));
+    // Filter brand → SRAM, speeds → 12-speed, range → 10-52.
+    fireEvent.change(findSelectWithOption(container, (l) => l === "All brands"), {
+      target: { value: "SRAM" },
+    });
+    fireEvent.change(findSelectWithOption(container, (l) => l === "All speeds"), {
+      target: { value: "12" },
+    });
+    fireEvent.change(findSelectWithOption(container, (l) => l === "All ranges"), {
+      target: { value: "10-52" },
+    });
+    // Click the first matching cassette row.
+    const row = container.querySelector(".cp-list button") as HTMLButtonElement;
+    expect(row).toBeTruthy();
+    expect(row.textContent).toContain("SRAM");
+    fireEvent.click(row);
     const cogs = Array.from(container.querySelectorAll('input[type="text"]')).find((i) =>
       (i as HTMLInputElement).value.includes("52"),
     ) as HTMLInputElement;
-    expect(cogs).toBeTruthy();
+    expect(cogs.value.startsWith("10, 12")).toBe(true);
+    expect(cogs.value.endsWith("52")).toBe(true);
+  });
+
+  it("narrows the cassette list by the search box", () => {
+    const { container, getByTitle, getByPlaceholderText } = render(<Drivetrain />);
+    fireEvent.click(getByTitle("Browse the cassette database"));
+    fireEvent.change(getByPlaceholderText("Search brand, model, cogs…"), {
+      target: { value: "sram" },
+    });
+    const names = Array.from(container.querySelectorAll(".cp-list .cp-name"));
+    expect(names.length).toBeGreaterThan(0);
+    expect(names.every((n) => (n.textContent ?? "").startsWith("SRAM"))).toBe(true);
+  });
+
+  it("keeps the picked cassette highlighted even when models share the same cogs", () => {
+    const { container, getByTitle } = render(<Drivetrain />);
+    fireEvent.click(getByTitle("Browse the cassette database"));
+    // Filter to the default 10sp 11-28 — Shimano CS-5700/6700/7900 share cogs.
+    fireEvent.change(findSelectWithOption(container, (l) => l === "All brands"), {
+      target: { value: "Shimano" },
+    });
+    fireEvent.change(findSelectWithOption(container, (l) => l === "All speeds"), {
+      target: { value: "10" },
+    });
+    fireEvent.change(findSelectWithOption(container, (l) => l === "All ranges"), {
+      target: { value: "11-28" },
+    });
+    const cs7900 = Array.from(container.querySelectorAll(".cp-list button")).find((b) =>
+      b.textContent?.includes("CS-7900"),
+    ) as HTMLButtonElement;
+    expect(cs7900).toBeTruthy();
+    fireEvent.click(cs7900);
+    // Reopen (filters persist) — CS-7900 must be the highlighted row, not CS-5700.
+    fireEvent.click(getByTitle("Browse the cassette database"));
+    const active = container.querySelector(".cp-list button.active");
+    expect(active?.textContent).toContain("CS-7900");
   });
 
   it("fills the chainrings field from the common-crankset popup", () => {

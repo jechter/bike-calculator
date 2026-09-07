@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CASSETTE_PRESETS,
   CHAINRING_PRESETS,
@@ -11,6 +11,7 @@ import {
   type GearResult,
   type HubGear,
   type HubPreset,
+  type CassettePreset,
 } from "../lib/drivetrain";
 import {
   DERAILLEURS,
@@ -42,10 +43,149 @@ const TIRE_OPTIONS = TIRE_PRESETS.map((p) => ({
   label: `${p.widthMm}-${p.iso}  (${p.label})`,
 }));
 
-const CASSETTE_OPTIONS = CASSETTE_PRESETS.map((p) => ({
-  value: p.cogs.join(", "),
-  label: p.label,
-}));
+// The database has hundreds of cassettes, so the picker narrows in three steps:
+// speeds → range (e.g. "11-28") → model. The model list spans every brand for
+// that speeds+range config, sorted by brand then model (e.g. "Shimano CS-HG50").
+type Opt = { value: string; label: string };
+type IndexedPreset = { p: CassettePreset; i: number };
+
+// A range group is keyed by "speeds|smallestCog|largestCog".
+function cassetteRangeKey(p: CassettePreset): string {
+  return `${p.speeds}|${p.cogs[0]}|${p.cogs[p.cogs.length - 1]}`;
+}
+
+function sameCogs(a: number[], b: number[]): boolean {
+  return a.length === b.length && a.every((c, i) => c === b[i]);
+}
+
+// A cassette's model name, falling back to its freehub standard when the source
+// lists no model (e.g. a generic "-" entry).
+function modelBaseLabel(p: CassettePreset): string {
+  return p.model && p.model !== "-" ? p.model : p.freehub;
+}
+
+// Model dropdown options for one range group (across all brands). Exact
+// duplicates (same brand + model + cog sequence) are collapsed; entries that
+// would otherwise share a label get the cog sequence appended to stay distinct.
+function buildModelOptions(entries: IndexedPreset[]): Opt[] {
+  const seen = new Set<string>();
+  const uniq = entries.filter(({ p }) => {
+    const sig = `${p.brand}|${p.model}|${p.cogs.join("-")}`;
+    if (seen.has(sig)) return false;
+    seen.add(sig);
+    return true;
+  });
+  const shortLabel = (p: CassettePreset) => {
+    const parts = [`${p.brand} ${modelBaseLabel(p)}`];
+    if (p.special) parts.push(p.special);
+    if (p.weightGrams) parts.push(`${p.weightGrams}g`);
+    return parts.join(" · ");
+  };
+  const counts: Record<string, number> = {};
+  for (const { p } of uniq) counts[shortLabel(p)] = (counts[shortLabel(p)] ?? 0) + 1;
+  return uniq.map(({ p, i }) => {
+    if (counts[shortLabel(p)] <= 1) return { value: String(i), label: shortLabel(p) };
+    const parts = [`${p.brand} ${modelBaseLabel(p)}`];
+    if (p.special) parts.push(p.special);
+    parts.push(p.cogs.join("-"));
+    if (p.weightGrams) parts.push(`${p.weightGrams}g`);
+    return { value: String(i), label: parts.join(" · ") };
+  });
+}
+
+// Global (all-brand) lookups: the sorted speed counts; the range options per
+// speed; the model options per range-key. Speed/range option values are plain
+// keys; model option values are indices into CASSETTE_PRESETS.
+const byRange: Record<string, IndexedPreset[]> = {};
+CASSETTE_PRESETS.forEach((p, i) => {
+  (byRange[cassetteRangeKey(p)] ??= []).push({ p, i });
+});
+
+// Deduped model options per range key (used to seed a selection from cogs).
+const CASSETTE_MODELS_BY_RANGE: Record<string, Opt[]> = {};
+for (const k of Object.keys(byRange)) {
+  CASSETTE_MODELS_BY_RANGE[k] = buildModelOptions(
+    byRange[k].sort(
+      (a, b) =>
+        a.p.brand.localeCompare(b.p.brand) ||
+        modelBaseLabel(a.p).localeCompare(modelBaseLabel(b.p)),
+    ),
+  );
+}
+
+// One entry per (deduped) cassette, for the browse-and-filter picker.
+interface CassetteListItem {
+  i: number; // index into CASSETTE_PRESETS
+  label: string; // "Brand Model · special · weight"
+  brand: string;
+  speeds: number;
+  lo: number;
+  hi: number;
+  rangeLabel: string; // "11-28"
+  search: string; // lowercased haystack: label + freehub + cogs
+}
+
+const CASSETTE_LIST: CassetteListItem[] = Object.entries(CASSETTE_MODELS_BY_RANGE)
+  .flatMap(([key, opts]) => {
+    const [speeds, lo, hi] = key.split("|").map(Number);
+    return opts.map((o) => {
+      const i = parseInt(o.value);
+      const p = CASSETTE_PRESETS[i];
+      return {
+        i,
+        label: o.label,
+        brand: p.brand,
+        speeds,
+        lo,
+        hi,
+        rangeLabel: `${lo}-${hi}`,
+        search: `${o.label} ${p.freehub} ${p.cogs.join("-")}`.toLowerCase(),
+      };
+    });
+  })
+  .sort(
+    (a, b) =>
+      a.brand.localeCompare(b.brand) || a.speeds - b.speeds || a.lo - b.lo || a.hi - b.hi,
+  );
+
+const CASSETTE_BRANDS = Array.from(new Set(CASSETTE_LIST.map((c) => c.brand))).sort((a, b) =>
+  a.localeCompare(b),
+);
+
+// Model-option index for a cog list, or -1 when none match. Used to seed the
+// selected model from a starting cog string; `preferBrand` picks that brand's
+// entry when several brands share the cogs (else the first, brand-sorted).
+// Returns a *surviving* (post-dedup) option index, always present in the list.
+function cassetteModelIdx(cogs: number[], preferBrand?: string): number {
+  if (!cogs.length) return -1;
+  const key = `${cogs.length}|${cogs[0]}|${cogs[cogs.length - 1]}`;
+  const matches = (CASSETTE_MODELS_BY_RANGE[key] ?? []).filter((o) =>
+    sameCogs(CASSETTE_PRESETS[parseInt(o.value)].cogs, cogs),
+  );
+  if (!matches.length) return -1;
+  const preferred = preferBrand
+    ? matches.find((o) => CASSETTE_PRESETS[parseInt(o.value)].brand === preferBrand)
+    : undefined;
+  return parseInt((preferred ?? matches[0]).value);
+}
+
+// Link (labelled with the cassette's name) to where its cogs came from; falls
+// back to the plain "comma-separated tooth counts" hint for a custom cog list.
+function CassetteSourceLink({ preset }: { preset: CassettePreset | null }) {
+  const src = preset?.source;
+  if (!preset || !src) return <>comma-separated tooth counts</>;
+  return (
+    <a
+      className="inline-link"
+      href={src.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={`${src.sourceType} source${src.note ? ` — ${src.note}` : ""}`}
+    >
+      {preset.brand} {modelBaseLabel(preset)} ↗
+    </a>
+  );
+}
 
 const CRANKSET_OPTIONS = CHAINRING_PRESETS.map((p) => ({
   value: p.rings.join(", "),
@@ -97,7 +237,7 @@ function isCvt(cfg: { mode: Mode; hubIdx: number }): boolean {
   return cfg.mode === "hub" && HUB_PRESETS[cfg.hubIdx].continuouslyVariable;
 }
 
-// Link to where the selected hub's ratios came from (primary/secondary source).
+// Link (labelled with the hub's name) to where its ratios came from.
 function HubSourceLink({ hub }: { hub: HubPreset }) {
   const src = hub.source;
   if (!src) return <>internal ratios — verify against maker's data</>;
@@ -107,9 +247,9 @@ function HubSourceLink({ hub }: { hub: HubPreset }) {
       href={src.url}
       target="_blank"
       rel="noopener noreferrer"
-      title={src.note}
+      title={`${src.sourceType} source${src.note ? ` — ${src.note}` : ""}`}
     >
-      ratio source ({src.sourceType}) ↗
+      {hub.label} ↗
     </a>
   );
 }
@@ -124,6 +264,8 @@ interface ConfigInit {
   mode: Mode;
   chainringStr: string;
   cogStr: string;
+  /** Selected cassette model (index into CASSETTE_PRESETS), or -1 for custom. */
+  cassetteIdx: number;
   singleRing: number;
   singleCog: number;
   hubIdx: number;
@@ -135,6 +277,7 @@ interface DrivetrainConfig extends ConfigInit {
   setMode: (m: Mode) => void;
   setChainringStr: (s: string) => void;
   setCogStr: (s: string) => void;
+  setCassetteIdx: (n: number) => void;
   setSingleRing: (n: number) => void;
   setSingleCog: (n: number) => void;
   setHubIdx: (n: number) => void;
@@ -146,6 +289,7 @@ function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
   const [mode, setMode] = useState<Mode>(init.mode);
   const [chainringStr, setChainringStr] = useState(init.chainringStr);
   const [cogStr, setCogStr] = useState(init.cogStr);
+  const [cassetteIdx, setCassetteIdx] = useState(init.cassetteIdx);
   const [singleRing, setSingleRing] = useState(init.singleRing);
   const [singleCog, setSingleCog] = useState(init.singleCog);
   const [hubIdx, setHubIdx] = useState(init.hubIdx);
@@ -155,6 +299,7 @@ function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
     mode,
     chainringStr,
     cogStr,
+    cassetteIdx,
     singleRing,
     singleCog,
     hubIdx,
@@ -163,6 +308,7 @@ function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
     setMode,
     setChainringStr,
     setCogStr,
+    setCassetteIdx,
     setSingleRing,
     setSingleCog,
     setHubIdx,
@@ -212,6 +358,153 @@ function makeCrossChained(mode: Mode, chainrings: number[], cogs: number[]) {
   };
 }
 
+// How many list rows to render before asking the user to refine (keeps the DOM
+// light when the picker opens unfiltered on all ~1000 cassettes).
+const CASSETTE_LIST_CAP = 200;
+
+// A browse-and-filter popover of every cassette: a text search plus brand /
+// speeds / range filters, narrowing a scrollable list. Picking a row fills the
+// cog field (via onPick). Anchored to a caret button inside the cog field.
+function CassettePicker({ selectedIdx, onPick }: { selectedIdx: number; onPick: (i: number) => void }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [brand, setBrand] = useState("all");
+  const [speeds, setSpeeds] = useState("all");
+  const [range, setRange] = useState("all");
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  // Facets narrow left-to-right: speeds reflect the brand, ranges reflect both.
+  const byBrand = CASSETTE_LIST.filter((c) => brand === "all" || c.brand === brand);
+  const speedFacet = Array.from(new Set(byBrand.map((c) => c.speeds))).sort((a, b) => a - b);
+  const bySpeed = byBrand.filter((c) => speeds === "all" || String(c.speeds) === speeds);
+  const rangeFacet = Array.from(new Set(bySpeed.map((c) => c.rangeLabel))).sort((a, b) => {
+    const [la, ha] = a.split("-").map(Number);
+    const [lb, hb] = b.split("-").map(Number);
+    return la - lb || ha - hb;
+  });
+
+  const tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const matches = bySpeed.filter(
+    (c) =>
+      (range === "all" || c.rangeLabel === range) &&
+      tokens.every((t) => c.search.includes(t)),
+  );
+  const shown = matches.slice(0, CASSETTE_LIST_CAP);
+
+  const opt = (value: string, label: string) => ({ value, label });
+  const brandOptions = [opt("all", "All brands"), ...CASSETTE_BRANDS.map((b) => opt(b, b))];
+  const speedsOptions = [opt("all", "All speeds"), ...speedFacet.map((s) => opt(String(s), `${s}-speed`))];
+  const rangeOptions = [opt("all", "All ranges"), ...rangeFacet.map((r) => opt(r, r))];
+
+  return (
+    <div className="cassette-picker" ref={ref}>
+      <button
+        type="button"
+        className={"preset-btn" + (open ? " open" : "")}
+        title="Browse the cassette database"
+        aria-label="Browse the cassette database"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        Browse <span className="caret">▾</span>
+      </button>
+      {open && (
+        <div className="cp-pop">
+          <input
+            className="cp-search"
+            type="text"
+            autoFocus
+            placeholder="Search brand, model, cogs…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <div className="cp-filters">
+            <Select
+              value={brand}
+              onChange={(b) => {
+                setBrand(b);
+                setSpeeds("all");
+                setRange("all");
+              }}
+              options={brandOptions}
+            />
+            <Select
+              value={speeds}
+              onChange={(s) => {
+                setSpeeds(s);
+                setRange("all");
+              }}
+              options={speedsOptions}
+            />
+            <Select value={range} onChange={setRange} options={rangeOptions} />
+          </div>
+          <ul className="cp-list">
+            {shown.map((c) => (
+              <li key={c.i}>
+                <button
+                  type="button"
+                  className={c.i === selectedIdx ? "active" : ""}
+                  onClick={() => {
+                    onPick(c.i);
+                    setOpen(false);
+                  }}
+                >
+                  <span className="cp-name">{c.label}</span>
+                  <span className="cp-meta">
+                    {c.speeds}-speed · {c.rangeLabel}
+                  </span>
+                </button>
+              </li>
+            ))}
+            {shown.length === 0 && <li className="cp-empty">No cassettes match.</li>}
+          </ul>
+          <div className="cp-foot">
+            {matches.length} cassette{matches.length === 1 ? "" : "s"}
+            {matches.length > shown.length && ` · showing first ${shown.length}, refine to narrow`}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Cassette input: the editable cog field with a "Browse" foldout that opens the
+// searchable/filterable cassette picker. The chosen model is tracked by index in
+// state (several models share identical cogs, so it can't be re-derived from the
+// cogs); the cog-field hint links its source while the cogs still match it.
+function CassetteFields({ cfg }: { cfg: DrivetrainConfig }) {
+  const cogs = parseList(cfg.cogStr);
+  const selected = cfg.cassetteIdx >= 0 ? CASSETTE_PRESETS[cfg.cassetteIdx] : null;
+  const modelMatches = !!selected && sameCogs(selected.cogs, cogs);
+
+  return (
+    <Field
+      label="Cassette cogs"
+      hint={<CassetteSourceLink preset={modelMatches ? selected : null} />}
+    >
+      <div className="combo">
+        <TextInput value={cfg.cogStr} onChange={cfg.setCogStr} />
+        <CassettePicker
+          selectedIdx={modelMatches ? cfg.cassetteIdx : -1}
+          onPick={(i) => {
+            cfg.setCassetteIdx(i);
+            cfg.setCogStr(CASSETTE_PRESETS[i].cogs.join(", "));
+          }}
+        />
+      </div>
+    </Field>
+  );
+}
+
 // The mode + chainring/cog/hub inputs for one config (the shared rolling
 // circumference lives outside, on its own row).
 function SetupFields({ cfg }: { cfg: DrivetrainConfig }) {
@@ -241,16 +534,7 @@ function SetupFields({ cfg }: { cfg: DrivetrainConfig }) {
               />
             </div>
           </Field>
-          <Field label="Cassette cogs" hint="comma-separated tooth counts">
-            <div className="combo">
-              <TextInput value={cfg.cogStr} onChange={cfg.setCogStr} />
-              <PresetMenu
-                title="Fill from a cassette preset"
-                options={CASSETTE_OPTIONS}
-                onPick={cfg.setCogStr}
-              />
-            </div>
-          </Field>
+          <CassetteFields cfg={cfg} />
         </>
       )}
 
@@ -330,6 +614,7 @@ export function Drivetrain() {
     mode: "cassette",
     chainringStr: "50, 34",
     cogStr: "11, 12, 13, 14, 15, 17, 19, 21, 24, 28",
+    cassetteIdx: cassetteModelIdx([11, 12, 13, 14, 15, 17, 19, 21, 24, 28], "Shimano"),
     singleRing: 42,
     singleCog: 18,
     hubIdx: DEFAULT_HUB_IDX,
@@ -340,6 +625,7 @@ export function Drivetrain() {
     mode: "cassette",
     chainringStr: "46, 30",
     cogStr: "11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42",
+    cassetteIdx: cassetteModelIdx([11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42], "Shimano"),
     singleRing: 42,
     singleCog: 18,
     hubIdx: DEFAULT_HUB_IDX,

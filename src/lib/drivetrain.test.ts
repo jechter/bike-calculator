@@ -5,6 +5,7 @@ import {
   gearRange,
   chainWearThresholdsFor,
   HUB_PRESETS,
+  CASSETTE_PRESETS,
 } from './drivetrain';
 
 describe('computeGears', () => {
@@ -67,6 +68,20 @@ describe('HUB_PRESETS (loaded from data/hub-gears.json)', () => {
     const cvt = HUB_PRESETS.find((p) => p.continuouslyVariable)!;
     expect(cvt.gears.map((g) => g.name)).toEqual(['Low', 'High']);
     expect(cvt.gears[1].ratio).toBeGreaterThan(cvt.gears[0].ratio);
+  });
+});
+
+describe('CASSETTE_PRESETS (loaded from data/cassette-presets.json)', () => {
+  it('loads a large brand/model dataset with ascending cog counts', () => {
+    expect(CASSETTE_PRESETS.length).toBeGreaterThan(100);
+    for (const p of CASSETTE_PRESETS) {
+      expect(p.brand.length).toBeGreaterThan(0);
+      // speeds match the cog count, and cogs are sorted smallest-first.
+      expect(p.cogs.length).toBe(p.speeds);
+      for (let i = 1; i < p.cogs.length; i++) {
+        expect(p.cogs[i]).toBeGreaterThan(p.cogs[i - 1]);
+      }
+    }
   });
 });
 

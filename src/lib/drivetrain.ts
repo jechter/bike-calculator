@@ -169,13 +169,54 @@ export interface ChainringPreset {
 
 export const CHAINRING_PRESETS: ChainringPreset[] = chainringPresetsData as ChainringPreset[];
 
-// The rows live in data/cassette-presets.json — add or edit there (no code change).
-export interface CassettePreset {
-  label: string;
-  cogs: number[];
+// Cassette / sprocket sets. The rows live in data/cassette-presets.json — add or
+// edit there (no code change). Each carries brand/model/freehub/weight/price and
+// a source, so the drivetrain picker can group models under a brand.
+export interface CassetteSource {
+  url: string;
+  sourceType: 'primary' | 'secondary';
+  note?: string;
 }
 
-export const CASSETTE_PRESETS: CassettePreset[] = cassettePresetsData as CassettePreset[];
+export interface CassettePreset {
+  brand: string;
+  model: string;
+  freehub: string;
+  speeds: number;
+  cogs: number[]; // sprocket tooth counts, smallest first
+  weightGrams: number | null;
+  priceUsd: number | null;
+  /** Special drivetrain family, e.g. "LinkGlide" or "T-Type", if any. */
+  special?: string;
+  source?: CassetteSource;
+}
+
+// Raw shape of an entry in data/cassette-presets.json.
+interface RawCassette {
+  brand: string;
+  model: string;
+  freehub: string;
+  speeds: number;
+  sprockets: number[];
+  weightGrams?: number | null;
+  priceUsd?: number | null;
+  special?: string;
+  source?: CassetteSource;
+}
+
+export const CASSETTE_PRESETS: CassettePreset[] = (
+  cassettePresetsData.cassettes as RawCassette[]
+).map((c) => ({
+  brand: c.brand,
+  model: c.model,
+  freehub: c.freehub,
+  speeds: c.speeds,
+  cogs: c.sprockets,
+  weightGrams: c.weightGrams ?? null,
+  priceUsd: c.priceUsd ?? null,
+  special: c.special,
+  source: c.source,
+}));
 
 // Internally geared hub / bottom-bracket gearbox / CVT presets. Ratios are
 // gear ratios relative to 1:1 direct drive (1.000 == direct drive), each with a

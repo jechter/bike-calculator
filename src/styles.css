@@ -403,6 +403,13 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .gc-crossed .gc-dot { opacity: 0.5; }
 .gc-crossed .gc-pt-label { opacity: 0.45; }
+
+/* CVT: thick rounded bar spanning the continuous low–high range. */
+.gc-row-line-cvt { stroke-width: 8; opacity: 0.3; stroke-linecap: round; }
+
+/* The gear currently shown in the diagram gets a ring + emphasised label. */
+.gc-dot-halo { stroke-width: 2.5; opacity: 0.9; }
+.gc-active .gc-pt-label { fill: var(--text); font-weight: 700; opacity: 1; }
 .gc-tt-warn { margin-top: 5px; color: var(--warn); font-weight: 600; }
 
 /* In-chart axis label + metric dropdown */

@@ -20,7 +20,7 @@ describe("Drivetrain page", () => {
     // default 50/34 -> two chainring rows -> two row lines
     expect(container.querySelectorAll(".gc-row-line").length).toBe(2);
     // 2 rings x 10 cogs = 20 dots, all at finite positions (no NaN geometry)
-    const dots = Array.from(container.querySelectorAll(".gear-chart circle"));
+    const dots = Array.from(container.querySelectorAll(".gear-chart .gc-dot"));
     expect(dots.length).toBe(20);
     const cxs = dots.map((d) => parseFloat(d.getAttribute("cx")!));
     for (const d of dots) {
@@ -101,6 +101,30 @@ describe("Drivetrain page", () => {
     expect(low).not.toBe(high);
     // Caption names the hub gear.
     expect(high).toMatch(/1st|2nd|3rd/);
+  });
+
+  it("highlights the currently visualized gear in the chart", () => {
+    const { container } = render(<Drivetrain />);
+    // One gear is shown in the diagram by default -> one halo in the chart.
+    expect(container.querySelectorAll(".gc-dot-halo").length).toBe(1);
+    // Hovering a different dot moves the highlight, still to exactly one gear.
+    const dots = container.querySelectorAll(".gc-dot");
+    fireEvent.mouseMove(dots[dots.length - 1], { clientX: 300, clientY: 100 });
+    const halos = container.querySelectorAll(".gc-dot-halo");
+    expect(halos.length).toBe(1);
+  });
+
+  it("shows ∞ gears and a continuous range bar for a CVT hub", () => {
+    const { container, getByText } = render(<Drivetrain />);
+    const selects = () => Array.from(container.querySelectorAll("select"));
+    fireEvent.change(selects()[0], { target: { value: "hub" } });
+    const maker = selects().find((s) =>
+      Array.from(s.options).some((o) => o.value === "Enviolo"),
+    ) as HTMLSelectElement;
+    fireEvent.change(maker, { target: { value: "Enviolo" } });
+    // CVT gear count is infinite, and the chart draws the thick range bar.
+    expect(getByText("∞")).toBeTruthy();
+    expect(container.querySelectorAll(".gc-row-line-cvt").length).toBe(1);
   });
 
   it("picks a hub in two steps: maker, then model sorted by speeds", () => {

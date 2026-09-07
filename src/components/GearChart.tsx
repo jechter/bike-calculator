@@ -31,6 +31,8 @@ export interface GearSeries {
   hollow?: boolean;
   /** Mark a gear as cross-chained (greyed out; avoid shifting into it). */
   isCrossChained?: (g: GearResult) => boolean;
+  /** CVT: draw a thick bar between the low/high endpoints (a continuous range). */
+  continuous?: boolean;
 }
 
 export interface GearChartProps {
@@ -47,11 +49,14 @@ export interface GearChartProps {
   extra?: ReactNode;
   /** Called when a gear dot is hovered (for the drivetrain diagram). */
   onHover?: (g: GearResult, seriesId: string) => void;
+  /** The gear currently shown in the diagram — highlighted with a halo. */
+  isActive?: (g: GearResult, seriesId: string) => boolean;
 }
 
 interface Row {
   seriesId: string;
   hollow: boolean;
+  continuous: boolean;
   isCrossChained?: (g: GearResult) => boolean;
   ring: number;
   color: string;
@@ -69,6 +74,7 @@ export function GearChart({
   cadenceRpm,
   extra,
   onHover,
+  isActive,
 }: GearChartProps) {
   const units = useUnits();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -110,6 +116,7 @@ export function GearChart({
       rows.push({
         seriesId: s.id,
         hollow: !!s.hollow,
+        continuous: !!s.continuous,
         isCrossChained: s.isCrossChained,
         ring,
         color: PALETTE[ri % PALETTE.length],
@@ -211,12 +218,30 @@ export function GearChart({
                 x2={x1}
                 y2={y}
                 stroke={row.color}
-                className={"gc-row-line" + (row.hollow ? " gc-row-line-b" : "")}
+                className={
+                  "gc-row-line" +
+                  (row.hollow ? " gc-row-line-b" : "") +
+                  (row.continuous ? " gc-row-line-cvt" : "")
+                }
               />
               {row.points.map((p, j) => {
                 const crossed = row.isCrossChained?.(p.g) ?? false;
+                const active = isActive?.(p.g, row.seriesId) ?? false;
                 return (
-                  <g key={j} className={crossed ? "gc-crossed" : undefined}>
+                  <g
+                    key={j}
+                    className={(crossed ? "gc-crossed" : "") + (active ? " gc-active" : "")}
+                  >
+                    {active && (
+                      <circle
+                        cx={x(p.v)}
+                        cy={y}
+                        r={10}
+                        fill="none"
+                        stroke={row.color}
+                        className="gc-dot-halo"
+                      />
+                    )}
                     <circle
                       cx={x(p.v)}
                       cy={y}

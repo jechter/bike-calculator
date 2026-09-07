@@ -91,6 +91,12 @@ const DEFAULT_HUB_IDX = Math.max(
   HUB_PRESETS.findIndex((p) => p.label === "Sturmey Archer S3"),
 );
 
+// A continuously-variable drivetrain: a CVT hub in hub mode. It has no discrete
+// gear count (shown as ∞) and draws as a continuous range in the chart.
+function isCvt(cfg: { mode: Mode; hubIdx: number }): boolean {
+  return cfg.mode === "hub" && HUB_PRESETS[cfg.hubIdx].continuouslyVariable;
+}
+
 // Link to where the selected hub's ratios came from (primary/secondary source).
 function HubSourceLink({ hub }: { hub: HubPreset }) {
   const src = hub.source;
@@ -461,10 +467,16 @@ export function Drivetrain() {
   const crossB = makeCrossChained(configB.mode, derivedB.chainrings, derivedB.cogs);
   const series: GearSeries[] = comparing
     ? [
-        { id: "A", gears: derivedA.gears, isCrossChained: crossA },
-        { id: "B", gears: derivedB.gears, hollow: true, isCrossChained: crossB },
+        { id: "A", gears: derivedA.gears, isCrossChained: crossA, continuous: isCvt(configA) },
+        {
+          id: "B",
+          gears: derivedB.gears,
+          hollow: true,
+          isCrossChained: crossB,
+          continuous: isCvt(configB),
+        },
       ]
-    : [{ id: "A", gears: derivedA.gears, isCrossChained: crossA }];
+    : [{ id: "A", gears: derivedA.gears, isCrossChained: crossA, continuous: isCvt(configA) }];
 
   // Active gear for the drivetrain diagram (default to a middle gear until
   // hovered). Only hovers on the focused config move the diagram.
@@ -483,6 +495,13 @@ export function Drivetrain() {
       ? { name: activeGear.hubName, ratio: activeGear.hubRatio ?? 1 }
       : defaultHubGear;
   const activeHubRatio = activeHubGear?.ratio ?? 1;
+  // The gear currently drawn in the diagram, for highlighting in the chart.
+  const focusId = comparing && focus === "B" ? "B" : "A";
+  const isActiveGear = (g: GearResult, seriesId: string) =>
+    seriesId === focusId &&
+    g.chainring === activeChainring &&
+    g.cog === activeCog &&
+    (g.hubGear?.name ?? undefined) === (activeHubGear?.name ?? undefined);
   const activeSpeedKmh =
     activeCog > 0
       ? ((activeChainring / activeCog) *
@@ -561,16 +580,16 @@ export function Drivetrain() {
             <>
               <Result
                 label="A: gears / range"
-                value={`${derivedA.gears.length} · ${rangeA.toFixed(2)}× (${Math.round((rangeA - 1) * 100)}%)`}
+                value={`${isCvt(configA) ? "∞" : derivedA.gears.length} · ${rangeA.toFixed(2)}× (${Math.round((rangeA - 1) * 100)}%)`}
               />
               <Result
                 label="B: gears / range"
-                value={`${derivedB.gears.length} · ${rangeB.toFixed(2)}× (${Math.round((rangeB - 1) * 100)}%)`}
+                value={`${isCvt(configB) ? "∞" : derivedB.gears.length} · ${rangeB.toFixed(2)}× (${Math.round((rangeB - 1) * 100)}%)`}
               />
             </>
           ) : (
             <>
-              <Result label="Gears" value={derivedA.gears.length} />
+              <Result label="Gears" value={isCvt(configA) ? "∞" : derivedA.gears.length} />
               <Result
                 label="Range"
                 value={`${rangeA.toFixed(2)}× (${Math.round((rangeA - 1) * 100)}%)`}
@@ -588,6 +607,7 @@ export function Drivetrain() {
           format={activeMetric.format}
           pointLabel={pointLabel}
           cadenceRpm={rpm}
+          isActive={isActiveGear}
           onHover={(g, seriesId) => {
             // Hovering a gear selects it in the diagram; if it belongs to the
             // other drivetrain, switch the diagram (and detail sections) to it.

@@ -1,7 +1,7 @@
 {
   "description": "Internal gear hub, bottom-bracket gearbox, and CVT gearing data, extracted from Ritzelrechner / Gear Calculator and Cycling UK, with a manufacturer and primary/secondary source per entry. Ratios are gear ratios relative to a 1:1 direct drive. For entries with continuouslyVariable=true, numGears is null and ratios is [min, max] of the continuous range.",
   "extractedOn": "2026-09-07",
-  "count": 57,
+  "count": 53,
   "hubs": [
     {
       "name": "Rohloff Speedhub",
@@ -493,6 +493,24 @@
         "url": "https://sheldonbrown.com/nexus7.shtml",
         "sourceType": "secondary",
         "note": "Sheldon Brown lists Nexus 7-speed (SG-C3001-7) ratios 0.632-1.545 (~244%)."
+      }
+    },
+    {
+      "name": "Shimano Nexus Inter 4",
+      "manufacturer": "Shimano",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 4,
+      "ratios": [
+        1,
+        1.244,
+        1.5,
+        1.843
+      ],
+      "source": {
+        "url": "https://www.sheldonbrown.com/nexus4.html",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown Nexus 4-speed (SG-4R35) ratios 1.0/1.244/1.5/1.843, 184% range; 1st is direct drive."
       }
     },
     {

@@ -81,6 +81,16 @@ describe('deriveActuation', () => {
     const microshift = DERAILLEURS.find((d) => d.brand === 'Microshift');
     expect(microshift?.actuation).toBeUndefined();
   });
+  it('classifies Campagnolo by speeds and electronic', () => {
+    const campy = DERAILLEURS.filter((d) => d.brand === 'Campagnolo');
+    expect(campy.length).toBeGreaterThan(0);
+    expect(campy.find((d) => d.speeds === 10)?.actuation).toBe('Campagnolo 10-speed');
+    expect(campy.find((d) => d.speeds === 11)?.actuation).toBe('Campagnolo 11-speed');
+    expect(campy.find((d) => d.speeds === 12 && !d.electronic)?.actuation).toBe(
+      'Campagnolo 12-speed',
+    );
+    expect(campy.find((d) => d.electronic)?.actuation).toBe('Campagnolo WRL (electronic)');
+  });
 });
 
 describe('pullRatioFor', () => {

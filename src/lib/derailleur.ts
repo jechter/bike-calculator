@@ -148,6 +148,34 @@ export const DERAILLEUR_SYSTEMS: DerailleurSystem[] = [
     actuationNote: 'electronic',
     notes: 'Wireless; cross-family via app for some "mullet" setups.',
   },
+  {
+    family: 'Campagnolo 10-speed',
+    speeds: '10',
+    discipline: 'Road',
+    actuationNote: 'Campagnolo-specific',
+    notes: 'Not interchangeable with Shimano/SRAM.',
+  },
+  {
+    family: 'Campagnolo 11-speed',
+    speeds: '11',
+    discipline: 'Road',
+    actuationNote: 'Campagnolo-specific',
+    notes: 'Own standard (Super Record/Record/Chorus/Potenza/Centaur 11).',
+  },
+  {
+    family: 'Campagnolo 12-speed',
+    speeds: '12',
+    discipline: 'Road',
+    actuationNote: 'Campagnolo-specific',
+    notes: 'Mechanical 12s (Chorus/Record/Super Record 12).',
+  },
+  {
+    family: 'Campagnolo WRL (electronic)',
+    speeds: '12/13',
+    discipline: 'Road',
+    actuationNote: 'electronic',
+    notes: 'Wireless (Super Record Wireless 12s, Super Record / Record 13s).',
+  },
 ];
 
 // --- Derailleur database ----------------------------------------------------
@@ -244,6 +272,12 @@ function deriveActuation(r: RawDerailleur): string | undefined {
     if (s === 10 || s === 11) return 'SRAM Exact Actuation';
     return 'SRAM 1:1 (older MTB)'; // 7/8/9
   }
+  if (r.brand === 'Campagnolo') {
+    if (r.electronic) return 'Campagnolo WRL (electronic)'; // wireless 12/13s
+    if (s <= 10) return 'Campagnolo 10-speed';
+    if (s === 11) return 'Campagnolo 11-speed';
+    return 'Campagnolo 12-speed'; // mechanical 12s (13s is always electronic)
+  }
   // Third-party (Microshift, Sunrace, L-TWOO, Box, …): their compatibility
   // varies by model and isn't reliably derivable — leave as unknown.
   return undefined;
@@ -305,6 +339,10 @@ export const PULL_RATIOS: Record<string, string> = {
   'SRAM Eagle (X-Actuation)': '≈1.3:1',
   'SRAM 12-speed road (mechanical)': '≈1.1:1',
   'SRAM AXS / eTap (electronic)': 'electronic',
+  'Campagnolo 10-speed': 'Campagnolo-specific',
+  'Campagnolo 11-speed': 'Campagnolo-specific',
+  'Campagnolo 12-speed': 'Campagnolo-specific',
+  'Campagnolo WRL (electronic)': 'electronic',
 };
 
 /**

@@ -7,9 +7,12 @@ import {
   type TubeType,
 } from "../lib/tirePressure";
 import { Field, NumberInput, TextInput, Select, Result, Section } from "./ui";
+import { getHashQueryParam } from "../useHashRoute";
 
 export function Tire() {
-  const [query, setQuery] = useState("700x28C");
+  // Seed from a `?size=` param (e.g. opened from the drivetrain calculator),
+  // falling back to a common default.
+  const [query, setQuery] = useState(() => getHashQueryParam("size") ?? "700x28C");
   // Show a broad cross-format spread until the user actually types a query — the
   // pre-filled default shouldn't narrow the suggestions to its own wheel size.
   const [typed, setTyped] = useState(false);

@@ -266,6 +266,9 @@ interface ConfigInit {
   hubIdx: number;
   derailleurId: string;
   circ: number;
+  /** Tire size the circumference came from (for the Tire-calculator link), or
+   *  "" when a raw circumference was typed in. */
+  tireSize: string;
 }
 
 interface DrivetrainConfig extends ConfigInit {
@@ -278,6 +281,7 @@ interface DrivetrainConfig extends ConfigInit {
   setHubIdx: (n: number) => void;
   setDerailleurId: (s: string) => void;
   setCirc: (n: number) => void;
+  setTireSize: (s: string) => void;
 }
 
 function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
@@ -290,6 +294,7 @@ function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
   const [hubIdx, setHubIdx] = useState(init.hubIdx);
   const [derailleurId, setDerailleurId] = useState(init.derailleurId);
   const [circ, setCirc] = useState(init.circ);
+  const [tireSize, setTireSize] = useState(init.tireSize);
   return {
     mode,
     chainringStr,
@@ -300,6 +305,7 @@ function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
     hubIdx,
     derailleurId,
     circ,
+    tireSize,
     setMode,
     setChainringStr,
     setCogStr,
@@ -309,6 +315,7 @@ function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
     setHubIdx,
     setDerailleurId,
     setCirc,
+    setTireSize,
   };
 }
 
@@ -576,7 +583,7 @@ function SetupFields({ cfg }: { cfg: DrivetrainConfig }) {
 // — a compact embed of the Tire calculator's size field. Type any format
 // (700x28C, 26-559, 28x1 3/8…) or click a suggestion; the estimated
 // circumference (same geometry the Tire calculator shows) fills the field.
-function TirePicker({ onPick }: { onPick: (circumferenceMm: number) => void }) {
+function TirePicker({ onPick }: { onPick: (circumferenceMm: number, sizeLabel: string) => void }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [typed, setTyped] = useState(false);
@@ -597,8 +604,8 @@ function TirePicker({ onPick }: { onPick: (circumferenceMm: number) => void }) {
   // Broad cross-format spread until the user types (mirrors the Tire calculator).
   const suggestions = suggestTireSizes(typed ? query : "");
 
-  const apply = (mm: number) => {
-    onPick(mm);
+  const apply = (mm: number, label: string) => {
+    onPick(mm, label);
     setOpen(false);
     setQuery("");
     setTyped(false);
@@ -633,11 +640,11 @@ function TirePicker({ onPick }: { onPick: (circumferenceMm: number) => void }) {
               setQuery(e.target.value);
             }}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && parsed) apply(circ);
+              if (e.key === "Enter" && parsed) apply(circ, query.trim());
             }}
           />
           {parsed ? (
-            <button type="button" className="tp-apply" onClick={() => apply(circ)}>
+            <button type="button" className="tp-apply" onClick={() => apply(circ, query.trim())}>
               <span className="tp-apply-main">Use ≈ {circ} mm</span>
               <span className="tp-apply-sub">{designations.map((d) => d.value).join(" · ")}</span>
             </button>
@@ -651,7 +658,7 @@ function TirePicker({ onPick }: { onPick: (circumferenceMm: number) => void }) {
                 type="button"
                 className="chip"
                 title={`≈ ${circOf(s.label)} mm`}
-                onClick={() => apply(circOf(s.label))}
+                onClick={() => apply(circOf(s.label), s.label)}
               >
                 {s.label}
               </button>
@@ -667,6 +674,8 @@ function TirePicker({ onPick }: { onPick: (circumferenceMm: number) => void }) {
 // own row for a stable layout, with an embedded tire-size picker and a link to
 // the Tire calculator.
 function CircumferenceField({ cfg }: { cfg: DrivetrainConfig }) {
+  // Carry the selected tire size across to the Tire calculator when one is set.
+  const tireHref = cfg.tireSize ? `#/tire?size=${encodeURIComponent(cfg.tireSize)}` : "#/tire";
   return (
     <div className="rows">
       <Field
@@ -674,15 +683,30 @@ function CircumferenceField({ cfg }: { cfg: DrivetrainConfig }) {
         hint={
           <>
             measured roll-out is most accurate ·{" "}
-            <a className="inline-link" href="#/tire">
-              open the Tire calculator for sizes &amp; conversion →
+            <a className="inline-link" href={tireHref}>
+              {cfg.tireSize
+                ? `open ${cfg.tireSize} in the Tire calculator →`
+                : "open the Tire calculator for sizes & conversion →"}
             </a>
           </>
         }
       >
         <div className="combo">
-          <NumberInput value={cfg.circ} onChange={cfg.setCirc} min={800} />
-          <TirePicker onPick={cfg.setCirc} />
+          <NumberInput
+            value={cfg.circ}
+            onChange={(v) => {
+              // A hand-entered circumference no longer corresponds to a size.
+              cfg.setCirc(v);
+              cfg.setTireSize("");
+            }}
+            min={800}
+          />
+          <TirePicker
+            onPick={(mm, label) => {
+              cfg.setCirc(mm);
+              cfg.setTireSize(label);
+            }}
+          />
         </div>
       </Field>
     </div>
@@ -702,6 +726,7 @@ export function Drivetrain() {
     hubIdx: DEFAULT_HUB_IDX,
     derailleurId: "",
     circ: 2111,
+    tireSize: "25-622",
   });
   const configB = useDrivetrainConfig({
     mode: "cassette",
@@ -713,6 +738,7 @@ export function Drivetrain() {
     hubIdx: DEFAULT_HUB_IDX,
     derailleurId: "",
     circ: 2111,
+    tireSize: "25-622",
   });
 
   // Shared across both configs — cadence is just the speed-axis parameter.

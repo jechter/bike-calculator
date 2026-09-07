@@ -23,7 +23,9 @@ worn chain.
   picker — a compact embed of the [tire calculator](tire.md)'s size field. Type
   any format (`700x28C`, `26-559`, `28x1 3/8`…) or click a suggestion and it
   fills the field with the estimated rolling circumference (same geometry the
-  tire calculator shows). A measured roll-out is most accurate.
+  tire calculator shows). A measured roll-out is most accurate. The link across
+  to the [tire calculator](tire.md) carries the selected size as a
+  `#/tire?size=…` param (dropped once a raw circumference is typed).
 - **Cadence** (rpm): lives in the **chart's control bar** (next to the axis
   selector), since it only affects the speed visualisation — a compact slider
   over 60–120 with a number field for values outside it. Default 90.

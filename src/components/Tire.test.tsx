@@ -3,7 +3,10 @@ import { describe, it, expect, afterEach } from "vitest";
 import { render, cleanup, fireEvent } from "@testing-library/react";
 import { Tire } from "./Tire";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  window.location.hash = "";
+});
 
 describe("Tire converter", () => {
   it("converts a French designation to ETRTO and fractional", () => {
@@ -12,6 +15,14 @@ describe("Tire converter", () => {
     expect(container.textContent).toContain("700 × 28C");
     expect(container.textContent).toContain("28 × 1 1/8″");
     expect(getByText(/also known as/)).toBeTruthy();
+  });
+
+  it("seeds the size from a ?size= hash param (e.g. from the drivetrain link)", () => {
+    window.location.hash = "#/tire?size=" + encodeURIComponent("26x2.1");
+    const { container } = render(<Tire />);
+    const input = container.querySelector('input[type="text"]') as HTMLInputElement;
+    expect(input.value).toBe("26x2.1");
+    expect(container.textContent).toContain("53-559");
   });
 
   it("accepts an inch/ETRTO input and updates", () => {

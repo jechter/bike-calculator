@@ -342,10 +342,23 @@ describe("Drivetrain page", () => {
     expect(getByText("1.00%")).toBeTruthy();
   });
 
-  it("links to the tire calculator", () => {
+  it("links to the tire calculator, carrying the selected tire size", () => {
     const { container } = render(<Drivetrain />);
-    const link = container.querySelector('a[href="#/tire"]');
+    // Default is ETRTO 25-622, so the link seeds the Tire calculator with it.
+    const link = container.querySelector('a[href^="#/tire"]') as HTMLAnchorElement;
     expect(link).toBeTruthy();
+    expect(link.getAttribute("href")).toBe("#/tire?size=25-622");
+    expect(link.textContent).toContain("25-622");
+  });
+
+  it("drops the tire-size param after a manual circumference edit", () => {
+    const { getByText } = render(<Drivetrain />);
+    const field = getByText("Rolling circumference (mm)").closest(".field") as HTMLElement;
+    const circInput = field.querySelector('input[type="number"]') as HTMLInputElement;
+    fireEvent.change(circInput, { target: { value: "2200" } });
+    const link = field.querySelector("a.inline-link") as HTMLAnchorElement;
+    expect(link.getAttribute("href")).toBe("#/tire");
+    expect(link.textContent).not.toContain("25-622");
   });
 
   it("fills the rolling circumference from a typed tire size in the picker", () => {
@@ -360,6 +373,10 @@ describe("Drivetrain page", () => {
     // Geometric circumference: pi * (622 + 2*28) = 2130 mm.
     fireEvent.click(getByText(/Use ≈ 2130 mm/));
     expect(circInput.value).toBe("2130");
+    // The Tire-calculator link now carries the picked size, in href and label.
+    const link = field.querySelector("a.inline-link") as HTMLAnchorElement;
+    expect(link.getAttribute("href")).toBe("#/tire?size=700x28C");
+    expect(link.textContent).toContain("700x28C");
   });
 
   it("applies a suggested tire size directly from the picker", () => {

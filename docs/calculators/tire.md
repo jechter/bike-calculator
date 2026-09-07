@@ -11,7 +11,9 @@ Tire and rim sizing is a mess of legacy systems. The reliable one is **ETRTO /
 ISO** (`width-bead_diameter`, e.g. `25-622`). Everything else maps to it.
 
 ### Inputs
-- A tire size in any supported format, or width + ISO bead diameter.
+- A tire size in any supported format, or width + ISO bead diameter. The size
+  field also accepts a `#/tire?size=…` hash param, so other calculators (e.g. the
+  [drivetrain calculator](drivetrain.md)) can deep-link a size for conversion.
 
 ### Outputs
 - The equivalent in the other formats, and the **ISO bead diameter** (which is

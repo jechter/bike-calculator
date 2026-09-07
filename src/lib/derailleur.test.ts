@@ -2,9 +2,10 @@ import { describe, it, expect } from 'vitest';
 import {
   checkCapacity,
   searchDerailleurs,
-  derailleurById,
+  derailleurByKey,
   derailleurSpeeds,
   speedMatches,
+  pullRatioFor,
   DERAILLEURS,
 } from './derailleur';
 
@@ -37,42 +38,56 @@ describe('checkCapacity', () => {
   });
 });
 
-describe('searchDerailleurs / derailleurById', () => {
+describe('searchDerailleurs / derailleurByKey', () => {
   it('returns everything for an empty query', () => {
     expect(searchDerailleurs('').length).toBe(DERAILLEURS.length);
   });
-  it('matches all terms across brand/model/discipline/speeds', () => {
-    const r = searchDerailleurs('shimano 12');
+  it('matches all terms across brand/model/series/speeds', () => {
+    const r = searchDerailleurs('shimano deore');
     expect(r.length).toBeGreaterThan(0);
-    expect(r.every((d) => d.brand === 'Shimano' && d.speeds.includes('12'))).toBe(true);
+    expect(r.every((d) => d.brand === 'Shimano')).toBe(true);
+    expect(r.some((d) => d.series === 'Deore')).toBe(true);
   });
-  it('finds a specific model and looks it up by id', () => {
-    const r = searchDerailleurs('tourney');
-    expect(r).toHaveLength(1);
-    expect(derailleurById(r[0].id)?.model).toMatch(/Tourney/);
+  it('looks a row up by its generated key', () => {
+    const first = DERAILLEURS[0];
+    expect(derailleurByKey(first.key)).toBe(first);
+    expect(derailleurByKey('no-such-key')).toBeUndefined();
+  });
+  it('generates a unique key per row', () => {
+    const keys = new Set(DERAILLEURS.map((d) => d.key));
+    expect(keys.size).toBe(DERAILLEURS.length);
   });
 });
 
 describe('derailleurSpeeds / speedMatches', () => {
-  it('parses single and multi-speed nominal counts', () => {
-    expect(derailleurSpeeds(derailleurById('sh-ultegra-r8000-gs')!)).toEqual([11]);
-    expect(derailleurSpeeds(derailleurById('sh-tourney-ty300')!)).toEqual([6, 7]);
+  it('reports the nominal speed count and matches a cassette cog count', () => {
+    const r7000 = derailleurByKey('shimano-rd-r7000-ss-11s');
+    expect(r7000).toBeDefined();
+    expect(derailleurSpeeds(r7000!)).toEqual([11]);
+    expect(speedMatches(r7000!, 11)).toBe(true);
+    expect(speedMatches(r7000!, 10)).toBe(false);
   });
-  it('matches a cassette cog count against the nominal speeds', () => {
-    const ultegra = derailleurById('sh-ultegra-r8000-gs')!; // 11-speed
-    expect(speedMatches(ultegra, 11)).toBe(true);
-    expect(speedMatches(ultegra, 10)).toBe(false);
-    const tourney = derailleurById('sh-tourney-ty300')!; // 6/7-speed
-    expect(speedMatches(tourney, 7)).toBe(true);
-    expect(speedMatches(tourney, 8)).toBe(false);
+});
+
+describe('deriveActuation', () => {
+  it('derives families for Shimano/SRAM, leaves third-party unknown', () => {
+    expect(derailleurByKey('shimano-rd-r7000-ss-11s')?.actuation).toBe(
+      'Shimano road 11-speed',
+    );
+    const eagle = DERAILLEURS.find(
+      (d) => d.brand === 'SRAM' && d.discipline === 'MTB' && d.speeds === 12 && !d.electronic,
+    );
+    expect(eagle?.actuation).toBe('SRAM Eagle (X-Actuation)');
+    const microshift = DERAILLEURS.find((d) => d.brand === 'Microshift');
+    expect(microshift?.actuation).toBeUndefined();
   });
 });
 
 describe('pullRatioFor', () => {
-  it('returns the family pull ratio (11-sp road ≈1.4:1, electronic for AXS)', async () => {
-    const { pullRatioFor, derailleurById } = await import('./derailleur');
-    expect(pullRatioFor(derailleurById('sh-105-r7000-gs')!)).toBe('≈1.4:1');
-    expect(pullRatioFor(derailleurById('sh-tourney-ty300')!)).toBe('≈1.7:1');
-    expect(pullRatioFor(derailleurById('sram-force-axs')!)).toBe('electronic');
+  it('prefers the sourced numeric ratio, "electronic" for electronic groups', () => {
+    expect(pullRatioFor(derailleurByKey('shimano-rd-r7000-ss-11s')!)).toBe('1.4:1');
+    const axs = searchDerailleurs('sram').find((d) => d.electronic);
+    expect(axs).toBeDefined();
+    expect(pullRatioFor(axs!)).toBe('electronic');
   });
 });

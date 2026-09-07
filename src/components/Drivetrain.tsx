@@ -15,10 +15,11 @@ import {
 } from "../lib/drivetrain";
 import {
   DERAILLEURS,
-  derailleurById,
+  derailleurByKey,
   checkCapacity,
   pullRatioFor,
   speedMatches,
+  type DerailleurSpec,
 } from "../lib/derailleur";
 import { estimatedCircumferenceMm } from "../lib/wheels";
 import { parseTireSize, formatDesignations, suggestTireSizes } from "../lib/tireSizes";
@@ -187,13 +188,172 @@ const CRANKSET_OPTIONS = CHAINRING_PRESETS.map((p) => ({
   label: p.label,
 }));
 
-const DERAILLEUR_OPTIONS = [
-  { value: "", label: "— none —" },
-  ...DERAILLEURS.map((d) => ({
-    value: d.id,
-    label: `${d.brand} ${d.model} · ${d.speeds}sp · max ${d.maxSprocket}T`,
-  })),
-];
+// One entry per derailleur for the browse-and-filter picker.
+interface DerailleurListItem {
+  d: DerailleurSpec;
+  search: string;
+}
+const DERAILLEUR_LIST: DerailleurListItem[] = DERAILLEURS.map((d) => ({
+  d,
+  search: (
+    `${d.brand} ${d.model} ${d.series ?? ""} ${d.discipline} ${d.speeds}sp ` +
+    `${d.cage ?? ""} ${d.electronic ?? ""} ${d.actuation ?? ""}`
+  ).toLowerCase(),
+})).sort(
+  (a, b) =>
+    a.d.brand.localeCompare(b.d.brand) ||
+    a.d.speeds - b.d.speeds ||
+    a.d.model.localeCompare(b.d.model),
+);
+const DERAILLEUR_BRANDS = Array.from(new Set(DERAILLEUR_LIST.map((e) => e.d.brand))).sort((a, b) =>
+  a.localeCompare(b),
+);
+
+function derailleurOptionLabel(d: DerailleurSpec): string {
+  const max = d.maxSprocket != null ? ` · max ${d.maxSprocket}T` : "";
+  return `${d.brand} ${d.model} · ${d.speeds}sp${max}`;
+}
+
+// How many rows to render before asking the user to refine (keeps the DOM light
+// when the picker opens unfiltered on all ~550 derailleurs).
+const DERAILLEUR_LIST_CAP = 200;
+
+// A browse-and-filter popover of every derailleur: a text search plus brand /
+// discipline / speeds filters, narrowing a scrollable list. Picking a row sets
+// the selected derailleur (via onPick with its key); "— none —" clears it.
+function DerailleurPicker({
+  selectedKey,
+  onPick,
+}: {
+  selectedKey: string;
+  onPick: (key: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [brand, setBrand] = useState("all");
+  const [discipline, setDiscipline] = useState("all");
+  const [speeds, setSpeeds] = useState("all");
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  // Facets narrow left-to-right: speeds reflect the brand + discipline.
+  const byBrand = DERAILLEUR_LIST.filter((e) => brand === "all" || e.d.brand === brand);
+  const byDiscipline = byBrand.filter((e) => discipline === "all" || e.d.discipline === discipline);
+  const speedFacet = Array.from(new Set(byDiscipline.map((e) => e.d.speeds))).sort((a, b) => a - b);
+
+  const tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const matches = byDiscipline.filter(
+    (e) =>
+      (speeds === "all" || e.d.speeds === Number(speeds)) &&
+      tokens.every((t) => e.search.includes(t)),
+  );
+  const shown = matches.slice(0, DERAILLEUR_LIST_CAP);
+
+  const opt = (value: string, label: string) => ({ value, label });
+  const brandOptions = [opt("all", "All brands"), ...DERAILLEUR_BRANDS.map((b) => opt(b, b))];
+  const disciplineOptions = [
+    opt("all", "All types"),
+    opt("Road", "Road"),
+    opt("Gravel", "Gravel"),
+    opt("MTB", "MTB"),
+  ];
+  const speedsOptions = [opt("all", "All speeds"), ...speedFacet.map((s) => opt(String(s), `${s}-speed`))];
+
+  const selected = derailleurByKey(selectedKey);
+
+  return (
+    <div className="cassette-picker" ref={ref}>
+      <button
+        type="button"
+        className={"preset-btn" + (open ? " open" : "")}
+        title="Browse the derailleur database"
+        aria-label="Browse the derailleur database"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        {selected ? `${selected.brand} ${selected.model}` : "— none —"}{" "}
+        <span className="caret">▾</span>
+      </button>
+      {open && (
+        <div className="cp-pop">
+          <input
+            className="cp-search"
+            type="text"
+            autoFocus
+            placeholder="Search brand, model, series…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <div className="cp-filters">
+            <Select
+              value={brand}
+              onChange={(b) => {
+                setBrand(b);
+                setSpeeds("all");
+              }}
+              options={brandOptions}
+            />
+            <Select
+              value={discipline}
+              onChange={(d) => {
+                setDiscipline(d);
+                setSpeeds("all");
+              }}
+              options={disciplineOptions}
+            />
+            <Select value={speeds} onChange={setSpeeds} options={speedsOptions} />
+          </div>
+          <ul className="cp-list">
+            <li>
+              <button
+                type="button"
+                className={selectedKey === "" ? "active" : ""}
+                onClick={() => {
+                  onPick("");
+                  setOpen(false);
+                }}
+              >
+                <span className="cp-name">— none —</span>
+              </button>
+            </li>
+            {shown.map((e) => (
+              <li key={e.d.key}>
+                <button
+                  type="button"
+                  className={e.d.key === selectedKey ? "active" : ""}
+                  onClick={() => {
+                    onPick(e.d.key);
+                    setOpen(false);
+                  }}
+                >
+                  <span className="cp-name">{derailleurOptionLabel(e.d)}</span>
+                  <span className="cp-meta">
+                    {e.d.discipline}
+                    {e.d.cage ? ` · ${e.d.cage} cage` : ""}
+                    {e.d.totalCapacity != null ? ` · ${e.d.totalCapacity}T cap` : ""}
+                  </span>
+                </button>
+              </li>
+            ))}
+            {shown.length === 0 && <li className="cp-empty">No derailleurs match.</li>}
+          </ul>
+          <div className="cp-foot">
+            {matches.length} derailleur{matches.length === 1 ? "" : "s"}
+            {matches.length > shown.length && ` · showing first ${shown.length}, refine to narrow`}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Hub picker is two steps: maker, then model. Makers are sorted by name; each
 // maker's models are sorted by speed count (CVT last), then name.
@@ -772,10 +932,18 @@ export function Drivetrain() {
   const chain = chainLength({ chainstayMm: chainstay, largestChainring: largestRing, largestCog });
   const wearThresholds = chainWearThresholdsFor(focusCfg.mode === "cassette", cogs.length);
 
-  // Rear-derailleur fit check (cassette only), for the focused config.
-  const derailleur = derailleurById(focusCfg.derailleurId);
+  // Rear-derailleur fit check (cassette only), for the focused config. Skipped
+  // when the picked derailleur has no capacity/max-cog data (many older or
+  // third-party entries) — see `fitDataMissing` below.
+  const derailleur = derailleurByKey(focusCfg.derailleurId);
+  const fitDataMissing =
+    !!derailleur && (derailleur.totalCapacity == null || derailleur.maxSprocket == null);
   const fit =
-    derailleur && chainrings.length && cogs.length
+    derailleur &&
+    derailleur.totalCapacity != null &&
+    derailleur.maxSprocket != null &&
+    chainrings.length &&
+    cogs.length
       ? checkCapacity({
           largestChainring: largestRing,
           smallestChainring: Math.min(...chainrings),
@@ -790,9 +958,12 @@ export function Drivetrain() {
   // with a long hanger / extra B-tension; a little extra capacity only shows as
   // slack in the small-small gear you'd avoid anyway).
   type FitStatus = "ok" | "caution" | "over";
-  const cogOver = derailleur ? largestCog - derailleur.maxSprocket : 0;
+  // Only meaningful when `fit` was computed (which requires both fields present).
+  const maxSprocket = derailleur?.maxSprocket ?? 0;
+  const totalCapacity = derailleur?.totalCapacity ?? 0;
+  const cogOver = fit ? largestCog - maxSprocket : 0;
   const cogStatus: FitStatus = cogOver <= 0 ? "ok" : cogOver <= 4 ? "caution" : "over";
-  const capOver = fit && derailleur ? fit.requiredCapacity - derailleur.totalCapacity : 0;
+  const capOver = fit ? fit.requiredCapacity - totalCapacity : 0;
   const capStatus: FitStatus = capOver <= 0 ? "ok" : capOver <= 4 ? "caution" : "over";
   const worst: FitStatus = [cogStatus, capStatus].includes("over")
     ? "over"
@@ -804,13 +975,13 @@ export function Drivetrain() {
   let fitMessage = "";
   if (fit && derailleur) {
     if (worst === "ok") {
-      fitMessage = `${derailleur.brand} ${derailleur.model} should handle this drivetrain (rated ${derailleur.totalCapacity}T capacity, ${derailleur.maxSprocket}T max cog).`;
+      fitMessage = `${derailleur.brand} ${derailleur.model} should handle this drivetrain (rated ${totalCapacity}T capacity, ${maxSprocket}T max cog).`;
     } else {
       const issues: string[] = [];
       if (cogStatus !== "ok")
-        issues.push(`largest cog ${cogOver}T over the ${derailleur.maxSprocket}T max`);
+        issues.push(`largest cog ${cogOver}T over the ${maxSprocket}T max`);
       if (capStatus !== "ok")
-        issues.push(`capacity ${capOver}T over the ${derailleur.totalCapacity}T rating`);
+        issues.push(`capacity ${capOver}T over the ${totalCapacity}T rating`);
       const joined = issues.join("; ");
       fitMessage =
         worst === "caution"
@@ -1127,56 +1298,59 @@ export function Drivetrain() {
         >
           <div className="rows">
             <Field label="Rear derailleur (optional)">
-              <Select
-                value={focusCfg.derailleurId}
-                onChange={focusCfg.setDerailleurId}
-                options={DERAILLEUR_OPTIONS}
+              <DerailleurPicker
+                selectedKey={focusCfg.derailleurId}
+                onPick={focusCfg.setDerailleurId}
               />
             </Field>
           </div>
-          {fit && derailleur && (
+          {derailleur && (
             <>
               <div className="results" style={{ marginTop: 8 }}>
-                <Result
-                  label="Largest cog"
-                  value={
-                    <>
-                      {largestCog}T{" "}
-                      <span
-                        className={
-                          "badge " +
-                          (cogStatus === "ok" ? "ok" : cogStatus === "caution" ? "warn" : "danger")
-                        }
-                      >
-                        {cogStatus === "ok"
-                          ? "OK"
-                          : cogStatus === "caution"
-                            ? `+${cogOver}T over`
-                            : `over ${derailleur.maxSprocket}T`}
-                      </span>
-                    </>
-                  }
-                />
-                <Result
-                  label="Capacity needed"
-                  value={
-                    <>
-                      {fit.requiredCapacity}T{" "}
-                      <span
-                        className={
-                          "badge " +
-                          (capStatus === "ok" ? "ok" : capStatus === "caution" ? "warn" : "danger")
-                        }
-                      >
-                        {capStatus === "ok"
-                          ? "OK"
-                          : capStatus === "caution"
-                            ? `+${capOver}T over`
-                            : `over ${derailleur.totalCapacity}T`}
-                      </span>
-                    </>
-                  }
-                />
+                {fit && (
+                  <Result
+                    label="Largest cog"
+                    value={
+                      <>
+                        {largestCog}T{" "}
+                        <span
+                          className={
+                            "badge " +
+                            (cogStatus === "ok" ? "ok" : cogStatus === "caution" ? "warn" : "danger")
+                          }
+                        >
+                          {cogStatus === "ok"
+                            ? "OK"
+                            : cogStatus === "caution"
+                              ? `+${cogOver}T over`
+                              : `over ${maxSprocket}T`}
+                        </span>
+                      </>
+                    }
+                  />
+                )}
+                {fit && (
+                  <Result
+                    label="Capacity needed"
+                    value={
+                      <>
+                        {fit.requiredCapacity}T{" "}
+                        <span
+                          className={
+                            "badge " +
+                            (capStatus === "ok" ? "ok" : capStatus === "caution" ? "warn" : "danger")
+                          }
+                        >
+                          {capStatus === "ok"
+                            ? "OK"
+                            : capStatus === "caution"
+                              ? `+${capOver}T over`
+                              : `over ${totalCapacity}T`}
+                        </span>
+                      </>
+                    }
+                  />
+                )}
                 <Result
                   label="Speeds"
                   value={
@@ -1188,10 +1362,20 @@ export function Drivetrain() {
                     </>
                   }
                 />
-                <Result label="Actuation" value={`${derailleur.actuation}`} />
+                <Result label="Actuation" value={derailleur.actuation ?? "unknown"} />
                 <Result label="Pull ratio" value={pullRatioFor(derailleur)} />
               </div>
-              <Note tone={fitTone}>{fitMessage}</Note>
+              {fit && <Note tone={fitTone}>{fitMessage}</Note>}
+              {fitDataMissing && (
+                <Note tone="info">
+                  No rated capacity / max-cog figures for{" "}
+                  <strong>
+                    {derailleur.brand} {derailleur.model}
+                  </strong>{" "}
+                  in the database yet, so the fit check is skipped — the speed and
+                  actuation guide above still applies.
+                </Note>
+              )}
               {!speedOk && (
                 <Note tone="warn">
                   This is a nominally <strong>{derailleur.speeds}-speed</strong> derailleur,

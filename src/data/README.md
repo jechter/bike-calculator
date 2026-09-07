@@ -10,7 +10,7 @@ the manufacturer or your own measurements before relying on them.
 
 | File | Used by | What it is |
 | --- | --- | --- |
-| `derailleurs.json` | Drivetrain calculator | Rear derailleur specs (capacity, max sprocket, actuation family). |
+| `derailleurs.json` | Drivetrain & Derailleur calculators | ~550 rear derailleur specs (capacity, max sprocket, pull ratio), sourced per entry. |
 | `hub-gears.json` | Drivetrain calculator | Internal-gear-hub, bottom-bracket-gearbox, and CVT gearing (Rohloff, Pinion, Nexus, Alfine, Enviolo, …), with a source per entry. |
 | `chainring-presets.json` | Drivetrain calculator | Common crankset chainring combinations. |
 | `cassette-presets.json` | Drivetrain calculator | Cassette / sprocket sets by brand & model, with a source per entry. |
@@ -20,18 +20,30 @@ the manufacturer or your own measurements before relying on them.
 ## Field reference
 
 ### `derailleurs.json`
-Each entry is a `DerailleurSpec` (see `src/lib/derailleur.ts`):
-- `id` — unique kebab-case key (must be unique across the file).
+An object with a `derailleurs` array (plus `count` / `sources` / `description`
+metadata). Each raw entry is mapped to a `DerailleurSpec` at load time (see
+`src/lib/derailleur.ts`), which generates a stable `key` (from
+brand+model+cage+speeds — **not** stored in the file) and *derives* the
+`actuation` family. Optional fields are omitted when unknown; the UI shows
+"—"/"unknown" for them. Raw fields:
 - `brand`, `model` — display strings.
-- `discipline` — `"Road"`, `"MTB"`, or `"Gravel"`.
-- `speeds` — string, may list several (e.g. `"8"`, `"6/7"`).
-- `cage` — cage length label (e.g. `"GS (medium)"`).
-- `maxSprocket` — largest cog the cage clears (teeth).
-- `minSprocket` — smallest cog (teeth), optional.
-- `totalCapacity` — rated total capacity (teeth).
-- `actuation` — must match a family in `DERAILLEUR_SYSTEMS` (`src/lib/derailleur.ts`).
-- `oneBy` — `true` for dedicated 1× (optional).
-- `notes` — free text (optional).
+- `series` — groupset/series (e.g. `"Deore"`, `"Eagle"`); `"-"` means none.
+- `type` — `"Road"`, `"Gravel"`, or `"MTB"` (maps to `discipline`).
+- `nominalSpeeds` — indexed speed count (number, e.g. `11`).
+- `cage` — cage-length label (`"SS"`, `"GS"`, `"SGS"`, `"S"`/`"M"`/`"L"`…); optional.
+- `maxLow` — largest cog the cage clears (teeth); optional.
+- `minLow` — smallest cog (teeth); optional.
+- `capacity` — rated total capacity (teeth); optional.
+- `pullRatio` — sourced numeric cable-pull ratio (`:1`), e.g. `1.4`; optional.
+- `electronic` — electronic group label (`"Di2"`, `"AXS"`, `"eTap"`, `"WT"`…) if
+  the derailleur is electronic (no cable pull); optional.
+- `introduced`, `discontinued` — model years; optional.
+- `source` — `{ url, sourceType: "primary" | "secondary", note }` citing the specs.
+
+The `actuation` family is **derived** from brand/type/speeds/electronic and must
+match a family in `DERAILLEUR_SYSTEMS`; third-party brands and ambiguous cases
+are left "unknown". Pull-ratio display prefers the numeric `pullRatio`, falling
+back to the family estimate in `PULL_RATIOS`.
 
 ### `hub-gears.json`
 An object with a `hubs` array (plus `description` / `extractedOn` / `count`

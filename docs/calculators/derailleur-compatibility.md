@@ -9,25 +9,34 @@ cassette and crankset to check against. There you can pick a derailleur from the
 database and it tells you whether your largest cog and total capacity are within
 its limits.
 
-> **All the spec data is approximate / community-sourced** (and actuation ratios
-> are marketing-obscured). Verify against the manufacturer before relying on it;
-> the database is a seed list to extend.
+> **All the spec data is approximate / sourced** (and actuation ratios are
+> marketing-obscured). Each row cites a source; verify against the manufacturer
+> before relying on it. The database is extendable — add rows to the JSON.
 
 ## Part 1 — Derailleur database
 
-A searchable table of rear derailleurs. Search by brand / model / discipline /
-speeds; each row shows the specs the tool knows: **brand + model**, discipline,
-speeds, **cage length**, **max sprocket**, **total capacity**, **actuation
-family**, and **pull ratio**. Approximate, community-sourced — a seed list to
-extend. Fields per entry:
-`{ brand, model, discipline, speeds, cage, maxSprocket, minSprocket?, totalCapacity, actuation, oneBy?, notes? }`.
+A searchable, filterable table of ~550 rear derailleurs. Search by brand /
+model / series / discipline / speeds, and narrow with the **brand / type /
+speeds** filters; each row shows the specs the tool knows: **brand + model**
+(+ series), discipline, speeds, **cage length**, **max sprocket**, **total
+capacity**, **actuation family**, **pull ratio**, **years** (introduced–
+discontinued), and a **source link**. Unknown fields show "—"/"unknown". Raw
+fields per entry (optional ones omitted when unknown):
+`{ brand, model, series?, type, nominalSpeeds, cage?, maxLow?, minLow?, capacity?, pullRatio?, electronic?, introduced?, discontinued?, source }`.
+The load step (`src/lib/derailleur.ts`) maps these to a `DerailleurSpec`,
+generates a stable `key`, and **derives** the actuation family.
 
 **Pull ratio** (actuation ratio ≈ derailleur lateral movement per unit of cable
-pull) is a property of the **actuation family**, so it's stored once per family
-(`PULL_RATIOS`) and looked up per derailleur (`pullRatioFor`). The values are
-**disputed between sources and definitions** — a rough guide, not gospel
-(≈1.7:1 old Shimano, ≈1.4:1 Shimano 11-sp road, ≈1.1:1 SRAM Exact Actuation,
-electronic groups have none). Verify before relying on it.
+pull): the display prefers the **sourced numeric `pullRatio`** on the row, and
+falls back to a per-**family** estimate (`PULL_RATIOS`, via `pullRatioFor`) when
+a row has none. The estimates are **disputed between sources and definitions** —
+a rough guide, not gospel (≈1.7:1 old Shimano, ≈1.4:1 Shimano 11-sp road, ≈1.1:1
+SRAM Exact Actuation, electronic groups have none). Verify before relying on it.
+
+The **actuation family** is *derived* from brand + type + speeds + electronic,
+so each row links to the compatibility chart. It's best-effort: third-party
+brands (Microshift, Sunrace, L-TWOO, …) and ambiguous cases are left "unknown"
+rather than guessed.
 
 ## Part 2 — Compatibility reference
 

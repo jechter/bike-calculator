@@ -20,7 +20,8 @@ import {
   pullRatioFor,
   speedMatches,
 } from "../lib/derailleur";
-import { TIRE_PRESETS } from "../lib/wheels";
+import { estimatedCircumferenceMm } from "../lib/wheels";
+import { parseTireSize, formatDesignations, suggestTireSizes } from "../lib/tireSizes";
 import { kmhToMph } from "../lib/units";
 import { useUnits, speedUnitLabel } from "../units-context";
 import { Field, NumberInput, TextInput, Select, PresetMenu, Result, Note, Section } from "./ui";
@@ -36,12 +37,6 @@ function parseList(s: string): number[] {
     .map((x) => parseFloat(x))
     .filter((x) => Number.isFinite(x) && x > 0);
 }
-
-// ETRTO-labelled options that fill the rolling circumference field.
-const TIRE_OPTIONS = TIRE_PRESETS.map((p) => ({
-  value: String(p.circumferenceMm),
-  label: `${p.widthMm}-${p.iso}  (${p.label})`,
-}));
 
 // The database has hundreds of cassettes, so the picker narrows in three steps:
 // speeds → range (e.g. "11-28") → model. The model list spans every brand for
@@ -577,9 +572,100 @@ function SetupFields({ cfg }: { cfg: DrivetrainConfig }) {
   );
 }
 
+// A popover that turns a typed or picked tire size into a rolling circumference
+// — a compact embed of the Tire calculator's size field. Type any format
+// (700x28C, 26-559, 28x1 3/8…) or click a suggestion; the estimated
+// circumference (same geometry the Tire calculator shows) fills the field.
+function TirePicker({ onPick }: { onPick: (circumferenceMm: number) => void }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [typed, setTyped] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  const parsed = parseTireSize(query);
+  const circ = parsed ? Math.round(estimatedCircumferenceMm(parsed.iso, parsed.widthMm)) : 0;
+  const designations = parsed ? formatDesignations(parsed.iso, parsed.widthMm) : [];
+  // Broad cross-format spread until the user types (mirrors the Tire calculator).
+  const suggestions = suggestTireSizes(typed ? query : "");
+
+  const apply = (mm: number) => {
+    onPick(mm);
+    setOpen(false);
+    setQuery("");
+    setTyped(false);
+  };
+  const circOf = (label: string): number => {
+    const p = parseTireSize(label);
+    return p ? Math.round(estimatedCircumferenceMm(p.iso, p.widthMm)) : 0;
+  };
+
+  return (
+    <div className="tire-picker" ref={ref}>
+      <button
+        type="button"
+        className={"preset-btn" + (open ? " open" : "")}
+        title="Set from a tire size"
+        aria-label="Set from a tire size"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        Tire size <span className="caret">▾</span>
+      </button>
+      {open && (
+        <div className="tp-pop">
+          <input
+            className="cp-search"
+            type="text"
+            autoFocus
+            placeholder="e.g. 700x28C · 26-559 · 28x1 3/8"
+            value={query}
+            onChange={(e) => {
+              setTyped(true);
+              setQuery(e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && parsed) apply(circ);
+            }}
+          />
+          {parsed ? (
+            <button type="button" className="tp-apply" onClick={() => apply(circ)}>
+              <span className="tp-apply-main">Use ≈ {circ} mm</span>
+              <span className="tp-apply-sub">{designations.map((d) => d.value).join(" · ")}</span>
+            </button>
+          ) : query.trim() ? (
+            <div className="tp-empty">Couldn't read that size — try e.g. 700x28C or 26-559.</div>
+          ) : null}
+          <div className="tp-chips">
+            {suggestions.map((s) => (
+              <button
+                key={s.label}
+                type="button"
+                className="chip"
+                title={`≈ ${circOf(s.label)} mm`}
+                onClick={() => apply(circOf(s.label))}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Rolling circumference lives per-config (each config is a bike/wheel), on its
-// own row for a stable layout, with a tire-size preset and a link to the Tire
-// calculator.
+// own row for a stable layout, with an embedded tire-size picker and a link to
+// the Tire calculator.
 function CircumferenceField({ cfg }: { cfg: DrivetrainConfig }) {
   return (
     <div className="rows">
@@ -596,11 +682,7 @@ function CircumferenceField({ cfg }: { cfg: DrivetrainConfig }) {
       >
         <div className="combo">
           <NumberInput value={cfg.circ} onChange={cfg.setCirc} min={800} />
-          <PresetMenu
-            title="Fill from a tire size (ETRTO)"
-            options={TIRE_OPTIONS}
-            onPick={(v) => cfg.setCirc(parseFloat(v))}
-          />
+          <TirePicker onPick={cfg.setCirc} />
         </div>
       </Field>
     </div>

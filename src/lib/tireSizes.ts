@@ -259,3 +259,152 @@ export function formatDesignations(iso: number, widthMm: number): Designation[] 
 export function commonNamesFor(iso: number): string[] {
   return WHEEL_SIZES.find((s) => s.iso === iso)?.commonNames ?? [];
 }
+
+// The tire sizes people actually ride and search for, ordered roughly by how
+// common they are. These double as the clickable suggestions: we filter them
+// against whatever the user has typed and show the most typical matches.
+const COMMON_SIZE_LABELS = [
+  // Road — 700C
+  "700x23C",
+  "700x25C",
+  "700x28C",
+  "700x32C",
+  "700x35C",
+  "700x38C",
+  // Gravel / all-road — 700C (29er)
+  "700x40C",
+  "700x45C",
+  "700x47C",
+  "29x2.1",
+  "29x2.25",
+  "29x2.35",
+  "29x2.4",
+  // 650B / 27.5"
+  "650b x 47",
+  "27.5x2.1",
+  "27.5x2.25",
+  "27.5x2.4",
+  "27.5x2.6",
+  // 26" MTB
+  "26x1.95",
+  "26x2.1",
+  "26x2.25",
+  "26x2.4",
+  // City / classic
+  "28x1 3/8",
+  "28x1 1/2",
+  "27x1 1/4",
+  "26x1 3/8",
+  "26x1 1/4",
+  // Small wheels
+  "24x1.95",
+  "20x1.75",
+  "20x2.125",
+  "16x1.75",
+];
+
+// The spread shown before the user types anything — deliberately mixed across
+// wheel sizes and all three notations (French, ETRTO, inch, fractional) so the
+// chips advertise the range of formats the field accepts.
+const BROAD_DEFAULTS = [
+  "700x28C", // road — French
+  "28-622", // road — ETRTO
+  "700x40C", // gravel — French
+  "650b x 47", // 650B gravel — French
+  "27.5x2.4", // trail — inch decimal
+  "26x2.1", // MTB — inch decimal
+  "28x1 3/8", // city — fractional
+  "20x1.75", // small wheel — inch decimal
+];
+
+export interface TireSuggestion {
+  label: string; // clickable/settable string, e.g. "700x28C" or "28-622"
+  iso: number;
+  widthMm: number;
+}
+
+// Fold a size string to a canonical form for matching: lowercase, × -> x, drop
+// quotes and whitespace, keep the dash so ETRTO ("28-622") stays searchable.
+function normalizeForMatch(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/×/g, "x")
+    .replace(/["″]/g, "")
+    .replace(/\s+/g, "");
+}
+
+interface CommonSize {
+  iso: number;
+  widthMm: number;
+  natural: string; // the curated label, in its native format (French / inch / fractional)
+  etrto: string; // the same size written as ETRTO, e.g. "28-622"
+  search: string; // haystack of every notation for matching
+}
+
+// Precompute each common size with its ETRTO form and a haystack covering every
+// notation it can be written in (ETRTO, French, decimal, fractional, "also known
+// as" names), so a query like "622", "29er" or "700" all surface the right sizes.
+const COMMON_SIZES: CommonSize[] = COMMON_SIZE_LABELS.map((label) => {
+  const parsed = parseTireSize(label)!;
+  const etrto = `${Math.round(parsed.widthMm)}-${parsed.iso}`;
+  const notations = [
+    label,
+    etrto,
+    `${parsed.iso}`,
+    ...formatDesignations(parsed.iso, parsed.widthMm).map((d) => d.value),
+    ...commonNamesFor(parsed.iso),
+  ];
+  return {
+    iso: parsed.iso,
+    widthMm: parsed.widthMm,
+    natural: label,
+    etrto,
+    // Normalize each notation separately and join with a separator so a query
+    // can't match across a token boundary (e.g. "622"+"622" spuriously has "26").
+    search: notations.map(normalizeForMatch).join("|"),
+  };
+});
+
+/**
+ * Common tire sizes whose notation matches `query`, most typical first.
+ * An empty query returns a broad cross-format spread (see BROAD_DEFAULTS).
+ * Each size can be shown as its native format or as ETRTO, and a query is shown
+ * in whichever form it matched. Ranks a label-prefix match above a label
+ * substring above a match anywhere in the size's other notations.
+ */
+export function suggestTireSizes(query: string, limit = 8): TireSuggestion[] {
+  const q = normalizeForMatch(query);
+  if (!q) {
+    return BROAD_DEFAULTS.slice(0, limit).map((label) => {
+      const p = parseTireSize(label)!;
+      return { label, iso: p.iso, widthMm: p.widthMm };
+    });
+  }
+  const ranked = COMMON_SIZES.map((c, i) => {
+    // Fallback display (matched only via an "also known as" name): cycle ETRTO
+    // in among the native labels so that notation shows up too.
+    let label = i % 3 === 2 ? c.etrto : c.natural;
+    let score = c.search.includes(q) ? 1 : 0;
+    for (const form of [c.etrto, c.natural]) {
+      const nf = normalizeForMatch(form);
+      const s = nf.startsWith(q) ? 3 : nf.includes(q) ? 2 : 0;
+      if (s > score) {
+        score = s;
+        label = form;
+      }
+    }
+    return { label, iso: c.iso, widthMm: c.widthMm, score, i };
+  });
+
+  const seen = new Set<string>();
+  const out: TireSuggestion[] = [];
+  for (const x of ranked
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score || a.i - b.i)) {
+    if (seen.has(x.label)) continue; // two sizes can collapse to the same ETRTO
+    seen.add(x.label);
+    out.push({ label: x.label, iso: x.iso, widthMm: x.widthMm });
+    if (out.length >= limit) break;
+  }
+  return out;
+}

@@ -19,10 +19,11 @@ worn chain.
 - **Cassette/cogs**: list of tooth counts, e.g. `11, 12, 13, 14, 15, 17, 19,
   21, 24, 28`. Editable field with a preset button for common cassettes (11–28,
   11–34, 10–52, etc.). (Single speed / IGH: a single sprocket.)
-- **Rolling circumference** (mm): an editable field with an integrated preset
-  dropdown (combobox) that fills it from a tire size (labelled by **ETRTO**,
-  e.g. `25-622`). A measured roll-out is most accurate. Links across to the
-  [tire calculator](tire.md) for size conversion.
+- **Rolling circumference** (mm): an editable field with an integrated tire-size
+  picker — a compact embed of the [tire calculator](tire.md)'s size field. Type
+  any format (`700x28C`, `26-559`, `28x1 3/8`…) or click a suggestion and it
+  fills the field with the estimated rolling circumference (same geometry the
+  tire calculator shows). A measured roll-out is most accurate.
 - **Cadence** (rpm): lives in the **chart's control bar** (next to the axis
   selector), since it only affects the speed visualisation — a compact slider
   over 60–120 with a number field for values outside it. Default 90.
@@ -253,4 +254,6 @@ possibly chainrings) may skip with a new chain.
 ## Reference data needed
 
 - Common cassette presets (tooth lists).
-- Wheel/tire rolling circumferences — shared with the [tire calculator](tire.md).
+- Tire sizes — the rolling circumference is estimated from a parsed size using
+  the shared [tire calculator](tire.md) library (`tireSizes` + `wheels`), so no
+  separate circumference table is stored.

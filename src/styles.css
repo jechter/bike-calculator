@@ -436,6 +436,44 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .cp-empty { padding: 12px 10px; color: var(--muted); font-size: 13px; }
 .cp-foot { font-size: 11px; color: var(--muted); padding: 0 2px; }
 
+/* Embedded tire-size picker in the rolling-circumference field */
+.tire-picker { position: relative; flex: none; display: flex; }
+.tire-picker .preset-btn { gap: 4px; font-weight: 500; }
+.tp-pop {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  right: 0;
+  width: min(340px, 88vw);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tp-apply {
+  width: 100%;
+  text-align: left;
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tp-apply:hover { border-color: var(--accent); }
+.tp-apply-main { font-size: 14px; font-weight: 600; color: var(--accent); }
+.tp-apply-sub { font-size: 11px; color: var(--muted); }
+.tp-empty { padding: 4px 2px; color: var(--muted); font-size: 13px; }
+.tp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
 /* Slider + number combo */
 .slider-row { display: flex; align-items: center; gap: 12px; }
 .slider-row input[type="range"] { flex: 1; accent-color: var(--accent); }

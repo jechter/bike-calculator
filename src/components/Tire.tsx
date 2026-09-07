@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { parseTireSize, formatDesignations, commonNamesFor } from "../lib/tireSizes";
+import { parseTireSize, formatDesignations, commonNamesFor, suggestTireSizes } from "../lib/tireSizes";
 import { estimatedOuterDiameterMm, estimatedCircumferenceMm } from "../lib/wheels";
 import {
   recommendTirePressure,
@@ -8,11 +8,13 @@ import {
 } from "../lib/tirePressure";
 import { Field, NumberInput, TextInput, Select, Result, Section } from "./ui";
 
-const EXAMPLES = ["700x28C", "28-622", "26x2.1", "27.5x2.4", "28x1 3/8", "650b x 47"];
-
 export function Tire() {
   const [query, setQuery] = useState("700x28C");
+  // Show a broad cross-format spread until the user actually types a query — the
+  // pre-filled default shouldn't narrow the suggestions to its own wheel size.
+  const [typed, setTyped] = useState(false);
   const parsed = parseTireSize(query);
+  const suggestions = suggestTireSizes(typed ? query : "");
   const designations = parsed ? formatDesignations(parsed.iso, parsed.widthMm) : [];
   const names = parsed ? commonNamesFor(parsed.iso) : [];
   const outer = parsed ? estimatedOuterDiameterMm(parsed.iso, parsed.widthMm) : 0;
@@ -50,20 +52,26 @@ export function Tire() {
         }
       >
         <div className="rows">
-          <Field
-            label="Tire size (any format)"
-            hint="e.g. 28-622 · 700x28C · 26x2.1 · 28x1 3/8 · 650b x 47"
-          >
-            <TextInput value={query} onChange={setQuery} placeholder="e.g. 700x28C" />
+          <Field label="Tire size (any format)">
+            <TextInput
+              value={query}
+              onChange={(v) => {
+                setTyped(true);
+                setQuery(v);
+              }}
+              placeholder="e.g. 700x28C"
+            />
           </Field>
         </div>
-        <div className="chips" style={{ marginTop: 4 }}>
-          {EXAMPLES.map((e) => (
-            <button key={e} className="chip" onClick={() => setQuery(e)}>
-              {e}
-            </button>
-          ))}
-        </div>
+        {suggestions.length > 0 && (
+          <div className="chips" style={{ marginTop: 4 }}>
+            {suggestions.map((s) => (
+              <button key={s.label} className="chip" onClick={() => setQuery(s.label)}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {parsed ? (
           <>

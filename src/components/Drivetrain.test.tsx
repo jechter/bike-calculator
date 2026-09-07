@@ -348,6 +348,31 @@ describe("Drivetrain page", () => {
     expect(link).toBeTruthy();
   });
 
+  it("fills the rolling circumference from a typed tire size in the picker", () => {
+    const { getByText, getByPlaceholderText } = render(<Drivetrain />);
+    const field = getByText("Rolling circumference (mm)").closest(".field") as HTMLElement;
+    const circInput = field.querySelector('input[type="number"]') as HTMLInputElement;
+    expect(circInput.value).toBe("2111"); // default
+
+    fireEvent.click(within(field).getByText(/Tire size/));
+    const search = getByPlaceholderText(/700x28C/) as HTMLInputElement;
+    fireEvent.change(search, { target: { value: "700x28C" } });
+    // Geometric circumference: pi * (622 + 2*28) = 2130 mm.
+    fireEvent.click(getByText(/Use ≈ 2130 mm/));
+    expect(circInput.value).toBe("2130");
+  });
+
+  it("applies a suggested tire size directly from the picker", () => {
+    const { getByText } = render(<Drivetrain />);
+    const field = getByText("Rolling circumference (mm)").closest(".field") as HTMLElement;
+    const circInput = field.querySelector('input[type="number"]') as HTMLInputElement;
+
+    fireEvent.click(within(field).getByText(/Tire size/));
+    // "26x2.1" is in the default broad spread: pi * (559 + 2*53.34) = 2091 mm.
+    fireEvent.click(within(field).getByText("26x2.1"));
+    expect(circInput.value).toBe("2091");
+  });
+
   it("adds a second drivetrain to compare and overlays it on the chart", () => {
     const { container, getByText } = render(<Drivetrain />);
     // Off by default: only config A rows (50/34 -> 2 lines), no compared series.

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseTireSize, formatDesignations, toFractionInch } from "./tireSizes";
+import { parseTireSize, formatDesignations, toFractionInch, suggestTireSizes } from "./tireSizes";
 
 describe("parseTireSize", () => {
   it("parses the three equivalents from the example", () => {
@@ -58,6 +58,48 @@ describe("formatDesignations", () => {
     const map = Object.fromEntries(formatDesignations(622, 54).map((x) => [x.format, x.value]));
     expect(map["Inch (decimal)"]).toBe("29 × 2.13″");
     expect(map["ETRTO / ISO"]).toBe("54-622");
+  });
+});
+
+describe("suggestTireSizes", () => {
+  it("returns a broad spread for an empty query", () => {
+    const s = suggestTireSizes("");
+    expect(s.length).toBeGreaterThan(0);
+    expect(s[0].label).toBe("700x28C"); // leads the broad-default spread
+    // spans several wheel sizes, not just one family
+    expect(new Set(s.map((x) => x.iso)).size).toBeGreaterThan(3);
+  });
+
+  it("every suggested label parses back to its size's iso", () => {
+    for (const s of suggestTireSizes("", 100)) {
+      const p = parseTireSize(s.label);
+      expect(p).not.toBeNull();
+      expect(p!.iso).toBe(s.iso);
+    }
+  });
+
+  it("shows all three formats in the default view", () => {
+    const labels = suggestTireSizes("", 100).map((s) => s.label);
+    expect(labels).toContain("700x28C"); // French
+    expect(labels.some((l) => /^\d+x\d/.test(l) && l.includes("."))).toBe(true); // inch decimal
+    expect(labels.some((l) => /^\d+-\d+$/.test(l))).toBe(true); // ETRTO
+  });
+
+  it("filters by a diameter typed as French, decimal or inch", () => {
+    expect(suggestTireSizes("700").every((s) => s.label.startsWith("700"))).toBe(true);
+    expect(suggestTireSizes("27.5").every((s) => s.iso === 584)).toBe(true);
+  });
+
+  it("shows the ETRTO form when the query is an ISO bead diameter", () => {
+    const results = suggestTireSizes("622", 100);
+    expect(results.every((s) => s.iso === 622)).toBe(true);
+    // typing the bead diameter should surface ETRTO labels, not French ones
+    expect(results.map((s) => s.label)).toContain("28-622");
+    expect(results.every((s) => /-622$/.test(s.label))).toBe(true);
+  });
+
+  it("returns nothing for gibberish", () => {
+    expect(suggestTireSizes("banana")).toEqual([]);
   });
 });
 

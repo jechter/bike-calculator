@@ -31,35 +31,6 @@ export const BEAD_STANDARDS: BeadStandard[] = [
   { iso: 305, names: ['16" (305)'] },
 ];
 
-export interface TirePreset {
-  label: string;
-  iso: number; // bead diameter
-  widthMm: number;
-  /** Approximate rolling circumference in mm (reference / rider-loaded roll-out ~). */
-  circumferenceMm: number;
-}
-
-// A handful of common presets with reference rolling circumferences. Users can
-// always enter a measured roll-out instead.
-export const TIRE_PRESETS: TirePreset[] = [
-  { label: '700 x 23C', iso: 622, widthMm: 23, circumferenceMm: 2096 },
-  { label: '700 x 25C', iso: 622, widthMm: 25, circumferenceMm: 2111 },
-  { label: '700 x 28C', iso: 622, widthMm: 28, circumferenceMm: 2136 },
-  { label: '700 x 32C', iso: 622, widthMm: 32, circumferenceMm: 2155 },
-  { label: '700 x 35C', iso: 622, widthMm: 35, circumferenceMm: 2168 },
-  { label: '700 x 38C', iso: 622, widthMm: 38, circumferenceMm: 2180 },
-  { label: '650B x 47 (27.5 x 1.9)', iso: 584, widthMm: 47, circumferenceMm: 2079 },
-  { label: '27.5 x 2.1', iso: 584, widthMm: 53, circumferenceMm: 2148 },
-  { label: '27.5 x 2.4', iso: 584, widthMm: 61, circumferenceMm: 2182 },
-  { label: '29 x 2.1', iso: 622, widthMm: 53, circumferenceMm: 2288 },
-  { label: '29 x 2.3', iso: 622, widthMm: 58, circumferenceMm: 2314 },
-  { label: '26 x 1.5', iso: 559, widthMm: 38, circumferenceMm: 1985 },
-  { label: '26 x 1.9', iso: 559, widthMm: 48, circumferenceMm: 2026 },
-  { label: '26 x 2.1', iso: 559, widthMm: 53, circumferenceMm: 2055 },
-  { label: '20 x 1.75 (406)', iso: 406, widthMm: 44, circumferenceMm: 1515 },
-  { label: '16 x 1 3/8 (349, Brompton)', iso: 349, widthMm: 35, circumferenceMm: 1290 },
-];
-
 /**
  * Approximate outer diameter (mm) from bead diameter and tire width, assuming a
  * roughly round casing (section height ~= width). Rough; a measured value is

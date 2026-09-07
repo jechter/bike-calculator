@@ -1,7 +1,7 @@
 {
   "description": "Internal gear hub, bottom-bracket gearbox, and CVT gearing data, extracted from Ritzelrechner / Gear Calculator and Cycling UK, with a manufacturer and primary/secondary source per entry. Ratios are gear ratios relative to a 1:1 direct drive. For entries with continuouslyVariable=true, numGears is null and ratios is [min, max] of the continuous range.",
   "extractedOn": "2026-09-07",
-  "count": 53,
+  "count": 52,
   "hubs": [
     {
       "name": "Rohloff Speedhub",
@@ -32,7 +32,7 @@
       }
     },
     {
-      "name": "Shimano Alfine Inter 11",
+      "name": "Shimano Inter 11",
       "manufacturer": "Shimano",
       "type": "hub",
       "continuouslyVariable": false,
@@ -57,7 +57,7 @@
       }
     },
     {
-      "name": "Shimano Alfine Inter 8",
+      "name": "Shimano Inter 8",
       "manufacturer": "Shimano",
       "type": "hub",
       "continuouslyVariable": false,
@@ -75,7 +75,7 @@
       "source": {
         "url": "https://sheldonbrown.com/nexus8.shtml",
         "sourceType": "secondary",
-        "note": "Sheldon Brown 8-speed ratio table (0.527-1.615, 307%), shared by Alfine SG-S7001-8; Shimano manual has no per-gear table."
+        "note": "Sheldon Brown 8-speed ratio table (0.527-1.615, 307%), shared by Nexus SG-C6001-8 and Alfine SG-S7001-8; Shimano manual has no per-gear table."
       }
     },
     {
@@ -453,29 +453,7 @@
       }
     },
     {
-      "name": "Shimano Nexus Inter 8",
-      "manufacturer": "Shimano",
-      "type": "hub",
-      "continuouslyVariable": false,
-      "numGears": 8,
-      "ratios": [
-        0.527,
-        0.644,
-        0.748,
-        0.851,
-        1,
-        1.223,
-        1.419,
-        1.615
-      ],
-      "source": {
-        "url": "https://sheldonbrown.com/nexus8.shtml",
-        "sourceType": "secondary",
-        "note": "Same 8-speed table applies to Nexus SG-C6001-8 (identical ratios 0.527-1.615, 307%)."
-      }
-    },
-    {
-      "name": "Shimano Nexus Inter 7",
+      "name": "Shimano Inter 7",
       "manufacturer": "Shimano",
       "type": "hub",
       "continuouslyVariable": false,
@@ -496,7 +474,7 @@
       }
     },
     {
-      "name": "Shimano Nexus Inter 4",
+      "name": "Shimano Inter 4",
       "manufacturer": "Shimano",
       "type": "hub",
       "continuouslyVariable": false,

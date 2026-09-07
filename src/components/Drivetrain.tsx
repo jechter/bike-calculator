@@ -18,7 +18,7 @@ import {
   derailleurByKey,
   checkCapacity,
   pullRatioFor,
-  speedMatches,
+  speedCompatibility,
   type DerailleurSpec,
 } from "../lib/derailleur";
 import { estimatedCircumferenceMm } from "../lib/wheels";
@@ -990,10 +990,19 @@ export function Drivetrain() {
     }
   }
 
-  // Speed-count match: the derailleur's nominal gear count vs the cassette's cog
-  // count. A mismatch doesn't mean it won't work — the derailleur just moves;
-  // the indexing lives in the shifter — but it's worth flagging.
-  const speedOk = derailleur ? speedMatches(derailleur, cogs.length) : true;
+  // Speed-count compatibility: the derailleur's nominal gear count vs the
+  // cassette's cog count, judged by actuation. A mismatch can be fine (shared
+  // actuation family, or a friction shifter) — but electronic groups can't be
+  // re-indexed, so those are a hard no. See speedCompatibility().
+  const speedStatus = derailleur ? speedCompatibility(derailleur, cogs.length) : "match";
+  const speedBadge: { cls: "ok" | "warn" | "danger"; text: string } =
+    speedStatus === "match"
+      ? { cls: "ok", text: "OK" }
+      : speedStatus === "incompatible"
+        ? { cls: "danger", text: `≠ ${cogs.length}-sp` }
+        : speedStatus === "family"
+          ? { cls: "warn", text: "same family" }
+          : { cls: "warn", text: `≠ ${cogs.length}-sp` };
 
   const sliderCadence = Math.min(120, Math.max(60, cadence || 60));
 
@@ -1356,9 +1365,7 @@ export function Drivetrain() {
                   value={
                     <>
                       {derailleur.speeds}-speed{" "}
-                      <span className={"badge " + (speedOk ? "ok" : "warn")}>
-                        {speedOk ? "OK" : `≠ ${cogs.length}-sp cassette`}
-                      </span>
+                      <span className={"badge " + speedBadge.cls}>{speedBadge.text}</span>
                     </>
                   }
                 />
@@ -1376,16 +1383,43 @@ export function Drivetrain() {
                   actuation guide above still applies.
                 </Note>
               )}
-              {!speedOk && (
+              {speedStatus === "incompatible" && (
+                <Note tone="warn">
+                  This is an <strong>electronic</strong> derailleur configured for{" "}
+                  <strong>{derailleur.speeds} speeds</strong>, but your cassette has{" "}
+                  <strong>{cogs.length} cogs</strong>. Electronic groups shift in fixed,
+                  pre-programmed steps — they can’t be re-indexed for a different cog count,
+                  and there’s no friction-shifter fallback — so this{" "}
+                  <strong>won’t work</strong> with a {cogs.length}-speed cassette.
+                </Note>
+              )}
+              {speedStatus === "family" && (
+                <Note tone="info">
+                  Nominally <strong>{derailleur.speeds}-speed</strong>, but its actuation
+                  family ({derailleur.actuation}) also covers{" "}
+                  <strong>{cogs.length}-speed</strong> — so with a matching{" "}
+                  {cogs.length}-speed shifter of the same family it indexes correctly.
+                </Note>
+              )}
+              {speedStatus === "friction" && (
                 <Note tone="warn">
                   This is a nominally <strong>{derailleur.speeds}-speed</strong> derailleur,
-                  but your cassette has <strong>{cogs.length} cogs</strong>. The derailleur itself just moves
+                  but your cassette has <strong>{cogs.length} cogs</strong>, outside its
+                  actuation family ({derailleur.actuation}). The derailleur itself just moves
                   sideways — the indexing that has to match the cog spacing lives in the{" "}
-                  <em>shifter</em>, not here. So it can still work when the shifter's
-                  pull/actuation ratio suits it (some speed counts share one actuation
-                  family), or with a <strong>friction shifter</strong>, which doesn't index at
-                  all and lets you position each gear by feel. With an indexed shifter for a
-                  different speed count, the clicks likely won't line up cog-to-cog.
+                  <em>shifter</em>, not here. An indexed shifter for a different speed count
+                  likely won’t line up cog-to-cog, but a <strong>friction shifter</strong>,
+                  which doesn’t index at all, lets you position each gear by feel.
+                </Note>
+              )}
+              {speedStatus === "unknown" && (
+                <Note tone="warn">
+                  This is a nominally <strong>{derailleur.speeds}-speed</strong> derailleur
+                  and its actuation family isn’t known, so whether it indexes a{" "}
+                  <strong>{cogs.length}-speed</strong> cassette depends on the shifter. The
+                  derailleur just moves sideways — the indexing lives in the{" "}
+                  <em>shifter</em> — and a <strong>friction shifter</strong> sidesteps it
+                  entirely.
                 </Note>
               )}
             </>

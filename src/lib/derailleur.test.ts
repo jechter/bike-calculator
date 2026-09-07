@@ -5,6 +5,7 @@ import {
   derailleurByKey,
   derailleurSpeeds,
   speedMatches,
+  speedCompatibility,
   pullRatioFor,
   DERAILLEURS,
 } from './derailleur';
@@ -90,6 +91,31 @@ describe('deriveActuation', () => {
       'Campagnolo 12-speed',
     );
     expect(campy.find((d) => d.electronic)?.actuation).toBe('Campagnolo WRL (electronic)');
+  });
+});
+
+describe('speedCompatibility', () => {
+  it('is a match at the nominal speed count', () => {
+    expect(speedCompatibility(derailleurByKey('shimano-rd-r7000-ss-11s')!, 11)).toBe('match');
+  });
+  it('treats electronic mismatches as incompatible (no re-indexing)', () => {
+    const axs = searchDerailleurs('sram').find((d) => d.electronic && d.speeds === 12);
+    expect(axs).toBeDefined();
+    expect(speedCompatibility(axs!, 11)).toBe('incompatible');
+  });
+  it('allows other counts within the actuation family', () => {
+    // Tiagra RD-4700 is 10-speed road; its family covers 8/9/10.
+    const t = searchDerailleurs('4700').find((d) => d.cage === 'GS')!;
+    expect(t.speeds).toBe(10);
+    expect(speedCompatibility(t, 9)).toBe('family');
+  });
+  it('falls to friction for a mechanical count outside its family', () => {
+    // RD-R7000 (11-sp road) family is 11 only, so a 10-sp cassette needs friction.
+    expect(speedCompatibility(derailleurByKey('shimano-rd-r7000-ss-11s')!, 10)).toBe('friction');
+  });
+  it('is unknown when the family could not be derived (third-party)', () => {
+    const ms = DERAILLEURS.find((d) => d.brand === 'Microshift' && !d.electronic)!;
+    expect(speedCompatibility(ms, ms.speeds + 1)).toBe('unknown');
   });
 });
 

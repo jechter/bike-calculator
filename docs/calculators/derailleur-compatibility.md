@@ -101,6 +101,23 @@ total_capacity_required = (largest_chainring − smallest_chainring)
 `(50−34) + (32−11) = 16 + 21 = 37T` capacity required → needs a medium/long
 cage (≥37T capacity), and max sprocket ≥ 32T.
 
+### Speed-count compatibility
+Alongside the capacity/max-cog fit, the drivetrain page judges the derailleur's
+nominal speed count against the cassette's cog count by **actuation**
+(`speedCompatibility` in `src/lib/derailleur.ts`). Each actuation family in
+`DERAILLEUR_SYSTEMS` declares the speed counts it can drive (its `speeds` label,
+e.g. `8/9/10`) — a family shares one cable-pull ratio, so a derailleur in it
+indexes at any of those counts given the matching shifter. The verdict:
+- **match** — nominal count equals the cassette's.
+- **family** — a different count the family still covers → works with the
+  matching same-family shifter (shown as info, not a warning).
+- **friction** — mechanical, outside the family's counts → no indexed shifter
+  lines up, but a friction shifter can (indexing lives in the shifter).
+- **incompatible** — **electronic** groups shift in fixed pre-programmed steps
+  and can't be re-indexed for another cog count (no friction fallback), so a
+  mismatch is a hard no, not a "might work".
+- **unknown** — third-party / underived family: can't judge from actuation.
+
 ## Notes
 - Also useful: front derailleur compatibility (clamp diameter, pull direction,
   top/down swing, max chainring, capacity) — a future addition.

@@ -285,10 +285,19 @@ describe("Drivetrain page", () => {
 
   it("warns when the derailleur's nominal speed count differs from the cassette", () => {
     const { container } = render(<Drivetrain />);
-    // Default cassette has 10 cogs. Pick an 11-speed RD-R7000 (105) SS.
+    // Default cassette has 10 cogs. Pick an 11-speed RD-R7000 (105) SS — its
+    // family only covers 11, so it's a mechanical (friction-shifter) mismatch.
     pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
-    expect(container.textContent).toMatch(/≠ 10-sp cassette/);
+    expect(container.textContent).toMatch(/≠ 10-sp/);
     expect(container.textContent).toMatch(/friction shifter/);
+  });
+
+  it("says an electronic derailleur can't be re-indexed for a different cog count", () => {
+    const { container } = render(<Drivetrain />);
+    // Default cassette is 10-speed; pick an electronic 12-speed (SRAM AXS).
+    pickDerailleur(container, "axs", (t) => t.includes("12sp"));
+    expect(container.textContent).toMatch(/won.t work/);
+    expect(container.textContent).not.toMatch(/friction shifter/);
   });
 
   it("does not warn about speeds when the derailleur matches the cassette", () => {

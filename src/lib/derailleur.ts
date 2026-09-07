@@ -368,6 +368,50 @@ export function speedMatches(d: DerailleurSpec, cogCount: number): boolean {
   return d.speeds === cogCount;
 }
 
+/**
+ * The speed counts an actuation family can drive. Because a family groups
+ * derailleurs that share one actuation (cable-pull) ratio, a derailleur in the
+ * family indexes correctly at any of these counts given the matching shifter —
+ * e.g. an 8-speed Shimano road RD works in a 9- or 10-speed setup. Parsed from
+ * the family's `speeds` label (e.g. "8/9/10" -> [8, 9, 10]).
+ */
+export function familySupportedSpeeds(family: string | undefined): number[] {
+  if (!family) return [];
+  const sys = DERAILLEUR_SYSTEMS.find((s) => s.family === family);
+  if (!sys) return [];
+  return sys.speeds
+    .split('/')
+    .map((s) => parseInt(s, 10))
+    .filter((n) => Number.isFinite(n));
+}
+
+/**
+ * How compatible a derailleur is with an N-cog cassette, by actuation:
+ * - `match`        — its nominal speed count equals the cassette's.
+ * - `family`       — a different count, but its actuation family also covers it,
+ *                    so it indexes with the matching same-family shifter.
+ * - `friction`     — mechanical, outside its family's counts: no indexed shifter
+ *                    will line up, but a friction shifter can (indexing is in the
+ *                    shifter, not the derailleur).
+ * - `incompatible` — electronic: shifts in fixed pre-programmed steps and can't
+ *                    be re-indexed for another cog count (no friction option).
+ * - `unknown`      — third-party / underived family: can't judge from actuation.
+ */
+export type SpeedCompatStatus =
+  | 'match'
+  | 'family'
+  | 'friction'
+  | 'incompatible'
+  | 'unknown';
+
+export function speedCompatibility(d: DerailleurSpec, cogCount: number): SpeedCompatStatus {
+  if (d.speeds === cogCount) return 'match';
+  if (d.electronic) return 'incompatible';
+  if (!d.actuation) return 'unknown';
+  if (familySupportedSpeeds(d.actuation).includes(cogCount)) return 'family';
+  return 'friction';
+}
+
 export function searchDerailleurs(query: string): DerailleurSpec[] {
   const q = query.trim().toLowerCase();
   if (!q) return DERAILLEURS;

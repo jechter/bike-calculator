@@ -121,14 +121,24 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
     // (CW) -> out the bottom to the chainring. So cog->guide and guide->tension
     // are internal (crossing) tangents; the upper and lower runs are external.
     const GT = Math.sqrt(Math.max(0, CAGE * CAGE - (2 * PULLEY) ** 2)); // internal cage tangent
+    // A sprocket also swallows ~half its circumference of chain (the teeth/2·pitch
+    // term in every chain-length formula, = pi·r). Counting the chainring's wrap
+    // means a bigger ring eats more chain, so the cage swings forward to give it
+    // up — matching reality. (The cog's contribution is already carried by the
+    // guide pulley tracking the cog, so only the ring's wrap is added here.) The
+    // full pi·r would run the cage to its stops on a 2× jump; RING_WRAP scales it
+    // to a believable lean that leaves room for the per-cog motion on top.
+    const RING_WRAP = 0.5;
     const Ltarget =
       extTanLen(F, refRing, R, refCog) +
       intTanLen(R, refCog, GRef, PULLEY) +
       GT +
-      extTanLen(TRef, PULLEY, F, refRing);
+      extTanLen(TRef, PULLEY, F, refRing) +
+      RING_WRAP * Math.PI * refRing;
 
     // Solve the tension pulley so the length stays Ltarget.
-    const need = Ltarget - extTanLen(F, rf, R, rr) - intTanLen(R, rr, G, PULLEY) - GT;
+    const need =
+      Ltarget - extTanLen(F, rf, R, rr) - intTanLen(R, rr, G, PULLEY) - GT - RING_WRAP * Math.PI * rf;
     let TF = Math.sqrt(Math.max(0, need * need + (PULLEY - rf) ** 2));
     const FG = Math.hypot(G.x - F.x, G.y - F.y);
     TF = Math.max(FG - CAGE + 1, Math.min(FG + CAGE - 1, TF));

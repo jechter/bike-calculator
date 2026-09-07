@@ -4,6 +4,7 @@ import {
   chainLength,
   gearRange,
   chainWearThresholdsFor,
+  HUB_PRESETS,
 } from './drivetrain';
 
 describe('computeGears', () => {
@@ -44,6 +45,28 @@ describe('computeGears', () => {
     expect(direct.ratio).toBeCloseTo(44 / 18, 5);
     const low = gears.find((g) => g.hubGear?.name === '1st')!;
     expect(low.ratio).toBeCloseTo((44 / 18) * 0.75, 5);
+  });
+});
+
+describe('HUB_PRESETS (loaded from data/hub-gears.json)', () => {
+  it('loads presets with valid, ratio-ordered gears', () => {
+    expect(HUB_PRESETS.length).toBeGreaterThan(10);
+    for (const p of HUB_PRESETS) {
+      expect(p.gears.length).toBeGreaterThanOrEqual(2);
+      for (const g of p.gears) expect(g.ratio).toBeGreaterThan(0);
+    }
+  });
+
+  it('names discrete gears by ordinal and exposes CVT endpoints as Low/High', () => {
+    const rohloff = HUB_PRESETS.find((p) => p.label === 'Rohloff Speedhub')!;
+    expect(rohloff.continuouslyVariable).toBe(false);
+    expect(rohloff.gears).toHaveLength(14);
+    expect(rohloff.gears[0].name).toBe('1st');
+    expect(rohloff.gears[10].name).toBe('11th');
+
+    const cvt = HUB_PRESETS.find((p) => p.continuouslyVariable)!;
+    expect(cvt.gears.map((g) => g.name)).toEqual(['Low', 'High']);
+    expect(cvt.gears[1].ratio).toBeGreaterThan(cvt.gears[0].ratio);
   });
 });
 

@@ -177,12 +177,74 @@ export interface CassettePreset {
 
 export const CASSETTE_PRESETS: CassettePreset[] = cassettePresetsData as CassettePreset[];
 
-// Internally geared hub presets. Ratios are widely-published nominal values;
-// treat as reference data to verify (see docs). 1.000 == direct drive.
-// The rows live in data/hub-gears.json — add or edit hubs there (no code change).
-export interface HubPreset {
-  label: string;
-  gears: HubGear[];
+// Internally geared hub / bottom-bracket gearbox / CVT presets. Ratios are
+// gear ratios relative to 1:1 direct drive (1.000 == direct drive), each with a
+// primary/secondary source. The rows live in data/hub-gears.json — add or edit
+// hubs there (no code change). See src/data/README.md.
+export type HubKind = 'hub' | 'bottomBracket';
+
+export interface HubSource {
+  url: string;
+  sourceType: 'primary' | 'secondary';
+  note: string;
 }
 
-export const HUB_PRESETS: HubPreset[] = hubGearsData as HubPreset[];
+export interface HubPreset {
+  label: string;
+  manufacturer: string;
+  gears: HubGear[];
+  kind: HubKind;
+  /** True for CVT units; `gears` then holds just the range endpoints. */
+  continuouslyVariable: boolean;
+  source?: HubSource;
+}
+
+// Raw shape of an entry in data/hub-gears.json.
+interface RawHub {
+  name: string;
+  manufacturer: string;
+  type: HubKind;
+  continuouslyVariable: boolean;
+  numGears: number | null;
+  ratios: number[];
+  source?: HubSource;
+}
+
+/** English ordinal for a gear position: 1 -> "1st", 2 -> "2nd", 11 -> "11th". */
+function gearOrdinal(n: number): string {
+  const rem100 = n % 100;
+  if (rem100 >= 11 && rem100 <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1: return `${n}st`;
+    case 2: return `${n}nd`;
+    case 3: return `${n}rd`;
+    default: return `${n}th`;
+  }
+}
+
+/** Gear steps for a preset. CVT units expose only their low/high endpoints. */
+function hubGears(h: RawHub): HubGear[] {
+  if (h.continuouslyVariable) {
+    const lo = h.ratios[0];
+    const hi = h.ratios[h.ratios.length - 1];
+    return [
+      { name: 'Low', ratio: lo },
+      { name: 'High', ratio: hi },
+    ];
+  }
+  return h.ratios.map((ratio, i) => ({ name: gearOrdinal(i + 1), ratio }));
+}
+
+export const HUB_PRESETS: HubPreset[] = (hubGearsData.hubs as RawHub[]).map((h) => ({
+  label: h.name,
+  manufacturer: h.manufacturer,
+  gears: hubGears(h),
+  kind: h.type,
+  continuouslyVariable: h.continuouslyVariable,
+  source: h.source,
+}));
+
+/** Number of discrete speeds for sorting; CVT units sort last. */
+export function hubSpeedCount(p: HubPreset): number {
+  return p.continuouslyVariable ? Number.MAX_SAFE_INTEGER : p.gears.length;
+}

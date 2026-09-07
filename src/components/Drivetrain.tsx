@@ -3,12 +3,14 @@ import {
   CASSETTE_PRESETS,
   CHAINRING_PRESETS,
   HUB_PRESETS,
+  hubSpeedCount,
   chainWearThresholdsFor,
   computeGears,
   gearRange,
   chainLength,
   type GearResult,
   type HubGear,
+  type HubPreset,
 } from "../lib/drivetrain";
 import {
   DERAILLEURS,
@@ -57,6 +59,54 @@ const DERAILLEUR_OPTIONS = [
     label: `${d.brand} ${d.model} · ${d.speeds}sp · max ${d.maxSprocket}T`,
   })),
 ];
+
+// Hub picker is two steps: maker, then model. Makers are sorted by name; each
+// maker's models are sorted by speed count (CVT last), then name.
+const HUB_MAKER_OPTIONS = Array.from(new Set(HUB_PRESETS.map((p) => p.manufacturer)))
+  .sort((a, b) => a.localeCompare(b))
+  .map((m) => ({ value: m, label: m }));
+
+// Model label drops the maker prefix (already chosen) and notes speed/kind.
+function hubModelLabel(p: HubPreset): string {
+  const model = p.label.startsWith(p.manufacturer)
+    ? p.label.slice(p.manufacturer.length).trim()
+    : p.label;
+  const kind = p.continuouslyVariable ? "CVT" : `${p.gears.length}-speed`;
+  const suffix = p.kind === "bottomBracket" ? " gearbox" : "";
+  return `${model || p.label} · ${kind}${suffix}`;
+}
+
+// Model options per maker; each option's value is the index into HUB_PRESETS.
+const HUB_MODEL_OPTIONS: Record<string, { value: string; label: string }[]> = {};
+for (const { value: maker } of HUB_MAKER_OPTIONS) {
+  HUB_MODEL_OPTIONS[maker] = HUB_PRESETS.map((p, i) => ({ p, i }))
+    .filter((e) => e.p.manufacturer === maker)
+    .sort((a, b) => hubSpeedCount(a.p) - hubSpeedCount(b.p) || a.p.label.localeCompare(b.p.label))
+    .map(({ p, i }) => ({ value: String(i), label: hubModelLabel(p) }));
+}
+
+// Default to a common 3-speed (Sturmey-Archer AW-type) if present.
+const DEFAULT_HUB_IDX = Math.max(
+  0,
+  HUB_PRESETS.findIndex((p) => p.label === "Sturmey Archer S3"),
+);
+
+// Link to where the selected hub's ratios came from (primary/secondary source).
+function HubSourceLink({ hub }: { hub: HubPreset }) {
+  const src = hub.source;
+  if (!src) return <>internal ratios — verify against maker's data</>;
+  return (
+    <a
+      className="inline-link"
+      href={src.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={src.note}
+    >
+      ratio source ({src.sourceType}) ↗
+    </a>
+  );
+}
 
 // --- Per-drivetrain config --------------------------------------------------
 // All the state describing one drivetrain, including its wheel's rolling
@@ -217,11 +267,18 @@ function SetupFields({ cfg }: { cfg: DrivetrainConfig }) {
           <Field label="Sprocket (teeth)">
             <NumberInput value={cfg.singleCog} onChange={cfg.setSingleCog} min={8} />
           </Field>
-          <Field label="Hub" hint="internal ratios — verify against maker's data">
+          <Field label="Hub maker">
+            <Select
+              value={HUB_PRESETS[cfg.hubIdx].manufacturer}
+              onChange={(m) => cfg.setHubIdx(parseInt(HUB_MODEL_OPTIONS[m][0].value))}
+              options={HUB_MAKER_OPTIONS}
+            />
+          </Field>
+          <Field label="Hub model" hint={<HubSourceLink hub={HUB_PRESETS[cfg.hubIdx]} />}>
             <Select
               value={String(cfg.hubIdx)}
               onChange={(v) => cfg.setHubIdx(parseInt(v))}
-              options={HUB_PRESETS.map((p, i) => ({ value: String(i), label: p.label }))}
+              options={HUB_MODEL_OPTIONS[HUB_PRESETS[cfg.hubIdx].manufacturer]}
             />
           </Field>
         </>
@@ -269,7 +326,7 @@ export function Drivetrain() {
     cogStr: "11, 12, 13, 14, 15, 17, 19, 21, 24, 28",
     singleRing: 42,
     singleCog: 18,
-    hubIdx: 0,
+    hubIdx: DEFAULT_HUB_IDX,
     derailleurId: "",
     circ: 2111,
   });
@@ -279,7 +336,7 @@ export function Drivetrain() {
     cogStr: "11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42",
     singleRing: 42,
     singleCog: 18,
-    hubIdx: 0,
+    hubIdx: DEFAULT_HUB_IDX,
     derailleurId: "",
     circ: 2111,
   });

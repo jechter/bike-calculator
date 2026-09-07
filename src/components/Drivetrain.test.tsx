@@ -103,6 +103,40 @@ describe("Drivetrain page", () => {
     expect(high).toMatch(/1st|2nd|3rd/);
   });
 
+  it("picks a hub in two steps: maker, then model sorted by speeds", () => {
+    const { container } = render(<Drivetrain />);
+    const selects = () => Array.from(container.querySelectorAll("select"));
+    fireEvent.change(selects()[0], { target: { value: "hub" } });
+
+    // The maker select defaults to the common 3-speed Sturmey-Archer.
+    const maker = selects().find((s) =>
+      Array.from(s.options).some((o) => o.value === "Shimano"),
+    ) as HTMLSelectElement;
+    expect(maker.value).toBe("Sturmey Archer");
+
+    // Switching maker repopulates the model list, lowest-speed first.
+    fireEvent.change(maker, { target: { value: "Shimano" } });
+    const model = selects().find((s) =>
+      Array.from(s.options).some((o) => /Inter 3/.test(o.textContent || "")),
+    ) as HTMLSelectElement;
+    const labels = Array.from(model.options).map((o) => o.textContent);
+    expect(labels[0]).toMatch(/Inter 3 · 3-speed/);
+    expect(labels[labels.length - 1]).toMatch(/Inter 11 · 11-speed/);
+  });
+
+  it("links the hub model to its ratio source", () => {
+    const { container } = render(<Drivetrain />);
+    const selects = Array.from(container.querySelectorAll("select"));
+    fireEvent.change(selects[0], { target: { value: "hub" } });
+    const link = Array.from(container.querySelectorAll("a")).find((a) =>
+      /ratio source/.test(a.textContent || ""),
+    ) as HTMLAnchorElement;
+    expect(link).toBeTruthy();
+    // Default hub is the Sturmey-Archer S3 -> its manufacturer source URL.
+    expect(link.getAttribute("href")).toMatch(/^https?:\/\//);
+    expect(link.getAttribute("href")).toContain("sturmey-archer.com");
+  });
+
   it("shows a hover tooltip with a gear's exact values", () => {
     const { container } = render(<Drivetrain />);
     const dot = container.querySelector(".gc-dot") as SVGCircleElement;

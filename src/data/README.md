@@ -11,7 +11,7 @@ the manufacturer or your own measurements before relying on them.
 | File | Used by | What it is |
 | --- | --- | --- |
 | `derailleurs.json` | Drivetrain calculator | Rear derailleur specs (capacity, max sprocket, actuation family). |
-| `hub-gears.json` | Drivetrain calculator | Internally-geared-hub ratios (Sturmey-Archer, Nexus, Alfine, …). |
+| `hub-gears.json` | Drivetrain calculator | Internal-gear-hub, bottom-bracket-gearbox, and CVT gearing (Rohloff, Pinion, Nexus, Alfine, Enviolo, …), with a source per entry. |
 | `chainring-presets.json` | Drivetrain calculator | Common crankset chainring combinations. |
 | `cassette-presets.json` | Drivetrain calculator | Common cassette cog sets. |
 | `hub-geometry.json` | Wheel-building calculator | Hub flange diameters / offsets for spoke-length presets. |
@@ -34,10 +34,22 @@ Each entry is a `DerailleurSpec` (see `src/lib/derailleur.ts`):
 - `notes` — free text (optional).
 
 ### `hub-gears.json`
-Each entry is a `HubPreset` (see `src/lib/drivetrain.ts`):
-- `label` — display name.
-- `gears` — array of `{ "name": "1st", "ratio": 0.75 }`. `ratio` of `1.0` is
-  direct drive; below 1 is a reduction, above 1 an overdrive.
+An object with a `hubs` array (plus `description` / `extractedOn` / `count`
+metadata). Each hub is mapped to a `HubPreset` at load time (see
+`src/lib/drivetrain.ts`):
+- `name` — display name.
+- `manufacturer` — maker name; the drivetrain picker groups models under it
+  (makers sorted by name, models by speed count).
+- `type` — `"hub"` (internal gear hub) or `"bottomBracket"` (gearbox).
+- `continuouslyVariable` — `true` for a CVT; then `numGears` is `null` and
+  `ratios` is `[min, max]` of the continuous range (the app exposes the two
+  endpoints as "Low" / "High").
+- `numGears` — number of gears (or `null` for a CVT).
+- `ratios` — gear ratios relative to 1:1 direct drive, lowest first. `1.0` is
+  direct drive; below 1 is a reduction, above 1 an overdrive. Discrete hubs get
+  ordinal gear names ("1st", "2nd", …) automatically.
+- `source` — `{ url, sourceType: "primary" | "secondary", note }` citing where
+  the ratios came from.
 
 ### `chainring-presets.json`
 Each entry is a `ChainringPreset` (see `src/lib/drivetrain.ts`):

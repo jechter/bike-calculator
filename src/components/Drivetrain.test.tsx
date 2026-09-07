@@ -285,9 +285,9 @@ describe("Drivetrain page", () => {
 
   it("warns when the derailleur's nominal speed count differs from the cassette", () => {
     const { container } = render(<Drivetrain />);
-    // Default cassette has 10 cogs. Pick an 11-speed RD-R7000 (105) SS — its
-    // family only covers 11, so it's a mechanical (friction-shifter) mismatch.
-    pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
+    // Default cassette has 10 cogs. Pick an 11-speed MTB XT RD-M8000 — its
+    // actuation family (11/12) excludes 10, so it's a friction-shifter mismatch.
+    pickDerailleur(container, "M8000", (t) => t.includes("SGS cage"));
     expect(container.textContent).toMatch(/≠ 10-sp/);
     expect(container.textContent).toMatch(/friction shifter/);
   });

@@ -53,8 +53,9 @@ Systems that must match (indexing depends on it):
 
 | System / family | Notes |
 |---|---|
-| Shimano road 8/9/10-speed | "old" road pull ratio (pre-2016-ish) |
-| Shimano road 11-speed | different pull ratio again — not cross-compatible with 10sp |
+| Shimano road 1.7 (classic) | ≈1.7:1 — cross-compatible 6–10 incl. Dura-Ace 7700–7900 |
+| Shimano road 1.9 (Dura-Ace 7400) | ≈1.9:1 — old Dura-Ace 7400-series only (6–8), own pull |
+| Shimano road 1.4 (11-speed & Tiagra 4700) | ≈1.4:1 — 11-speed road **and** Tiagra RD-4700 (10s); not compatible with classic 1.7 |
 | Shimano MTB 8/9-speed | shares the older ratio with road of the same era |
 | Shimano MTB 10-speed Dynasys | changed ratio — not compatible with road 10sp |
 | Shimano MTB 11/12-speed (Hyperglide+ / Micro Spline) | own standards |

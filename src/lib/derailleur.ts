@@ -57,19 +57,27 @@ export interface DerailleurSystem {
 // stay in sync with deriveActuation() below (and PULL_RATIOS).
 export const DERAILLEUR_SYSTEMS: DerailleurSystem[] = [
   {
-    family: 'Shimano road 8/9/10-speed',
-    speeds: '8/9/10',
+    family: 'Shimano road 1.7 (classic)',
+    speeds: '6/7/8/9/10',
     discipline: 'Road',
-    actuationNote: '"old" Shimano road pull ratio',
+    actuationNote: '≈1.7:1 — the "classic" Shimano road pull',
     notes:
-      'Cross-compatible among 8/9/10 road; NOT with 11-speed road or Dynasys MTB 10sp.',
+      'Cross-compatible 6–10 incl. Dura-Ace 7700–7900. NOT the old DA 7400 (1.9), Tiagra 4700 (1.4), or 11-speed road (1.4).',
   },
   {
-    family: 'Shimano road 11-speed',
-    speeds: '11',
+    family: 'Shimano road 1.9 (Dura-Ace 7400)',
+    speeds: '6/7/8',
     discipline: 'Road',
-    actuationNote: 'different ratio to 10-speed road',
-    notes: 'Own standard; not compatible with 10sp road or MTB 11sp.',
+    actuationNote: '≈1.9:1 — old Dura-Ace only',
+    notes: 'Dura-Ace 7400-series (6–8sp). Own pull; not compatible with classic 1.7.',
+  },
+  {
+    family: 'Shimano road 1.4 (11-speed & Tiagra 4700)',
+    speeds: '10/11',
+    discipline: 'Road',
+    actuationNote: '≈1.4:1',
+    notes:
+      '11-speed road and Tiagra RD-4700 (10sp) share this pull. NOT compatible with classic 1.7 (8/9/10) road.',
   },
   {
     family: 'Shimano road 12-speed',
@@ -254,9 +262,16 @@ function deriveActuation(r: RawDerailleur): string | undefined {
     if (series.includes('cues') || series.includes('linkglide'))
       return 'Shimano CUES / LinkGlide';
     if (road) {
+      // Road actuation is set by the cable-pull ratio, NOT the speed count:
+      // "classic" Shimano (1.7) is cross-compatible 6–10 incl. Dura-Ace 7700–
+      // 7900; old Dura-Ace 7400 is 1.9 (6–8 only); Tiagra RD-4700 shares the
+      // 11-speed 1.4 ratio. Prefer the sourced pullRatio; fall back to speed.
+      if (r.pullRatio === 1.9) return 'Shimano road 1.9 (Dura-Ace 7400)';
+      if (r.pullRatio === 1.7) return 'Shimano road 1.7 (classic)';
+      if (r.pullRatio === 1.4) return 'Shimano road 1.4 (11-speed & Tiagra 4700)';
       if (s >= 12) return 'Shimano road 12-speed';
-      if (s === 11) return 'Shimano road 11-speed';
-      return 'Shimano road 8/9/10-speed';
+      if (s === 11) return 'Shimano road 1.4 (11-speed & Tiagra 4700)';
+      return 'Shimano road 1.7 (classic)'; // 6/7/8/9/10 default
     }
     if (s >= 11) return 'Shimano MTB 11/12-speed (Hyperglide+ / Micro Spline)';
     if (s === 10) return 'Shimano MTB 10-speed (Dynasys)';
@@ -326,9 +341,11 @@ export const DERAILLEURS: DerailleurSpec[] = loadDerailleurs();
 // a row has no sourced numeric pullRatio. DISPUTED between sources; treat as a
 // rough guide. Electronic groups have no cable-pull ratio.
 export const PULL_RATIOS: Record<string, string> = {
-  'Shimano road 8/9/10-speed': '≈1.7:1',
-  'Shimano road 11-speed': '≈1.4:1',
-  'Shimano road 12-speed': '≈1.4:1',
+  'Shimano road 1.7 (classic)': '≈1.7:1',
+  'Shimano road 1.9 (Dura-Ace 7400)': '≈1.9:1',
+  'Shimano road 1.4 (11-speed & Tiagra 4700)': '≈1.4:1',
+  // 'Shimano road 12-speed' intentionally omitted — mechanical 12s road pull is
+  // not well documented; rows show their sourced numeric ratio or "—".
   'Shimano MTB 6/7/8/9-speed': '≈1.7:1',
   'Shimano MTB 10-speed (Dynasys)': '≈1.2:1',
   'Shimano MTB 11/12-speed (Hyperglide+ / Micro Spline)': '≈1.3:1',

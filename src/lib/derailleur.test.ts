@@ -73,7 +73,7 @@ describe('derailleurSpeeds / speedMatches', () => {
 describe('deriveActuation', () => {
   it('derives families for Shimano/SRAM, leaves third-party unknown', () => {
     expect(derailleurByKey('shimano-rd-r7000-ss-11s')?.actuation).toBe(
-      'Shimano road 11-speed',
+      'Shimano road 1.4 (11-speed & Tiagra 4700)',
     );
     const eagle = DERAILLEURS.find(
       (d) => d.brand === 'SRAM' && d.discipline === 'MTB' && d.speeds === 12 && !d.electronic,
@@ -81,6 +81,21 @@ describe('deriveActuation', () => {
     expect(eagle?.actuation).toBe('SRAM Eagle (X-Actuation)');
     const microshift = DERAILLEURS.find((d) => d.brand === 'Microshift');
     expect(microshift?.actuation).toBeUndefined();
+  });
+
+  it('splits Shimano road families by pull ratio, not speed count', () => {
+    // Classic 1.7 spans 6–10 (incl. Dura-Ace 7700–7900); old DA 7400 is its own
+    // 1.9; Tiagra RD-4700 (10s) shares the 11-speed 1.4 pull — not the classic.
+    const da7400 = DERAILLEURS.find((d) => d.model === 'RD-7400');
+    expect(da7400?.actuation).toBe('Shimano road 1.9 (Dura-Ace 7400)');
+    const tiagra4700 = DERAILLEURS.find((d) => d.model === 'RD-4700')!;
+    expect(tiagra4700.speeds).toBe(10);
+    expect(tiagra4700.actuation).toBe('Shimano road 1.4 (11-speed & Tiagra 4700)');
+    const classic = DERAILLEURS.filter((d) => d.actuation === 'Shimano road 1.7 (classic)');
+    expect(classic.some((d) => d.speeds === 10)).toBe(true); // e.g. 105/Ultegra 10s
+    // A classic 10-speed and a 4700 are 10-speed but NOT the same family.
+    const classic10 = classic.find((d) => d.speeds === 10)!;
+    expect(classic10.actuation).not.toBe(tiagra4700.actuation);
   });
   it('classifies Campagnolo by speeds and electronic', () => {
     const campy = DERAILLEURS.filter((d) => d.brand === 'Campagnolo');
@@ -104,14 +119,21 @@ describe('speedCompatibility', () => {
     expect(speedCompatibility(axs!, 11)).toBe('incompatible');
   });
   it('allows other counts within the actuation family', () => {
-    // Tiagra RD-4700 is 10-speed road; its family covers 8/9/10.
-    const t = searchDerailleurs('4700').find((d) => d.cage === 'GS')!;
-    expect(t.speeds).toBe(10);
-    expect(speedCompatibility(t, 9)).toBe('family');
+    // A classic-1.7 10-speed road RD indexes a 9-speed setup (family spans 6–10).
+    const classic10 = DERAILLEURS.find(
+      (d) => d.actuation === 'Shimano road 1.7 (classic)' && d.speeds === 10,
+    )!;
+    expect(speedCompatibility(classic10, 9)).toBe('family');
   });
   it('falls to friction for a mechanical count outside its family', () => {
-    // RD-R7000 (11-sp road) family is 11 only, so a 10-sp cassette needs friction.
-    expect(speedCompatibility(derailleurByKey('shimano-rd-r7000-ss-11s')!, 10)).toBe('friction');
+    // Tiagra RD-4700 is 1.4 (family 10/11), so a 9-speed cassette needs friction —
+    // it is NOT part of the classic 6–10 family despite being 10-speed.
+    const t = DERAILLEURS.find((d) => d.model === 'RD-4700')!;
+    expect(t.speeds).toBe(10);
+    expect(speedCompatibility(t, 9)).toBe('friction');
+    // And a classic-1.7 RD can't index 11-speed (11 is the 1.4 family).
+    const classic = DERAILLEURS.find((d) => d.actuation === 'Shimano road 1.7 (classic)')!;
+    expect(speedCompatibility(classic, 11)).toBe('friction');
   });
   it('is unknown when the family could not be derived (third-party)', () => {
     const ms = DERAILLEURS.find((d) => d.brand === 'Microshift' && !d.electronic)!;

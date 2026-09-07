@@ -1,6 +1,6 @@
 {
   "description": "Cassette / sprocket sets keyed by brand and model, with cog (sprocket) tooth counts, freehub body, speeds, weight, price and a per-entry source. The drivetrain calculator groups models under a brand picker; picking one fills the cassette cog field. Reference data — verify against the manufacturer before relying on it.",
-  "count": 988,
+  "count": 1006,
   "sources": [
     {
       "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
@@ -141,6 +141,54 @@
     {
       "url": "https://www.recon.bike",
       "sourceType": "primary"
+    },
+    {
+      "url": "https://bike.shimano.com/products/components/pdp.P-MF-TZ500-7.html",
+      "sourceType": "primary"
+    },
+    {
+      "url": "https://www.giantbikespares.com/Shimano-MF-TZ30-6-speed-multiple-freewheel--14-34-T-MegaRange/product_detail/3-44793",
+      "sourceType": "secondary"
+    },
+    {
+      "url": "https://www.bike-components.de/en/Shimano/CS-HG41-7-7-speed-Cassette-p29616/",
+      "sourceType": "secondary"
+    },
+    {
+      "url": "https://www.sheldonbrown.com/k7-7.shtml",
+      "sourceType": "secondary"
+    },
+    {
+      "url": "https://www.specshift.bike/components/cassettes/shimano-cs-hg20-7-12-32",
+      "sourceType": "secondary"
+    },
+    {
+      "url": "https://velomine.com/products/shimano-claris-cs-hg50-cassette-8-speed-11-34t-silver-nickel-plated",
+      "sourceType": "secondary"
+    },
+    {
+      "url": "https://velomine.com/products/shimano-sora-cs-hg50-cassette-9-speed-11-30t-silver-nickel-plated",
+      "sourceType": "secondary"
+    },
+    {
+      "url": "https://www.sram.com/en/sram/models/cs-pg-730-a1",
+      "sourceType": "primary"
+    },
+    {
+      "url": "https://www.probikesupply.com/collections/cassettes/products/sram-pg-850-8-speed-11-30-cassette",
+      "sourceType": "secondary"
+    },
+    {
+      "url": "https://www.sram.com/en/sram/models/cs-pg-950-a1",
+      "sourceType": "primary"
+    },
+    {
+      "url": "https://www.interlocracing.com/shop/30957-ird-cassette-10sp-elite-shimano-4355",
+      "sourceType": "primary"
+    },
+    {
+      "url": "https://www.jensonusa.com/IRD-Interloc-Elite-10S-Extended-Cassette-Silver-11-40T-10-Speed",
+      "sourceType": "secondary"
     }
   ],
   "cassettes": [
@@ -25336,6 +25384,412 @@
         "url": "https://www.vitalmtb.com/news/news/TRW-Active-Enters-the-Mountain-Bike-Drivetrain-Market,1214",
         "sourceType": "secondary",
         "note": "TRW Active's official domain is down (503, brand appears defunct); Vital MTB documents its Rocket cassette tooth counts (11-50 / 11-52)."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "MF-TZ500-6",
+      "freehub": "Freewheel (screw-on)",
+      "speeds": 6,
+      "sprockets": [
+        14,
+        16,
+        18,
+        21,
+        24,
+        28
+      ],
+      "weightGrams": 520,
+      "priceUsd": 15,
+      "source": {
+        "url": "https://bike.shimano.com/products/components/pdp.P-MF-TZ500-7.html",
+        "sourceType": "primary",
+        "note": "Shimano Tourney MF-TZ500 family; the 6-speed 14-28 variant is a screw-on freewheel (14-16-18-21-24-28). Weight ~520g incl. freewheel body (retailer listings, approximate)."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "MF-TZ30-6",
+      "freehub": "Freewheel (screw-on)",
+      "speeds": 6,
+      "sprockets": [
+        14,
+        16,
+        18,
+        21,
+        24,
+        34
+      ],
+      "weightGrams": 430,
+      "priceUsd": 17,
+      "source": {
+        "url": "https://www.giantbikespares.com/Shimano-MF-TZ30-6-speed-multiple-freewheel--14-34-T-MegaRange/product_detail/3-44793",
+        "sourceType": "secondary",
+        "note": "MF-TZ30 6-speed MegaRange screw-on freewheel, 14-34 (14-16-18-21-24-34). Older code no longer on Shimano's site; weight ~430g (retailer, approximate)."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG41-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        11,
+        13,
+        15,
+        18,
+        21,
+        24,
+        28
+      ],
+      "weightGrams": 228,
+      "priceUsd": 20,
+      "source": {
+        "url": "https://www.bike-components.de/en/Shimano/CS-HG41-7-7-speed-Cassette-p29616/",
+        "sourceType": "secondary",
+        "note": "CS-HG41-7 slide-on HG 7-speed cassette; retailer lists 11-13-15-18-21-24-28 and 228g. Cog sequence confirmed."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG50-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        12,
+        14,
+        16,
+        18,
+        21,
+        24,
+        28
+      ],
+      "weightGrams": 320,
+      "priceUsd": 30,
+      "source": {
+        "url": "https://www.sheldonbrown.com/k7-7.shtml",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown's Shimano 7-speed cassette table lists 12-14-16-18-21-24-28 as a CS-HG50 variant (HG slide-on). Per-variant weight not published; ~320g estimated."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG20-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        12,
+        14,
+        16,
+        18,
+        21,
+        26,
+        32
+      ],
+      "weightGrams": 340,
+      "priceUsd": 22,
+      "source": {
+        "url": "https://www.specshift.bike/components/cassettes/shimano-cs-hg20-7-12-32",
+        "sourceType": "secondary",
+        "note": "CS-HG20-7 12-32 HG cassette, 12-14-16-18-21-26-32 (retailer listings). Shimano does not publish this older code's weight; ~340g estimated."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG50-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        13,
+        14,
+        15,
+        17,
+        19,
+        21,
+        23
+      ],
+      "weightGrams": 263,
+      "priceUsd": 30,
+      "source": {
+        "url": "https://www.sheldonbrown.com/k7-7.shtml",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown table lists 13-14-15-17-19-21-23 as a CS-HG50 13-23 close-ratio variant (HG slide-on); 263g confirmed by retailer listings."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG50-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        13,
+        15,
+        17,
+        19,
+        21,
+        23,
+        26
+      ],
+      "weightGrams": 303,
+      "priceUsd": 30,
+      "source": {
+        "url": "https://www.sheldonbrown.com/k7-7.shtml",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown table lists 13-15-17-19-21-23-26 as a CS-HG50 13-26 variant (HG slide-on); 303g per retailer listing."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG50-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        13,
+        15,
+        17,
+        19,
+        21,
+        24,
+        28
+      ],
+      "weightGrams": 340,
+      "priceUsd": 30,
+      "source": {
+        "url": "https://www.sheldonbrown.com/k7-7.shtml",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown table lists 13-15-17-19-21-24-28 as a CS-HG50 13-28 variant (HG slide-on); weight ~340g (approximate)."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG50-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        13,
+        15,
+        17,
+        20,
+        23,
+        26,
+        30
+      ],
+      "weightGrams": 361,
+      "priceUsd": 32,
+      "source": {
+        "url": "https://www.sheldonbrown.com/k7-7.shtml",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown table lists 13-15-17-20-23-26-30 as a CS-HG50 13-30 variant (HG slide-on); weight ~361g (approximate)."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG50-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        13,
+        15,
+        17,
+        20,
+        24,
+        29,
+        34
+      ],
+      "weightGrams": 390,
+      "priceUsd": 33,
+      "source": {
+        "url": "https://www.sheldonbrown.com/k7-7.shtml",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown table lists 13-15-17-20-24-29-34 as a CS-HG50 13-34 MegaRange variant (HG slide-on); weight ~390g (estimated)."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG50-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        14,
+        16,
+        18,
+        21,
+        24,
+        28,
+        32
+      ],
+      "weightGrams": 380,
+      "priceUsd": 32,
+      "source": {
+        "url": "https://www.sheldonbrown.com/k7-7.shtml",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown table lists 14-16-18-21-24-28-32 as a CS-HG50 14-32 variant (HG slide-on); weight ~380g (estimated)."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG50-8",
+      "freehub": "HG 8, HG 11",
+      "speeds": 8,
+      "sprockets": [
+        11,
+        13,
+        15,
+        18,
+        21,
+        24,
+        28,
+        34
+      ],
+      "weightGrams": 293,
+      "priceUsd": 27,
+      "source": {
+        "url": "https://velomine.com/products/shimano-claris-cs-hg50-cassette-8-speed-11-34t-silver-nickel-plated",
+        "sourceType": "secondary",
+        "note": "Shimano Claris CS-HG50-8 11-34 with 11-13-15-18-21-24-28-34; 293g is the published Shimano dealer spec (retailer confirms code)."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG50-9",
+      "freehub": "HG 8, HG 11",
+      "speeds": 9,
+      "sprockets": [
+        11,
+        12,
+        14,
+        16,
+        18,
+        20,
+        23,
+        26,
+        30
+      ],
+      "weightGrams": 435,
+      "priceUsd": 39,
+      "source": {
+        "url": "https://velomine.com/products/shimano-sora-cs-hg50-cassette-9-speed-11-30t-silver-nickel-plated",
+        "sourceType": "secondary",
+        "note": "Shimano CS-HG50-9 (I-CSHG509130) 11-30 with 11-12-14-16-18-20-23-26-30; 435g per retailer/Shimano spec."
+      }
+    },
+    {
+      "brand": "SRAM",
+      "model": "PG-730",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        12,
+        14,
+        16,
+        18,
+        21,
+        26,
+        32
+      ],
+      "weightGrams": 302,
+      "priceUsd": 20,
+      "source": {
+        "url": "https://www.sram.com/en/sram/models/cs-pg-730-a1",
+        "sourceType": "primary",
+        "note": "SRAM official CS-PG-730-A1 page; 12-32 splits as 12-14-16-18-21-26-32. Weight 302g and ~$20 from retailers."
+      }
+    },
+    {
+      "brand": "SRAM",
+      "model": "PG-850",
+      "freehub": "HG 8, HG 11",
+      "speeds": 8,
+      "sprockets": [
+        11,
+        13,
+        15,
+        17,
+        20,
+        23,
+        26,
+        30
+      ],
+      "weightGrams": 260,
+      "priceUsd": 25,
+      "source": {
+        "url": "https://www.probikesupply.com/collections/cassettes/products/sram-pg-850-8-speed-11-30-cassette",
+        "sourceType": "secondary",
+        "note": "SRAM's own page lists only the 11-32 split, so the 11-30 cog sequence (11-13-15-17-20-23-26-30), 260g and price come from retailers."
+      }
+    },
+    {
+      "brand": "SRAM",
+      "model": "PG-950",
+      "freehub": "HG 8, HG 11",
+      "speeds": 9,
+      "sprockets": [
+        11,
+        12,
+        13,
+        15,
+        17,
+        19,
+        21,
+        24,
+        28
+      ],
+      "weightGrams": 325,
+      "priceUsd": 40,
+      "source": {
+        "url": "https://www.sram.com/en/sram/models/cs-pg-950-a1",
+        "sourceType": "primary",
+        "note": "SRAM official CS-PG-950-A1 page; 11-28 splits as 11-12-13-15-17-19-21-24-28. SRAM gives no numeric weight; ~325g is a retailer mid-point (sources vary 230-370g)."
+      }
+    },
+    {
+      "brand": "IRD",
+      "model": "Elite 10",
+      "freehub": "HG 8, HG 11",
+      "speeds": 10,
+      "sprockets": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        19,
+        21,
+        23
+      ],
+      "weightGrams": null,
+      "priceUsd": 120,
+      "source": {
+        "url": "https://www.interlocracing.com/shop/30957-ird-cassette-10sp-elite-shimano-4355",
+        "sourceType": "primary",
+        "note": "IRD Elite 10-speed Shimano cassette, 11-23 close ratio (11-12-13-14-15-16-17-19-21-23); IRD lists it at $119.99, per-size weight not published."
+      }
+    },
+    {
+      "brand": "IRD",
+      "model": "Elite 10",
+      "freehub": "HG 8, HG 11",
+      "speeds": 10,
+      "sprockets": [
+        11,
+        13,
+        15,
+        17,
+        19,
+        21,
+        25,
+        29,
+        34,
+        40
+      ],
+      "weightGrams": null,
+      "priceUsd": 132,
+      "source": {
+        "url": "https://www.jensonusa.com/IRD-Interloc-Elite-10S-Extended-Cassette-Silver-11-40T-10-Speed",
+        "sourceType": "secondary",
+        "note": "IRD Elite 10-speed extended-range 11-40 (11-13-15-17-19-21-25-29-34-40) documented by Cyclocross Magazine; Jenson lists ~$132. 10-speed weight not published."
       }
     }
   ]

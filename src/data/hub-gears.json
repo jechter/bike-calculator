@@ -1,7 +1,7 @@
 {
-  "description": "Internal gear hub, bottom-bracket gearbox, and CVT gearing data, extracted from Ritzelrechner / Gear Calculator and Cycling UK, with a manufacturer and primary/secondary source per entry. Ratios are gear ratios relative to a 1:1 direct drive. For entries with continuouslyVariable=true, numGears is null and ratios is [min, max] of the continuous range.",
+  "description": "Internal gear hub, bottom-bracket gearbox, and CVT gearing data, extracted from Ritzelrechner / Gear Calculator and Cycling UK, with a manufacturer and primary/secondary source per entry. Ratios are gear ratios relative to a 1:1 direct drive. For entries with continuouslyVariable=true, numGears is null and ratios is [min, max] of the continuous range. Entries with derailleurCompatible=true are designed to be combined with a rear derailleur + cassette (the app multiplies the hub ratios through the cassette).",
   "extractedOn": "2026-09-07",
-  "count": 52,
+  "count": 55,
   "hubs": [
     {
       "name": "Rohloff Speedhub",
@@ -249,6 +249,7 @@
       "name": "Classified Powershift",
       "manufacturer": "Classified",
       "type": "hub",
+      "derailleurCompatible": true,
       "continuouslyVariable": false,
       "numGears": 2,
       "ratios": [
@@ -691,6 +692,24 @@
       }
     },
     {
+      "name": "SRAM DualDrive3",
+      "manufacturer": "SRAM",
+      "type": "hub",
+      "derailleurCompatible": true,
+      "continuouslyVariable": false,
+      "numGears": 3,
+      "ratios": [
+        0.734,
+        1,
+        1.362
+      ],
+      "source": {
+        "url": "https://sheldonbrown.com/sachs-internal.html",
+        "sourceType": "secondary",
+        "note": "SRAM DualDrive / DualDrive3: the Sachs/SRAM 3-speed (iM3, 0.734/1/1.362, 186%) built onto a cassette freehub to pair with an 8/9-speed rear derailleur. Successor to the Sachs 3x7."
+      }
+    },
+    {
       "name": "SRAM P5 Cargo",
       "manufacturer": "SRAM",
       "type": "hub",
@@ -723,6 +742,24 @@
         "url": "https://www.sheldonbrown.com/automatix.html",
         "sourceType": "secondary",
         "note": "Sheldon Brown documents the two ratios 1.00 and 1.36 (64/47); SRAM's Automatix manual lists no ratios."
+      }
+    },
+    {
+      "name": "Sachs 3x7 (3-speed hub)",
+      "manufacturer": "Sachs",
+      "type": "hub",
+      "derailleurCompatible": true,
+      "continuouslyVariable": false,
+      "numGears": 3,
+      "ratios": [
+        0.734,
+        1,
+        1.362
+      ],
+      "source": {
+        "url": "https://sheldonbrown.com/sachs-internal.html",
+        "sourceType": "secondary",
+        "note": "Sachs 3x7 / DualDrive 3-speed hub, designed to pair with a 7-speed derailleur cassette. Sheldon Brown gives the multipliers as 0.734 / 1.0 / 1.362; combine with a cassette for the full 21-speed range."
       }
     },
     {
@@ -911,6 +948,24 @@
       }
     },
     {
+      "name": "Sturmey Archer CS-RF3",
+      "manufacturer": "Sturmey Archer",
+      "type": "hub",
+      "derailleurCompatible": true,
+      "continuouslyVariable": false,
+      "numGears": 3,
+      "ratios": [
+        0.75,
+        1,
+        1.333
+      ],
+      "source": {
+        "url": "https://www.sturmey-archer.com/en/products/detail/cs-rf3-black",
+        "sourceType": "primary",
+        "note": "Sturmey-Archer CS-RF3: a 3-speed cassette freehub (177%, 33%+33% = 0.75/1/1.333) built to take a standard 8/9-speed cassette + rear derailleur. Same AW-type ratios as the S3 / Brompton BSR."
+      }
+    },
+    {
       "name": "Sturmey Archer S2",
       "manufacturer": "Sturmey Archer",
       "type": "hub",
@@ -930,6 +985,7 @@
       "name": "Brompton BSR",
       "manufacturer": "Brompton",
       "type": "hub",
+      "derailleurCompatible": true,
       "continuouslyVariable": false,
       "numGears": 3,
       "ratios": [
@@ -947,6 +1003,7 @@
       "name": "Brompton BWR",
       "manufacturer": "Brompton",
       "type": "hub",
+      "derailleurCompatible": true,
       "continuouslyVariable": false,
       "numGears": 3,
       "ratios": [
@@ -964,6 +1021,7 @@
       "name": "Schlumpf Mountain-Drive",
       "manufacturer": "Schlumpf",
       "type": "bottomBracket",
+      "derailleurCompatible": true,
       "continuouslyVariable": false,
       "numGears": 2,
       "ratios": [
@@ -980,6 +1038,7 @@
       "name": "Schlumpf Speed-Drive",
       "manufacturer": "Schlumpf",
       "type": "bottomBracket",
+      "derailleurCompatible": true,
       "continuouslyVariable": false,
       "numGears": 2,
       "ratios": [
@@ -996,6 +1055,7 @@
       "name": "Schlumpf High-Speed-Drive",
       "manufacturer": "Schlumpf",
       "type": "bottomBracket",
+      "derailleurCompatible": true,
       "continuouslyVariable": false,
       "numGears": 2,
       "ratios": [

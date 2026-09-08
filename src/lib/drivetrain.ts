@@ -237,6 +237,10 @@ export interface HubPreset {
   kind: HubKind;
   /** True for CVT units; `gears` then holds just the range endpoints. */
   continuouslyVariable: boolean;
+  /** True for systems meant to run alongside a rear derailleur + cassette
+   *  (Schlumpf, Classified, Brompton, Sachs 3×7…). The app can then multiply
+   *  the hub ratios through a cassette's cogs. */
+  derailleurCompatible: boolean;
   source?: HubSource;
 }
 
@@ -248,6 +252,7 @@ interface RawHub {
   continuouslyVariable: boolean;
   numGears: number | null;
   ratios: number[];
+  derailleurCompatible?: boolean;
   source?: HubSource;
 }
 
@@ -282,6 +287,7 @@ export const HUB_PRESETS: HubPreset[] = (hubGearsData.hubs as RawHub[]).map((h) 
   gears: hubGears(h),
   kind: h.type,
   continuouslyVariable: h.continuouslyVariable,
+  derailleurCompatible: !!h.derailleurCompatible,
   source: h.source,
 }));
 

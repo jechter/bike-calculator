@@ -487,6 +487,21 @@ function isCvt(cfg: { mode: Mode; hubIdx: number }): boolean {
   return cfg.mode === "hub" && HUB_PRESETS[cfg.hubIdx].continuouslyVariable;
 }
 
+// A derailleur-compatible hub (Schlumpf, Classified, Brompton, Sachs 3×7…) is
+// always shown with a rear derailleur + cassette: computeGears multiplies the
+// hub ratios through every cassette cog, so the hub steps act like extra front
+// gears over the cassette.
+function comboActive(cfg: { mode: Mode; hubIdx: number }): boolean {
+  return cfg.mode === "hub" && HUB_PRESETS[cfg.hubIdx].derailleurCompatible;
+}
+
+// Whether this config runs a rear derailleur + cassette: plain cassette mode, or
+// a derailleur-compatible hub. Gates the derailleur fit check, the derailleur
+// chain-length formula, and the narrow-chain wear thresholds.
+function hasDerailleur(cfg: { mode: Mode; hubIdx: number }): boolean {
+  return cfg.mode === "cassette" || comboActive(cfg);
+}
+
 // Link (labelled with the hub's name) to where its ratios came from.
 function HubSourceLink({ hub }: { hub: HubPreset }) {
   const src = hub.source;
@@ -606,8 +621,11 @@ interface Derived {
 
 function useDerived(cfg: DrivetrainConfig, cadence: number): Derived {
   return useMemo(() => {
+    // In combo mode the front is a single chainring and the cogs come from the
+    // cassette (the hub gears multiply through them, like extra front gears).
+    const combo = comboActive(cfg);
     const chainrings = cfg.mode === "cassette" ? parseList(cfg.chainringStr) : [cfg.singleRing];
-    const cogs = cfg.mode === "cassette" ? parseList(cfg.cogStr) : [cfg.singleCog];
+    const cogs = cfg.mode === "cassette" || combo ? parseList(cfg.cogStr) : [cfg.singleCog];
     const hubGears: HubGear[] | undefined =
       cfg.mode === "hub" ? HUB_PRESETS[cfg.hubIdx].gears : undefined;
     const gears = computeGears({
@@ -826,6 +844,8 @@ function CassetteFields({ cfg }: { cfg: DrivetrainConfig }) {
   const modelMatches = !!selected && sameCogs(selected.cogs, cogs);
   // When a rear derailleur is chosen, the picker dots each cassette by fit.
   const derailleur = derailleurByKey(cfg.derailleurId);
+  // Cassette mode has a multi-ring crankset; a hub combo has a single front ring.
+  const fitChainrings = cfg.mode === "cassette" ? parseList(cfg.chainringStr) : [cfg.singleRing];
 
   return (
     <Field
@@ -841,7 +861,7 @@ function CassetteFields({ cfg }: { cfg: DrivetrainConfig }) {
             cfg.setCogStr(CASSETTE_PRESETS[i].cogs.join(", "));
           }}
           fitDerailleur={derailleur}
-          fitChainrings={parseList(cfg.chainringStr)}
+          fitChainrings={fitChainrings}
           fitShifter={cfg.shifter}
         />
       </div>
@@ -910,45 +930,83 @@ function SetupFields({ cfg }: { cfg: DrivetrainConfig }) {
     );
   }
 
-  return (
-    <div className="grid">
-      {typeField}
-
-      {cfg.mode === "single" && (
-        <>
+  // Hub mode: a single chainring + sprocket driving an internally-geared hub.
+  // Derailleur-compatible hubs (Schlumpf, Classified, Brompton, Sachs 3×7…) add
+  // a toggle that swaps the single sprocket for a full rear derailleur + cassette
+  // (its own row, like cassette mode), so the hub steps multiply through the cogs.
+  if (cfg.mode === "hub") {
+    const hub = HUB_PRESETS[cfg.hubIdx];
+    const combo = comboActive(cfg);
+    return (
+      <>
+        <div className="grid">
+          {typeField}
           <Field label="Chainring (teeth)">
             <NumberInput value={cfg.singleRing} onChange={cfg.setSingleRing} min={20} />
           </Field>
-          <Field label="Cog (teeth)">
-            <NumberInput value={cfg.singleCog} onChange={cfg.setSingleCog} min={8} />
-          </Field>
-        </>
-      )}
-
-      {cfg.mode === "hub" && (
-        <>
-          <Field label="Chainring (teeth)">
-            <NumberInput value={cfg.singleRing} onChange={cfg.setSingleRing} min={20} />
-          </Field>
-          <Field label="Sprocket (teeth)">
-            <NumberInput value={cfg.singleCog} onChange={cfg.setSingleCog} min={8} />
-          </Field>
+          {!combo && (
+            <Field label="Sprocket (teeth)">
+              <NumberInput value={cfg.singleCog} onChange={cfg.setSingleCog} min={8} />
+            </Field>
+          )}
           <Field label="Hub maker">
             <Select
-              value={HUB_PRESETS[cfg.hubIdx].manufacturer}
+              value={hub.manufacturer}
               onChange={(m) => cfg.setHubIdx(parseInt(HUB_MODEL_OPTIONS[m][0].value))}
               options={HUB_MAKER_OPTIONS}
             />
           </Field>
-          <Field label="Hub model" hint={<HubSourceLink hub={HUB_PRESETS[cfg.hubIdx]} />}>
+          <Field label="Hub model" hint={<HubSourceLink hub={hub} />}>
             <Select
               value={String(cfg.hubIdx)}
               onChange={(v) => cfg.setHubIdx(parseInt(v))}
-              options={HUB_MODEL_OPTIONS[HUB_PRESETS[cfg.hubIdx].manufacturer]}
+              options={HUB_MODEL_OPTIONS[hub.manufacturer]}
             />
           </Field>
-        </>
-      )}
+        </div>
+        {combo && (
+          <>
+            <p className="dt-combo-note">
+              <strong>{hub.label}</strong> is designed to be combined with a derailleur
+              and cassette — its {hub.gears.length} hub steps multiply through every cog,
+              like extra front gears.
+            </p>
+            <div className="grid dt-setup-trio">
+              <Field
+                label="Rear derailleur"
+                hint={<DerailleurFieldHint d={derailleurByKey(cfg.derailleurId)} />}
+              >
+                <DerailleurPicker
+                  selectedKey={cfg.derailleurId}
+                  onPick={(key) => {
+                    cfg.setDerailleurId(key);
+                    cfg.setShifter(defaultShifterFor(derailleurByKey(key)));
+                  }}
+                />
+              </Field>
+              {cfg.derailleurId && cfg.shifter && (
+                <Field label="Shifter" hint="used to verify compatibility">
+                  <ShifterField cfg={cfg} />
+                </Field>
+              )}
+              <CassetteFields cfg={cfg} />
+            </div>
+          </>
+        )}
+      </>
+    );
+  }
+
+  // Single speed / fixed.
+  return (
+    <div className="grid">
+      {typeField}
+      <Field label="Chainring (teeth)">
+        <NumberInput value={cfg.singleRing} onChange={cfg.setSingleRing} min={20} />
+      </Field>
+      <Field label="Cog (teeth)">
+        <NumberInput value={cfg.singleCog} onChange={cfg.setSingleCog} min={8} />
+      </Field>
     </div>
   );
 }
@@ -1146,7 +1204,7 @@ export function Drivetrain() {
   const largestRing = Math.max(...chainrings, 0);
   const largestCog = Math.max(...cogs, 0);
   const chain = chainLength({ chainstayMm: chainstay, largestChainring: largestRing, largestCog });
-  const wearThresholds = chainWearThresholdsFor(focusCfg.mode === "cassette", cogs.length);
+  const wearThresholds = chainWearThresholdsFor(hasDerailleur(focusCfg), cogs.length);
 
   // Rear-derailleur fit check (cassette only), for the focused config. The
   // derailleur is now chosen in the Setup section (per config). fitCassette
@@ -1267,18 +1325,37 @@ export function Drivetrain() {
   // config B is added as a hollow overlay on the same axis when comparing.
   const crossA = makeCrossChained(configA.mode, derivedA.chainrings, derivedA.cogs);
   const crossB = makeCrossChained(configB.mode, derivedB.chainrings, derivedB.cogs);
+  // Combo drivetrains group into one row per hub gear (the hub steps read like
+  // extra front gears over the cassette); everything else groups by chainring.
+  const groupA = comboActive(configA) ? "hubGear" : "chainring";
+  const groupB = comboActive(configB) ? "hubGear" : "chainring";
   const series: GearSeries[] = comparing
     ? [
-        { id: "A", gears: derivedA.gears, isCrossChained: crossA, continuous: isCvt(configA) },
+        {
+          id: "A",
+          gears: derivedA.gears,
+          isCrossChained: crossA,
+          continuous: isCvt(configA),
+          groupBy: groupA,
+        },
         {
           id: "B",
           gears: derivedB.gears,
           hollow: true,
           isCrossChained: crossB,
           continuous: isCvt(configB),
+          groupBy: groupB,
         },
       ]
-    : [{ id: "A", gears: derivedA.gears, isCrossChained: crossA, continuous: isCvt(configA) }];
+    : [
+        {
+          id: "A",
+          gears: derivedA.gears,
+          isCrossChained: crossA,
+          continuous: isCvt(configA),
+          groupBy: groupA,
+        },
+      ];
 
   // Active gear for the drivetrain diagram (default to a middle gear until
   // hovered). Only hovers on the focused config move the diagram.
@@ -1360,9 +1437,21 @@ export function Drivetrain() {
         title="Gears"
         info={
           <>
-            One line per chainring; each dot is a {focusCfg.mode === "hub" ? "hub gear" : "cog"}{" "}
-            (labelled with its {focusCfg.mode === "hub" ? "gear" : "tooth count"}) — hover a dot
-            for its exact values.{" "}
+            {comboActive(focusCfg) ? (
+              <>
+                One line per <strong>hub gear</strong>; each dot is a cassette cog
+                (labelled with its tooth count) — the hub steps act like extra front
+                gears multiplied through the cassette. Hover a dot for its exact
+                values.{" "}
+              </>
+            ) : (
+              <>
+                One line per chainring; each dot is a{" "}
+                {focusCfg.mode === "hub" ? "hub gear" : "cog"} (labelled with its{" "}
+                {focusCfg.mode === "hub" ? "gear" : "tooth count"}) — hover a dot for its
+                exact values.{" "}
+              </>
+            )}
             {comparing && (
               <>
                 <strong>Drivetrain B</strong> is drawn with hollow dots on a dashed line, sharing
@@ -1403,7 +1492,7 @@ export function Drivetrain() {
               />
             </>
           )}
-          {focusCfg.mode === "cassette" && derailleur && fitBadge && (
+          {hasDerailleur(focusCfg) && derailleur && fitBadge && (
             <Result
               label="Derailleur fit"
               value={
@@ -1493,7 +1582,7 @@ export function Drivetrain() {
           activeCog={activeCog}
           chainstayMm={chainstay}
           wheelCircMm={focusCfg.circ}
-          hasDerailleur={focusCfg.mode === "cassette"}
+          hasDerailleur={hasDerailleur(focusCfg)}
           cadenceRpm={rpm}
           speed={toSpeed(activeSpeedKmh)}
           speedUnit={unitLabel}
@@ -1534,7 +1623,7 @@ export function Drivetrain() {
         </p>
       </Section>
 
-      {focusCfg.mode === "cassette" && derailleur && (
+      {hasDerailleur(focusCfg) && derailleur && (
         <Section
           title={comparing ? `Rear derailleur fit · ${focusLabel}` : "Rear derailleur fit"}
           info={
@@ -1687,7 +1776,7 @@ export function Drivetrain() {
       <Section
         title={comparing ? `Chain length · ${focusLabel}` : "Chain length"}
         info={
-          focusCfg.mode === "cassette" ? (
+          hasDerailleur(focusCfg) ? (
             <>
               Park Tool formula, rounded up so the link count is even (each link ≈
               12.7 mm). It includes the +1 inch wrap for the rear derailleur. The
@@ -1696,7 +1785,7 @@ export function Drivetrain() {
           ) : undefined
         }
       >
-        {focusCfg.mode === "cassette" ? (
+        {hasDerailleur(focusCfg) ? (
           <div className="grid">
             <Result label="Chainstay length" value={`${chainstay} mm`} />
             <Result label="Largest ring / cog" value={`${largestRing} / ${largestCog} T`} />
@@ -1722,7 +1811,7 @@ export function Drivetrain() {
         info={
           <>
             Measured at the bench with a chain-wear gauge.{" "}
-            {focusCfg.mode === "cassette"
+            {hasDerailleur(focusCfg)
               ? `Shown for your ${cogs.length}-speed cassette.`
               : "Single-speed and hub bikes can run a narrow 3/32\" or wide 1/8\" chain — pick the row matching your chain."}{" "}
             Past the threshold the cassette (and possibly chainrings) may skip with a

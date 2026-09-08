@@ -33,6 +33,10 @@ export interface GearSeries {
   isCrossChained?: (g: GearResult) => boolean;
   /** CVT: draw a thick bar between the low/high endpoints (a continuous range). */
   continuous?: boolean;
+  /** How to split the series into rows: one row per chainring (default), or one
+   *  row per hub gear — used when a hub is combined with a derailleur + cassette,
+   *  so each hub step reads like an extra front gear over the cassette cogs. */
+  groupBy?: "chainring" | "hubGear";
 }
 
 export interface GearChartProps {
@@ -58,7 +62,10 @@ interface Row {
   hollow: boolean;
   continuous: boolean;
   isCrossChained?: (g: GearResult) => boolean;
-  ring: number;
+  /** Row label, e.g. "34T" (chainring) or "2nd" (hub gear). */
+  label: string;
+  /** How this row was grouped — dots are cogs when grouped by hub gear. */
+  groupBy: "chainring" | "hubGear";
   color: string;
   points: Array<{ g: GearResult; v: number }>;
 }
@@ -104,23 +111,33 @@ export function GearChart({
   const rows: Row[] = [];
   const seriesBounds: Array<{ start: number; end: number; hollow: boolean }> = [];
   for (const s of series) {
-    const byRing = new Map<number, GearResult[]>();
+    const groupBy = s.groupBy ?? "chainring";
+    // Group gears into rows. By chainring (default) each row is a ring; by hub
+    // gear each row is a hub step (its cogs are the dots). `sort` puts the
+    // hardest gear on top (largest ring / highest hub ratio), matching the
+    // diagram's palette order.
+    const groups = new Map<string, { label: string; sort: number; gears: GearResult[] }>();
     for (const g of s.gears) {
-      const arr = byRing.get(g.chainring) ?? [];
-      arr.push(g);
-      byRing.set(g.chainring, arr);
+      const byHub = groupBy === "hubGear" && g.hubGear;
+      const key = byHub ? `h:${g.hubGear!.name}` : `r:${g.chainring}`;
+      const label = byHub ? g.hubGear!.name : `${g.chainring}T`;
+      const sort = byHub ? g.hubGear!.ratio : g.chainring;
+      const grp = groups.get(key) ?? { label, sort, gears: [] };
+      grp.gears.push(g);
+      groups.set(key, grp);
     }
-    const ringGroups = [...byRing.entries()].sort((a, b) => b[0] - a[0]);
+    const groupList = [...groups.values()].sort((a, b) => b.sort - a.sort);
     const start = rows.length;
-    ringGroups.forEach(([ring, gs], ri) => {
+    groupList.forEach((grp, ri) => {
       rows.push({
         seriesId: s.id,
         hollow: !!s.hollow,
         continuous: !!s.continuous,
         isCrossChained: s.isCrossChained,
-        ring,
+        label: grp.label,
+        groupBy,
         color: PALETTE[ri % PALETTE.length],
-        points: gs.map((g) => ({ g, v: value(g) })).sort((a, b) => a.v - b.v),
+        points: grp.gears.map((g) => ({ g, v: value(g) })).sort((a, b) => a.v - b.v),
       });
     });
     seriesBounds.push({ start, end: rows.length, hollow: !!s.hollow });
@@ -208,9 +225,9 @@ export function GearChart({
           const x0 = Math.min(...xs);
           const x1 = Math.max(...xs);
           return (
-            <g key={`${row.seriesId}-${row.ring}`}>
+            <g key={`${row.seriesId}-${row.label}`}>
               <text x={mL - 12} y={y + 4} className="gc-row-label" textAnchor="end">
-                {comparing ? `${row.seriesId} ${row.ring}T` : `${row.ring}T`}
+                {comparing ? `${row.seriesId} ${row.label}` : row.label}
               </text>
               <line
                 x1={x0}
@@ -255,7 +272,7 @@ export function GearChart({
                       onMouseLeave={() => setHover(null)}
                     />
                     <text x={x(p.v)} y={y - 12} className="gc-pt-label" textAnchor="middle">
-                      {pointLabel(p.g)}
+                      {row.groupBy === "hubGear" ? `${p.g.cog}` : pointLabel(p.g)}
                     </text>
                   </g>
                 );
@@ -305,7 +322,8 @@ export function GearChart({
         <div className="gc-tooltip" style={{ left: hover.left, top: hover.top }}>
           <div className="gc-tt-title">
             {comparing && <span className="gc-tt-tag">{hover.row.seriesId}</span>}
-            {hover.g.chainring} × {hover.g.hubGear ? hover.g.hubGear.name : `${hover.g.cog}T`}
+            {hover.g.chainring} × {hover.g.cog}T
+            {hover.g.hubGear ? ` · ${hover.g.hubGear.name}` : ""}
           </div>
           <div className="gc-tt-row">
             <span>Ratio</span>

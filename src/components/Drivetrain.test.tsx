@@ -180,6 +180,60 @@ describe("Drivetrain page", () => {
     expect(link.getAttribute("href")).toContain("sturmey-archer.com");
   });
 
+  it("auto-shows a derailleur + cassette row only for a derailleur-compatible hub", () => {
+    const { container, getByText, queryByText } = render(<Drivetrain />);
+    const selects = () => Array.from(container.querySelectorAll("select"));
+    fireEvent.change(selects()[0], { target: { value: "hub" } });
+    // The default hub (Sturmey-Archer S3) is a plain hub → no combo, no note.
+    expect(queryByText(/designed to be combined with a derailleur/)).toBeNull();
+    expect(queryByText("Rear derailleur")).toBeNull();
+    // Switch to Classified (Powershift): a derailleur-compatible hub reveals the
+    // note plus the derailleur + cassette fields automatically (no checkbox).
+    const maker = selects().find((s) =>
+      Array.from(s.options).some((o) => o.value === "Classified"),
+    ) as HTMLSelectElement;
+    fireEvent.change(maker, { target: { value: "Classified" } });
+    expect(getByText(/designed to be combined with a derailleur/)).toBeTruthy();
+    expect(getByText("Rear derailleur")).toBeTruthy();
+    expect(container.querySelector('[title="Browse the cassette database"]')).toBeTruthy();
+  });
+
+  it("groups a hub+cassette combo into one chart row per hub gear", () => {
+    const { container } = render(<Drivetrain />);
+    const selects = () => Array.from(container.querySelectorAll("select"));
+    fireEvent.change(selects()[0], { target: { value: "hub" } });
+    const maker = selects().find((s) =>
+      Array.from(s.options).some((o) => o.value === "Classified"),
+    ) as HTMLSelectElement;
+    fireEvent.change(maker, { target: { value: "Classified" } });
+    // Classified Powershift is 2-speed; the default cassette has 10 cogs →
+    // 2 hub-gear rows × 10 cogs = 20 dots, and the range multiplies the two.
+    expect(container.querySelectorAll(".gc-row-line").length).toBe(2);
+    expect(container.querySelectorAll(".gc-dot").length).toBe(20);
+    // Rows are labelled by hub gear (1st / 2nd), not by chainring tooth count.
+    const rowLabels = Array.from(container.querySelectorAll(".gc-row-label")).map(
+      (n) => n.textContent,
+    );
+    expect(rowLabels).toContain("1st");
+    expect(rowLabels).toContain("2nd");
+    expect(rowLabels.every((l) => !/T$/.test(l ?? ""))).toBe(true);
+  });
+
+  it("applies the derailleur chain-length formula to a hub+cassette combo", () => {
+    const { container, getByText, queryByText } = render(<Drivetrain />);
+    const selects = () => Array.from(container.querySelectorAll("select"));
+    fireEvent.change(selects()[0], { target: { value: "hub" } });
+    // A plain hub uses the dropout/tensioner note, not the derailleur formula.
+    expect(getByText(/dropout \/ tensioner/)).toBeTruthy();
+    const maker = selects().find((s) =>
+      Array.from(s.options).some((o) => o.value === "Classified"),
+    ) as HTMLSelectElement;
+    fireEvent.change(maker, { target: { value: "Classified" } });
+    // With a derailleur + cassette the chain-length result appears (mm/links).
+    expect(queryByText(/dropout \/ tensioner/)).toBeNull();
+    expect(getByText("Links")).toBeTruthy();
+  });
+
   it("shows a hover tooltip with a gear's exact values", () => {
     const { container } = render(<Drivetrain />);
     const dot = container.querySelector(".gc-dot") as SVGCircleElement;

@@ -60,6 +60,11 @@ metadata). Each hub is mapped to a `HubPreset` at load time (see
 - `ratios` — gear ratios relative to 1:1 direct drive, lowest first. `1.0` is
   direct drive; below 1 is a reduction, above 1 an overdrive. Discrete hubs get
   ordinal gear names ("1st", "2nd", …) automatically.
+- `derailleurCompatible` — `true` for systems designed to be combined with a
+  rear derailleur + cassette (Schlumpf, Classified, Brompton, Sachs 3×7…);
+  optional (omitted = false). The drivetrain calculator then offers to add a
+  derailleur/cassette alongside the hub, multiplying the hub ratios through
+  every cog.
 - `source` — `{ url, sourceType: "primary" | "secondary", note }` citing where
   the ratios came from.
 

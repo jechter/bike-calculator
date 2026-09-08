@@ -408,6 +408,15 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
    they stack, one field per line. */
 .dt-setup-trio { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 14px; }
 .dt-config .dt-setup-trio { grid-template-columns: 1fr; }
+
+/* Note shown when a derailleur-compatible hub auto-reveals its cassette row */
+.dt-combo-note {
+  margin: 14px 0 0; padding: 8px 12px;
+  border-left: 3px solid var(--accent); border-radius: 6px;
+  background: var(--panel-2); color: var(--muted);
+  font-size: 12.5px; line-height: 1.5;
+}
+.dt-combo-note strong { color: var(--text); }
 .cp-pop {
   position: absolute;
   z-index: 30;

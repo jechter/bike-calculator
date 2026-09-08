@@ -396,6 +396,18 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .derailleur-select > .preset-btn.open { border-color: var(--accent); }
 .derailleur-select > .preset-btn .caret { color: var(--muted); flex: none; }
 .ds-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Shifter control: an actuation-family select + a speed-count select (the speed
+   select is hidden for Friction). Family gets the extra room. */
+.shifter-field { display: flex; gap: 8px; }
+.shifter-field select { min-width: 0; flex: 1; }
+.shifter-field select:first-child { flex: 2; }
+
+/* Derailleur · Shifter · Cassette share one row on a single drivetrain (3-across
+   once the shifter appears, 2-across before). In the narrower Compare columns
+   they stack, one field per line. */
+.dt-setup-trio { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 14px; }
+.dt-config .dt-setup-trio { grid-template-columns: 1fr; }
 .cp-pop {
   position: absolute;
   z-index: 30;

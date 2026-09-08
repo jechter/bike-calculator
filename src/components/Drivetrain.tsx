@@ -15,10 +15,18 @@ import {
 } from "../lib/drivetrain";
 import {
   DERAILLEURS,
+  DERAILLEUR_SYSTEMS,
+  FRICTION_FAMILY,
   derailleurByKey,
+  defaultShifterFor,
+  familySupportedSpeeds,
   fitCassette,
+  incompatibleReason,
   pullRatioFor,
+  shifterLabel,
+  type CassetteFit,
   type DerailleurSpec,
+  type Shifter,
 } from "../lib/derailleur";
 import { estimatedCircumferenceMm } from "../lib/wheels";
 import { parseTireSize, formatDesignations, suggestTireSizes } from "../lib/tireSizes";
@@ -382,6 +390,66 @@ function DerailleurPicker({
   );
 }
 
+// Shifter family options: Friction (any cog count) and "Other / unspecified"
+// first, then every actuation family (electronic included).
+const SHIFTER_FAMILY_OPTIONS = [
+  { value: FRICTION_FAMILY, label: "Friction" },
+  { value: "", label: "Other / unspecified" },
+  ...DERAILLEUR_SYSTEMS.map((s) => ({ value: s.family, label: s.family })),
+];
+
+// Speed-count choices for an indexed shifter: the family's own supported counts
+// (a family groups derailleurs sharing one pull ratio), or a generic spread when
+// the family is unknown.
+function shifterSpeedChoices(family: string): number[] {
+  const supported = familySupportedSpeeds(family);
+  return supported.length ? supported : [7, 8, 9, 10, 11, 12, 13];
+}
+
+// The Setup "Shifter" control, shown once a derailleur is chosen: an actuation-
+// family select plus a speed-count select (hidden for Friction, which indexes
+// nothing and so takes any cog count). This is what makes the fit verdict
+// accurate — the derailleur just moves, the shifter indexes. Selecting a
+// derailleur seeds this with its default (see defaultShifterFor); changeable.
+function ShifterField({ cfg }: { cfg: DrivetrainConfig }) {
+  const shifter = cfg.shifter;
+  if (!shifter) return null;
+  const friction = shifter.family === FRICTION_FAMILY;
+  const unspecified = shifter.family === "";
+  const speedChoices = shifterSpeedChoices(shifter.family);
+  // The speed picker only appears for a real indexed family with a choice to make
+  // — hidden for Friction (any count), Other/unspecified (not checked), and
+  // single-speed families like Shimano road 12-speed.
+  const showSpeeds = !friction && !unspecified && speedChoices.length > 1;
+
+  return (
+    <div className="shifter-field">
+      <Select
+        value={shifter.family}
+        options={SHIFTER_FAMILY_OPTIONS}
+        onChange={(f) => {
+          if (f === FRICTION_FAMILY || f === "") {
+            cfg.setShifter({ family: f, speeds: shifter.speeds });
+            return;
+          }
+          // Keep the speed count if the new family supports it, else snap to the
+          // family's first supported count.
+          const choices = shifterSpeedChoices(f);
+          const nextSpeeds = choices.includes(shifter.speeds) ? shifter.speeds : choices[0];
+          cfg.setShifter({ family: f, speeds: nextSpeeds });
+        }}
+      />
+      {showSpeeds && (
+        <Select
+          value={String(shifter.speeds)}
+          options={speedChoices.map((n) => ({ value: String(n), label: `${n}-speed` }))}
+          onChange={(s) => cfg.setShifter({ family: shifter.family, speeds: Number(s) })}
+        />
+      )}
+    </div>
+  );
+}
+
 // Hub picker is two steps: maker, then model. Makers are sorted by name; each
 // maker's models are sorted by speed count (CVT last), then name.
 const HUB_MAKER_OPTIONS = Array.from(new Set(HUB_PRESETS.map((p) => p.manufacturer)))
@@ -452,6 +520,9 @@ interface ConfigInit {
   singleCog: number;
   hubIdx: number;
   derailleurId: string;
+  /** The shifter paired with the derailleur (drives the compatibility check);
+   *  null when no derailleur is chosen. */
+  shifter: Shifter | null;
   circ: number;
   /** Tire size the circumference came from (for the Tire-calculator link), or
    *  "" when a raw circumference was typed in. */
@@ -467,6 +538,7 @@ interface DrivetrainConfig extends ConfigInit {
   setSingleCog: (n: number) => void;
   setHubIdx: (n: number) => void;
   setDerailleurId: (s: string) => void;
+  setShifter: (s: Shifter | null) => void;
   setCirc: (n: number) => void;
   setTireSize: (s: string) => void;
 }
@@ -480,6 +552,7 @@ function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
   const [singleCog, setSingleCog] = useState(init.singleCog);
   const [hubIdx, setHubIdx] = useState(init.hubIdx);
   const [derailleurId, setDerailleurId] = useState(init.derailleurId);
+  const [shifter, setShifter] = useState<Shifter | null>(init.shifter);
   const [circ, setCirc] = useState(init.circ);
   const [tireSize, setTireSize] = useState(init.tireSize);
   return {
@@ -491,6 +564,7 @@ function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
     singleCog,
     hubIdx,
     derailleurId,
+    shifter,
     circ,
     tireSize,
     setMode,
@@ -501,6 +575,7 @@ function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
     setSingleCog,
     setHubIdx,
     setDerailleurId,
+    setShifter,
     setCirc,
     setTireSize,
   };
@@ -517,6 +592,7 @@ function copyConfig(from: DrivetrainConfig, to: DrivetrainConfig) {
   to.setSingleCog(from.singleCog);
   to.setHubIdx(from.hubIdx);
   to.setDerailleurId(from.derailleurId);
+  to.setShifter(from.shifter);
   to.setCirc(from.circ);
   to.setTireSize(from.tireSize);
 }
@@ -566,12 +642,15 @@ function makeCrossChained(mode: Mode, chainrings: number[], cogs: number[]) {
 // light when the picker opens unfiltered on all ~1000 cassettes).
 const CASSETTE_LIST_CAP = 200;
 
-// Traffic-light label for a cassette-fit dot, for the picker's tooltip + legend.
-const FIT_DOT_LABEL: Record<"ok" | "caution" | "incompatible", string> = {
-  ok: "fits this derailleur",
-  caution: "marginal — check carefully",
-  incompatible: "out of range for this derailleur",
-};
+// Traffic-light label for a cassette-fit dot's tooltip. Incompatible splits by
+// cause (physical range vs shifter indexing) so it agrees with the Gears badge.
+function fitDotLabel(fit: CassetteFit): string {
+  if (fit.level === "ok") return "fits this derailleur";
+  if (fit.level === "caution") return "marginal — check carefully";
+  return incompatibleReason(fit) === "indexing"
+    ? "indexing mismatch with the shifter"
+    : "out of range for this derailleur";
+}
 
 // A browse-and-filter popover of every cassette: a text search plus brand /
 // speeds / range filters, narrowing a scrollable list. Picking a row fills the
@@ -583,11 +662,13 @@ function CassettePicker({
   onPick,
   fitDerailleur,
   fitChainrings,
+  fitShifter,
 }: {
   selectedIdx: number;
   onPick: (i: number) => void;
   fitDerailleur?: DerailleurSpec | null;
   fitChainrings?: number[];
+  fitShifter?: Shifter | null;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -621,7 +702,24 @@ function CassettePicker({
       (range === "all" || c.rangeLabel === range) &&
       tokens.every((t) => c.search.includes(t)),
   );
-  const shown = matches.slice(0, CASSETTE_LIST_CAP);
+
+  // Pair each match with its fit (once) so we can both sort and render from it.
+  // When a derailleur is selected, best-fitting cassettes float to the top
+  // (fits → marginal → incompatible); ties keep the brand/speed/range order. The
+  // sort is stable, so with no derailleur the list is unchanged.
+  const FIT_RANK: Record<"ok" | "caution" | "incompatible", number> = {
+    ok: 0,
+    caution: 1,
+    incompatible: 2,
+  };
+  const ranked = matches.map((c) => ({
+    c,
+    fit: fitDerailleur
+      ? fitCassette(fitDerailleur, fitChainrings ?? [], CASSETTE_PRESETS[c.i].cogs, fitShifter)
+      : null,
+  }));
+  if (fitDerailleur) ranked.sort((a, b) => FIT_RANK[a.fit!.level] - FIT_RANK[b.fit!.level]);
+  const shown = ranked.slice(0, CASSETTE_LIST_CAP);
 
   const opt = (value: string, label: string) => ({ value, label });
   const brandOptions = [opt("all", "All brands"), ...CASSETTE_BRANDS.map((b) => opt(b, b))];
@@ -671,10 +769,7 @@ function CassettePicker({
             <Select value={range} onChange={setRange} options={rangeOptions} />
           </div>
           <ul className="cp-list">
-            {shown.map((c) => {
-              const fit = fitDerailleur
-                ? fitCassette(fitDerailleur, fitChainrings ?? [], CASSETTE_PRESETS[c.i].cogs)
-                : null;
+            {shown.map(({ c, fit }) => {
               return (
                 <li key={c.i}>
                   <button
@@ -689,7 +784,7 @@ function CassettePicker({
                       {fit && (
                         <span
                           className={"cp-fit-dot " + fit.level}
-                          title={`${fitDerailleur!.brand} ${fitDerailleur!.model}: ${FIT_DOT_LABEL[fit.level]}`}
+                          title={`${fitDerailleur!.brand} ${fitDerailleur!.model}: ${fitDotLabel(fit)}`}
                         />
                       )}
                       {c.label}
@@ -708,7 +803,7 @@ function CassettePicker({
               Fit vs <strong>{fitDerailleur.brand} {fitDerailleur.model}</strong>:{" "}
               <span className="cp-fit-dot ok" /> fits{" "}
               <span className="cp-fit-dot caution" /> marginal{" "}
-              <span className="cp-fit-dot incompatible" /> out of range
+              <span className="cp-fit-dot incompatible" /> incompatible
             </div>
           )}
           <div className="cp-foot">
@@ -747,6 +842,7 @@ function CassetteFields({ cfg }: { cfg: DrivetrainConfig }) {
           }}
           fitDerailleur={derailleur}
           fitChainrings={parseList(cfg.chainringStr)}
+          fitShifter={cfg.shifter}
         />
       </div>
     </Field>
@@ -756,22 +852,28 @@ function CassetteFields({ cfg }: { cfg: DrivetrainConfig }) {
 // The mode + chainring/cog/hub inputs for one config (the shared rolling
 // circumference lives outside, on its own row).
 function SetupFields({ cfg }: { cfg: DrivetrainConfig }) {
-  return (
-    <div className="grid">
-      <Field label="Drivetrain type">
-        <Select<Mode>
-          value={cfg.mode}
-          onChange={cfg.setMode}
-          options={[
-            { value: "cassette", label: "Derailleur (cassette)" },
-            { value: "single", label: "Single speed / fixed" },
-            { value: "hub", label: "Internally geared hub" },
-          ]}
-        />
-      </Field>
+  const typeField = (
+    <Field label="Drivetrain type">
+      <Select<Mode>
+        value={cfg.mode}
+        onChange={cfg.setMode}
+        options={[
+          { value: "cassette", label: "Derailleur (cassette)" },
+          { value: "single", label: "Single speed / fixed" },
+          { value: "hub", label: "Internally geared hub" },
+        ]}
+      />
+    </Field>
+  );
 
-      {cfg.mode === "cassette" && (
-        <>
+  // Cassette mode groups the derailleur, shifter and cassette on their own row
+  // (dt-setup-trio) so they sit side by side on a single drivetrain, and stack in
+  // the narrower Compare columns.
+  if (cfg.mode === "cassette") {
+    return (
+      <>
+        <div className="grid">
+          {typeField}
           <Field label="Chainrings" hint="comma-separated tooth counts">
             <div className="combo">
               <TextInput value={cfg.chainringStr} onChange={cfg.setChainringStr} />
@@ -782,15 +884,35 @@ function SetupFields({ cfg }: { cfg: DrivetrainConfig }) {
               />
             </div>
           </Field>
+        </div>
+        <div className="grid dt-setup-trio">
           <Field
             label="Rear derailleur"
             hint={<DerailleurFieldHint d={derailleurByKey(cfg.derailleurId)} />}
           >
-            <DerailleurPicker selectedKey={cfg.derailleurId} onPick={cfg.setDerailleurId} />
+            <DerailleurPicker
+              selectedKey={cfg.derailleurId}
+              onPick={(key) => {
+                cfg.setDerailleurId(key);
+                // Seed the shifter with the derailleur's default (changeable).
+                cfg.setShifter(defaultShifterFor(derailleurByKey(key)));
+              }}
+            />
           </Field>
+          {cfg.derailleurId && cfg.shifter && (
+            <Field label="Shifter" hint="used to verify compatibility">
+              <ShifterField cfg={cfg} />
+            </Field>
+          )}
           <CassetteFields cfg={cfg} />
-        </>
-      )}
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <div className="grid">
+      {typeField}
 
       {cfg.mode === "single" && (
         <>
@@ -977,6 +1099,7 @@ export function Drivetrain() {
     singleCog: 18,
     hubIdx: DEFAULT_HUB_IDX,
     derailleurId: "",
+    shifter: null,
     circ: 2111,
     tireSize: "25-622",
   });
@@ -989,6 +1112,7 @@ export function Drivetrain() {
     singleCog: 18,
     hubIdx: DEFAULT_HUB_IDX,
     derailleurId: "",
+    shifter: null,
     circ: 2111,
     tireSize: "25-622",
   });
@@ -1031,7 +1155,8 @@ export function Drivetrain() {
   // derailleur has no data (many older or third-party entries) — see
   // `fitDataMissing` below.
   const derailleur = derailleurByKey(focusCfg.derailleurId);
-  const fitRes = derailleur ? fitCassette(derailleur, chainrings, cogs) : null;
+  const shifter = focusCfg.shifter;
+  const fitRes = derailleur ? fitCassette(derailleur, chainrings, cogs, shifter) : null;
   const fitDataMissing =
     !!derailleur && (derailleur.totalCapacity == null || derailleur.maxSprocket == null);
   // The cog + capacity readout is shown only when both figures are present (as
@@ -1075,19 +1200,24 @@ export function Drivetrain() {
     }
   }
 
-  // Speed-count compatibility: the derailleur's nominal gear count vs the
-  // cassette's cog count, judged by actuation. A mismatch can be fine (shared
-  // actuation family, or a friction shifter) — but electronic groups can't be
-  // re-indexed, so those are a hard no. See speedCompatibility().
-  const speedStatus = fitRes ? fitRes.speed : "match";
-  const speedBadge: { cls: "ok" | "warn" | "danger"; text: string } =
-    speedStatus === "match"
-      ? { cls: "ok", text: "OK" }
-      : speedStatus === "incompatible"
-        ? { cls: "danger", text: `≠ ${cogs.length}-sp` }
-        : speedStatus === "family"
-          ? { cls: "warn", text: "same family" }
-          : { cls: "warn", text: `≠ ${cogs.length}-sp` };
+  // Shifter compatibility: whether the chosen shifter can drive this derailleur on
+  // this cassette. The derailleur only moves sideways — the shifter is what
+  // indexes to each cog — so this is the accurate speed/actuation verdict. See
+  // shifterCompatibility().
+  const shifterVerdict = fitRes?.shifter ?? null;
+  const shifterStatus = shifterVerdict?.status ?? "match";
+  const shifterBadge: { cls: "ok" | "warn" | "danger" | "rh"; text: string } =
+    shifterStatus === "unspecified"
+      ? { cls: "rh", text: "not checked" }
+      : shifterStatus === "wrong-family"
+        ? { cls: "danger", text: "wrong family" }
+        : shifterStatus === "friction-electronic"
+          ? { cls: "danger", text: "needs electronic" }
+          : shifterVerdict?.level === "ok"
+            ? { cls: "ok", text: "OK" }
+            : shifterVerdict?.level === "caution"
+              ? { cls: "warn", text: "check" }
+              : { cls: "danger", text: `≠ ${cogs.length}-sp` };
 
   // Compact overall verdict for the Gears summary row — the same traffic-light
   // level that dots the cassette picker, so the two views agree at a glance.
@@ -1096,7 +1226,10 @@ export function Drivetrain() {
       ? { cls: "ok", text: "fits" }
       : fitRes.level === "caution"
         ? { cls: "warn", text: "marginal" }
-        : { cls: "danger", text: "out of range" }
+        : {
+            cls: "danger",
+            text: incompatibleReason(fitRes) === "indexing" ? "indexing mismatch" : "out of range",
+          }
     : null;
 
   const sliderCadence = Math.min(120, Math.max(60, cadence || 60));
@@ -1468,11 +1601,11 @@ export function Drivetrain() {
                   />
                 )}
                 <Result
-                  label="Speeds"
+                  label="Shifter"
                   value={
                     <>
-                      {derailleur.speeds}-speed{" "}
-                      <span className={"badge " + speedBadge.cls}>{speedBadge.text}</span>
+                      {shifter ? shifterLabel(shifter) : `${derailleur.speeds}-speed`}{" "}
+                      <span className={"badge " + shifterBadge.cls}>{shifterBadge.text}</span>
                     </>
                   }
                 />
@@ -1490,43 +1623,61 @@ export function Drivetrain() {
                   actuation guide above still applies.
                 </Note>
               )}
-              {speedStatus === "incompatible" && (
+              {shifterStatus === "electronic-count" && shifter && (
                 <Note tone="warn">
-                  This is an <strong>electronic</strong> derailleur configured for{" "}
-                  <strong>{derailleur.speeds} speeds</strong>, but your cassette has{" "}
-                  <strong>{cogs.length} cogs</strong>. Electronic groups shift in fixed,
-                  pre-programmed steps — they can’t be re-indexed for a different cog count,
-                  and there’s no friction-shifter fallback — so this{" "}
+                  {derailleur.brand} {derailleur.model} is <strong>electronic</strong>,
+                  driven by its matching <strong>{shifter.speeds}-speed</strong> control in
+                  fixed, pre-programmed steps — but your cassette has{" "}
+                  <strong>{cogs.length} cogs</strong>. Electronic groups can’t be re-indexed
+                  for a different cog count, and there’s no friction fallback — so this{" "}
                   <strong>won’t work</strong> with a {cogs.length}-speed cassette.
                 </Note>
               )}
-              {speedStatus === "family" && (
+              {shifterStatus === "friction-electronic" && (
+                <Note tone="warn">
+                  {derailleur.brand} {derailleur.model} is <strong>electronic</strong> — a
+                  friction (or any cable) shifter can’t drive it. It needs its matching
+                  electronic control, so a friction shifter <strong>won’t work</strong>.
+                </Note>
+              )}
+              {shifterStatus === "wrong-count" && shifter && (
+                <Note tone="warn">
+                  The shifter indexes <strong>{shifter.speeds} speeds</strong> but your
+                  cassette has <strong>{cogs.length} cogs</strong> — the indexed click
+                  spacing won’t line up cog-to-cog. Set the shifter to {cogs.length}-speed,
+                  or use a <strong>friction shifter</strong>, which doesn’t index at all and
+                  lets you position each gear by feel.
+                </Note>
+              )}
+              {shifterStatus === "wrong-family" && shifter && (
+                <Note tone="warn">
+                  The shifter’s actuation family (<strong>{shifter.family || "unspecified"}</strong>)
+                  differs from the derailleur’s (<strong>{derailleur.actuation ?? "unknown"}</strong>)
+                  — each click won’t pull the derailleur the right distance, so it won’t index.
+                  Use a shifter in the derailleur’s family, or a{" "}
+                  <strong>friction shifter</strong>.
+                </Note>
+              )}
+              {shifterStatus === "unknown-family" && shifter && (
                 <Note tone="info">
-                  Nominally <strong>{derailleur.speeds}-speed</strong>, but its actuation
-                  family ({derailleur.actuation}) also covers{" "}
-                  <strong>{cogs.length}-speed</strong> — so with a matching{" "}
-                  {cogs.length}-speed shifter of the same family it indexes correctly.
+                  The <strong>{shifter.speeds}-speed</strong> count matches your cassette, but{" "}
+                  {derailleur.brand} {derailleur.model}’s actuation family isn’t known, so we
+                  can’t confirm the shifter’s pull ratio matches — verify before relying on it.
+                  A <strong>friction shifter</strong> would sidestep the question entirely.
                 </Note>
               )}
-              {speedStatus === "friction" && (
-                <Note tone="warn">
-                  This is a nominally <strong>{derailleur.speeds}-speed</strong> derailleur,
-                  but your cassette has <strong>{cogs.length} cogs</strong>, outside its
-                  actuation family ({derailleur.actuation}). The derailleur itself just moves
-                  sideways — the indexing that has to match the cog spacing lives in the{" "}
-                  <em>shifter</em>, not here. An indexed shifter for a different speed count
-                  likely won’t line up cog-to-cog, but a <strong>friction shifter</strong>,
-                  which doesn’t index at all, lets you position each gear by feel.
+              {shifterStatus === "friction" && (
+                <Note tone="info">
+                  A <strong>friction shifter</strong> doesn’t index — you position each gear by
+                  feel — so it drives {derailleur.brand} {derailleur.model} with any cog count.
+                  The cog-clearance and chain-wrap checks above still apply.
                 </Note>
               )}
-              {speedStatus === "unknown" && (
-                <Note tone="warn">
-                  This is a nominally <strong>{derailleur.speeds}-speed</strong> derailleur
-                  and its actuation family isn’t known, so whether it indexes a{" "}
-                  <strong>{cogs.length}-speed</strong> cassette depends on the shifter. The
-                  derailleur just moves sideways — the indexing lives in the{" "}
-                  <em>shifter</em> — and a <strong>friction shifter</strong> sidesteps it
-                  entirely.
+              {shifterStatus === "unspecified" && (
+                <Note tone="info">
+                  The shifter’s actuation family is unspecified, so shifting compatibility{" "}
+                  <strong>can’t be checked</strong> — pick the shifter’s family (or Friction) to
+                  verify it indexes. The cog-clearance and chain-wrap checks above still apply.
                 </Note>
               )}
           </>

@@ -8,7 +8,14 @@ import {
   speedCompatibility,
   fitCassette,
   pullRatioFor,
+  defaultShifterFor,
+  shifterCompatibility,
+  shifterLabel,
+  familiesCompatible,
+  incompatibleReason,
+  FRICTION_FAMILY,
   DERAILLEURS,
+  type Shifter,
 } from './derailleur';
 
 describe('checkCapacity', () => {
@@ -186,6 +193,171 @@ describe('fitCassette', () => {
     expect(fit.capacity).toBe('unknown');
     expect(fit.speed).toBe('match');
     expect(fit.level).toBe('ok');
+  });
+});
+
+describe('defaultShifterFor', () => {
+  it('seeds an indexed shifter in the derailleur family at its nominal speeds', () => {
+    const r7000 = derailleurByKey('shimano-rd-r7000-ss-11s')!;
+    expect(defaultShifterFor(r7000)).toEqual({ family: r7000.actuation, speeds: 11 });
+  });
+
+  it('is null when no derailleur is chosen', () => {
+    expect(defaultShifterFor(undefined)).toBeNull();
+  });
+
+  it('uses an empty family for a third-party row whose actuation is unknown', () => {
+    const ms = DERAILLEURS.find((d) => d.brand === 'Microshift' && !d.actuation)!;
+    expect(defaultShifterFor(ms)).toEqual({ family: '', speeds: ms.speeds });
+  });
+});
+
+describe('shifterCompatibility', () => {
+  const r7000 = () => derailleurByKey('shimano-rd-r7000-ss-11s')!; // 11sp road, 1.4 family
+  const axs = () => searchDerailleurs('sram').find((d) => d.electronic && d.speeds === 12)!;
+
+  it('is a green match with the indexed same-family shifter at the cassette count', () => {
+    const sh: Shifter = { family: r7000().actuation!, speeds: 11 };
+    expect(shifterCompatibility(r7000(), sh, 11)).toEqual({ level: 'ok', status: 'match' });
+  });
+
+  it('is red when an indexed shifter counts a different number of cogs', () => {
+    const sh: Shifter = { family: r7000().actuation!, speeds: 11 };
+    expect(shifterCompatibility(r7000(), sh, 10)).toEqual({
+      level: 'incompatible',
+      status: 'wrong-count',
+    });
+  });
+
+  it('is red when the indexed shifter is a different actuation family', () => {
+    const sh: Shifter = { family: 'SRAM Exact Actuation', speeds: 11 };
+    expect(shifterCompatibility(r7000(), sh, 11)).toEqual({
+      level: 'incompatible',
+      status: 'wrong-family',
+    });
+  });
+
+  it('is green with a friction shifter (any family value) on a mechanical derailleur', () => {
+    const sh: Shifter = { family: FRICTION_FAMILY, speeds: 0 };
+    expect(shifterCompatibility(r7000(), sh, 8)).toEqual({ level: 'ok', status: 'friction' });
+  });
+
+  it('rejects a friction shifter on an electronic derailleur', () => {
+    const sh: Shifter = { family: FRICTION_FAMILY, speeds: 0 };
+    expect(shifterCompatibility(axs(), sh, 12)).toEqual({
+      level: 'incompatible',
+      status: 'friction-electronic',
+    });
+  });
+
+  it('flags an electronic count mismatch distinctly (no friction fallback)', () => {
+    const sh: Shifter = { family: axs().actuation!, speeds: 12 };
+    expect(shifterCompatibility(axs(), sh, 10)).toEqual({
+      level: 'incompatible',
+      status: 'electronic-count',
+    });
+  });
+
+  it('is caution when the count lines up but the derailleur family is unknown', () => {
+    const ms = DERAILLEURS.find((d) => d.brand === 'Microshift' && !d.actuation)!;
+    const sh: Shifter = { family: 'Shimano road 1.7 (classic)', speeds: ms.speeds };
+    expect(shifterCompatibility(ms, sh, ms.speeds)).toEqual({
+      level: 'caution',
+      status: 'unknown-family',
+    });
+  });
+
+  it('skips the check (neutral) when the shifter family is unspecified', () => {
+    const sh: Shifter = { family: '', speeds: 0 };
+    expect(shifterCompatibility(r7000(), sh, 8)).toEqual({ level: 'ok', status: 'unspecified' });
+  });
+
+  it('accepts a same-pull-ratio family across the road/MTB 1.7 divide', () => {
+    // A classic-1.7 Shimano road derailleur driven by an old MTB (6/7/8/9) shifter
+    // of the same ≈1.7:1 pull -> a match, not a family mismatch.
+    const classicRoad = DERAILLEURS.find(
+      (d) => d.actuation === 'Shimano road 1.7 (classic)',
+    )!;
+    const sh: Shifter = { family: 'Shimano MTB 6/7/8/9-speed', speeds: 8 };
+    expect(shifterCompatibility(classicRoad, sh, 8)).toEqual({ level: 'ok', status: 'match' });
+  });
+
+  it('labels shifters for display', () => {
+    expect(shifterLabel({ family: FRICTION_FAMILY, speeds: 0 })).toBe('Friction');
+    expect(shifterLabel({ family: '', speeds: 8 })).toBe('Other / unspecified');
+    expect(shifterLabel({ family: 'SRAM Eagle (X-Actuation)', speeds: 12 })).toBe(
+      '12-speed · SRAM Eagle (X-Actuation)',
+    );
+  });
+});
+
+describe('fitCassette with a shifter', () => {
+  const r7000 = () => derailleurByKey('shimano-rd-r7000-ss-11s')!; // 11sp, max 30T, cap 35T
+
+  it('turns a native-speed cassette green when the shifter matches', () => {
+    const sh: Shifter = { family: r7000().actuation!, speeds: 11 };
+    const cogs = [11, 12, 13, 14, 15, 17, 19, 21, 24, 28, 30];
+    const fit = fitCassette(r7000(), [50, 34], cogs, sh);
+    expect(fit.shifter).toEqual({ level: 'ok', status: 'match' });
+    expect(fit.level).toBe('ok');
+  });
+
+  it('turns a wrong-count cassette red even when cog and capacity fit', () => {
+    // 10-speed cassette that clears the cage and capacity, but an 11-speed shifter.
+    const sh: Shifter = { family: r7000().actuation!, speeds: 11 };
+    const fit = fitCassette(r7000(), [50, 34], [11, 12, 13, 14, 15, 17, 19, 21, 24, 28], sh);
+    expect(fit.cog).toBe('ok');
+    expect(fit.capacity).toBe('ok');
+    expect(fit.shifter?.status).toBe('wrong-count');
+    expect(fit.level).toBe('incompatible');
+  });
+
+  it('lets a friction shifter keep any mechanical cog count fit', () => {
+    const sh: Shifter = { family: FRICTION_FAMILY, speeds: 0 };
+    const fit = fitCassette(r7000(), [50, 34], [11, 12, 13, 14, 15, 17, 19, 21, 24, 28], sh);
+    expect(fit.shifter?.status).toBe('friction');
+    expect(fit.level).toBe('ok');
+  });
+});
+
+describe('familiesCompatible', () => {
+  it('is reflexive and covers the road/MTB 1.7 equivalence', () => {
+    expect(familiesCompatible('SRAM Eagle (X-Actuation)', 'SRAM Eagle (X-Actuation)')).toBe(true);
+    expect(
+      familiesCompatible('Shimano road 1.7 (classic)', 'Shimano MTB 6/7/8/9-speed'),
+    ).toBe(true);
+    expect(
+      familiesCompatible('Shimano MTB 6/7/8/9-speed', 'Shimano road 1.7 (classic)'),
+    ).toBe(true);
+  });
+
+  it('does not equate merely similar-looking families', () => {
+    // Both read ≈1.4 but are not interchangeable.
+    expect(
+      familiesCompatible('Shimano CUES / LinkGlide', 'Shimano road 1.4 (11-speed & Tiagra 4700)'),
+    ).toBe(false);
+  });
+});
+
+describe('incompatibleReason', () => {
+  const r7000 = () => derailleurByKey('shimano-rd-r7000-ss-11s')!; // 11sp, max 30T
+
+  it('is "range" when the cog is physically over the max sprocket', () => {
+    const fit = fitCassette(r7000(), [42], [11, 40]); // 40 >> 30T max
+    expect(fit.level).toBe('incompatible');
+    expect(incompatibleReason(fit)).toBe('range');
+  });
+
+  it('is "indexing" when only the shifter count is wrong', () => {
+    const sh: Shifter = { family: r7000().actuation!, speeds: 11 };
+    const fit = fitCassette(r7000(), [50, 34], [11, 12, 13, 14, 15, 17, 19, 21, 24, 28], sh);
+    expect(fit.level).toBe('incompatible');
+    expect(incompatibleReason(fit)).toBe('indexing');
+  });
+
+  it('is null for a fit that is not incompatible', () => {
+    const fit = fitCassette(r7000(), [50, 34], [11, 12, 13, 14, 15, 17, 19, 21, 24, 28, 30]);
+    expect(incompatibleReason(fit)).toBeNull();
   });
 });
 

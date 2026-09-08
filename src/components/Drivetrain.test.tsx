@@ -322,7 +322,7 @@ describe("Drivetrain page", () => {
     expect(badge.textContent).toBe("fits");
   });
 
-  it("dots each cassette in the picker by fit once a derailleur is chosen", () => {
+  it("dots each cassette in the picker by fit, best fit first, once a derailleur is chosen", () => {
     const { container, getByTitle } = render(<Drivetrain />);
     // No derailleur yet -> the cassette picker has no fit dots.
     fireEvent.click(getByTitle("Browse the cassette database"));
@@ -331,10 +331,20 @@ describe("Drivetrain page", () => {
     fireEvent.click(getByTitle("Browse the cassette database"));
     pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
     fireEvent.click(getByTitle("Browse the cassette database"));
-    const dots = container.querySelectorAll(".cp-list .cp-fit-dot");
+    const dots = Array.from(container.querySelectorAll(".cp-list .cp-fit-dot"));
     expect(dots.length).toBeGreaterThan(0);
-    // A green dot fits; a red one is out of range (e.g. a 52T MTB cog).
-    expect(container.querySelector(".cp-list .cp-fit-dot.ok")).toBeTruthy();
+    // Fitting cassettes float to the top: the first dot is green, and no
+    // incompatible dot appears before the first fitting one.
+    const level = (d: Element) =>
+      d.classList.contains("ok") ? "ok" : d.classList.contains("caution") ? "caution" : "incompatible";
+    const levels = dots.map(level);
+    expect(levels[0]).toBe("ok");
+    const firstIncompat = levels.indexOf("incompatible");
+    if (firstIncompat !== -1) expect(firstIncompat).toBeGreaterThan(levels.indexOf("ok"));
+    // Narrowing to big-cog 12-speed cassettes surfaces incompatible (red) dots.
+    fireEvent.change(container.querySelector(".cp-search") as HTMLInputElement, {
+      target: { value: "52" },
+    });
     expect(container.querySelector(".cp-list .cp-fit-dot.incompatible")).toBeTruthy();
     // The legend names the derailleur being compared against.
     expect(container.querySelector(".cp-legend")?.textContent).toContain("RD-R7000");
@@ -362,6 +372,66 @@ describe("Drivetrain page", () => {
     // 10-speed cassette + 10-speed Tiagra RD-4700 GS -> no speed warning.
     pickDerailleur(container, "4700", (t) => t.includes("GS cage"));
     expect(container.textContent).not.toMatch(/friction shifter/);
+  });
+
+  it("shows a shifter selection once a derailleur is chosen, defaulting to its match", () => {
+    const { container, queryByText } = render(<Drivetrain />);
+    // No shifter field until a derailleur is picked.
+    expect(queryByText("Shifter")).toBeNull();
+    // 10-speed Tiagra RD-4700 -> a default 10-speed indexed shifter that matches.
+    pickDerailleur(container, "4700", (t) => t.includes("GS cage"));
+    // "Shifter" now labels both the Setup field and the fit-section Result; the
+    // picker lives under Setup.
+    const setup = container.querySelector(".section") as HTMLElement;
+    const field = within(setup).getByText("Shifter").closest(".field") as HTMLElement;
+    expect(field.closest(".section")?.querySelector("h3")?.textContent).toBe("Setup");
+    // Indexed: a family select + a speed-count select, seeded to 10-speed.
+    const selects = field.querySelectorAll<HTMLSelectElement>(".shifter-field select");
+    expect(selects.length).toBe(2);
+    expect(selects[0].value).toContain("Tiagra 4700");
+    expect(selects[1].value).toBe("10");
+  });
+
+  it("lets the shifter selection flip the fit verdict (friction rescues a count mismatch)", () => {
+    const { container, getByText } = render(<Drivetrain />);
+    // 11-speed MTB XT RD-M8000 on the default 10-speed cassette: its default
+    // 11-speed indexed shifter can't index 10 cogs -> out of range.
+    pickDerailleur(container, "M8000", (t) => t.includes("SGS cage"));
+    let badge = getByText("Derailleur fit").closest(".result")!.querySelector(".badge")!;
+    // A speed/actuation mismatch reads as "indexing mismatch", not "out of range".
+    expect(badge.textContent).toBe("indexing mismatch");
+    // Switch the family select to Friction -> positions any cog count by feel ->
+    // fits (cog clearance and capacity still pass), and the speed select drops.
+    const familySelect = container.querySelector(".shifter-field select") as HTMLSelectElement;
+    fireEvent.change(familySelect, { target: { value: "Friction" } });
+    expect(container.querySelectorAll(".shifter-field select").length).toBe(1);
+    badge = getByText("Derailleur fit").closest(".result")!.querySelector(".badge")!;
+    expect(badge.textContent).toBe("fits");
+  });
+
+  it("says out of range (not indexing) when the cog is physically too big", () => {
+    const { container, getByText } = render(<Drivetrain />);
+    // 1×42 with an 11-40 on an 11-speed SS (max 30T): cog is way over -> a
+    // physical range problem, even though the shifter count still matches.
+    const texts = container.querySelectorAll('input[type="text"]');
+    fireEvent.change(texts[0], { target: { value: "42" } });
+    fireEvent.change(texts[1], { target: { value: "11, 12, 13, 14, 15, 17, 19, 21, 24, 28, 40" } });
+    pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
+    const badge = getByText("Derailleur fit").closest(".result")!.querySelector(".badge")!;
+    expect(badge.textContent).toBe("out of range");
+  });
+
+  it("hides the speed picker for single-speed families and for unspecified", () => {
+    const { container } = render(<Drivetrain />);
+    pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
+    const familySelect = () => container.querySelector(".shifter-field select") as HTMLSelectElement;
+    // A family with one supported speed (Shimano road 12-speed) -> no speed picker.
+    fireEvent.change(familySelect(), { target: { value: "Shimano road 12-speed" } });
+    expect(container.querySelectorAll(".shifter-field select").length).toBe(1);
+    // Other / unspecified -> no speed picker, and shifting isn't checked.
+    fireEvent.change(familySelect(), { target: { value: "" } });
+    expect(container.querySelectorAll(".shifter-field select").length).toBe(1);
+    expect(container.textContent).toMatch(/can.t be checked/);
   });
 
   it("flags a slightly-oversized cog as caution, not a hard failure", () => {

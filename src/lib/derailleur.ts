@@ -450,8 +450,10 @@ export interface CassetteFit {
   cog: FitDimension;
   /** Required vs rated total capacity. */
   capacity: FitDimension;
-  /** Speed-count compatibility (by actuation family). */
+  /** Speed-count compatibility (by actuation family), derailleur-only heuristic. */
   speed: SpeedCompatStatus;
+  /** Shifter-aware verdict, present only when a shifter was supplied. */
+  shifter?: ShifterVerdict;
   /** Required capacity (front + rear difference), or null when uncomputable. */
   requiredCapacity: number | null;
   /** Teeth the largest cog is over the max sprocket (0 when within). */
@@ -460,17 +462,137 @@ export interface CassetteFit {
   capOver: number;
 }
 
+// --- Shifter ----------------------------------------------------------------
+// The derailleur only moves sideways; the *shifter* is what indexes to each cog.
+// So an accurate compatibility verdict needs both. A shifter is an actuation
+// family plus a speed count. `Friction` is modelled as just another family — it
+// doesn't index, so it drives any mechanical derailleur at any cog count (and is
+// the native "family" of older friction-shifted derailleurs). The universally-
+// true rule: an indexed shifter and the rear derailleur must share an actuation
+// family, and the shifter's speed count must equal the cassette's cog count.
+
+/** Pseudo actuation family for a friction shifter — no indexing, so the speed
+ *  count is ignored and it works with any mechanical derailleur + cassette. */
+export const FRICTION_FAMILY = 'Friction';
+
+export interface Shifter {
+  /** Actuation family, FRICTION_FAMILY for friction, or '' when unspecified. */
+  family: string;
+  /** Indexed speed count; ignored for friction (any cog count works). */
+  speeds: number;
+}
+
+/** The shifter a derailleur nominally ships with: an indexed shifter in its own
+ *  actuation family at its nominal speed count (electronic groups included — the
+ *  matching electronic control). `null` when no derailleur is chosen. Family is
+ *  '' for third-party rows whose actuation can't be derived. */
+export function defaultShifterFor(d: DerailleurSpec | undefined): Shifter | null {
+  if (!d) return null;
+  return { family: d.actuation ?? '', speeds: d.speeds };
+}
+
+/** Short label for a shifter, e.g. "Friction" or "11-speed · Shimano road…".
+ *  Unspecified (no family) has no meaningful speed count, so it reads as such. */
+export function shifterLabel(sh: Shifter): string {
+  if (sh.family === FRICTION_FAMILY) return 'Friction';
+  if (!sh.family) return 'Other / unspecified';
+  return `${sh.speeds}-speed · ${sh.family}`;
+}
+
+// Distinct family names that nonetheless share an actuation (cable-pull) ratio,
+// so a shifter of one drives a derailleur of the other. The classic case: 1990s
+// Shimano road (the "1.7 classic" pull) and same-era Shimano MTB (6/7/8/9-speed)
+// share ≈1.7:1 and cross-index. NOTE numeric ratios alone aren't enough (e.g.
+// CUES/LinkGlide and 11-speed road both read ≈1.4 but are NOT interchangeable),
+// so equivalence is listed explicitly rather than derived.
+const ACTUATION_EQUIVALENTS: string[][] = [
+  ['Shimano road 1.7 (classic)', 'Shimano MTB 6/7/8/9-speed'],
+];
+
+/** Whether two actuation families share a pull ratio (so their shifters and
+ *  derailleurs cross-index). Reflexive; friction/'' aren't real families here. */
+export function familiesCompatible(a: string, b: string): boolean {
+  if (a === b) return true;
+  return ACTUATION_EQUIVALENTS.some((set) => set.includes(a) && set.includes(b));
+}
+
+/**
+ * Whether a chosen shifter can drive a derailleur on an N-cog cassette:
+ * - `match`            — indexed, family matches, count matches → works.
+ * - `friction`         — friction lever on a mechanical derailleur → works (by feel).
+ * - `friction-electronic` — friction can't drive an electronic derailleur → no.
+ * - `wrong-count`      — indexed count ≠ cassette cogs (mechanical) → won't index.
+ * - `electronic-count` — same, but electronic: no friction fallback → hard no.
+ * - `wrong-family`     — indexed family ≠ derailleur's actuation → wrong pull.
+ * - `unknown-family`   — count matches but the derailleur's family is unknown, so
+ *                        the pull-ratio match can't be verified → caution.
+ * - `unspecified`      — the shifter family isn't set, so shifting can't be
+ *                        checked at all → neutral (doesn't affect the fit level).
+ */
+export type ShifterStatus =
+  | 'match'
+  | 'friction'
+  | 'friction-electronic'
+  | 'wrong-count'
+  | 'electronic-count'
+  | 'wrong-family'
+  | 'unknown-family'
+  | 'unspecified';
+
+export interface ShifterVerdict {
+  level: FitLevel;
+  status: ShifterStatus;
+}
+
+export function shifterCompatibility(
+  d: DerailleurSpec,
+  shifter: Shifter,
+  cogCount: number,
+): ShifterVerdict {
+  if (shifter.family === FRICTION_FAMILY) {
+    if (d.electronic) return { level: 'incompatible', status: 'friction-electronic' };
+    return { level: 'ok', status: 'friction' };
+  }
+  // Unspecified family: nothing to check the pull ratio against, so shifting
+  // can't be verified. Neutral — it doesn't raise or lower the fit level.
+  if (!shifter.family) return { level: 'ok', status: 'unspecified' };
+  // Indexed shifter. Electronic derailleurs are driven by their matching
+  // electronic control in fixed pre-programmed steps — they can only work when
+  // the count (and family) match, with no friction fallback.
+  if (d.electronic) {
+    if (cogCount > 0 && shifter.speeds !== cogCount)
+      return { level: 'incompatible', status: 'electronic-count' };
+    if (d.actuation && !familiesCompatible(shifter.family, d.actuation))
+      return { level: 'incompatible', status: 'wrong-family' };
+    return { level: 'ok', status: 'match' };
+  }
+  // Mechanical indexed shifter: the count must line up cog-to-cog…
+  if (cogCount > 0 && shifter.speeds !== cogCount)
+    return { level: 'incompatible', status: 'wrong-count' };
+  // …and the pull ratio (actuation family) must match. Unknown derailleur
+  // family → can't verify → caution.
+  if (!d.actuation) return { level: 'caution', status: 'unknown-family' };
+  if (!familiesCompatible(shifter.family, d.actuation))
+    return { level: 'incompatible', status: 'wrong-family' };
+  return { level: 'ok', status: 'match' };
+}
+
 /**
  * How well a derailleur fits a given crankset + cassette, combining the three
  * checks the tool cares about: max-cog clearance, chain-wrap capacity, and
  * speed-count compatibility. Dimensions with no spec (or no drivetrain numbers
  * yet) report `unknown` and don't drag the overall level down. Used both for the
  * detailed fit readout and for the green/amber/red dots in the cassette picker.
+ *
+ * When a `shifter` is supplied, the speed-count/actuation verdict comes from the
+ * shifter (the accurate check — see shifterCompatibility); without one it falls
+ * back to the derailleur-only heuristic in speedCompatibility.
  */
 export function fitCassette(
   d: DerailleurSpec,
   chainrings: number[],
   cogs: number[],
+  shifter?: Shifter | null,
 ): CassetteFit {
   const largestCog = cogs.length ? Math.max(...cogs) : 0;
   const smallestCog = cogs.length ? Math.min(...cogs) : 0;
@@ -494,27 +616,43 @@ export function fitCassette(
   }
 
   const speed = cogs.length ? speedCompatibility(d, cogs.length) : 'match';
+  const shifterVerdict = shifter ? shifterCompatibility(d, shifter, cogs.length) : undefined;
 
-  // Red for anything clearly out of range: too big a cog, way over capacity, or
-  // an electronic group that can't be re-indexed. Amber for the "might work"
-  // cases: slightly over spec, or a speed-count mismatch that needs a matching
-  // same-family shifter (`family`), a friction shifter (`friction`), or an
-  // underivable third-party family (`unknown`). Green only when every known
-  // dimension is clean AND the speed count matches natively.
+  // The speed/actuation contribution to the overall level: the shifter verdict
+  // when a shifter was chosen (the accurate check), otherwise the derailleur-only
+  // heuristic — where a mismatch that "might work with the right shifter" is amber.
+  const speedLevel: FitLevel = shifterVerdict
+    ? shifterVerdict.level
+    : speed === 'incompatible'
+      ? 'incompatible'
+      : speed === 'match'
+        ? 'ok'
+        : 'caution';
+
+  // Red for anything clearly out of range: too big a cog, way over capacity, or a
+  // speed/actuation combination that can't work. Amber for the "might work" cases:
+  // slightly over spec, or an unverifiable actuation match. Green only when every
+  // known dimension is clean.
   let level: FitLevel = 'ok';
-  if (cog === 'over' || capacity === 'over' || speed === 'incompatible') {
+  if (cog === 'over' || capacity === 'over' || speedLevel === 'incompatible') {
     level = 'incompatible';
-  } else if (
-    cog === 'caution' ||
-    capacity === 'caution' ||
-    speed === 'family' ||
-    speed === 'friction' ||
-    speed === 'unknown'
-  ) {
+  } else if (cog === 'caution' || capacity === 'caution' || speedLevel === 'caution') {
     level = 'caution';
   }
 
-  return { level, cog, capacity, speed, requiredCapacity, cogOver, capOver };
+  return { level, cog, capacity, speed, shifter: shifterVerdict, requiredCapacity, cogOver, capOver };
+}
+
+/**
+ * For an incompatible fit, what's driving it: a physical `range` problem (the cog
+ * won't clear the cage, or the chain wrap is way over capacity) vs an `indexing`
+ * problem (the shifter can't index this cog count / actuation). null when the fit
+ * isn't incompatible. Lets the UI say "out of range" vs "indexing mismatch".
+ */
+export function incompatibleReason(fit: CassetteFit): 'range' | 'indexing' | null {
+  if (fit.level !== 'incompatible') return null;
+  if (fit.cog === 'over' || fit.capacity === 'over') return 'range';
+  return 'indexing';
 }
 
 export function searchDerailleurs(query: string): DerailleurSpec[] {

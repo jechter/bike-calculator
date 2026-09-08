@@ -4343,7 +4343,7 @@
       "type": "Gravel",
       "introduced": 2019,
       "cage": "GS",
-      "nominalSpeeds": 11,
+      "nominalSpeeds": 10,
       "pullRatio": 1.4,
       "maxLow": 36,
       "minLow": 30,

@@ -723,6 +723,12 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .wd-play:hover { border-color: var(--muted); }
 .wd-scrubber { flex: 1 1 auto; min-width: 0; accent-color: var(--accent); cursor: pointer; }
+.wd-canvas {
+  width: 300px; height: 300px; max-width: 70vw; display: block;
+  touch-action: none; cursor: grab;
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel);
+}
+.wd-canvas:active { cursor: grabbing; }
 .wd-rim-edge { stroke: var(--text); stroke-width: 3; }
 .wd-axle { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 3; }
 .wd-legend { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }

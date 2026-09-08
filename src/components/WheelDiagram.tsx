@@ -8,6 +8,7 @@
 // actually built — see sheldonbrown.com/wheelbuild.html.
 
 import { useEffect, useMemo, useState } from "react";
+import { Wheel3D } from "./Wheel3D";
 
 const DRIVE = "#c0392b"; // right / drive side
 const NDS = "#0b6bcb"; // left / non-drive side
@@ -208,6 +209,19 @@ export function WheelDiagram(props: WheelDiagramProps) {
         </div>
         <div className="wd-caption">{buildCaption}</div>
       </div>
+
+      <Wheel3D
+        erdMm={erdMm}
+        spokeCount={n}
+        leftFlangeDiaMm={props.leftFlangeDiaMm}
+        rightFlangeDiaMm={props.rightFlangeDiaMm}
+        leftOffsetMm={props.leftOffsetMm}
+        rightOffsetMm={props.rightOffsetMm}
+        leftCross={props.leftCross}
+        rightCross={props.rightCross}
+        step={step}
+        sequence={sequence}
+      />
 
       <div className="wd-view wd-section">
         <svg

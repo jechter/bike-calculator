@@ -40,7 +40,11 @@ affect the spokes:
   and every spoke drawn in the chosen cross pattern (left = blue, right = red),
   so spoke count, cross and rim-vs-flange proportions are visible; and
 - a **cross-section** — flanges at their L/R offsets showing the **dish** and
-  bracing angles.
+  bracing angles; and
+- a **rotatable 3D view** — a WebGL rendering (rim torus, hub barrel + flanges,
+  spokes coloured by side) that you can **drag with the mouse to turn**, so the
+  dish and cross pattern are visible in three dimensions. Raw WebGL, no 3D
+  library. Falls back to a short message where WebGL isn't available.
 
 Under the face-on view a **build scrubber** (slider + play button) steps through
 lacing the wheel one spoke at a time, in the order a wheel is actually built:
@@ -49,7 +53,8 @@ first set, then the drive-side crossing set, then the non-drive crossing set —
 each group filled in around the wheel starting next to the valve. It follows the
 grouping in [Sheldon Brown's wheelbuilding guide](https://www.sheldonbrown.com/wheelbuild.html).
 It's a build-order guide, not a weave animation — the straight lines don't show
-the over/under of the crossing sets.
+the over/under of the crossing sets. The scrubber drives the face-on and 3D
+views together, so spokes appear in build order in both.
 
 ### Lacing feasibility
 

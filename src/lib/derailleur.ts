@@ -238,6 +238,12 @@ export interface DerailleurSpec {
   source?: DerailleurSource;
 }
 
+/** Full human name: brand, series/family, model, cage — e.g.
+ *  "Shimano Ultegra RD-R8050 SS". Series and cage are dropped when absent. */
+export function derailleurFullName(d: DerailleurSpec): string {
+  return [d.brand, d.series, d.model, d.cage].filter(Boolean).join(' ');
+}
+
 const rawData = derailleursData as { derailleurs: RawDerailleur[] };
 
 function slugify(s: string): string {

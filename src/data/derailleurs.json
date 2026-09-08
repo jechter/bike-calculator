@@ -10425,7 +10425,7 @@
     },
     {
       "brand": "Campagnolo",
-      "model": "Veloce 10s",
+      "model": "RD11-VLBXS",
       "series": "Veloce",
       "type": "Road",
       "cage": "S",
@@ -10435,12 +10435,12 @@
       "source": {
         "url": "https://www.bike-components.de/en/Campagnolo/Veloce-10-speed-Rear-Derailleur-p25890/",
         "sourceType": "secondary",
-        "note": "bike-components product page: Veloce 10s, short cage — max sprocket 32T, smallest sprocket 11T."
+        "note": "bike-components product page: Veloce 10s, short cage — max sprocket 32T, smallest sprocket 11T. Part number RD11-VLBXS (Campagnolo catalogue code); formerly listed as \"Veloce 10s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Veloce 10s",
+      "model": "RD11-VLBXM",
       "series": "Veloce",
       "type": "Road",
       "cage": "M",
@@ -10450,12 +10450,12 @@
       "source": {
         "url": "https://www.bike-components.de/en/Campagnolo/Veloce-10-speed-Rear-Derailleur-p25890/",
         "sourceType": "secondary",
-        "note": "bike-components product page: Veloce 10s, medium cage — max sprocket 37T, smallest sprocket 11T."
+        "note": "bike-components product page: Veloce 10s, medium cage — max sprocket 37T, smallest sprocket 11T. Part number RD11-VLBXM (Campagnolo catalogue code); formerly listed as \"Veloce 10s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Veloce 10s",
+      "model": "RD13-VLBX3",
       "series": "Veloce",
       "type": "Road",
       "cage": "L",
@@ -10465,12 +10465,12 @@
       "source": {
         "url": "https://www.bike-components.de/en/Campagnolo/Veloce-10-speed-Rear-Derailleur-p25890/",
         "sourceType": "secondary",
-        "note": "bike-components product page: Veloce 10s, long cage — max sprocket 40T, smallest sprocket 11T."
+        "note": "bike-components product page: Veloce 10s, long cage — max sprocket 40T, smallest sprocket 11T. Part number RD13-VLBX3 (Campagnolo catalogue code); formerly listed as \"Veloce 10s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Super Record 11s",
+      "model": "RD18-SR1",
       "series": "Super Record",
       "type": "Road",
       "introduced": 2015,
@@ -10482,12 +10482,12 @@
       "source": {
         "url": "https://archive.org/download/035-260-technical-manual-mechanical-units-rear-derailleur-campagnolo-rev-03-07-17/035_260_Technical%20manual%20-%20Mechanical%20units%20rear%20derailleur%20-%20Campagnolo_Rev03_07_17.pdf",
         "sourceType": "primary",
-        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: short cage — capacity 34T, max sprocket 29T, min 11T, chainring front difference 16T. Super Record since 2015."
+        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: short cage — capacity 34T, max sprocket 29T, min 11T, chainring front difference 16T. Super Record since 2015. Part number RD18-SR1 (Campagnolo catalogue code); formerly listed as \"Super Record 11s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Super Record 11s",
+      "model": "RD18-SR1M",
       "series": "Super Record",
       "type": "Road",
       "introduced": 2015,
@@ -10499,12 +10499,12 @@
       "source": {
         "url": "https://archive.org/download/035-260-technical-manual-mechanical-units-rear-derailleur-campagnolo-rev-03-07-17/035_260_Technical%20manual%20-%20Mechanical%20units%20rear%20derailleur%20-%20Campagnolo_Rev03_07_17.pdf",
         "sourceType": "primary",
-        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: medium cage — capacity 37T, max sprocket 32T, min 11T, chainring front difference 16T. Super Record since 2015."
+        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: medium cage — capacity 37T, max sprocket 32T, min 11T, chainring front difference 16T. Super Record since 2015. Part number RD18-SR1M (Campagnolo catalogue code); formerly listed as \"Super Record 11s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Record 11s",
+      "model": "RD18-RE1",
       "series": "Record",
       "type": "Road",
       "introduced": 2015,
@@ -10516,12 +10516,12 @@
       "source": {
         "url": "https://archive.org/download/035-260-technical-manual-mechanical-units-rear-derailleur-campagnolo-rev-03-07-17/035_260_Technical%20manual%20-%20Mechanical%20units%20rear%20derailleur%20-%20Campagnolo_Rev03_07_17.pdf",
         "sourceType": "primary",
-        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: short cage — capacity 34T, max sprocket 29T, min 11T. Record since 2015."
+        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: short cage — capacity 34T, max sprocket 29T, min 11T. Record since 2015. Part number RD18-RE1 (Campagnolo catalogue code); formerly listed as \"Record 11s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Record 11s",
+      "model": "RD18-RE1M",
       "series": "Record",
       "type": "Road",
       "introduced": 2015,
@@ -10533,12 +10533,12 @@
       "source": {
         "url": "https://archive.org/download/035-260-technical-manual-mechanical-units-rear-derailleur-campagnolo-rev-03-07-17/035_260_Technical%20manual%20-%20Mechanical%20units%20rear%20derailleur%20-%20Campagnolo_Rev03_07_17.pdf",
         "sourceType": "primary",
-        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: medium cage — capacity 37T, max sprocket 32T, min 11T. Record since 2015."
+        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: medium cage — capacity 37T, max sprocket 32T, min 11T. Record since 2015. Part number RD18-RE1M (Campagnolo catalogue code); formerly listed as \"Record 11s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Chorus 11s",
+      "model": "RD18-CH1",
       "series": "Chorus",
       "type": "Road",
       "introduced": 2015,
@@ -10550,12 +10550,12 @@
       "source": {
         "url": "https://archive.org/download/035-260-technical-manual-mechanical-units-rear-derailleur-campagnolo-rev-03-07-17/035_260_Technical%20manual%20-%20Mechanical%20units%20rear%20derailleur%20-%20Campagnolo_Rev03_07_17.pdf",
         "sourceType": "primary",
-        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: short cage — capacity 34T, max sprocket 29T, min 11T. Chorus since 2015."
+        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: short cage — capacity 34T, max sprocket 29T, min 11T. Chorus since 2015. Part number RD18-CH1 (Campagnolo catalogue code); formerly listed as \"Chorus 11s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Chorus 11s",
+      "model": "RD18-CH1M",
       "series": "Chorus",
       "type": "Road",
       "introduced": 2015,
@@ -10567,12 +10567,12 @@
       "source": {
         "url": "https://archive.org/download/035-260-technical-manual-mechanical-units-rear-derailleur-campagnolo-rev-03-07-17/035_260_Technical%20manual%20-%20Mechanical%20units%20rear%20derailleur%20-%20Campagnolo_Rev03_07_17.pdf",
         "sourceType": "primary",
-        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: medium cage — capacity 37T, max sprocket 32T, min 11T. Chorus since 2015."
+        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: medium cage — capacity 37T, max sprocket 32T, min 11T. Chorus since 2015. Part number RD18-CH1M (Campagnolo catalogue code); formerly listed as \"Chorus 11s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Potenza 11s",
+      "model": "RD18-POS1S",
       "series": "Potenza",
       "type": "Road",
       "introduced": 2017,
@@ -10584,12 +10584,12 @@
       "source": {
         "url": "https://archive.org/download/035-260-technical-manual-mechanical-units-rear-derailleur-campagnolo-rev-03-07-17/035_260_Technical%20manual%20-%20Mechanical%20units%20rear%20derailleur%20-%20Campagnolo_Rev03_07_17.pdf",
         "sourceType": "primary",
-        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: short cage — capacity 34T, max sprocket 29T, min 11T. Potenza 11 since 2017."
+        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: short cage — capacity 34T, max sprocket 29T, min 11T. Potenza 11 since 2017. Part number RD18-POS1S (Campagnolo catalogue code); formerly listed as \"Potenza 11s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Potenza 11s",
+      "model": "RD18-POB1M",
       "series": "Potenza",
       "type": "Road",
       "introduced": 2017,
@@ -10601,12 +10601,12 @@
       "source": {
         "url": "https://archive.org/download/035-260-technical-manual-mechanical-units-rear-derailleur-campagnolo-rev-03-07-17/035_260_Technical%20manual%20-%20Mechanical%20units%20rear%20derailleur%20-%20Campagnolo_Rev03_07_17.pdf",
         "sourceType": "primary",
-        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: medium cage — capacity 37T, max sprocket 32T, min 11T. Potenza 11 since 2017."
+        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: medium cage — capacity 37T, max sprocket 32T, min 11T. Potenza 11 since 2017. Part number RD18-POB1M (Campagnolo catalogue code); formerly listed as \"Potenza 11s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Centaur 11s",
+      "model": "RD18-CEB1M",
       "series": "Centaur",
       "type": "Road",
       "introduced": 2018,
@@ -10618,12 +10618,12 @@
       "source": {
         "url": "https://archive.org/download/035-260-technical-manual-mechanical-units-rear-derailleur-campagnolo-rev-03-07-17/035_260_Technical%20manual%20-%20Mechanical%20units%20rear%20derailleur%20-%20Campagnolo_Rev03_07_17.pdf",
         "sourceType": "primary",
-        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: medium cage — capacity 37T, max sprocket 32T, min 11T. Centaur 11 since 2018 (short cage not offered for Centaur)."
+        "note": "Campagnolo technical manual Rev.03 07-2017, 11s RD spec table: medium cage — capacity 37T, max sprocket 32T, min 11T. Centaur 11 since 2018 (short cage not offered for Centaur). Part number RD18-CEB1M (Campagnolo catalogue code); formerly listed as \"Centaur 11s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Super Record Wireless 12s",
+      "model": "RD23-SR12WRL",
       "series": "Super Record",
       "type": "Road",
       "introduced": 2023,
@@ -10636,12 +10636,12 @@
       "source": {
         "url": "https://www.bike-components.de/en/Campagnolo/Super-Record-Wireless-12-speed-Rear-Derailleur-p92424/",
         "sourceType": "secondary",
-        "note": "bike-components product page: Super Record Wireless (RD23-SR12WRL), 12s electronic/wireless, medium cage — max sprocket 29T, min 10T, total capacity 35T, 12T pulleys, 295g."
+        "note": "bike-components product page: Super Record Wireless (RD23-SR12WRL), 12s electronic/wireless, medium cage — max sprocket 29T, min 10T, total capacity 35T, 12T pulleys, 295g. Part number RD23-SR12WRL (Campagnolo catalogue code); formerly listed as \"Super Record Wireless 12s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Chorus 12s",
+      "model": "RD20-CH12",
       "series": "Chorus",
       "type": "Road",
       "introduced": 2019,
@@ -10652,12 +10652,12 @@
       "source": {
         "url": "https://www.bike-components.de/en/Campagnolo/Chorus-12s-12-speed-Rear-Derailleur-p72884/",
         "sourceType": "secondary",
-        "note": "bike-components product page: Chorus 12s (RD20-CH12), mechanical, 12T pulleys, 220g; Campagnolo 12s mechanical accepts up to an 11-34 cassette (max sprocket 34T, min 11T). Rated total capacity not clearly published, so omitted."
+        "note": "bike-components product page: Chorus 12s (RD20-CH12), mechanical, 12T pulleys, 220g; Campagnolo 12s mechanical accepts up to an 11-34 cassette (max sprocket 34T, min 11T). Rated total capacity not clearly published, so omitted. Part number RD20-CH12 (Campagnolo catalogue code); formerly listed as \"Chorus 12s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Super Record 13s",
+      "model": "RD02-SR13WRL",
       "series": "Super Record",
       "type": "Road",
       "introduced": 2024,
@@ -10668,12 +10668,12 @@
       "source": {
         "url": "https://www.campagnolo.com/us-en/super-record-13-rear-derailleur/CRDSUPERRECORD13.html",
         "sourceType": "primary",
-        "note": "Campagnolo Super Record 13 official page: 13s wireless (RD02-SR13WRL), accepts sprocket cassettes from 10/11T up to a maximum of 36T, 14T pulleys, 286g. bike-components listing: https://www.bike-components.de/en/Campagnolo/Super-Record-WRL-rear-derailleur-13-speed-p235070/"
+        "note": "Campagnolo Super Record 13 official page: 13s wireless (RD02-SR13WRL), accepts sprocket cassettes from 10/11T up to a maximum of 36T, 14T pulleys, 286g. bike-components listing: https://www.bike-components.de/en/Campagnolo/Super-Record-WRL-rear-derailleur-13-speed-p235070/ Part number RD02-SR13WRL (Campagnolo catalogue code); formerly listed as \"Super Record 13s\"."
       }
     },
     {
       "brand": "Campagnolo",
-      "model": "Record 13s Direct Mount",
+      "model": "RD03-RE13DHWRL",
       "series": "Record",
       "type": "Road",
       "introduced": 2025,
@@ -10684,7 +10684,7 @@
       "source": {
         "url": "https://www.bike-components.de/en/Campagnolo/Record-Wireless-Direct-Mount-Rear-Derailleur-13-speed-p251996/",
         "sourceType": "secondary",
-        "note": "bike-components product page: Record Wireless Direct Mount (RD03-RE13DHWRL), 13s wireless, UDH/direct-mount; Campagnolo 13s accepts 10/11T up to a maximum of 36T."
+        "note": "bike-components product page: Record Wireless Direct Mount (RD03-RE13DHWRL), 13s wireless, UDH/direct-mount; Campagnolo 13s accepts 10/11T up to a maximum of 36T. Part number RD03-RE13DHWRL (Campagnolo catalogue code); formerly listed as \"Record 13s Direct Mount\"."
       }
     }
   ],

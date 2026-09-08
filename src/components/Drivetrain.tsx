@@ -19,6 +19,7 @@ import {
   FRICTION_FAMILY,
   derailleurByKey,
   defaultShifterFor,
+  derailleurFullName,
   familySupportedSpeeds,
   fitCassette,
   incompatibleReason,
@@ -218,7 +219,7 @@ const DERAILLEUR_BRANDS = Array.from(new Set(DERAILLEUR_LIST.map((e) => e.d.bran
 
 function derailleurOptionLabel(d: DerailleurSpec): string {
   const max = d.maxSprocket != null ? ` · max ${d.maxSprocket}T` : "";
-  return `${d.brand} ${d.model} · ${d.speeds}sp${max}`;
+  return `${derailleurFullName(d)} · ${d.speeds}sp${max}`;
 }
 
 // Hint under the Setup derailleur field: the "optional" note until one is
@@ -236,7 +237,7 @@ function DerailleurFieldHint({ d }: { d: DerailleurSpec | undefined }) {
         rel="noopener noreferrer"
         title={`${src.sourceType} source${src.note ? ` — ${src.note}` : ""}`}
       >
-        {d.brand} {d.model} specs ↗
+        {derailleurFullName(d)} specs ↗
       </a>
     );
   }
@@ -313,7 +314,7 @@ function DerailleurPicker({
         onClick={() => setOpen((o) => !o)}
       >
         <span className="ds-name">
-          {selected ? `${selected.brand} ${selected.model}` : "— unspecified —"}
+          {selected ? derailleurFullName(selected) : "— unspecified —"}
         </span>
         <span className="caret">▾</span>
       </button>
@@ -372,7 +373,6 @@ function DerailleurPicker({
                   <span className="cp-name">{derailleurOptionLabel(e.d)}</span>
                   <span className="cp-meta">
                     {e.d.discipline}
-                    {e.d.cage ? ` · ${e.d.cage} cage` : ""}
                     {e.d.totalCapacity != null ? ` · ${e.d.totalCapacity}T cap` : ""}
                   </span>
                 </button>

@@ -376,6 +376,26 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 /* Cassette browse-and-filter picker (foldout next to the cog field) */
 .cassette-picker { position: relative; flex: none; display: flex; }
 .cassette-picker .preset-btn { gap: 4px; font-weight: 500; }
+
+/* The rear-derailleur picker's trigger is a full-width box, matching the
+   chainring / cassette input fields (rather than the compact caret button). */
+.derailleur-select { display: block; width: 100%; }
+.derailleur-select > .preset-btn {
+  width: 100%;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: inherit;
+  font-weight: 400;
+}
+.derailleur-select > .preset-btn:hover { color: var(--text); border-color: var(--accent); }
+.derailleur-select > .preset-btn.open { border-color: var(--accent); }
+.derailleur-select > .preset-btn .caret { color: var(--muted); flex: none; }
+.ds-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cp-pop {
   position: absolute;
   z-index: 30;
@@ -435,6 +455,22 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .cp-meta { font-size: 11px; color: var(--muted); }
 .cp-empty { padding: 12px 10px; color: var(--muted); font-size: 13px; }
 .cp-foot { font-size: 11px; color: var(--muted); padding: 0 2px; }
+
+/* Fit dots on cassette rows when a derailleur is selected (green/amber/red). */
+.cp-fit-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 7px;
+  vertical-align: middle;
+  flex: none;
+}
+.cp-fit-dot.ok { background: var(--ok); }
+.cp-fit-dot.caution { background: var(--warn); }
+.cp-fit-dot.incompatible { background: var(--danger); }
+.cp-legend { font-size: 11px; color: var(--muted); padding: 0 2px; display: flex; align-items: center; gap: 3px; flex-wrap: wrap; }
+.cp-legend .cp-fit-dot { margin: 0 2px 0 6px; }
 
 /* Embedded tire-size picker in the rolling-circumference field */
 .tire-picker { position: relative; flex: none; display: flex; }

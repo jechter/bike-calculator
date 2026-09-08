@@ -429,6 +429,94 @@ export function speedCompatibility(d: DerailleurSpec, cogCount: number): SpeedCo
   return 'friction';
 }
 
+/**
+ * A little over spec often still works (a big cog with a long hanger / extra
+ * B-tension; a little extra required capacity only shows as slack in the
+ * small-small gear you'd avoid anyway). Within this many teeth over → caution;
+ * beyond it → over. Shared by the detailed fit view and the cassette-picker dots.
+ */
+export const FIT_CAUTION_TEETH = 4;
+
+/** Tri-state for a single fit dimension; `unknown` when the spec is missing. */
+export type FitDimension = 'ok' | 'caution' | 'over' | 'unknown';
+
+/** Overall traffic-light fit level for the picker dots and summary badge. */
+export type FitLevel = 'ok' | 'caution' | 'incompatible';
+
+export interface CassetteFit {
+  /** Combined verdict across cog-clearance, capacity and speed count. */
+  level: FitLevel;
+  /** Largest cog vs the derailleur's max sprocket. */
+  cog: FitDimension;
+  /** Required vs rated total capacity. */
+  capacity: FitDimension;
+  /** Speed-count compatibility (by actuation family). */
+  speed: SpeedCompatStatus;
+  /** Required capacity (front + rear difference), or null when uncomputable. */
+  requiredCapacity: number | null;
+  /** Teeth the largest cog is over the max sprocket (0 when within). */
+  cogOver: number;
+  /** Teeth the required capacity is over the rating (0 when within). */
+  capOver: number;
+}
+
+/**
+ * How well a derailleur fits a given crankset + cassette, combining the three
+ * checks the tool cares about: max-cog clearance, chain-wrap capacity, and
+ * speed-count compatibility. Dimensions with no spec (or no drivetrain numbers
+ * yet) report `unknown` and don't drag the overall level down. Used both for the
+ * detailed fit readout and for the green/amber/red dots in the cassette picker.
+ */
+export function fitCassette(
+  d: DerailleurSpec,
+  chainrings: number[],
+  cogs: number[],
+): CassetteFit {
+  const largestCog = cogs.length ? Math.max(...cogs) : 0;
+  const smallestCog = cogs.length ? Math.min(...cogs) : 0;
+  const largestRing = chainrings.length ? Math.max(...chainrings) : 0;
+  const smallestRing = chainrings.length ? Math.min(...chainrings) : 0;
+
+  let cog: FitDimension = 'unknown';
+  let cogOver = 0;
+  if (d.maxSprocket != null && largestCog > 0) {
+    cogOver = Math.max(0, largestCog - d.maxSprocket);
+    cog = cogOver === 0 ? 'ok' : cogOver <= FIT_CAUTION_TEETH ? 'caution' : 'over';
+  }
+
+  let capacity: FitDimension = 'unknown';
+  let capOver = 0;
+  let requiredCapacity: number | null = null;
+  if (d.totalCapacity != null && chainrings.length && cogs.length) {
+    requiredCapacity = largestRing - smallestRing + (largestCog - smallestCog);
+    capOver = Math.max(0, requiredCapacity - d.totalCapacity);
+    capacity = capOver === 0 ? 'ok' : capOver <= FIT_CAUTION_TEETH ? 'caution' : 'over';
+  }
+
+  const speed = cogs.length ? speedCompatibility(d, cogs.length) : 'match';
+
+  // Red for anything clearly out of range: too big a cog, way over capacity, or
+  // an electronic group that can't be re-indexed. Amber for the "might work"
+  // cases: slightly over spec, or a speed-count mismatch that needs a matching
+  // same-family shifter (`family`), a friction shifter (`friction`), or an
+  // underivable third-party family (`unknown`). Green only when every known
+  // dimension is clean AND the speed count matches natively.
+  let level: FitLevel = 'ok';
+  if (cog === 'over' || capacity === 'over' || speed === 'incompatible') {
+    level = 'incompatible';
+  } else if (
+    cog === 'caution' ||
+    capacity === 'caution' ||
+    speed === 'family' ||
+    speed === 'friction' ||
+    speed === 'unknown'
+  ) {
+    level = 'caution';
+  }
+
+  return { level, cog, capacity, speed, requiredCapacity, cogOver, capOver };
+}
+
 export function searchDerailleurs(query: string): DerailleurSpec[] {
   const q = query.trim().toLowerCase();
   if (!q) return DERAILLEURS;

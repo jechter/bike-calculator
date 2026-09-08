@@ -16,9 +16,8 @@ import {
 import {
   DERAILLEURS,
   derailleurByKey,
-  checkCapacity,
+  fitCassette,
   pullRatioFor,
-  speedCompatibility,
   type DerailleurSpec,
 } from "../lib/derailleur";
 import { estimatedCircumferenceMm } from "../lib/wheels";
@@ -214,6 +213,32 @@ function derailleurOptionLabel(d: DerailleurSpec): string {
   return `${d.brand} ${d.model} · ${d.speeds}sp${max}`;
 }
 
+// Hint under the Setup derailleur field: the "optional" note until one is
+// picked, then a link to that derailleur's spec source (falling back to the
+// derailleur database when the row carries no source URL).
+function DerailleurFieldHint({ d }: { d: DerailleurSpec | undefined }) {
+  if (!d) return <>Optional - only used to verify compatibility</>;
+  const src = d.source;
+  if (src) {
+    return (
+      <a
+        className="inline-link"
+        href={src.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={`${src.sourceType} source${src.note ? ` — ${src.note}` : ""}`}
+      >
+        {d.brand} {d.model} specs ↗
+      </a>
+    );
+  }
+  return (
+    <a className="inline-link" href="#/derailleur">
+      open the derailleur database →
+    </a>
+  );
+}
+
 // How many rows to render before asking the user to refine (keeps the DOM light
 // when the picker opens unfiltered on all ~550 derailleurs).
 const DERAILLEUR_LIST_CAP = 200;
@@ -270,7 +295,7 @@ function DerailleurPicker({
   const selected = derailleurByKey(selectedKey);
 
   return (
-    <div className="cassette-picker" ref={ref}>
+    <div className="cassette-picker derailleur-select" ref={ref}>
       <button
         type="button"
         className={"preset-btn" + (open ? " open" : "")}
@@ -279,7 +304,9 @@ function DerailleurPicker({
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
-        {selected ? `${selected.brand} ${selected.model}` : "— none —"}{" "}
+        <span className="ds-name">
+          {selected ? `${selected.brand} ${selected.model}` : "— unspecified —"}
+        </span>
         <span className="caret">▾</span>
       </button>
       {open && (
@@ -321,7 +348,7 @@ function DerailleurPicker({
                   setOpen(false);
                 }}
               >
-                <span className="cp-name">— none —</span>
+                <span className="cp-name">— unspecified —</span>
               </button>
             </li>
             {shown.map((e) => (
@@ -524,10 +551,29 @@ function makeCrossChained(mode: Mode, chainrings: number[], cogs: number[]) {
 // light when the picker opens unfiltered on all ~1000 cassettes).
 const CASSETTE_LIST_CAP = 200;
 
+// Traffic-light label for a cassette-fit dot, for the picker's tooltip + legend.
+const FIT_DOT_LABEL: Record<"ok" | "caution" | "incompatible", string> = {
+  ok: "fits this derailleur",
+  caution: "marginal — check carefully",
+  incompatible: "out of range for this derailleur",
+};
+
 // A browse-and-filter popover of every cassette: a text search plus brand /
 // speeds / range filters, narrowing a scrollable list. Picking a row fills the
 // cog field (via onPick). Anchored to a caret button inside the cog field.
-function CassettePicker({ selectedIdx, onPick }: { selectedIdx: number; onPick: (i: number) => void }) {
+// When a derailleur is selected (fitDerailleur), each row gets a green/amber/red
+// dot showing how that cassette fits it against the current chainrings.
+function CassettePicker({
+  selectedIdx,
+  onPick,
+  fitDerailleur,
+  fitChainrings,
+}: {
+  selectedIdx: number;
+  onPick: (i: number) => void;
+  fitDerailleur?: DerailleurSpec | null;
+  fitChainrings?: number[];
+}) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [brand, setBrand] = useState("all");
@@ -610,25 +656,46 @@ function CassettePicker({ selectedIdx, onPick }: { selectedIdx: number; onPick: 
             <Select value={range} onChange={setRange} options={rangeOptions} />
           </div>
           <ul className="cp-list">
-            {shown.map((c) => (
-              <li key={c.i}>
-                <button
-                  type="button"
-                  className={c.i === selectedIdx ? "active" : ""}
-                  onClick={() => {
-                    onPick(c.i);
-                    setOpen(false);
-                  }}
-                >
-                  <span className="cp-name">{c.label}</span>
-                  <span className="cp-meta">
-                    {c.speeds}-speed · {c.rangeLabel}
-                  </span>
-                </button>
-              </li>
-            ))}
+            {shown.map((c) => {
+              const fit = fitDerailleur
+                ? fitCassette(fitDerailleur, fitChainrings ?? [], CASSETTE_PRESETS[c.i].cogs)
+                : null;
+              return (
+                <li key={c.i}>
+                  <button
+                    type="button"
+                    className={c.i === selectedIdx ? "active" : ""}
+                    onClick={() => {
+                      onPick(c.i);
+                      setOpen(false);
+                    }}
+                  >
+                    <span className="cp-name">
+                      {fit && (
+                        <span
+                          className={"cp-fit-dot " + fit.level}
+                          title={`${fitDerailleur!.brand} ${fitDerailleur!.model}: ${FIT_DOT_LABEL[fit.level]}`}
+                        />
+                      )}
+                      {c.label}
+                    </span>
+                    <span className="cp-meta">
+                      {c.speeds}-speed · {c.rangeLabel}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
             {shown.length === 0 && <li className="cp-empty">No cassettes match.</li>}
           </ul>
+          {fitDerailleur && (
+            <div className="cp-legend">
+              Fit vs <strong>{fitDerailleur.brand} {fitDerailleur.model}</strong>:{" "}
+              <span className="cp-fit-dot ok" /> fits{" "}
+              <span className="cp-fit-dot caution" /> marginal{" "}
+              <span className="cp-fit-dot incompatible" /> out of range
+            </div>
+          )}
           <div className="cp-foot">
             {matches.length} cassette{matches.length === 1 ? "" : "s"}
             {matches.length > shown.length && ` · showing first ${shown.length}, refine to narrow`}
@@ -647,6 +714,8 @@ function CassetteFields({ cfg }: { cfg: DrivetrainConfig }) {
   const cogs = parseList(cfg.cogStr);
   const selected = cfg.cassetteIdx >= 0 ? CASSETTE_PRESETS[cfg.cassetteIdx] : null;
   const modelMatches = !!selected && sameCogs(selected.cogs, cogs);
+  // When a rear derailleur is chosen, the picker dots each cassette by fit.
+  const derailleur = derailleurByKey(cfg.derailleurId);
 
   return (
     <Field
@@ -661,6 +730,8 @@ function CassetteFields({ cfg }: { cfg: DrivetrainConfig }) {
             cfg.setCassetteIdx(i);
             cfg.setCogStr(CASSETTE_PRESETS[i].cogs.join(", "));
           }}
+          fitDerailleur={derailleur}
+          fitChainrings={parseList(cfg.chainringStr)}
         />
       </div>
     </Field>
@@ -695,6 +766,12 @@ function SetupFields({ cfg }: { cfg: DrivetrainConfig }) {
                 onPick={cfg.setChainringStr}
               />
             </div>
+          </Field>
+          <Field
+            label="Rear derailleur"
+            hint={<DerailleurFieldHint d={derailleurByKey(cfg.derailleurId)} />}
+          >
+            <DerailleurPicker selectedKey={cfg.derailleurId} onPick={cfg.setDerailleurId} />
           </Field>
           <CassetteFields cfg={cfg} />
         </>
@@ -932,39 +1009,32 @@ export function Drivetrain() {
   const chain = chainLength({ chainstayMm: chainstay, largestChainring: largestRing, largestCog });
   const wearThresholds = chainWearThresholdsFor(focusCfg.mode === "cassette", cogs.length);
 
-  // Rear-derailleur fit check (cassette only), for the focused config. Skipped
-  // when the picked derailleur has no capacity/max-cog data (many older or
-  // third-party entries) — see `fitDataMissing` below.
+  // Rear-derailleur fit check (cassette only), for the focused config. The
+  // derailleur is now chosen in the Setup section (per config). fitCassette
+  // combines cog-clearance, capacity and speed-count into one verdict — the same
+  // one that dots the cassette picker. Cog/capacity are skipped when the picked
+  // derailleur has no data (many older or third-party entries) — see
+  // `fitDataMissing` below.
   const derailleur = derailleurByKey(focusCfg.derailleurId);
+  const fitRes = derailleur ? fitCassette(derailleur, chainrings, cogs) : null;
   const fitDataMissing =
     !!derailleur && (derailleur.totalCapacity == null || derailleur.maxSprocket == null);
-  const fit =
-    derailleur &&
-    derailleur.totalCapacity != null &&
-    derailleur.maxSprocket != null &&
-    chainrings.length &&
-    cogs.length
-      ? checkCapacity({
-          largestChainring: largestRing,
-          smallestChainring: Math.min(...chainrings),
-          largestCog,
-          smallestCog: Math.min(...cogs),
-          ratedCapacity: derailleur.totalCapacity,
-          maxSprocket: derailleur.maxSprocket,
-        })
-      : null;
+  // The cog + capacity readout is shown only when both figures are present (as
+  // before). `fit` gates that block and the capacity/max-cog note.
+  const fit = !!fitRes && fitRes.cog !== "unknown" && fitRes.capacity !== "unknown";
 
   // Both checks are tri-state: a little over spec often still works (a big cog
   // with a long hanger / extra B-tension; a little extra capacity only shows as
   // slack in the small-small gear you'd avoid anyway).
   type FitStatus = "ok" | "caution" | "over";
-  // Only meaningful when `fit` was computed (which requires both fields present).
+  // Only meaningful when `fit` is true (which requires both fields present).
   const maxSprocket = derailleur?.maxSprocket ?? 0;
   const totalCapacity = derailleur?.totalCapacity ?? 0;
-  const cogOver = fit ? largestCog - maxSprocket : 0;
-  const cogStatus: FitStatus = cogOver <= 0 ? "ok" : cogOver <= 4 ? "caution" : "over";
-  const capOver = fit ? fit.requiredCapacity - totalCapacity : 0;
-  const capStatus: FitStatus = capOver <= 0 ? "ok" : capOver <= 4 ? "caution" : "over";
+  const requiredCapacity = fitRes?.requiredCapacity ?? 0;
+  const cogOver = fitRes?.cogOver ?? 0;
+  const cogStatus = (fit ? fitRes!.cog : "ok") as FitStatus;
+  const capOver = fitRes?.capOver ?? 0;
+  const capStatus = (fit ? fitRes!.capacity : "ok") as FitStatus;
   const worst: FitStatus = [cogStatus, capStatus].includes("over")
     ? "over"
     : [cogStatus, capStatus].includes("caution")
@@ -994,7 +1064,7 @@ export function Drivetrain() {
   // cassette's cog count, judged by actuation. A mismatch can be fine (shared
   // actuation family, or a friction shifter) — but electronic groups can't be
   // re-indexed, so those are a hard no. See speedCompatibility().
-  const speedStatus = derailleur ? speedCompatibility(derailleur, cogs.length) : "match";
+  const speedStatus = fitRes ? fitRes.speed : "match";
   const speedBadge: { cls: "ok" | "warn" | "danger"; text: string } =
     speedStatus === "match"
       ? { cls: "ok", text: "OK" }
@@ -1003,6 +1073,16 @@ export function Drivetrain() {
         : speedStatus === "family"
           ? { cls: "warn", text: "same family" }
           : { cls: "warn", text: `≠ ${cogs.length}-sp` };
+
+  // Compact overall verdict for the Gears summary row — the same traffic-light
+  // level that dots the cassette picker, so the two views agree at a glance.
+  const fitBadge: { cls: "ok" | "warn" | "danger"; text: string } | null = fitRes
+    ? fitRes.level === "ok"
+      ? { cls: "ok", text: "fits" }
+      : fitRes.level === "caution"
+        ? { cls: "warn", text: "marginal" }
+        : { cls: "danger", text: "out of range" }
+    : null;
 
   const sliderCadence = Math.min(120, Math.max(60, cadence || 60));
 
@@ -1170,6 +1250,17 @@ export function Drivetrain() {
               />
             </>
           )}
+          {focusCfg.mode === "cassette" && derailleur && fitBadge && (
+            <Result
+              label="Derailleur fit"
+              value={
+                <>
+                  {derailleur.model}{" "}
+                  <span className={"badge " + fitBadge.cls}>{fitBadge.text}</span>
+                </>
+              }
+            />
+          )}
         </div>
 
         <GearChart
@@ -1290,14 +1381,15 @@ export function Drivetrain() {
         </p>
       </Section>
 
-      {focusCfg.mode === "cassette" && (
+      {focusCfg.mode === "cassette" && derailleur && (
         <Section
           title={comparing ? `Rear derailleur fit · ${focusLabel}` : "Rear derailleur fit"}
           info={
             <>
-              Pick a derailleur to check it against this cassette/crankset. Needs
-              capacity ≥ (big ring − small ring) + (big cog − small cog), and its
-              max sprocket ≥ your largest cog. Specs are approximate — see the{" "}
+              Checks the derailleur you chose in <strong>Setup</strong> against this
+              cassette/crankset. Needs capacity ≥ (big ring − small ring) + (big cog
+              − small cog), and its max sprocket ≥ your largest cog. Specs are
+              approximate — see the{" "}
               <a className="inline-link" href="#/derailleur">
                 derailleur database
               </a>
@@ -1305,18 +1397,13 @@ export function Drivetrain() {
             </>
           }
         >
-          <div className="rows">
-            <Field label="Rear derailleur (optional)">
-              <DerailleurPicker
-                selectedKey={focusCfg.derailleurId}
-                onPick={focusCfg.setDerailleurId}
+          <>
+            <div className="results">
+              <Result
+                label="Derailleur"
+                value={`${derailleur.brand} ${derailleur.model}${derailleur.cage ? ` · ${derailleur.cage}` : ""}`}
               />
-            </Field>
-          </div>
-          {derailleur && (
-            <>
-              <div className="results" style={{ marginTop: 8 }}>
-                {fit && (
+              {fit && (
                   <Result
                     label="Largest cog"
                     value={
@@ -1343,7 +1430,7 @@ export function Drivetrain() {
                     label="Capacity needed"
                     value={
                       <>
-                        {fit.requiredCapacity}T{" "}
+                        {requiredCapacity}T{" "}
                         <span
                           className={
                             "badge " +
@@ -1422,8 +1509,7 @@ export function Drivetrain() {
                   entirely.
                 </Note>
               )}
-            </>
-          )}
+          </>
         </Section>
       )}
 

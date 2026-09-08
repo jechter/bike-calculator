@@ -13,7 +13,7 @@ function pickDerailleur(
   rowMatch: (text: string) => boolean,
 ) {
   const openBtn = Array.from(container.querySelectorAll("button")).find((b) =>
-    b.textContent?.includes("— none —"),
+    b.textContent?.includes("— unspecified —"),
   ) as HTMLButtonElement;
   fireEvent.click(openBtn);
   const searchInput = container.querySelector(".cp-search") as HTMLInputElement;
@@ -281,6 +281,63 @@ describe("Drivetrain page", () => {
     // default 50/34 + 11-28 -> required capacity 33T, largest cog 28T
     expect(container.textContent).toContain("Capacity needed");
     expect(container.textContent).toContain("33T");
+  });
+
+  it("selects the rear derailleur in the Setup section", () => {
+    const { getByText, container } = render(<Drivetrain />);
+    // The picker lives under the Setup section's own field, not the fit section.
+    const field = getByText("Rear derailleur").closest(".field") as HTMLElement;
+    expect(field).toBeTruthy();
+    expect(field.closest(".section")?.querySelector("h3")?.textContent).toBe("Setup");
+    // No fit section until a derailleur is picked.
+    expect(container.textContent).not.toContain("Capacity needed");
+    pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
+    expect(container.textContent).toContain("Capacity needed");
+  });
+
+  it("links the Setup field hint to the derailleur's specs once picked", () => {
+    const { getByText, container } = render(<Drivetrain />);
+    const field = getByText("Rear derailleur").closest(".field") as HTMLElement;
+    // Before selection: the optional note, no link.
+    expect(field.querySelector(".field-hint a")).toBeNull();
+    expect(field.textContent).toContain("Optional");
+    // After selection: the hint becomes an external link to the spec source.
+    pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
+    const link = field.querySelector(".field-hint a") as HTMLAnchorElement;
+    expect(link).toBeTruthy();
+    expect(link.textContent).toContain("RD-R7000");
+    expect(link.getAttribute("href")).toMatch(/^https?:\/\//);
+    expect(link.getAttribute("target")).toBe("_blank");
+  });
+
+  it("summarizes the derailleur fit in the Gears section", () => {
+    const { container, getByText } = render(<Drivetrain />);
+    // 10-speed Tiagra RD-4700 GS on the default 10-speed 50/34 + 11-28 is a
+    // clean native match -> a green "fits" badge in Gears.
+    pickDerailleur(container, "4700", (t) => t.includes("GS cage"));
+    const fitCard = getByText("Derailleur fit").closest(".result") as HTMLElement;
+    expect(fitCard).toBeTruthy();
+    const badge = fitCard.querySelector(".badge") as HTMLElement;
+    expect(badge.className).toContain("ok");
+    expect(badge.textContent).toBe("fits");
+  });
+
+  it("dots each cassette in the picker by fit once a derailleur is chosen", () => {
+    const { container, getByTitle } = render(<Drivetrain />);
+    // No derailleur yet -> the cassette picker has no fit dots.
+    fireEvent.click(getByTitle("Browse the cassette database"));
+    expect(container.querySelectorAll(".cp-list .cp-fit-dot").length).toBe(0);
+    // Close it, pick an 11-speed SS derailleur (max 30T), reopen the picker.
+    fireEvent.click(getByTitle("Browse the cassette database"));
+    pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
+    fireEvent.click(getByTitle("Browse the cassette database"));
+    const dots = container.querySelectorAll(".cp-list .cp-fit-dot");
+    expect(dots.length).toBeGreaterThan(0);
+    // A green dot fits; a red one is out of range (e.g. a 52T MTB cog).
+    expect(container.querySelector(".cp-list .cp-fit-dot.ok")).toBeTruthy();
+    expect(container.querySelector(".cp-list .cp-fit-dot.incompatible")).toBeTruthy();
+    // The legend names the derailleur being compared against.
+    expect(container.querySelector(".cp-legend")?.textContent).toContain("RD-R7000");
   });
 
   it("warns when the derailleur's nominal speed count differs from the cassette", () => {

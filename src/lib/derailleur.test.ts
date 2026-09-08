@@ -6,6 +6,7 @@ import {
   derailleurSpeeds,
   speedMatches,
   speedCompatibility,
+  fitCassette,
   pullRatioFor,
   DERAILLEURS,
 } from './derailleur';
@@ -138,6 +139,53 @@ describe('speedCompatibility', () => {
   it('is unknown when the family could not be derived (third-party)', () => {
     const ms = DERAILLEURS.find((d) => d.brand === 'Microshift' && !d.electronic)!;
     expect(speedCompatibility(ms, ms.speeds + 1)).toBe('unknown');
+  });
+});
+
+describe('fitCassette', () => {
+  const r7000 = () => derailleurByKey('shimano-rd-r7000-ss-11s')!; // 11sp, max 30T, cap 35T
+
+  it('is ok (green) when cog, capacity and speed all pass', () => {
+    // 11-speed cassette 11-28 with a 50/34: required 33T ≤ 35T, cog 28 ≤ 30.
+    const fit = fitCassette(r7000(), [50, 34], [11, 12, 13, 14, 15, 17, 19, 21, 24, 28, 30].slice(0, 11));
+    expect(fit.cog).toBe('ok');
+    expect(fit.capacity).toBe('ok');
+    expect(fit.speed).toBe('match');
+    expect(fit.level).toBe('ok');
+    expect(fit.requiredCapacity).toBe(50 - 34 + (30 - 11));
+  });
+
+  it('flags a slightly oversized cog as caution (amber)', () => {
+    // 1×42, 11–32 on an SS (max 30T): cog +2T over, capacity tiny.
+    const fit = fitCassette(r7000(), [42], [11, 32]);
+    expect(fit.cog).toBe('caution');
+    expect(fit.cogOver).toBe(2);
+    expect(fit.level).toBe('caution');
+  });
+
+  it('marks a way-oversized cog as incompatible (red)', () => {
+    const fit = fitCassette(r7000(), [42], [11, 40]); // +10T over the 30T max
+    expect(fit.cog).toBe('over');
+    expect(fit.level).toBe('incompatible');
+  });
+
+  it('an electronic speed mismatch is incompatible even when cog/cap fit', () => {
+    const axs = searchDerailleurs('sram').find((d) => d.electronic && d.speeds === 12)!;
+    const fit = fitCassette(axs, [40], [10, 11, 12, 13, 14, 16, 18, 21, 24, 28, 33]); // 11 cogs
+    expect(fit.speed).toBe('incompatible');
+    expect(fit.level).toBe('incompatible');
+  });
+
+  it('reports unknown dimensions without dragging the level down', () => {
+    // A Campagnolo row with no capacity/max-cog data still judges by speed only.
+    const noData = DERAILLEURS.find(
+      (d) => d.totalCapacity == null && d.maxSprocket == null && d.actuation,
+    )!;
+    const fit = fitCassette(noData, [50, 34], Array.from({ length: noData.speeds }, (_, i) => 11 + i));
+    expect(fit.cog).toBe('unknown');
+    expect(fit.capacity).toBe('unknown');
+    expect(fit.speed).toBe('match');
+    expect(fit.level).toBe('ok');
   });
 });
 

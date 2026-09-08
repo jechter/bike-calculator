@@ -373,7 +373,7 @@ describe("Drivetrain page", () => {
   it("checks a chosen rear derailleur against the drivetrain", () => {
     const { container } = render(<Drivetrain />);
     // Shimano RD-R7000 (105) SS, 11sp, max 30T, cap 35T.
-    pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
+    pickDerailleur(container, "R7000", (t) => t.includes(" SS "));
     // default 50/34 + 11-28 -> required capacity 33T, largest cog 28T
     expect(container.textContent).toContain("Capacity needed");
     expect(container.textContent).toContain("33T");
@@ -387,7 +387,7 @@ describe("Drivetrain page", () => {
     expect(field.closest(".section")?.querySelector("h3")?.textContent).toBe("Setup");
     // No fit section until a derailleur is picked.
     expect(container.textContent).not.toContain("Capacity needed");
-    pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
+    pickDerailleur(container, "R7000", (t) => t.includes(" SS "));
     expect(container.textContent).toContain("Capacity needed");
   });
 
@@ -398,7 +398,7 @@ describe("Drivetrain page", () => {
     expect(field.querySelector(".field-hint a")).toBeNull();
     expect(field.textContent).toContain("Optional");
     // After selection: the hint becomes an external link to the spec source.
-    pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
+    pickDerailleur(container, "R7000", (t) => t.includes(" SS "));
     const link = field.querySelector(".field-hint a") as HTMLAnchorElement;
     expect(link).toBeTruthy();
     expect(link.textContent).toContain("RD-R7000");
@@ -410,7 +410,7 @@ describe("Drivetrain page", () => {
     const { container, getByText } = render(<Drivetrain />);
     // 10-speed Tiagra RD-4700 GS on the default 10-speed 50/34 + 11-28 is a
     // clean native match -> a green "fits" badge in Gears.
-    pickDerailleur(container, "4700", (t) => t.includes("GS cage"));
+    pickDerailleur(container, "4700", (t) => t.includes(" GS "));
     const fitCard = getByText("Derailleur fit").closest(".result") as HTMLElement;
     expect(fitCard).toBeTruthy();
     const badge = fitCard.querySelector(".badge") as HTMLElement;
@@ -425,7 +425,7 @@ describe("Drivetrain page", () => {
     expect(container.querySelectorAll(".cp-list .cp-fit-dot").length).toBe(0);
     // Close it, pick an 11-speed SS derailleur (max 30T), reopen the picker.
     fireEvent.click(getByTitle("Browse the cassette database"));
-    pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
+    pickDerailleur(container, "R7000", (t) => t.includes(" SS "));
     fireEvent.click(getByTitle("Browse the cassette database"));
     const dots = Array.from(container.querySelectorAll(".cp-list .cp-fit-dot"));
     expect(dots.length).toBeGreaterThan(0);
@@ -450,7 +450,7 @@ describe("Drivetrain page", () => {
     const { container } = render(<Drivetrain />);
     // Default cassette has 10 cogs. Pick an 11-speed MTB XT RD-M8000 — its
     // actuation family (11/12) excludes 10, so it's a friction-shifter mismatch.
-    pickDerailleur(container, "M8000", (t) => t.includes("SGS cage"));
+    pickDerailleur(container, "M8000", (t) => t.includes(" SGS "));
     expect(container.textContent).toMatch(/≠ 10-sp/);
     expect(container.textContent).toMatch(/friction shifter/);
   });
@@ -466,7 +466,7 @@ describe("Drivetrain page", () => {
   it("does not warn about speeds when the derailleur matches the cassette", () => {
     const { container } = render(<Drivetrain />);
     // 10-speed cassette + 10-speed Tiagra RD-4700 GS -> no speed warning.
-    pickDerailleur(container, "4700", (t) => t.includes("GS cage"));
+    pickDerailleur(container, "4700", (t) => t.includes(" GS "));
     expect(container.textContent).not.toMatch(/friction shifter/);
   });
 
@@ -475,7 +475,7 @@ describe("Drivetrain page", () => {
     // No shifter field until a derailleur is picked.
     expect(queryByText("Shifter")).toBeNull();
     // 10-speed Tiagra RD-4700 -> a default 10-speed indexed shifter that matches.
-    pickDerailleur(container, "4700", (t) => t.includes("GS cage"));
+    pickDerailleur(container, "4700", (t) => t.includes(" GS "));
     // "Shifter" now labels both the Setup field and the fit-section Result; the
     // picker lives under Setup.
     const setup = container.querySelector(".section") as HTMLElement;
@@ -492,7 +492,7 @@ describe("Drivetrain page", () => {
     const { container, getByText } = render(<Drivetrain />);
     // 11-speed MTB XT RD-M8000 on the default 10-speed cassette: its default
     // 11-speed indexed shifter can't index 10 cogs -> out of range.
-    pickDerailleur(container, "M8000", (t) => t.includes("SGS cage"));
+    pickDerailleur(container, "M8000", (t) => t.includes(" SGS "));
     let badge = getByText("Derailleur fit").closest(".result")!.querySelector(".badge")!;
     // A speed/actuation mismatch reads as "indexing mismatch", not "out of range".
     expect(badge.textContent).toBe("indexing mismatch");
@@ -512,14 +512,14 @@ describe("Drivetrain page", () => {
     const texts = container.querySelectorAll('input[type="text"]');
     fireEvent.change(texts[0], { target: { value: "42" } });
     fireEvent.change(texts[1], { target: { value: "11, 12, 13, 14, 15, 17, 19, 21, 24, 28, 40" } });
-    pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
+    pickDerailleur(container, "R7000", (t) => t.includes(" SS "));
     const badge = getByText("Derailleur fit").closest(".result")!.querySelector(".badge")!;
     expect(badge.textContent).toBe("out of range");
   });
 
   it("hides the speed picker for single-speed families and for unspecified", () => {
     const { container } = render(<Drivetrain />);
-    pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
+    pickDerailleur(container, "R7000", (t) => t.includes(" SS "));
     const familySelect = () => container.querySelector(".shifter-field select") as HTMLSelectElement;
     // A family with one supported speed (Shimano road 12-speed) -> no speed picker.
     fireEvent.change(familySelect(), { target: { value: "Shimano road 12-speed" } });
@@ -536,7 +536,7 @@ describe("Drivetrain page", () => {
     const texts = container.querySelectorAll('input[type="text"]');
     fireEvent.change(texts[0], { target: { value: "42" } });
     fireEvent.change(texts[1], { target: { value: "11, 32" } });
-    pickDerailleur(container, "R7000", (t) => t.includes("SS cage"));
+    pickDerailleur(container, "R7000", (t) => t.includes(" SS "));
     expect(container.textContent).toContain("+2T over");
     expect(container.textContent).toMatch(/proceed with caution/);
   });
@@ -547,7 +547,7 @@ describe("Drivetrain page", () => {
     const texts = container.querySelectorAll('input[type="text"]');
     fireEvent.change(texts[0], { target: { value: "46, 30" } });
     fireEvent.change(texts[1], { target: { value: "11, 46" } });
-    pickDerailleur(container, "M8000", (t) => t.includes("SGS cage"));
+    pickDerailleur(container, "M8000", (t) => t.includes(" SGS "));
     expect(container.textContent).toContain("+4T over");
     expect(container.textContent).toMatch(/proceed with caution/);
   });

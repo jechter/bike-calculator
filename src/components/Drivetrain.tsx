@@ -1506,6 +1506,10 @@ export function Drivetrain() {
       ? { name: activeGear.hubName, ratio: activeGear.hubRatio ?? 1 }
       : defaultHubGear;
   const activeHubRatio = activeHubGear?.ratio ?? 1;
+  // A bottom-bracket gearbox gears between the crank and the chainring, so the
+  // diagram spins the crank (cadence) separately from the chainring (geared).
+  const isGearbox =
+    focusCfg.mode === "hub" && HUB_PRESETS[focusCfg.hubIdx].kind === "bottomBracket";
   // The gear currently drawn in the diagram, for highlighting in the chart.
   const focusId = comparing && focus === "B" ? "B" : "A";
   const isActiveGear = (g: GearResult, seriesId: string) =>
@@ -1720,6 +1724,7 @@ export function Drivetrain() {
           speedUnit={unitLabel}
           hubRatio={activeHubRatio}
           hubLabel={activeHubGear?.name}
+          isGearbox={isGearbox}
         />
 
         <div className="dt-controls">

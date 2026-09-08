@@ -67,6 +67,23 @@ function arc(c: V, r: number, a: V, b: V, cw: boolean): string {
 }
 const pt = (p: V) => `${p.x} ${p.y}`;
 
+// Outline (stadium) around the segment p0->p1 with radius r: two parallel edges
+// capped by semicircles. Used for the hollow crank arms.
+function capsule(p0: V, p1: V, r: number): string {
+  const dx = p1.x - p0.x;
+  const dy = p1.y - p0.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = (-dy / len) * r;
+  const ny = (dx / len) * r;
+  const a = { x: p0.x + nx, y: p0.y + ny };
+  const b = { x: p1.x + nx, y: p1.y + ny };
+  const c = { x: p1.x - nx, y: p1.y - ny };
+  const d = { x: p0.x - nx, y: p0.y - ny };
+  // Sweep 0 so each end cap bulges outward (past the endpoint), not back over
+  // the arm — the rounded corner sits outside the pedal hole.
+  return `M ${pt(a)} L ${pt(b)} A ${r} ${r} 0 0 0 ${pt(c)} L ${pt(d)} A ${r} ${r} 0 0 0 ${pt(a)} Z`;
+}
+
 export interface DrivetrainDiagramProps {
   chainrings: number[];
   cogs: number[];
@@ -84,6 +101,11 @@ export interface DrivetrainDiagramProps {
   hubRatio?: number;
   /** Active hub gear's name (e.g. "3rd"), shown in the caption when present. */
   hubLabel?: string;
+  /** True when the gearing sits between the crank and the chainring (a
+   *  bottom-bracket gearbox). The crank then turns at the pedalling cadence
+   *  while the chainring turns at cadence × the active gear's ratio; otherwise
+   *  crank and chainring are rigidly linked and turn together. */
+  isGearbox?: boolean;
 }
 
 export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
@@ -177,9 +199,18 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   // faint arc + spoke stubs in the background.
   const topExtent = Math.max(rfMax, rrMax);
   const derailBottom = rrMax + 8 + PULLEY + CAGE + PULLEY;
+  // Crank arms at true length (170 mm) and 40 mm wide (a modern Ultegra arm),
+  // drawn as a hollow outline with a pedal eye at each tip. The viewBox is
+  // widened horizontally to fit the crank's reach (the diagram uses the full
+  // page width), but stays vertically tight — so as the crank sweeps it's only
+  // clipped top and bottom, like the wheel.
+  const crankLen = 170; // mm, a real crank arm
+  const crankHalfW = 20; // arm half-thickness (40 mm wide)
+  const pedalR = 7;
+  const crankReachX = crankLen + crankHalfW; // horizontal extent of the crank
   const m = 10;
-  const minX = -rfMax - m;
-  const maxX = R.x + rrMax + PULLEY + m;
+  const minX = Math.min(-rfMax, -crankReachX) - m;
+  const maxX = Math.max(R.x + rrMax + PULLEY, crankReachX) + m;
   const minY = -topExtent - m - 10; // room for labels
   // Bottom must clear the lowest of: chainring, cog, and (if present) the
   // derailleur's downward reach — otherwise a big chainring gets culled in
@@ -196,6 +227,13 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   const ratio = (props.activeChainring / props.activeCog) * (props.hubRatio ?? 1);
   const period = 60 / rpm;
   const cogPeriod = Math.max(0.1, 60 / (rpm * ratio));
+  // The crank always turns at the pedalling cadence. The chainring turns with it,
+  // except on a bottom-bracket gearbox where the gearbox sits between them — the
+  // ring then turns at cadence × the active gear's ratio (its hub ratio).
+  const isGearbox = !!props.isGearbox;
+  const crankPeriod = period;
+  const chainringRpm = isGearbox ? rpm * (props.hubRatio ?? 1) : rpm;
+  const chainringPeriod = Math.max(0.05, 60 / chainringRpm);
   const reduceMotion =
     typeof window !== "undefined" &&
     !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
@@ -271,8 +309,9 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
             style={r === props.activeChainring ? { stroke: activeColor } : undefined}
           />
         ))}
-        {/* chainring spokes (sized to the biggest ring), spinning at the cadence (CCW) */}
-        <g key={"cr" + Math.round(rpm)}>
+        {/* chainring spokes (sized to the biggest ring), spinning at the ring's
+            speed (CCW) — cadence normally, cadence × ratio on a gearbox */}
+        <g key={"cr" + Math.round(chainringRpm)}>
           {blades(F.x, F.y, 4, rfMax, 4, 10, "dt-spoke")}
           {!reduceMotion && (
             <animateTransform
@@ -281,7 +320,7 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
               type="rotate"
               from={`0 ${F.x} ${F.y}`}
               to={`-360 ${F.x} ${F.y}`}
-              dur={`${period}s`}
+              dur={`${chainringPeriod}s`}
               repeatCount="indefinite"
             />
           )}
@@ -302,6 +341,25 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
         {paths.map((d, i) => (
           <path key={i} d={d} className="dt-chain" />
         ))}
+        {/* crankset: a single outlined crank arm out to the pedal, drawn in
+            front of the chainrings and turning at the pedalling cadence — on a
+            gearbox that's independent of the geared chainring. */}
+        <g key={"ck" + Math.round(rpm)}>
+          {/* a single crank arm from the bottom bracket out to the pedal */}
+          <path d={capsule(F, { x: F.x + crankLen, y: F.y }, crankHalfW)} className="dt-crank" />
+          <circle cx={F.x + crankLen} cy={F.y} r={pedalR} className="dt-crank-pedal" />
+          {!reduceMotion && (
+            <animateTransform
+              attributeName="transform"
+              attributeType="XML"
+              type="rotate"
+              from={`0 ${F.x} ${F.y}`}
+              to={`-360 ${F.x} ${F.y}`}
+              dur={`${crankPeriod}s`}
+              repeatCount="indefinite"
+            />
+          )}
+        </g>
         {/* crank spindle + rear axle */}
         <circle cx={F.x} cy={F.y} r={3} className="dt-hub" />
         <circle cx={R.x} cy={R.y} r={3} className="dt-hub" />

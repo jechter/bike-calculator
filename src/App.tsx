@@ -16,7 +16,7 @@ export function App() {
             <span className="dot">◉</span> Bike Workshop
           </div>
           <nav className="nav">
-            {CALCULATORS.map((c) => (
+            {CALCULATORS.filter((c) => !c.hidden).map((c) => (
               <button
                 key={c.id}
                 className={c.id === active.id ? "active" : ""}

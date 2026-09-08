@@ -22,6 +22,8 @@ export interface CalculatorDef {
   subtitle: string;
   icon: React.ReactNode;
   Component: React.ComponentType;
+  /** Hidden from the sidebar nav, but still reachable directly by hash route. */
+  hidden?: boolean;
 }
 
 export const CALCULATORS: CalculatorDef[] = [
@@ -60,6 +62,9 @@ export const CALCULATORS: CalculatorDef[] = [
     subtitle: "Look up derailleur specs, plus a compatibility reference.",
     icon: <DerailleurIcon />,
     Component: Derailleur,
+    // Derailleur specs and fit checks are now surfaced within the Drivetrain
+    // tool, so this standalone page is hidden from the sidebar.
+    hidden: true,
   },
   {
     id: "power",

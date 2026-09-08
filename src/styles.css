@@ -744,3 +744,14 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   }
   .main { padding: 20px 16px 48px; }
 }
+
+/* Embedded in an auto-resizing iframe (see main.tsx): size to content rather
+   than the viewport. Without this, .app's min-height:100vh and the sidebar's
+   height:100vh equal the iframe's current height, so the reported height can
+   only ratchet up and the frame never shrinks back down. */
+html.embedded .app { min-height: 0; }
+html.embedded .sidebar {
+  position: static;
+  height: auto;
+  align-self: stretch;
+}

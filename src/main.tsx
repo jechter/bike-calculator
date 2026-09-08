@@ -13,6 +13,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 // the parent can't read our height directly. Post our content height out so the
 // host page can resize the iframe to fit — no inner scrollbar needed.
 if (window.parent !== window) {
+  // Size to content instead of the viewport so the iframe can shrink as well as
+  // grow (see html.embedded rules in styles.css).
+  document.documentElement.classList.add("embedded");
   const postHeight = () => {
     const height = Math.ceil(
       document.documentElement.getBoundingClientRect().height,

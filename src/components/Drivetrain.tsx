@@ -506,6 +506,21 @@ function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
   };
 }
 
+// Copy every field of one drivetrain config into another (used to seed the
+// comparison drivetrain from the first, so a single change can be isolated).
+function copyConfig(from: DrivetrainConfig, to: DrivetrainConfig) {
+  to.setMode(from.mode);
+  to.setChainringStr(from.chainringStr);
+  to.setCogStr(from.cogStr);
+  to.setCassetteIdx(from.cassetteIdx);
+  to.setSingleRing(from.singleRing);
+  to.setSingleCog(from.singleCog);
+  to.setHubIdx(from.hubIdx);
+  to.setDerailleurId(from.derailleurId);
+  to.setCirc(from.circ);
+  to.setTireSize(from.tireSize);
+}
+
 interface Derived {
   chainrings: number[];
   cogs: number[];
@@ -1176,7 +1191,12 @@ export function Drivetrain() {
           <button
             type="button"
             className="dt-compare-toggle"
-            onClick={() => setComparing((c) => !c)}
+            onClick={() => {
+              // Seed drivetrain B from A when turning the comparison on, so it
+              // starts identical and you can isolate a single change.
+              if (!comparing) copyConfig(configA, configB);
+              setComparing((c) => !c);
+            }}
           >
             {comparing ? "✕ Remove comparison" : "+ Compare a second drivetrain"}
           </button>

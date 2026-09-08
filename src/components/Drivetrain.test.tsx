@@ -470,7 +470,7 @@ describe("Drivetrain page", () => {
     // Two setup panels now.
     expect(getByText("Drivetrain A")).toBeTruthy();
     expect(getByText("Drivetrain B")).toBeTruthy();
-    // A (50/34 -> 2) + B (46/30 -> 2) = 4 rows; 2 of them are the hollow B rows.
+    // A (50/34 -> 2) + B (copied from A -> 2) = 4 rows; 2 are the hollow B rows.
     expect(container.querySelectorAll(".gc-row-line").length).toBe(4);
     expect(container.querySelectorAll(".gc-row-line-b").length).toBe(2);
     // both configs' ranges are summarised
@@ -486,12 +486,30 @@ describe("Drivetrain page", () => {
     expect(getAllByText("Rolling circumference (mm)").length).toBe(2);
   });
 
+  it("seeds the second drivetrain with a copy of the first", () => {
+    const { container, getByText } = render(<Drivetrain />);
+    // Move A off its defaults first.
+    const aTexts = container.querySelectorAll('input[type="text"]');
+    fireEvent.change(aTexts[0], { target: { value: "52, 36" } });
+    fireEvent.change(aTexts[1], { target: { value: "11, 25" } });
+    fireEvent.click(getByText(/Compare a second drivetrain/));
+    // B's panel starts as an exact copy of A.
+    const bPanel = container.querySelector(".dt-config-b") as HTMLElement;
+    const bTexts = bPanel.querySelectorAll('input[type="text"]');
+    expect((bTexts[0] as HTMLInputElement).value).toBe("52, 36");
+    expect((bTexts[1] as HTMLInputElement).value).toBe("11, 25");
+  });
+
   it("switches the detail sections between drivetrain A and B", () => {
     const { container, getByText } = render(<Drivetrain />);
     fireEvent.click(getByText(/Compare a second drivetrain/));
-    // Focused on A: chain length uses A's 50/34 + 11-28 -> 1346 mm.
+    // Focused on A: chain length uses A's 50/34 + 11-28 -> 1346 mm (B copies it).
     expect(getByText("1346 mm")).toBeTruthy();
-    // Switch the detail focus to B (46/30 + 11-42) and the chain length changes.
+    // Change B so it differs from A, then switch the detail focus to B.
+    const bPanel = container.querySelector(".dt-config-b") as HTMLElement;
+    const bTexts = bPanel.querySelectorAll('input[type="text"]');
+    fireEvent.change(bTexts[0], { target: { value: "40" } });
+    fireEvent.change(bTexts[1], { target: { value: "11, 42" } });
     const seg = container.querySelector(".dt-focus-seg") as HTMLElement;
     fireEvent.click(within(seg).getByText("B"));
     expect(container.querySelector(".dt-focus-seg button.active")?.textContent).toBe("B");

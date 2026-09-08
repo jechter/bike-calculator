@@ -6,6 +6,7 @@ import {
   chainWearThresholdsFor,
   HUB_PRESETS,
   CASSETTE_PRESETS,
+  deriveCassetteSpacing,
 } from './drivetrain';
 
 describe('computeGears', () => {
@@ -81,7 +82,48 @@ describe('CASSETTE_PRESETS (loaded from data/cassette-presets.json)', () => {
       for (let i = 1; i < p.cogs.length; i++) {
         expect(p.cogs[i]).toBeGreaterThan(p.cogs[i - 1]);
       }
+      // every row resolves to a known spacing standard.
+      expect(['shimano-sram', 'campagnolo', 'linkglide', 'proprietary']).toContain(p.spacing);
     }
+  });
+
+  it('every Campagnolo-branded cassette is Campagnolo spacing', () => {
+    for (const p of CASSETTE_PRESETS) {
+      if (p.brand === 'Campagnolo') expect(p.spacing).toBe('campagnolo');
+    }
+  });
+});
+
+describe('deriveCassetteSpacing', () => {
+  const base = { brand: 'X', model: 'Y', speeds: 11, sprockets: [] as number[] };
+
+  it('honours an explicit spacing override', () => {
+    expect(deriveCassetteSpacing({ ...base, freehub: 'Campagnolo', spacing: 'shimano-sram' })).toBe(
+      'shimano-sram',
+    );
+  });
+  it('treats a Campagnolo freehub as Campagnolo pitch (incl. third-party)', () => {
+    expect(deriveCassetteSpacing({ ...base, brand: 'Edco', freehub: 'Campagnolo' })).toBe(
+      'campagnolo',
+    );
+    expect(deriveCassetteSpacing({ ...base, brand: 'Campagnolo', freehub: 'Campagnolo' })).toBe(
+      'campagnolo',
+    );
+  });
+  it('tags LinkGlide by its special marker (shares the HG freehub body)', () => {
+    expect(
+      deriveCassetteSpacing({ ...base, brand: 'Shimano', freehub: 'HG 8, HG 11', special: 'LinkGlide' }),
+    ).toBe('linkglide');
+  });
+  it('leaves closed systems (Classified, Rotor) proprietary', () => {
+    expect(deriveCassetteSpacing({ ...base, freehub: 'Classified' })).toBe('proprietary');
+    expect(deriveCassetteSpacing({ ...base, freehub: 'Rotor' })).toBe('proprietary');
+  });
+  it('defaults everything else to the shared Shimano/SRAM pitch', () => {
+    expect(deriveCassetteSpacing({ ...base, brand: 'SRAM', freehub: 'XDR' })).toBe('shimano-sram');
+    expect(deriveCassetteSpacing({ ...base, brand: 'Shimano', freehub: 'Micro Spline' })).toBe(
+      'shimano-sram',
+    );
   });
 });
 

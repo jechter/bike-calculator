@@ -178,6 +178,34 @@ export interface CassetteSource {
   note?: string;
 }
 
+/**
+ * Cog-pitch (sprocket-spacing) standard — the indexing convention a cassette is
+ * cut to. Same cog COUNT but different pitch won't index together, so this is a
+ * fit dimension in its own right (see fitCassette). The distinct, indexing-
+ * relevant standards:
+ * - `shimano-sram` — the shared Shimano/SRAM HG pitch (7–12sp, road + MTB); the
+ *   "everything else" most cassettes use. (Shimano-12 vs SRAM-12 differ only
+ *   slightly and cross-work with a matched drivetrain, so they're one family
+ *   here — the derailleur actuation-family check separates them where it counts.)
+ * - `campagnolo` — Campagnolo's own pitch (distinct at every speed count); needs
+ *   a Campagnolo drivetrain. Third-party Campagnolo-compatible cassettes (Edco,
+ *   IRD, OMNI Racer, Prestacycle, Recon, Token…) fall here too — they ship on a
+ *   Campagnolo freehub.
+ * - `linkglide` — Shimano LinkGlide / CUES; its parts must be used together and
+ *   are NOT interchangeable with Hyperglide.
+ * - `proprietary` — a closed system (Classified, Rotor 13…) whose cassette isn't
+ *   meant to index a generic derailleur; the fit check leaves it unjudged.
+ */
+export type CassetteSpacing = 'shimano-sram' | 'campagnolo' | 'linkglide' | 'proprietary';
+
+/** Human labels for each cog-pitch standard (for the fit readout). */
+export const CASSETTE_SPACING_LABELS: Record<CassetteSpacing, string> = {
+  'shimano-sram': 'Shimano / SRAM',
+  campagnolo: 'Campagnolo',
+  linkglide: 'Shimano LinkGlide',
+  proprietary: 'Proprietary',
+};
+
 export interface CassettePreset {
   brand: string;
   model: string;
@@ -188,6 +216,8 @@ export interface CassettePreset {
   priceUsd: number | null;
   /** Special drivetrain family, e.g. "LinkGlide" or "T-Type", if any. */
   special?: string;
+  /** Cog-pitch standard this cassette indexes to (derived; see deriveCassetteSpacing). */
+  spacing: CassetteSpacing;
   source?: CassetteSource;
 }
 
@@ -201,7 +231,27 @@ interface RawCassette {
   weightGrams?: number | null;
   priceUsd?: number | null;
   special?: string;
+  /** Explicit cog-pitch standard, when the derivation below would be wrong
+   *  (e.g. a Shimano-spaced cassette sold on a Campagnolo freehub body). */
+  spacing?: CassetteSpacing;
   source?: CassetteSource;
+}
+
+/**
+ * Best-effort cog-pitch standard for a cassette (see CassetteSpacing). Derived
+ * from the tags/freehub the same way the derailleur actuation family is derived,
+ * so the ~1000 rows don't each need a hand-set field. An explicit `spacing` in
+ * the JSON always wins. The freehub body is the strongest signal for Campagnolo:
+ * a Campagnolo-compatible cassette (any brand) ships on a Campagnolo freehub.
+ */
+export function deriveCassetteSpacing(c: RawCassette): CassetteSpacing {
+  if (c.spacing) return c.spacing;
+  if (c.special === 'LinkGlide') return 'linkglide';
+  if (c.brand === 'Campagnolo' || /Campagnolo/i.test(c.freehub)) return 'campagnolo';
+  // Closed systems that ship their own cassette — don't judge indexing against a
+  // generic derailleur.
+  if (/Classified|Rotor/i.test(c.freehub)) return 'proprietary';
+  return 'shimano-sram';
 }
 
 export const CASSETTE_PRESETS: CassettePreset[] = (
@@ -215,6 +265,7 @@ export const CASSETTE_PRESETS: CassettePreset[] = (
   weightGrams: c.weightGrams ?? null,
   priceUsd: c.priceUsd ?? null,
   special: c.special,
+  spacing: deriveCassetteSpacing(c),
   source: c.source,
 }));
 

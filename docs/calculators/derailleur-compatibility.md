@@ -119,6 +119,32 @@ indexes at any of those counts given the matching shifter. The verdict:
   mismatch is a hard no, not a "might work".
 - **unknown** — third-party / underived family: can't judge from actuation.
 
+### Cassette cog-pitch (spacing) compatibility
+Matching the cog *count* isn't enough: the cassette must also be cut to the
+**cog pitch** (centre-to-centre sprocket spacing) the drivetrain indexes to. An
+11-speed Shimano/SRAM shifter+derailleur and an 11-speed **Campagnolo** cassette
+share a cog count but have different pitch, so the indexed clicks don't line up
+— it won't shift. Each cassette therefore carries a **spacing** standard
+(`CassetteSpacing` in `src/lib/drivetrain.ts`), *derived* like the actuation
+family (no per-row hand-editing; an explicit `spacing` in the JSON overrides):
+- **shimano-sram** — the shared Shimano/SRAM HG pitch (7–12sp, road + MTB); what
+  most cassettes use. (Shimano-12 and SRAM-12 differ only slightly and cross-work
+  with a matched drivetrain, so they're one family here — the actuation-family
+  check separates them where it matters.)
+- **campagnolo** — Campagnolo's own pitch (distinct at each speed count). Third-
+  party Campagnolo-compatible cassettes fall here too — they ship on a
+  **Campagnolo freehub**, which is the derivation's strongest signal.
+- **linkglide** — Shimano LinkGlide / CUES; its parts must be used together and
+  are not interchangeable with Hyperglide (tagged via `special: "LinkGlide"`).
+- **proprietary** — closed systems (Classified, Rotor 13…) that ship their own
+  cassette; left unjudged so they never show a false "incompatible".
+
+`fitCassette` compares the cassette's standard against the one the drivetrain's
+actuation family expects (`expectedCassetteSpacing`) — from the shifter's family
+when set, else the derailleur's. A clash is a hard **incompatible** with reason
+`spacing`. It's skipped (unjudged) for custom cog lists, friction shifters
+(which index nothing, so any pitch works), and proprietary cassettes.
+
 ## Notes
 - Also useful: front derailleur compatibility (clamp diameter, pull direction,
   top/down swing, max chainring, capacity) — a future addition.

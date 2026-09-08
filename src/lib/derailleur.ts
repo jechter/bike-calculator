@@ -12,6 +12,7 @@
 // share an actuation family, and the cassette speed count must match the shifter.
 
 import derailleursData from '../data/derailleurs.json';
+import type { CassetteSpacing } from './drivetrain';
 
 export interface CapacityInput {
   largestChainring: number;
@@ -436,6 +437,23 @@ export function speedCompatibility(d: DerailleurSpec, cogCount: number): SpeedCo
 }
 
 /**
+ * The cog-pitch (sprocket-spacing) standard an actuation family expects a
+ * cassette to use — the other half of the same-cog-count-isn't-enough story.
+ * A matching shifter+derailleur index in fixed steps sized for a particular
+ * cog pitch, so the cassette must be cut to it (e.g. an 11-speed Shimano/SRAM
+ * drivetrain won't index an 11-speed *Campagnolo* cassette — the pitch differs).
+ * Returns null for friction/unknown/third-party families, where pitch can't be
+ * judged (friction indexes nothing, so any pitch works). See CassetteSpacing.
+ */
+export function expectedCassetteSpacing(family: string | undefined): CassetteSpacing | null {
+  if (!family) return null;
+  if (family.startsWith('Campagnolo')) return 'campagnolo';
+  if (family === 'Shimano CUES / LinkGlide') return 'linkglide';
+  if (family.startsWith('Shimano') || family.startsWith('SRAM')) return 'shimano-sram';
+  return null;
+}
+
+/**
  * A little over spec often still works (a big cog with a long hanger / extra
  * B-tension; a little extra required capacity only shows as slack in the
  * small-small gear you'd avoid anyway). Within this many teeth over → caution;
@@ -458,6 +476,15 @@ export interface CassetteFit {
   capacity: FitDimension;
   /** Speed-count compatibility (by actuation family), derailleur-only heuristic. */
   speed: SpeedCompatStatus;
+  /** Cassette cog-pitch vs the drivetrain's expected standard: `ok` when they
+   *  match, `over` when they clash (e.g. Campagnolo cassette on a Shimano/SRAM
+   *  drivetrain), `unknown` when the cassette's or drivetrain's standard can't be
+   *  judged (custom cogs, friction shifter, third-party/proprietary). */
+  spacing: FitDimension;
+  /** The cassette's own cog-pitch standard, when known. */
+  cassetteSpacing?: CassetteSpacing;
+  /** The cog-pitch standard the drivetrain expects, when derivable. */
+  expectedSpacing?: CassetteSpacing;
   /** Shifter-aware verdict, present only when a shifter was supplied. */
   shifter?: ShifterVerdict;
   /** Required capacity (front + rear difference), or null when uncomputable. */
@@ -599,6 +626,7 @@ export function fitCassette(
   chainrings: number[],
   cogs: number[],
   shifter?: Shifter | null,
+  cassetteSpacing?: CassetteSpacing,
 ): CassetteFit {
   const largestCog = cogs.length ? Math.max(...cogs) : 0;
   const smallestCog = cogs.length ? Math.min(...cogs) : 0;
@@ -624,6 +652,21 @@ export function fitCassette(
   const speed = cogs.length ? speedCompatibility(d, cogs.length) : 'match';
   const shifterVerdict = shifter ? shifterCompatibility(d, shifter, cogs.length) : undefined;
 
+  // Cog-pitch (spacing) check: the cassette must be cut to the pitch the
+  // drivetrain indexes to. A friction shifter indexes nothing, so any pitch
+  // works; a proprietary cassette belongs to a closed system we don't judge.
+  // Otherwise compare the cassette's standard against the one the drivetrain's
+  // actuation family expects (the shifter's family when set, else the
+  // derailleur's own). Unknown on either side → unjudged (doesn't fail the fit).
+  let spacing: FitDimension = 'unknown';
+  let expectedSpacing: CassetteSpacing | undefined;
+  const frictionShifter = shifter?.family === FRICTION_FAMILY;
+  if (cassetteSpacing && cassetteSpacing !== 'proprietary' && !frictionShifter) {
+    const family = shifter && shifter.family ? shifter.family : d.actuation;
+    expectedSpacing = expectedCassetteSpacing(family) ?? undefined;
+    if (expectedSpacing) spacing = cassetteSpacing === expectedSpacing ? 'ok' : 'over';
+  }
+
   // The speed/actuation contribution to the overall level: the shifter verdict
   // when a shifter was chosen (the accurate check), otherwise the derailleur-only
   // heuristic — where a mismatch that "might work with the right shifter" is amber.
@@ -640,24 +683,41 @@ export function fitCassette(
   // slightly over spec, or an unverifiable actuation match. Green only when every
   // known dimension is clean.
   let level: FitLevel = 'ok';
-  if (cog === 'over' || capacity === 'over' || speedLevel === 'incompatible') {
+  if (cog === 'over' || capacity === 'over' || speedLevel === 'incompatible' || spacing === 'over') {
     level = 'incompatible';
   } else if (cog === 'caution' || capacity === 'caution' || speedLevel === 'caution') {
     level = 'caution';
   }
 
-  return { level, cog, capacity, speed, shifter: shifterVerdict, requiredCapacity, cogOver, capOver };
+  return {
+    level,
+    cog,
+    capacity,
+    speed,
+    spacing,
+    cassetteSpacing,
+    expectedSpacing,
+    shifter: shifterVerdict,
+    requiredCapacity,
+    cogOver,
+    capOver,
+  };
 }
 
 /**
  * For an incompatible fit, what's driving it: a physical `range` problem (the cog
- * won't clear the cage, or the chain wrap is way over capacity) vs an `indexing`
- * problem (the shifter can't index this cog count / actuation). null when the fit
- * isn't incompatible. Lets the UI say "out of range" vs "indexing mismatch".
+ * won't clear the cage, or the chain wrap is way over capacity); a `spacing`
+ * problem (the cassette's cog pitch doesn't match the drivetrain's, e.g.
+ * Campagnolo cassette + Shimano/SRAM drivetrain); or an `indexing` problem (the
+ * shifter can't index this cog count / actuation). null when the fit isn't
+ * incompatible. Lets the UI name the specific cause.
  */
-export function incompatibleReason(fit: CassetteFit): 'range' | 'indexing' | null {
+export function incompatibleReason(
+  fit: CassetteFit,
+): 'range' | 'spacing' | 'indexing' | null {
   if (fit.level !== 'incompatible') return null;
   if (fit.cog === 'over' || fit.capacity === 'over') return 'range';
+  if (fit.spacing === 'over') return 'spacing';
   return 'indexing';
 }
 

@@ -6,6 +6,7 @@ import {
   derailleurSpeeds,
   speedMatches,
   speedCompatibility,
+  expectedCassetteSpacing,
   fitCassette,
   pullRatioFor,
   defaultShifterFor,
@@ -149,6 +150,24 @@ describe('speedCompatibility', () => {
   });
 });
 
+describe('expectedCassetteSpacing', () => {
+  it('maps Campagnolo families to Campagnolo pitch', () => {
+    expect(expectedCassetteSpacing('Campagnolo 11-speed')).toBe('campagnolo');
+    expect(expectedCassetteSpacing('Campagnolo WRL (electronic)')).toBe('campagnolo');
+  });
+  it('maps LinkGlide to its own pitch, not the shared Shimano one', () => {
+    expect(expectedCassetteSpacing('Shimano CUES / LinkGlide')).toBe('linkglide');
+  });
+  it('maps every other Shimano and SRAM family to the shared HG pitch', () => {
+    expect(expectedCassetteSpacing('Shimano road 1.4 (11-speed & Tiagra 4700)')).toBe('shimano-sram');
+    expect(expectedCassetteSpacing('SRAM Eagle (X-Actuation)')).toBe('shimano-sram');
+  });
+  it('is null for friction/unknown/third-party (pitch cannot be judged)', () => {
+    expect(expectedCassetteSpacing(undefined)).toBeNull();
+    expect(expectedCassetteSpacing('Friction')).toBeNull();
+  });
+});
+
 describe('fitCassette', () => {
   const r7000 = () => derailleurByKey('shimano-rd-r7000-ss-11s')!; // 11sp, max 30T, cap 35T
 
@@ -193,6 +212,58 @@ describe('fitCassette', () => {
     expect(fit.capacity).toBe('unknown');
     expect(fit.speed).toBe('match');
     expect(fit.level).toBe('ok');
+  });
+
+  it('rejects a Campagnolo cassette on a Shimano/SRAM drivetrain (same cog count)', () => {
+    // The reported bug: an 11-speed Shimano RD + an 11-speed Campagnolo cassette
+    // passes every count check but the cog pitch differs, so it can't index.
+    const cogs = [11, 12, 13, 14, 15, 17, 19, 21, 24, 27, 30];
+    const fit = fitCassette(r7000(), [50, 34], cogs, null, 'campagnolo');
+    expect(fit.spacing).toBe('over');
+    expect(fit.expectedSpacing).toBe('shimano-sram');
+    expect(fit.level).toBe('incompatible');
+    expect(incompatibleReason(fit)).toBe('spacing');
+  });
+
+  it('accepts a matching Shimano/SRAM cassette on a Shimano drivetrain', () => {
+    const cogs = [11, 12, 13, 14, 15, 17, 19, 21, 24, 27, 30];
+    const fit = fitCassette(r7000(), [50, 34], cogs, null, 'shimano-sram');
+    expect(fit.spacing).toBe('ok');
+    expect(fit.level).toBe('ok');
+  });
+
+  it('leaves spacing unjudged when the cassette standard is unknown (custom cogs)', () => {
+    const cogs = [11, 12, 13, 14, 15, 17, 19, 21, 24, 27, 30];
+    const fit = fitCassette(r7000(), [50, 34], cogs); // no spacing passed
+    expect(fit.spacing).toBe('unknown');
+    expect(fit.level).toBe('ok');
+  });
+
+  it('leaves a proprietary (closed-system) cassette unjudged on spacing', () => {
+    const cogs = [11, 12, 13, 14, 15, 17, 19, 21, 24, 27, 30];
+    const fit = fitCassette(r7000(), [50, 34], cogs, null, 'proprietary');
+    expect(fit.spacing).toBe('unknown');
+    expect(fit.level).toBe('ok');
+  });
+
+  it('a friction shifter indexes nothing, so any cog pitch is fine', () => {
+    const cogs = [11, 12, 13, 14, 15, 17, 19, 21, 24, 27, 30];
+    const friction: Shifter = { family: FRICTION_FAMILY, speeds: 0 };
+    const fit = fitCassette(r7000(), [50, 34], cogs, friction, 'campagnolo');
+    expect(fit.spacing).toBe('unknown');
+    // Friction drives it by feel — the pitch mismatch is not a blocker.
+    expect(fit.level).toBe('ok');
+  });
+
+  it('uses the shifter family (not the derailleur) to set the expected pitch', () => {
+    // A Campagnolo shifter + Campagnolo cassette is self-consistent on pitch even
+    // if paired with a mixed derailleur — the wrong-family indexing check is what
+    // catches that pairing, not the spacing dimension.
+    const campagShifter: Shifter = { family: 'Campagnolo 11-speed', speeds: 11 };
+    const cogs = [11, 12, 13, 14, 15, 17, 19, 21, 24, 27, 30];
+    const fit = fitCassette(r7000(), [50, 34], cogs, campagShifter, 'campagnolo');
+    expect(fit.expectedSpacing).toBe('campagnolo');
+    expect(fit.spacing).toBe('ok');
   });
 });
 

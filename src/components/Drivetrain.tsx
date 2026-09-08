@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CASSETTE_PRESETS,
+  CASSETTE_SPACING_LABELS,
   CHAINRING_PRESETS,
   HUB_PRESETS,
   hubSpeedCount,
@@ -808,9 +809,10 @@ const CASSETTE_LIST_CAP = 200;
 function fitDotLabel(fit: CassetteFit): string {
   if (fit.level === "ok") return "fits this derailleur";
   if (fit.level === "caution") return "marginal — check carefully";
-  return incompatibleReason(fit) === "indexing"
-    ? "indexing mismatch with the shifter"
-    : "out of range for this derailleur";
+  const reason = incompatibleReason(fit);
+  if (reason === "spacing") return "wrong cog spacing for this drivetrain";
+  if (reason === "indexing") return "indexing mismatch with the shifter";
+  return "out of range for this derailleur";
 }
 
 // A browse-and-filter popover of every cassette: a text search plus brand /
@@ -876,7 +878,13 @@ function CassettePicker({
   const ranked = matches.map((c) => ({
     c,
     fit: fitDerailleur
-      ? fitCassette(fitDerailleur, fitChainrings ?? [], CASSETTE_PRESETS[c.i].cogs, fitShifter)
+      ? fitCassette(
+          fitDerailleur,
+          fitChainrings ?? [],
+          CASSETTE_PRESETS[c.i].cogs,
+          fitShifter,
+          CASSETTE_PRESETS[c.i].spacing,
+        )
       : null,
   }));
   if (fitDerailleur) ranked.sort((a, b) => FIT_RANK[a.fit!.level] - FIT_RANK[b.fit!.level]);
@@ -1346,7 +1354,16 @@ export function Drivetrain() {
   // `fitDataMissing` below.
   const derailleur = derailleurByKey(focusCfg.derailleurId);
   const shifter = focusCfg.shifter;
-  const fitRes = derailleur ? fitCassette(derailleur, chainrings, cogs, shifter) : null;
+  // The selected cassette's cog-pitch standard, but only when the picked model
+  // still matches the current cogs (a hand-edited cog list has no known model, so
+  // its spacing is unknown and the pitch check is skipped).
+  const focusCassette =
+    focusCfg.cassetteIdx >= 0 ? CASSETTE_PRESETS[focusCfg.cassetteIdx] : null;
+  const cassetteSpacing =
+    focusCassette && sameCogs(focusCassette.cogs, cogs) ? focusCassette.spacing : undefined;
+  const fitRes = derailleur
+    ? fitCassette(derailleur, chainrings, cogs, shifter, cassetteSpacing)
+    : null;
   const fitDataMissing =
     !!derailleur && (derailleur.totalCapacity == null || derailleur.maxSprocket == null);
   // The cog + capacity readout is shown only when both figures are present (as
@@ -1409,6 +1426,16 @@ export function Drivetrain() {
               ? { cls: "warn", text: "check" }
               : { cls: "danger", text: `≠ ${cogs.length}-sp` };
 
+  // Cassette cog-pitch (spacing) verdict — shown only when the cassette's
+  // standard is known (a picked model, not a hand-typed cog list).
+  const spacingDim = fitRes?.spacing ?? "unknown";
+  const spacingBadge: { cls: "ok" | "danger" | "rh"; text: string } =
+    spacingDim === "ok"
+      ? { cls: "ok", text: "OK" }
+      : spacingDim === "over"
+        ? { cls: "danger", text: "mismatch" }
+        : { cls: "rh", text: "not checked" };
+
   // Compact overall verdict for the Gears summary row — the same traffic-light
   // level that dots the cassette picker, so the two views agree at a glance.
   const fitBadge: { cls: "ok" | "warn" | "danger"; text: string } | null = fitRes
@@ -1418,7 +1445,12 @@ export function Drivetrain() {
         ? { cls: "warn", text: "marginal" }
         : {
             cls: "danger",
-            text: incompatibleReason(fitRes) === "indexing" ? "indexing mismatch" : "out of range",
+            text:
+              incompatibleReason(fitRes) === "spacing"
+                ? "wrong spacing"
+                : incompatibleReason(fitRes) === "indexing"
+                  ? "indexing mismatch"
+                  : "out of range",
           }
     : null;
 
@@ -1837,6 +1869,17 @@ export function Drivetrain() {
                 />
                 <Result label="Actuation" value={derailleur.actuation ?? "unknown"} />
                 <Result label="Pull ratio" value={pullRatioFor(derailleur)} />
+                {fitRes?.cassetteSpacing && (
+                  <Result
+                    label="Cassette spacing"
+                    value={
+                      <>
+                        {CASSETTE_SPACING_LABELS[fitRes.cassetteSpacing]}{" "}
+                        <span className={"badge " + spacingBadge.cls}>{spacingBadge.text}</span>
+                      </>
+                    }
+                  />
+                )}
               </div>
               {fit && <Note tone={fitTone}>{fitMessage}</Note>}
               {fitDataMissing && (
@@ -1847,6 +1890,21 @@ export function Drivetrain() {
                   </strong>{" "}
                   in the database yet, so the fit check is skipped — the speed and
                   actuation guide above still applies.
+                </Note>
+              )}
+              {spacingDim === "over" && fitRes?.cassetteSpacing && fitRes?.expectedSpacing && (
+                <Note tone="warn">
+                  This is a{" "}
+                  <strong>{CASSETTE_SPACING_LABELS[fitRes.cassetteSpacing]}</strong>{" "}
+                  cassette, but {derailleur.brand} {derailleur.model}
+                  {shifter && shifter.family ? " and its shifter" : ""} index to{" "}
+                  <strong>{CASSETTE_SPACING_LABELS[fitRes.expectedSpacing]}</strong>{" "}
+                  cog spacing. Even with the same {cogs.length} cogs, the sprocket pitch
+                  differs, so the indexed clicks won’t line up cog-to-cog — it{" "}
+                  <strong>won’t shift correctly</strong>. Use a{" "}
+                  {CASSETTE_SPACING_LABELS[fitRes.expectedSpacing]} cassette, or a{" "}
+                  <strong>friction shifter</strong> (which doesn’t index and works with any
+                  spacing).
                 </Note>
               )}
               {shifterStatus === "electronic-count" && shifter && (

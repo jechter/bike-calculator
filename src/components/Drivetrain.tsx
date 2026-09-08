@@ -450,36 +450,179 @@ function ShifterField({ cfg }: { cfg: DrivetrainConfig }) {
   );
 }
 
-// Hub picker is two steps: maker, then model. Makers are sorted by name; each
-// maker's models are sorted by speed count (CVT last), then name.
+// The hub picker (below) narrows a single list; makers are sorted by name for
+// its maker filter, and the list sorts by maker → speed count (CVT last) → name.
 const HUB_MAKER_OPTIONS = Array.from(new Set(HUB_PRESETS.map((p) => p.manufacturer)))
   .sort((a, b) => a.localeCompare(b))
   .map((m) => ({ value: m, label: m }));
 
-// Model label drops the maker prefix (already chosen) and notes speed/kind.
-function hubModelLabel(p: HubPreset): string {
-  const model = p.label.startsWith(p.manufacturer)
-    ? p.label.slice(p.manufacturer.length).trim()
-    : p.label;
-  const kind = p.continuouslyVariable ? "CVT" : `${p.gears.length}-speed`;
-  const suffix = p.kind === "bottomBracket" ? " gearbox" : "";
-  return `${model || p.label} · ${kind}${suffix}`;
+// Type facet: internal-gear hub, bottom-bracket gearbox, or CVT.
+function hubTypeLabel(p: HubPreset): string {
+  if (p.continuouslyVariable) return "CVT";
+  return p.kind === "bottomBracket" ? "Gearbox" : "Hub";
 }
 
-// Model options per maker; each option's value is the index into HUB_PRESETS.
-const HUB_MODEL_OPTIONS: Record<string, { value: string; label: string }[]> = {};
-for (const { value: maker } of HUB_MAKER_OPTIONS) {
-  HUB_MODEL_OPTIONS[maker] = HUB_PRESETS.map((p, i) => ({ p, i }))
-    .filter((e) => e.p.manufacturer === maker)
-    .sort((a, b) => hubSpeedCount(a.p) - hubSpeedCount(b.p) || a.p.label.localeCompare(b.p.label))
-    .map(({ p, i }) => ({ value: String(i), label: hubModelLabel(p) }));
+// The meta line under a hub's name in the picker (speeds · type · derailleur-ready).
+function hubMetaLabel(p: HubPreset): string {
+  const speeds = p.continuouslyVariable ? "CVT" : `${p.gears.length}-speed`;
+  const type = p.kind === "bottomBracket" ? "gearbox" : "hub";
+  return `${speeds} · ${type}${p.derailleurCompatible ? " · derailleur-ready" : ""}`;
 }
+
+// One entry per hub for the browse-and-filter picker (value is its index into
+// HUB_PRESETS, which is what a config stores as `hubIdx`).
+interface HubListItem {
+  p: HubPreset;
+  i: number;
+  search: string; // lowercased haystack: name + maker + type + speeds
+}
+const HUB_LIST: HubListItem[] = HUB_PRESETS.map((p, i) => ({
+  p,
+  i,
+  search: (
+    `${p.label} ${p.manufacturer} ${hubTypeLabel(p)} ` +
+    `${p.continuouslyVariable ? "cvt" : `${p.gears.length}-speed`}` +
+    `${p.derailleurCompatible ? " derailleur cassette combo" : ""}`
+  ).toLowerCase(),
+}))
+  .slice()
+  .sort(
+    (a, b) =>
+      a.p.manufacturer.localeCompare(b.p.manufacturer) ||
+      hubSpeedCount(a.p) - hubSpeedCount(b.p) ||
+      a.p.label.localeCompare(b.p.label),
+  );
 
 // Default to a common 3-speed (Sturmey-Archer AW-type) if present.
 const DEFAULT_HUB_IDX = Math.max(
   0,
   HUB_PRESETS.findIndex((p) => p.label === "Sturmey Archer S3"),
 );
+
+// A browse-and-filter popover of every hub (mirrors the derailleur picker): a
+// text search plus maker / type filters over a scrollable list. Picking a row
+// sets the hub via onPick with its index into HUB_PRESETS. The trigger shows the
+// current hub's name, full-width like the derailleur field.
+function HubPicker({
+  selectedIdx,
+  onPick,
+}: {
+  selectedIdx: number;
+  onPick: (i: number) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [maker, setMaker] = useState("all");
+  const [type, setType] = useState("all");
+  const [gears, setGears] = useState("all");
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  // Facets narrow left-to-right: type reflects the maker, gears reflect both.
+  // CVT hubs have no discrete gear count, so they only surface under "All gears".
+  const byMaker = HUB_LIST.filter((e) => maker === "all" || e.p.manufacturer === maker);
+  const typeFacet = new Set(byMaker.map((e) => hubTypeLabel(e.p)));
+  const byType = byMaker.filter((e) => type === "all" || hubTypeLabel(e.p) === type);
+  const gearsFacet = Array.from(
+    new Set(byType.filter((e) => !e.p.continuouslyVariable).map((e) => e.p.gears.length)),
+  ).sort((a, b) => a - b);
+  const tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const matches = byType.filter(
+    (e) =>
+      (gears === "all" || (!e.p.continuouslyVariable && e.p.gears.length === Number(gears))) &&
+      tokens.every((t) => e.search.includes(t)),
+  );
+
+  const opt = (value: string, label: string) => ({ value, label });
+  const makerOptions = [opt("all", "All makers"), ...HUB_MAKER_OPTIONS];
+  const typeOptions = [
+    opt("all", "All types"),
+    ...["Hub", "Gearbox", "CVT"].filter((t) => typeFacet.has(t)).map((t) => opt(t, t)),
+  ];
+  const gearsOptions = [
+    opt("all", "All gears"),
+    ...gearsFacet.map((n) => opt(String(n), `${n}-speed`)),
+  ];
+
+  const selected = HUB_PRESETS[selectedIdx];
+
+  return (
+    <div className="cassette-picker derailleur-select" ref={ref}>
+      <button
+        type="button"
+        className={"preset-btn" + (open ? " open" : "")}
+        title="Browse the hub database"
+        aria-label="Browse the hub database"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className="ds-name">{selected.label}</span>
+        <span className="caret">▾</span>
+      </button>
+      {open && (
+        <div className="cp-pop">
+          <input
+            className="cp-search"
+            type="text"
+            autoFocus
+            placeholder="Search maker, model, type…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <div className="cp-filters">
+            <Select
+              value={maker}
+              onChange={(m) => {
+                setMaker(m);
+                setType("all");
+                setGears("all");
+              }}
+              options={makerOptions}
+            />
+            <Select
+              value={type}
+              onChange={(t) => {
+                setType(t);
+                setGears("all");
+              }}
+              options={typeOptions}
+            />
+            <Select value={gears} onChange={setGears} options={gearsOptions} />
+          </div>
+          <ul className="cp-list">
+            {matches.map((e) => (
+              <li key={e.i}>
+                <button
+                  type="button"
+                  className={e.i === selectedIdx ? "active" : ""}
+                  onClick={() => {
+                    onPick(e.i);
+                    setOpen(false);
+                  }}
+                >
+                  <span className="cp-name">{e.p.label}</span>
+                  <span className="cp-meta">{hubMetaLabel(e.p)}</span>
+                </button>
+              </li>
+            ))}
+            {matches.length === 0 && <li className="cp-empty">No hubs match.</li>}
+          </ul>
+          <div className="cp-foot">
+            {matches.length} hub{matches.length === 1 ? "" : "s"}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // A continuously-variable drivetrain: a CVT hub in hub mode. It has no discrete
 // gear count (shown as ∞) and draws as a continuous range in the chart.
@@ -949,19 +1092,8 @@ function SetupFields({ cfg }: { cfg: DrivetrainConfig }) {
               <NumberInput value={cfg.singleCog} onChange={cfg.setSingleCog} min={8} />
             </Field>
           )}
-          <Field label="Hub maker">
-            <Select
-              value={hub.manufacturer}
-              onChange={(m) => cfg.setHubIdx(parseInt(HUB_MODEL_OPTIONS[m][0].value))}
-              options={HUB_MAKER_OPTIONS}
-            />
-          </Field>
-          <Field label="Hub model" hint={<HubSourceLink hub={hub} />}>
-            <Select
-              value={String(cfg.hubIdx)}
-              onChange={(v) => cfg.setHubIdx(parseInt(v))}
-              options={HUB_MODEL_OPTIONS[hub.manufacturer]}
-            />
+          <Field label="Hub" hint={<HubSourceLink hub={hub} />}>
+            <HubPicker selectedIdx={cfg.hubIdx} onPick={cfg.setHubIdx} />
           </Field>
         </div>
         {combo && (

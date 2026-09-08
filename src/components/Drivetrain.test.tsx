@@ -24,6 +24,23 @@ function pickDerailleur(
   fireEvent.click(row);
 }
 
+// Drive the hub picker popover (hub mode must already be selected): open it,
+// type a search, then click the first list row whose text matches `rowMatch`.
+function pickHub(container: HTMLElement, search: string, rowMatch: (text: string) => boolean) {
+  const openBtn = container.querySelector(
+    '[title="Browse the hub database"]',
+  ) as HTMLButtonElement;
+  fireEvent.click(openBtn);
+  const pop = openBtn.closest(".cassette-picker") as HTMLElement;
+  fireEvent.change(pop.querySelector(".cp-search") as HTMLInputElement, {
+    target: { value: search },
+  });
+  const row = Array.from(pop.querySelectorAll(".cp-list button")).find((b) =>
+    rowMatch(b.textContent ?? ""),
+  ) as HTMLButtonElement;
+  fireEvent.click(row);
+}
+
 describe("Drivetrain page", () => {
   it("has a cadence slider (60–120) plus a free number field", () => {
     const { container } = render(<Drivetrain />);
@@ -135,36 +152,67 @@ describe("Drivetrain page", () => {
 
   it("shows ∞ gears and a continuous range bar for a CVT hub", () => {
     const { container, getByText } = render(<Drivetrain />);
-    const selects = () => Array.from(container.querySelectorAll("select"));
-    fireEvent.change(selects()[0], { target: { value: "hub" } });
-    const maker = selects().find((s) =>
-      Array.from(s.options).some((o) => o.value === "Enviolo"),
-    ) as HTMLSelectElement;
-    fireEvent.change(maker, { target: { value: "Enviolo" } });
+    fireEvent.change(container.querySelector("select") as HTMLSelectElement, {
+      target: { value: "hub" },
+    });
+    // Pick a CVT (continuously-variable) hub from the picker.
+    pickHub(container, "enviolo", (t) => /Enviolo/i.test(t));
     // CVT gear count is infinite, and the chart draws the thick range bar.
     expect(getByText("∞")).toBeTruthy();
     expect(container.querySelectorAll(".gc-row-line-cvt").length).toBe(1);
   });
 
-  it("picks a hub in two steps: maker, then model sorted by speeds", () => {
+  it("picks a hub from a single searchable popover, filterable by maker", () => {
     const { container } = render(<Drivetrain />);
-    const selects = () => Array.from(container.querySelectorAll("select"));
-    fireEvent.change(selects()[0], { target: { value: "hub" } });
+    fireEvent.change(container.querySelector("select") as HTMLSelectElement, {
+      target: { value: "hub" },
+    });
+    // The trigger shows the current hub (the default Sturmey-Archer S3).
+    const trigger = container.querySelector(
+      '[title="Browse the hub database"]',
+    ) as HTMLButtonElement;
+    expect(trigger.textContent).toMatch(/Sturmey Archer S3/);
 
-    // The maker select defaults to the common 3-speed Sturmey-Archer.
-    const maker = selects().find((s) =>
+    // Open and filter to Shimano; the list narrows to that maker, speed-sorted.
+    fireEvent.click(trigger);
+    const pop = trigger.closest(".cassette-picker") as HTMLElement;
+    const makerSelect = Array.from(pop.querySelectorAll("select")).find((s) =>
       Array.from(s.options).some((o) => o.value === "Shimano"),
     ) as HTMLSelectElement;
-    expect(maker.value).toBe("Sturmey Archer");
+    fireEvent.change(makerSelect, { target: { value: "Shimano" } });
+    const names = Array.from(pop.querySelectorAll(".cp-list .cp-name")).map((n) => n.textContent);
+    expect(names.length).toBeGreaterThan(0);
+    expect(names.every((n) => /^Shimano/.test(n ?? ""))).toBe(true);
+    // Speed-sorted within the maker: Inter 3 before Inter 11.
+    expect(names[0]).toMatch(/Inter 3$/);
+    expect(names[names.length - 1]).toMatch(/Inter 11$/);
 
-    // Switching maker repopulates the model list, lowest-speed first.
-    fireEvent.change(maker, { target: { value: "Shimano" } });
-    const model = selects().find((s) =>
-      Array.from(s.options).some((o) => /Inter 3/.test(o.textContent || "")),
+    // Picking a row updates the trigger to that hub.
+    const row = Array.from(pop.querySelectorAll(".cp-list button")).find((b) =>
+      /Inter 11/.test(b.textContent ?? ""),
+    ) as HTMLButtonElement;
+    fireEvent.click(row);
+    expect(trigger.textContent).toMatch(/Shimano Inter 11/);
+  });
+
+  it("filters the hub picker by gear count", () => {
+    const { container } = render(<Drivetrain />);
+    fireEvent.change(container.querySelector("select") as HTMLSelectElement, {
+      target: { value: "hub" },
+    });
+    const trigger = container.querySelector(
+      '[title="Browse the hub database"]',
+    ) as HTMLButtonElement;
+    fireEvent.click(trigger);
+    const pop = trigger.closest(".cassette-picker") as HTMLElement;
+    // The third filter is the gear-count select; narrow it to 3-speed hubs.
+    const gearsSelect = Array.from(pop.querySelectorAll("select")).find((s) =>
+      Array.from(s.options).some((o) => o.textContent === "3-speed"),
     ) as HTMLSelectElement;
-    const labels = Array.from(model.options).map((o) => o.textContent);
-    expect(labels[0]).toMatch(/Inter 3 · 3-speed/);
-    expect(labels[labels.length - 1]).toMatch(/Inter 11 · 11-speed/);
+    fireEvent.change(gearsSelect, { target: { value: "3" } });
+    const metas = Array.from(pop.querySelectorAll(".cp-list .cp-meta")).map((n) => n.textContent);
+    expect(metas.length).toBeGreaterThan(0);
+    expect(metas.every((m) => /^3-speed/.test(m ?? ""))).toBe(true);
   });
 
   it("links the hub model (by name) to its ratio source", () => {
@@ -182,17 +230,15 @@ describe("Drivetrain page", () => {
 
   it("auto-shows a derailleur + cassette row only for a derailleur-compatible hub", () => {
     const { container, getByText, queryByText } = render(<Drivetrain />);
-    const selects = () => Array.from(container.querySelectorAll("select"));
-    fireEvent.change(selects()[0], { target: { value: "hub" } });
+    fireEvent.change(container.querySelector("select") as HTMLSelectElement, {
+      target: { value: "hub" },
+    });
     // The default hub (Sturmey-Archer S3) is a plain hub → no combo, no note.
     expect(queryByText(/designed to be combined with a derailleur/)).toBeNull();
     expect(queryByText("Rear derailleur")).toBeNull();
-    // Switch to Classified (Powershift): a derailleur-compatible hub reveals the
-    // note plus the derailleur + cassette fields automatically (no checkbox).
-    const maker = selects().find((s) =>
-      Array.from(s.options).some((o) => o.value === "Classified"),
-    ) as HTMLSelectElement;
-    fireEvent.change(maker, { target: { value: "Classified" } });
+    // Pick Classified (Powershift): a derailleur-compatible hub reveals the note
+    // plus the derailleur + cassette fields automatically (no checkbox).
+    pickHub(container, "classified", (t) => /Classified/i.test(t));
     expect(getByText(/designed to be combined with a derailleur/)).toBeTruthy();
     expect(getByText("Rear derailleur")).toBeTruthy();
     expect(container.querySelector('[title="Browse the cassette database"]')).toBeTruthy();
@@ -200,12 +246,10 @@ describe("Drivetrain page", () => {
 
   it("groups a hub+cassette combo into one chart row per hub gear", () => {
     const { container } = render(<Drivetrain />);
-    const selects = () => Array.from(container.querySelectorAll("select"));
-    fireEvent.change(selects()[0], { target: { value: "hub" } });
-    const maker = selects().find((s) =>
-      Array.from(s.options).some((o) => o.value === "Classified"),
-    ) as HTMLSelectElement;
-    fireEvent.change(maker, { target: { value: "Classified" } });
+    fireEvent.change(container.querySelector("select") as HTMLSelectElement, {
+      target: { value: "hub" },
+    });
+    pickHub(container, "classified", (t) => /Classified/i.test(t));
     // Classified Powershift is 2-speed; the default cassette has 10 cogs →
     // 2 hub-gear rows × 10 cogs = 20 dots, and the range multiplies the two.
     expect(container.querySelectorAll(".gc-row-line").length).toBe(2);
@@ -221,14 +265,12 @@ describe("Drivetrain page", () => {
 
   it("applies the derailleur chain-length formula to a hub+cassette combo", () => {
     const { container, getByText, queryByText } = render(<Drivetrain />);
-    const selects = () => Array.from(container.querySelectorAll("select"));
-    fireEvent.change(selects()[0], { target: { value: "hub" } });
+    fireEvent.change(container.querySelector("select") as HTMLSelectElement, {
+      target: { value: "hub" },
+    });
     // A plain hub uses the dropout/tensioner note, not the derailleur formula.
     expect(getByText(/dropout \/ tensioner/)).toBeTruthy();
-    const maker = selects().find((s) =>
-      Array.from(s.options).some((o) => o.value === "Classified"),
-    ) as HTMLSelectElement;
-    fireEvent.change(maker, { target: { value: "Classified" } });
+    pickHub(container, "classified", (t) => /Classified/i.test(t));
     // With a derailleur + cassette the chain-length result appears (mm/links).
     expect(queryByText(/dropout \/ tensioner/)).toBeNull();
     expect(getByText("Links")).toBeTruthy();

@@ -755,3 +755,8 @@ html.embedded .sidebar {
   height: auto;
   align-self: stretch;
 }
+/* Standalone leaves 60px under the content so it clears the viewport edge; when
+   embedded the frame is sized to fit, so trim the trailing whitespace (plus the
+   last block's own margin) to a small, symmetric inset above the host's border. */
+html.embedded .main { padding-bottom: 24px; }
+html.embedded .main > :last-child { margin-bottom: 0; }

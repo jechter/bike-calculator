@@ -42,6 +42,15 @@ affect the spokes:
 - a **cross-section** — flanges at their L/R offsets showing the **dish** and
   bracing angles.
 
+Under the face-on view a **build scrubber** (slider + play button) steps through
+lacing the wheel one spoke at a time, in the order a wheel is actually built:
+drive-side first set (heads-out, every other flange hole), then the non-drive
+first set, then the drive-side crossing set, then the non-drive crossing set —
+each group filled in around the wheel starting next to the valve. It follows the
+grouping in [Sheldon Brown's wheelbuilding guide](https://www.sheldonbrown.com/wheelbuild.html).
+It's a build-order guide, not a weave animation — the straight lines don't show
+the over/under of the crossing sets.
+
 ### Lacing feasibility
 
 A `k`-cross spoke subtends `720°·k/n` at the hub; once that exceeds 90° the spoke

@@ -107,6 +107,39 @@ describe("Wheel building page", () => {
     expect(positions.size).toBe(30);
   });
 
+  it("scrubs the build: fewer spokes are drawn part-way through, all at the end", () => {
+    const { container } = render(<WheelBuilding />);
+    const scrubber = container.querySelector(".wd-scrubber") as HTMLInputElement;
+    expect(scrubber).toBeTruthy();
+    // spoke lines in the face view, excluding the valve marker line
+    const spokeLines = () =>
+      container.querySelectorAll(".wd-view:not(.wd-section) line:not(.wd-valve)").length;
+    // defaults to a fully laced 32h wheel
+    expect(scrubber.max).toBe("32");
+    expect(spokeLines()).toBe(32);
+    // scrub back to 8 spokes placed -> 8 spoke lines drawn
+    fireEvent.change(scrubber, { target: { value: "8" } });
+    expect(spokeLines()).toBe(8);
+    // a bare rim still shows all 32 rim holes (empty), just no spoke lines
+    fireEvent.change(scrubber, { target: { value: "0" } });
+    expect(spokeLines()).toBe(0);
+    expect(container.querySelectorAll(".wd-hole").length).toBe(32);
+  });
+
+  it("resets the build scrubber to a full wheel when the spoke count changes", () => {
+    const { container } = render(<WheelBuilding />);
+    const scrubber = () => container.querySelector(".wd-scrubber") as HTMLInputElement;
+    fireEvent.change(scrubber(), { target: { value: "5" } });
+    expect(scrubber().value).toBe("5");
+    const count = Array.from(container.querySelectorAll('input[type="number"]')).find(
+      (i) => (i as HTMLInputElement).value === "32",
+    ) as HTMLInputElement;
+    fireEvent.change(count, { target: { value: "24" } });
+    // scrubber snaps back to fully laced at the new count
+    expect(scrubber().max).toBe("24");
+    expect(scrubber().value).toBe("24");
+  });
+
   it("updates the diagram when the spoke count changes", () => {
     const { container } = render(<WheelBuilding />);
     const before = container.querySelectorAll(".wheel-diagram line").length;

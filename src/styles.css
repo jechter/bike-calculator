@@ -711,6 +711,18 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .wd-rim { fill: none; stroke: var(--text); stroke-width: 3; }
 .wd-flange { fill: none; stroke: var(--border); stroke-width: 1; }
 .wd-hub { fill: var(--muted); }
+.wd-hole-empty { stroke: var(--border); stroke-width: 0.6; }
+.wd-valve { stroke: var(--muted); stroke-width: 3; stroke-linecap: round; }
+/* Build scrubber under the face-on view */
+.wd-build { display: flex; align-items: center; gap: 10px; width: 300px; max-width: 70vw; }
+.wd-play {
+  flex: none; width: 28px; height: 28px; padding: 0; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; cursor: pointer; color: var(--text);
+  background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+}
+.wd-play:hover { border-color: var(--muted); }
+.wd-scrubber { flex: 1 1 auto; min-width: 0; accent-color: var(--accent); cursor: pointer; }
 .wd-rim-edge { stroke: var(--text); stroke-width: 3; }
 .wd-axle { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 3; }
 .wd-legend { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }

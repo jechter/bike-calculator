@@ -583,37 +583,38 @@ export function Wheel3D(props: Wheel3DProps) {
 
   return (
     <div className="wd-view">
-      <div className="wd-stage">
-        <div className="wd-canvas-wrap">
-          <canvas
-            ref={canvasRef}
-            className="wd-canvas"
-            role="img"
-            aria-label="Rotatable 3D wheel — drag to turn"
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerUp}
-          />
-          <div className="wd-align">
-            <button type="button" className="wd-align-btn" onClick={() => animateTo(0, 0)}>
-              Face
-            </button>
-            <button type="button" className="wd-align-btn" onClick={() => animateTo(0, Math.PI / 2)}>
-              Side
-            </button>
-          </div>
+      <div className="wd-main">
+        <div className="wd-align">
+          <button type="button" className="wd-align-btn" onClick={() => animateTo(0, 0)}>
+            Face
+          </button>
+          <button type="button" className="wd-align-btn" onClick={() => animateTo(0, Math.PI / 2)}>
+            Side
+          </button>
         </div>
-        <input
-          className="wd-zoom-v"
-          type="range"
-          min={1}
-          max={3.2}
-          step={0.05}
-          value={zoom}
-          aria-label="Zoom"
-          onChange={(e) => setZoom(Number(e.target.value))}
+        <canvas
+          ref={canvasRef}
+          className="wd-canvas"
+          role="img"
+          aria-label="Rotatable 3D wheel — drag to turn"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
         />
+        <div className="wd-zoomcol">
+          <span className="wd-zoom-ico" aria-hidden="true">🔍</span>
+          <input
+            className="wd-zoom-v"
+            type="range"
+            min={1}
+            max={3.2}
+            step={0.05}
+            value={zoom}
+            aria-label="Zoom"
+            onChange={(e) => setZoom(Number(e.target.value))}
+          />
+        </div>
       </div>
       <div className="wd-caption">3D · drag to rotate</div>
     </div>

@@ -99,44 +99,49 @@ export function WheelDiagram(props: WheelDiagramProps) {
         sequence={sequence}
       />
 
-      <div className="wd-build">
-        <button
-          type="button"
-          className="wd-play"
-          onClick={() => {
-            if (playing) {
-              setPlaying(false);
-            } else {
-              if (step >= n) setStep(0);
-              setPlaying(true);
-            }
-          }}
-          aria-label={playing ? "Pause build" : "Play build"}
-        >
-          {playing ? "❚❚" : "▶"}
-        </button>
-        <input
-          className="wd-scrubber"
-          type="range"
-          min={0}
-          max={n}
-          value={step}
-          aria-label="Wheel build step"
-          onChange={(e) => {
-            setPlaying(false);
-            setStep(Number(e.target.value));
-          }}
-        />
-      </div>
-      <div className="wd-caption">{buildCaption}</div>
+      <div className="wd-bottom">
+        <div className="wd-lacing">
+          <div className="wd-lacing-label">Lacing order</div>
+          <div className="wd-build">
+            <button
+              type="button"
+              className="wd-play"
+              onClick={() => {
+                if (playing) {
+                  setPlaying(false);
+                } else {
+                  if (step >= n) setStep(0);
+                  setPlaying(true);
+                }
+              }}
+              aria-label={playing ? "Pause build" : "Play build"}
+            >
+              {playing ? "❚❚" : "▶"}
+            </button>
+            <input
+              className="wd-scrubber"
+              type="range"
+              min={0}
+              max={n}
+              value={step}
+              aria-label="Wheel build step"
+              onChange={(e) => {
+                setPlaying(false);
+                setStep(Number(e.target.value));
+              }}
+            />
+          </div>
+          <div className="wd-caption">{buildCaption}</div>
+        </div>
 
-      <div className="wd-legend">
-        <span>
-          <i style={{ background: NDS }} /> Left / non-drive
-        </span>
-        <span>
-          <i style={{ background: DRIVE }} /> Right / drive
-        </span>
+        <div className="wd-legend">
+          <span>
+            <i style={{ background: NDS }} /> Left / non-drive
+          </span>
+          <span>
+            <i style={{ background: DRIVE }} /> Right / drive
+          </span>
+        </div>
       </div>
     </div>
   );

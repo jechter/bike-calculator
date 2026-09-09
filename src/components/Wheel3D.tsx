@@ -17,7 +17,6 @@ const DRIVE_IN: [number, number, number] = [0.5, 0.11, 0.08];
 const NDS_OUT: [number, number, number] = [0.28, 0.58, 0.93];
 const NDS_IN: [number, number, number] = [0.02, 0.26, 0.58];
 const METAL: [number, number, number] = [0.62, 0.66, 0.71];
-const NIPPLE: [number, number, number] = [0.74, 0.63, 0.38]; // brass nipple
 const VALVE: [number, number, number] = [0.78, 0.62, 0.22]; // brass valve marker
 
 // One spoke draws as: a body tube (nipple -> flange face), a short elbow tube
@@ -449,14 +448,15 @@ export function Wheel3D(props: Wheel3DProps) {
       const bodyZ = zF - headDir * flHalf; // body emerges from the opposite face
       const bodyP = [hx, hy, bodyZ];
       const headP = [hx, hy, headZ];
-      // Nipple at the rim bed, pointing radially; spoke threads into its inner end.
+      // Spoke rises to the rim bed (ERD); the nipple seats there and its head sits
+      // up inside the rim channel, in the spoke's colour.
       const ca = Math.cos(rimA), sa = Math.sin(rimA);
-      const nipIn = [0.96 * ca, 0.96 * sa, zRim];
-      const nipOut = [1.01 * ca, 1.01 * sa, zRim];
-      addTube(tube, bodyP, nipIn, rad, SPOKE_SEG, col); // body
+      const bed = [ca, sa, zRim]; // spoke bed at radius 1 (ERD)
+      const nipHead = [1.045 * ca, 1.045 * sa, zRim]; // nipple head, up inside the rim
+      addTube(tube, bodyP, bed, rad, SPOKE_SEG, col); // body
       addTube(tube, bodyP, headP, rad, SPOKE_SEG, col); // elbow through the flange
       addButton(tube, hx, hy, headZ, 0.014, 0.004, SPOKE_SEG, col); // round button head
-      addTube(tube, nipIn, nipOut, 0.009, SPOKE_SEG, NIPPLE); // nipple
+      addTube(tube, bed, nipHead, 0.009, SPOKE_SEG, col); // nipple seated in the rim
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, s.spokes);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tube), gl.STATIC_DRAW);

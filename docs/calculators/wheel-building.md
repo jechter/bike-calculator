@@ -41,10 +41,13 @@ affect the spokes:
   so spoke count, cross and rim-vs-flange proportions are visible; and
 - a **cross-section** — flanges at their L/R offsets showing the **dish** and
   bracing angles; and
-- a **rotatable 3D view** — a WebGL rendering (rim torus, hub barrel + flanges,
-  spokes coloured by side) that you can **drag with the mouse to turn**, so the
-  dish and cross pattern are visible in three dimensions. Raw WebGL, no 3D
-  library. Falls back to a short message where WebGL isn't available.
+- a **rotatable 3D view** — a WebGL rendering (a box-section rim with a concave
+  tyre channel and brass nipples in the bed, hub barrel + flanges, and spokes
+  with button heads on the flange faces) that you can **drag with the mouse to
+  turn** and **zoom** into the hub. Spokes are coloured by side, with a lighter
+  shade for outer-laced (heads-out) and a darker shade for inner-laced (heads-in)
+  spokes. Raw WebGL, no 3D library. Falls back to a short message where WebGL
+  isn't available.
 
 Under the face-on view a **build scrubber** (slider + play button) steps through
 lacing the wheel one spoke at a time, in the order a wheel is actually built:

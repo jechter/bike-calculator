@@ -10,19 +10,24 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const DRIVE: [number, number, number] = [0.753, 0.224, 0.169]; // #c0392b
-const NDS: [number, number, number] = [0.043, 0.42, 0.796]; // #0b6bcb
+// Two shades per side so outer-laced (heads-out) and inner-laced (heads-in)
+// spokes are visually distinct: the lighter shade is outer, the darker is inner.
+const DRIVE_OUT: [number, number, number] = [0.87, 0.32, 0.24];
+const DRIVE_IN: [number, number, number] = [0.5, 0.11, 0.08];
+const NDS_OUT: [number, number, number] = [0.28, 0.58, 0.93];
+const NDS_IN: [number, number, number] = [0.02, 0.26, 0.58];
 const METAL: [number, number, number] = [0.62, 0.66, 0.71];
+const NIPPLE: [number, number, number] = [0.74, 0.63, 0.38]; // brass nipple
 const VALVE: [number, number, number] = [0.78, 0.62, 0.22]; // brass valve marker
 
-// One spoke draws as: a body tube (flange face -> rim), a short elbow tube
-// through the flange, and a round button head lying flat on the far face (a
-// little disc parallel to the flange). The head sits on the outboard face for
-// heads-out spokes and the inboard face for heads-in ones, so you can read
-// inside vs outside lacing. Vert budget per spoke: body + elbow (SPOKE_SEG*6
-// each) + button disc (SPOKE_SEG*12).
+// One spoke draws as: a body tube (nipple -> flange face), a short elbow tube
+// through the flange, a round button head lying flat on the far face (a little
+// disc parallel to the flange), and a nipple at the rim bed. The head sits on
+// the outboard face for heads-out spokes and the inboard face for heads-in ones,
+// so you can read inside vs outside lacing. Vert budget per spoke: body + elbow
+// + nipple (SPOKE_SEG*6 each) + button disc (SPOKE_SEG*12).
 const SPOKE_SEG = 6;
-const VERTS_PER_SPOKE = SPOKE_SEG * 24;
+const VERTS_PER_SPOKE = SPOKE_SEG * 30;
 
 export interface Wheel3DProps {
   erdMm: number;
@@ -86,25 +91,34 @@ function rotateY(a: number): Float32Array {
 
 type Mesh = number[];
 
-function addTorus(m: Mesh, R: number, r: number, maj: number, min: number, col: number[]) {
-  const v = (phi: number, psi: number) => {
-    const cp = Math.cos(phi), sp = Math.sin(phi);
-    const cs = Math.cos(psi), ss = Math.sin(psi);
-    const px = (R + r * cs) * cp;
-    const py = (R + r * cs) * sp;
-    const pz = r * ss;
-    // normal points out of the tube surface
-    const nx = cs * cp, ny = cs * sp, nz = ss;
-    m.push(px, py, pz, nx, ny, nz, col[0], col[1], col[2]);
-  };
-  for (let i = 0; i < maj; i++) {
-    const p0 = (2 * Math.PI * i) / maj;
-    const p1 = (2 * Math.PI * (i + 1)) / maj;
-    for (let j = 0; j < min; j++) {
-      const q0 = (2 * Math.PI * j) / min;
-      const q1 = (2 * Math.PI * (j + 1)) / min;
-      v(p0, q0); v(p1, q0); v(p1, q1);
-      v(p0, q0); v(p1, q1); v(p0, q1);
+// The rim, built by revolving a closed cross-section profile around the axle.
+// Each profile point is [dr, z]: dr is the radial offset out from the spoke bed
+// (radius R = ERD/2), z is axial. Outward normals are derived per profile edge
+// (flat across the section, smooth around the ring). The profile's outer face
+// dips inward at the centre, giving the concave tyre channel.
+function addRim(m: Mesh, R: number, profile: number[][], maj: number, col: number[]) {
+  let cdr = 0, cz = 0;
+  for (const p of profile) { cdr += p[0]; cz += p[1]; }
+  cdr /= profile.length; cz /= profile.length;
+  const P = profile.length;
+  const pos = (phi: number, dr: number, z: number) => [(R + dr) * Math.cos(phi), (R + dr) * Math.sin(phi), z];
+  for (let j = 0; j < P; j++) {
+    const a2 = profile[j], b2 = profile[(j + 1) % P];
+    const edr = b2[0] - a2[0], ez = b2[1] - a2[1];
+    // 2-D outward normal in the (dr, z) plane, flipped to point away from centroid
+    let ndr = ez, nz = -edr;
+    const nl = Math.hypot(ndr, nz) || 1; ndr /= nl; nz /= nl;
+    const mdr = (a2[0] + b2[0]) / 2 - cdr, mz = (a2[1] + b2[1]) / 2 - cz;
+    if (ndr * mdr + nz * mz < 0) { ndr = -ndr; nz = -nz; }
+    const nrm = (phi: number) => [ndr * Math.cos(phi), ndr * Math.sin(phi), nz];
+    for (let i = 0; i < maj; i++) {
+      const f0 = (2 * Math.PI * i) / maj, f1 = (2 * Math.PI * (i + 1)) / maj;
+      const n0 = nrm(f0), n1 = nrm(f1);
+      const A = pos(f0, a2[0], a2[1]), B = pos(f1, a2[0], a2[1]);
+      const C = pos(f1, b2[0], b2[1]), D = pos(f0, b2[0], b2[1]);
+      const push = (p: number[], n: number[]) => m.push(p[0], p[1], p[2], n[0], n[1], n[2], col[0], col[1], col[2]);
+      push(A, n0); push(B, n1); push(C, n1);
+      push(A, n0); push(C, n1); push(D, n0);
     }
   }
 }
@@ -376,7 +390,6 @@ export function Wheel3D(props: Wheel3DProps) {
     if (!s) return;
     const { gl } = s;
     const scale = 2 / erdMm; // rim radius -> 1 unit
-    const rimR = 1;
     const lfR = (leftFlangeDiaMm / 2) * scale;
     const rfR = (rightFlangeDiaMm / 2) * scale;
     const zL = -leftOffsetMm * scale;
@@ -384,10 +397,22 @@ export function Wheel3D(props: Wheel3DProps) {
     const stagger = 2 * scale; // rim holes drilled toward their flange
 
     const flHalf = 0.008; // flange half-thickness
+    const bedR = 1; // spoke bed sits at ERD/2; the rim body extends outward
 
-    // Shaded mesh: rim torus + hub barrel + two flanges + valve marker.
+    // Rim cross-section [dr, z]: inner wall (spoke bed) at dr=0, sidewalls out to
+    // the shoulders, and a concave outer channel that dips inward at the centre.
+    const depth = 0.06, halfW = 0.045;
+    const rimProfile = [
+      [0, -halfW],           // inner wall (spoke bed), left
+      [0, halfW],            // inner wall, right
+      [depth, halfW],        // outer-right shoulder
+      [depth * 0.4, 0],      // concave tyre channel (dips inward)
+      [depth, -halfW],       // outer-left shoulder
+    ];
+
+    // Shaded mesh: rim + hub barrel + two flanges + valve marker.
     const mesh: Mesh = [];
-    addTorus(mesh, rimR, 0.045, 96, 12, METAL);
+    addRim(mesh, bedR, rimProfile, 120, METAL);
     addCoin(mesh, (zL + zR) / 2, 0.05, Math.abs(zR - zL) / 2 + 0.03, 24, [0.5, 0.54, 0.6]);
     addCoin(mesh, zL, lfR, flHalf, 48, METAL);
     addCoin(mesh, zR, rfR, flHalf, 48, METAL);
@@ -397,19 +422,20 @@ export function Wheel3D(props: Wheel3DProps) {
     s.meshVerts = mesh.length / 9;
 
     // Spoke tubes, ordered by the build sequence so drawing the first `step`
-    // spokes reveals them in build order (matches the 2D scrubber exactly).
-    // Each spoke is three tubes: body (flange face -> rim), the elbow through
-    // the flange, and the head nub on the far face.
+    // spokes reveals them in build order (matches the 2D scrubber exactly). Each
+    // spoke: body (nipple -> flange), elbow through the flange, button head on
+    // the far face, and a nipple seated in the rim bed.
     const n = spokeCount;
     const tube: Mesh = [];
-    const rad = 0.007; // spoke radius (~2 mm at a 700C ERD)
+    const rad = 0.005; // spoke radius (~1.5 mm at a 700C ERD)
     for (const i of sequence) {
       const isDrive = i % 2 === 0;
       const fR = isDrive ? rfR : lfR;
       const zF = isDrive ? zR : zL;
       const k = isDrive ? rightCross : leftCross;
-      const col = isDrive ? DRIVE : NDS;
       const lead = Math.floor(i / 2) % 2 === 0 ? 1 : -1;
+      const headsOut = lead === 1; // alternates per flange -> in/out lacing
+      const col = isDrive ? (headsOut ? DRIVE_OUT : DRIVE_IN) : headsOut ? NDS_OUT : NDS_IN;
       const rimA = (2 * Math.PI * i) / n;
       const flA = rimA + lead * ((4 * Math.PI * k) / n);
       const zRim = isDrive ? stagger : -stagger;
@@ -417,16 +443,20 @@ export function Wheel3D(props: Wheel3DProps) {
       const hy = fR * Math.sin(flA);
       // Outboard is the direction away from the wheel centre for this flange.
       const outSign = isDrive ? 1 : -1;
-      const headsOut = lead === 1; // alternates per flange -> in/out lacing
       // headDir points along the axle toward the face the head rests on.
       const headDir = outSign * (headsOut ? 1 : -1);
       const headZ = zF + headDir * (flHalf + 0.003); // button sits on the far face
       const bodyZ = zF - headDir * flHalf; // body emerges from the opposite face
       const bodyP = [hx, hy, bodyZ];
       const headP = [hx, hy, headZ];
-      addTube(tube, bodyP, [rimR * Math.cos(rimA), rimR * Math.sin(rimA), zRim], rad, SPOKE_SEG, col);
+      // Nipple at the rim bed, pointing radially; spoke threads into its inner end.
+      const ca = Math.cos(rimA), sa = Math.sin(rimA);
+      const nipIn = [0.96 * ca, 0.96 * sa, zRim];
+      const nipOut = [1.01 * ca, 1.01 * sa, zRim];
+      addTube(tube, bodyP, nipIn, rad, SPOKE_SEG, col); // body
       addTube(tube, bodyP, headP, rad, SPOKE_SEG, col); // elbow through the flange
-      addButton(tube, hx, hy, headZ, 0.016, 0.004, SPOKE_SEG, col); // round button head
+      addButton(tube, hx, hy, headZ, 0.014, 0.004, SPOKE_SEG, col); // round button head
+      addTube(tube, nipIn, nipOut, 0.009, SPOKE_SEG, NIPPLE); // nipple
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, s.spokes);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tube), gl.STATIC_DRAW);

@@ -18,6 +18,7 @@ const NDS_OUT: [number, number, number] = [0.28, 0.58, 0.93];
 const NDS_IN: [number, number, number] = [0.02, 0.26, 0.58];
 const METAL: [number, number, number] = [0.62, 0.66, 0.71];
 const VALVE: [number, number, number] = [0.78, 0.62, 0.22]; // brass valve marker
+const HOLE: [number, number, number] = [0.1, 0.11, 0.13]; // empty spoke hole
 
 // One spoke draws as: a body tube (nipple -> flange face), a short elbow tube
 // through the flange, a round button head lying flat on the far face (a little
@@ -471,6 +472,25 @@ export function Wheel3D(props: Wheel3DProps) {
     addCoin(mesh, zL, lfR + flEdge, flHalf, 48, METAL);
     addCoin(mesh, zR, rfR + flEdge, flHalf, 48, METAL);
     addValve(mesh, -Math.PI / spokeCount, VALVE);
+
+    // Empty spoke holes drilled in the flanges and the rim bed. Static, so they
+    // show through the lacing animation until a spoke/nipple fills each one.
+    const holeR = 0.008;
+    for (let i = 0; i < spokeCount; i++) {
+      const isDrive = i % 2 === 0;
+      const fR = isDrive ? rfR : lfR;
+      const zF = isDrive ? zR : zL;
+      const k = isDrive ? rightCross : leftCross;
+      const lead = Math.floor(i / 2) % 2 === 0 ? 1 : -1;
+      const rimA = (2 * Math.PI * i) / spokeCount;
+      const flA = rimA + lead * ((4 * Math.PI * k) / spokeCount);
+      // flange hole: a dark disc set through the flange thickness
+      addButton(mesh, fR * Math.cos(flA), fR * Math.sin(flA), zF, holeR, flHalf + 0.001, SPOKE_SEG, HOLE);
+      // rim-bed hole: a dark disc on the inner wall, facing the hub
+      const ca = Math.cos(rimA), sa = Math.sin(rimA);
+      const zRim = isDrive ? stagger : -stagger;
+      addCap(mesh, [0.999 * ca, 0.999 * sa, zRim], [-ca, -sa, 0], holeR, SPOKE_SEG, HOLE);
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, s.mesh);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh), gl.STATIC_DRAW);
     s.meshVerts = mesh.length / 9;

@@ -479,9 +479,12 @@ export function Wheel3D(props: Wheel3DProps) {
     // Static, so they show through the lacing animation until a spoke/nipple
     // fills each one.
     const holeR = 0.008;
-    // Radius of the tyre-channel floor at the (staggered) hole depth, so the
-    // outer hole sits just proud of it.
-    const outerR = 1 + depth * (0.4 + (0.6 * stagger) / halfW) + 0.002;
+    const outerHoleR = 0.007;
+    // The tyre channel is a concave valley in z, so a flat outward-facing disc
+    // gets clipped by the rising walls unless it sits proud of the floor across
+    // its whole width. Place it just past the floor at its outermost z edge.
+    const zEdge = Math.min(Math.abs(stagger) + outerHoleR, halfW);
+    const outerR = 1 + depth * (0.4 + (0.6 * zEdge) / halfW) + 0.0015;
     for (let i = 0; i < spokeCount; i++) {
       const isDrive = i % 2 === 0;
       const fR = isDrive ? rfR : lfR;
@@ -497,7 +500,7 @@ export function Wheel3D(props: Wheel3DProps) {
       // rim-bed hole: a dark disc on the inner wall, facing the hub
       addCap(mesh, [0.999 * ca, 0.999 * sa, zRim], [-ca, -sa, 0], holeR, SPOKE_SEG, HOLE);
       // outer hole: a dark disc on the tyre-channel floor, facing outward
-      addCap(mesh, [outerR * ca, outerR * sa, zRim], [ca, sa, 0], holeR, SPOKE_SEG, HOLE);
+      addCap(mesh, [outerR * ca, outerR * sa, zRim], [ca, sa, 0], outerHoleR, SPOKE_SEG, HOLE);
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, s.mesh);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh), gl.STATIC_DRAW);

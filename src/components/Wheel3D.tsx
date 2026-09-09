@@ -448,6 +448,9 @@ export function Wheel3D(props: Wheel3DProps) {
     const stagger = 2 * scale; // rim holes drilled toward their flange
 
     const flHalf = 0.008; // flange half-thickness
+    // The flange diameter is the spoke-hole circle (PCD); the flange disc extends
+    // a few mm beyond it so the holes sit inside the edge, not on it.
+    const flEdge = 4 * scale;
     const bedR = 1; // spoke bed sits at ERD/2; the rim body extends outward
 
     // Rim cross-section [dr, z]: inner wall (spoke bed) at dr=0, sidewalls out to
@@ -465,8 +468,8 @@ export function Wheel3D(props: Wheel3DProps) {
     const mesh: Mesh = [];
     addRim(mesh, bedR, rimProfile, 120, METAL);
     addCoin(mesh, (zL + zR) / 2, 0.05, Math.abs(zR - zL) / 2 + 0.03, 24, [0.5, 0.54, 0.6]);
-    addCoin(mesh, zL, lfR, flHalf, 48, METAL);
-    addCoin(mesh, zR, rfR, flHalf, 48, METAL);
+    addCoin(mesh, zL, lfR + flEdge, flHalf, 48, METAL);
+    addCoin(mesh, zR, rfR + flEdge, flHalf, 48, METAL);
     addValve(mesh, -Math.PI / spokeCount, VALVE);
     gl.bindBuffer(gl.ARRAY_BUFFER, s.mesh);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh), gl.STATIC_DRAW);

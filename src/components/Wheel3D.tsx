@@ -15,13 +15,14 @@ const NDS: [number, number, number] = [0.043, 0.42, 0.796]; // #0b6bcb
 const METAL: [number, number, number] = [0.62, 0.66, 0.71];
 const VALVE: [number, number, number] = [0.78, 0.62, 0.22]; // brass valve marker
 
-// One spoke draws as three thin tubes so the elbow and head read as solid 3D
-// even when zoomed in: the body (flange face -> rim), a short segment through
-// the flange, and the head nub on the far face. Heads-out spokes sit on the
-// outboard face, heads-in on the inboard — so you can see inside vs outside
-// lacing. Each tube is SPOKE_SEG sides * 2 triangles * 3 verts.
+// One spoke draws as: a body tube (flange face -> rim), a short elbow tube
+// through the flange, and a round button head lying flat on the far face (a
+// little disc parallel to the flange). The head sits on the outboard face for
+// heads-out spokes and the inboard face for heads-in ones, so you can read
+// inside vs outside lacing. Vert budget per spoke: body + elbow (SPOKE_SEG*6
+// each) + button disc (SPOKE_SEG*12).
 const SPOKE_SEG = 6;
-const VERTS_PER_SPOKE = 3 * SPOKE_SEG * 6;
+const VERTS_PER_SPOKE = SPOKE_SEG * 24;
 
 export interface Wheel3DProps {
   erdMm: number;
@@ -219,6 +220,26 @@ function addTube(m: Mesh, a: number[], b: number[], rad: number, seg: number, co
   }
 }
 
+// A thin disc (short capped cylinder along Z) centred at (cx, cy, cz), lying in
+// a plane parallel to the flange — the spoke's round button head.
+function addButton(m: Mesh, cx: number, cy: number, cz: number, r: number, half: number, seg: number, col: number[]) {
+  const zf = cz + half, zb = cz - half;
+  const p = (x: number, y: number, z: number, n: number[]) =>
+    m.push(x, y, z, n[0], n[1], n[2], col[0], col[1], col[2]);
+  for (let i = 0; i < seg; i++) {
+    const t0 = (2 * Math.PI * i) / seg, t1 = (2 * Math.PI * (i + 1)) / seg;
+    const x0 = cx + r * Math.cos(t0), y0 = cy + r * Math.sin(t0);
+    const x1 = cx + r * Math.cos(t1), y1 = cy + r * Math.sin(t1);
+    const n0 = [Math.cos(t0), Math.sin(t0), 0], n1 = [Math.cos(t1), Math.sin(t1), 0];
+    // rim
+    p(x0, y0, zb, n0); p(x1, y1, zb, n1); p(x1, y1, zf, n1);
+    p(x0, y0, zb, n0); p(x1, y1, zf, n1); p(x0, y0, zf, n0);
+    // front cap (+Z) and back cap (-Z)
+    p(cx, cy, zf, [0, 0, 1]); p(x0, y0, zf, [0, 0, 1]); p(x1, y1, zf, [0, 0, 1]);
+    p(cx, cy, zb, [0, 0, -1]); p(x1, y1, zb, [0, 0, -1]); p(x0, y0, zb, [0, 0, -1]);
+  }
+}
+
 const VERT_SRC = `
 attribute vec3 aPos;
 attribute vec3 aNormal;
@@ -363,7 +384,6 @@ export function Wheel3D(props: Wheel3DProps) {
     const stagger = 2 * scale; // rim holes drilled toward their flange
 
     const flHalf = 0.008; // flange half-thickness
-    const face = 0.009; // where a spoke sits, just proud of the flange face
 
     // Shaded mesh: rim torus + hub barrel + two flanges + valve marker.
     const mesh: Mesh = [];
@@ -398,18 +418,15 @@ export function Wheel3D(props: Wheel3DProps) {
       // Outboard is the direction away from the wheel centre for this flange.
       const outSign = isDrive ? 1 : -1;
       const headsOut = lead === 1; // alternates per flange -> in/out lacing
-      const off = face + 0.004; // sit clearly proud of the flange face
-      const bodyZ = zF - outSign * off * (headsOut ? 1 : -1); // body leaves the near face
-      const headZ = zF + outSign * off * (headsOut ? 1 : -1); // head sits on the far face
-      // head nub direction: tangent to the flange, trailing the elbow
-      const tx = -Math.sin(flA) * -lead;
-      const ty = Math.cos(flA) * -lead;
-      const headLen = 0.05;
+      // headDir points along the axle toward the face the head rests on.
+      const headDir = outSign * (headsOut ? 1 : -1);
+      const headZ = zF + headDir * (flHalf + 0.003); // button sits on the far face
+      const bodyZ = zF - headDir * flHalf; // body emerges from the opposite face
       const bodyP = [hx, hy, bodyZ];
       const headP = [hx, hy, headZ];
       addTube(tube, bodyP, [rimR * Math.cos(rimA), rimR * Math.sin(rimA), zRim], rad, SPOKE_SEG, col);
-      addTube(tube, bodyP, headP, rad, SPOKE_SEG, col); // elbow through flange
-      addTube(tube, headP, [hx + tx * headLen, hy + ty * headLen, headZ], rad, SPOKE_SEG, col); // head
+      addTube(tube, bodyP, headP, rad, SPOKE_SEG, col); // elbow through the flange
+      addButton(tube, hx, hy, headZ, 0.016, 0.004, SPOKE_SEG, col); // round button head
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, s.spokes);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tube), gl.STATIC_DRAW);

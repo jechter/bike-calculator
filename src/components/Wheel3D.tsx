@@ -13,6 +13,13 @@ import { useEffect, useRef, useState } from "react";
 const DRIVE: [number, number, number] = [0.753, 0.224, 0.169]; // #c0392b
 const NDS: [number, number, number] = [0.043, 0.42, 0.796]; // #0b6bcb
 const METAL: [number, number, number] = [0.62, 0.66, 0.71];
+const VALVE: [number, number, number] = [0.78, 0.62, 0.22]; // brass valve marker
+
+// One spoke draws as three line segments so the elbow and head are visible:
+// the main body (flange face -> rim), a short axial segment through the flange,
+// and the head nub lying on the far face. Heads-out spokes sit on the outboard
+// face, heads-in on the inboard face — so you can see inside vs outside lacing.
+const VERTS_PER_SPOKE = 6;
 
 export interface Wheel3DProps {
   erdMm: number;
@@ -126,6 +133,23 @@ function addCoin(m: Mesh, zc: number, rad: number, half: number, seg: number, co
     m.push(x1, y1, zb, 0, 0, -1, col[0], col[1], col[2]);
     m.push(x0, y0, zb, 0, 0, -1, col[0], col[1], col[2]);
   }
+}
+
+// A flat radial flag at the rim marking the valve hole (points inward, like a
+// presta valve). Built into the shaded mesh so it's always shown, at any build
+// step, as a lacing reference. Double-sided so it lights from either face.
+function addValve(m: Mesh, angle: number, col: number[]) {
+  const rx = Math.cos(angle), ry = Math.sin(angle);
+  const nx = -Math.sin(angle), ny = Math.cos(angle); // flag-plane normal (tangential)
+  const w = 0.035; // half-width along the axle
+  const rOut = 1.0, rIn = 0.85;
+  const P = (r: number, z: number) => [r * rx, r * ry, z];
+  const p0 = P(rOut, w), p1 = P(rOut, -w), p2 = P(rIn, -w), p3 = P(rIn, w);
+  const tri = (a: number[], b: number[], c: number[], n: number[]) => {
+    for (const p of [a, b, c]) m.push(p[0], p[1], p[2], n[0], n[1], n[2], col[0], col[1], col[2]);
+  };
+  tri(p0, p1, p2, [nx, ny, 0]); tri(p0, p2, p3, [nx, ny, 0]);
+  tri(p0, p3, p2, [-nx, -ny, 0]); tri(p0, p2, p1, [-nx, -ny, 0]);
 }
 
 const VERT_SRC = `
@@ -270,20 +294,30 @@ export function Wheel3D(props: Wheel3DProps) {
     const zR = rightOffsetMm * scale;
     const stagger = 2 * scale; // rim holes drilled toward their flange
 
-    // Shaded mesh: rim torus + hub barrel + two flanges.
+    const flHalf = 0.008; // flange half-thickness
+    const face = 0.009; // where a spoke sits, just proud of the flange face
+
+    // Shaded mesh: rim torus + hub barrel + two flanges + valve marker.
     const mesh: Mesh = [];
     addTorus(mesh, rimR, 0.045, 96, 12, METAL);
     addCoin(mesh, (zL + zR) / 2, 0.05, Math.abs(zR - zL) / 2 + 0.03, 24, [0.5, 0.54, 0.6]);
-    addCoin(mesh, zL, lfR, 0.006, 48, METAL);
-    addCoin(mesh, zR, rfR, 0.006, 48, METAL);
+    addCoin(mesh, zL, lfR, flHalf, 48, METAL);
+    addCoin(mesh, zR, rfR, flHalf, 48, METAL);
+    addValve(mesh, -Math.PI / spokeCount, VALVE);
     gl.bindBuffer(gl.ARRAY_BUFFER, s.mesh);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh), gl.STATIC_DRAW);
     s.meshVerts = mesh.length / 9;
 
     // Spoke lines, ordered by the build sequence so drawing the first `step`
-    // pairs reveals them in build order (matches the 2D scrubber exactly).
+    // spokes reveals them in build order (matches the 2D scrubber exactly).
+    // Each spoke is three segments: body (flange face -> rim), the elbow through
+    // the flange, and the head nub on the far face.
     const n = spokeCount;
     const line: Mesh = [];
+    const seg = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, c: number[]) => {
+      line.push(x0, y0, z0, 0, 0, 0, c[0], c[1], c[2]);
+      line.push(x1, y1, z1, 0, 0, 0, c[0], c[1], c[2]);
+    };
     for (const i of sequence) {
       const isDrive = i % 2 === 0;
       const fR = isDrive ? rfR : lfR;
@@ -294,10 +328,20 @@ export function Wheel3D(props: Wheel3DProps) {
       const rimA = (2 * Math.PI * i) / n;
       const flA = rimA + lead * ((4 * Math.PI * k) / n);
       const zRim = isDrive ? stagger : -stagger;
-      // flange hole
-      line.push(fR * Math.cos(flA), fR * Math.sin(flA), zF, 0, 0, 0, col[0], col[1], col[2]);
-      // rim hole
-      line.push(rimR * Math.cos(rimA), rimR * Math.sin(rimA), zRim, 0, 0, 0, col[0], col[1], col[2]);
+      const hx = fR * Math.cos(flA);
+      const hy = fR * Math.sin(flA);
+      // Outboard is the direction away from the wheel centre for this flange.
+      const outSign = isDrive ? 1 : -1;
+      const headsOut = lead === 1; // alternates per flange -> in/out lacing
+      const bodyZ = zF - outSign * face * (headsOut ? 1 : -1); // body leaves the near face
+      const headZ = zF + outSign * face * (headsOut ? 1 : -1); // head sits on the far face
+      // head nub direction: tangent to the flange, trailing the elbow
+      const tx = -Math.sin(flA) * -lead;
+      const ty = Math.cos(flA) * -lead;
+      const headLen = 0.045;
+      seg(hx, hy, bodyZ, rimR * Math.cos(rimA), rimR * Math.sin(rimA), zRim, col); // body
+      seg(hx, hy, bodyZ, hx, hy, headZ, col); // elbow through flange
+      seg(hx, hy, headZ, hx + tx * headLen, hy + ty * headLen, headZ, col); // head
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, s.spokes);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(line), gl.STATIC_DRAW);
@@ -352,7 +396,7 @@ export function Wheel3D(props: Wheel3DProps) {
     bind(s.mesh);
     gl.drawArrays(gl.TRIANGLES, 0, s.meshVerts);
     bind(s.spokes);
-    gl.drawArrays(gl.LINES, 0, Math.max(0, step) * 2);
+    gl.drawArrays(gl.LINES, 0, Math.max(0, step) * VERTS_PER_SPOKE);
   });
 
   const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {

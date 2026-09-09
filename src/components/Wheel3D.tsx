@@ -135,21 +135,60 @@ function addCoin(m: Mesh, zc: number, rad: number, half: number, seg: number, co
   }
 }
 
-// A flat radial flag at the rim marking the valve hole (points inward, like a
-// presta valve). Built into the shaded mesh so it's always shown, at any build
-// step, as a lacing reference. Double-sided so it lights from either face.
+// A capsule (cylinder + hemispherical caps) between two points. Used for the
+// valve marker so it's solid from every viewing angle.
+function addCapsule(m: Mesh, a: number[], b: number[], rad: number, seg: number, col: number[]) {
+  let dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+  const len = Math.hypot(dx, dy, dz) || 1;
+  dx /= len; dy /= len; dz /= len;
+  // orthonormal basis (u, v) perpendicular to the axis d
+  let rx = 1, ry = 0, rz = 0;
+  if (Math.abs(dx) > 0.9) { rx = 0; ry = 1; rz = 0; }
+  let ux = ry * dz - rz * dy, uy = rz * dx - rx * dz, uz = rx * dy - ry * dx;
+  const ul = Math.hypot(ux, uy, uz) || 1;
+  ux /= ul; uy /= ul; uz /= ul;
+  const vx = dy * uz - dz * uy, vy = dz * ux - dx * uz, vz = dx * uy - dy * ux;
+  const push = (p: number[], nrm: number[]) =>
+    m.push(p[0], p[1], p[2], nrm[0], nrm[1], nrm[2], col[0], col[1], col[2]);
+  const rings = 6;
+  // body: ring point at fraction s along the axis, angle θ
+  const body = (s: number, ct: number, st: number) => {
+    const nx = ct * ux + st * vx, ny = ct * uy + st * vy, nz = ct * uz + st * vz;
+    const cx = a[0] + dx * len * s, cy = a[1] + dy * len * s, cz = a[2] + dz * len * s;
+    return { p: [cx + nx * rad, cy + ny * rad, cz + nz * rad], n: [nx, ny, nz] };
+  };
+  // hemisphere point: latitude φ, longitude θ, around a cap centre / direction
+  const capV = (c: number[], sign: number, sf: number, cf: number, ct: number, st: number) => {
+    const rx2 = ct * ux + st * vx, ry2 = ct * uy + st * vy, rz2 = ct * uz + st * vz;
+    const nx = sf * rx2 + cf * sign * dx, ny = sf * ry2 + cf * sign * dy, nz = sf * rz2 + cf * sign * dz;
+    return { p: [c[0] + nx * rad, c[1] + ny * rad, c[2] + nz * rad], n: [nx, ny, nz] };
+  };
+  const quad = (q0: any, q1: any, q2: any, q3: any) => {
+    push(q0.p, q0.n); push(q1.p, q1.n); push(q2.p, q2.n);
+    push(q0.p, q0.n); push(q2.p, q2.n); push(q3.p, q3.n);
+  };
+  for (let i = 0; i < seg; i++) {
+    const t0 = (2 * Math.PI * i) / seg, t1 = (2 * Math.PI * (i + 1)) / seg;
+    const c0 = Math.cos(t0), s0 = Math.sin(t0), c1 = Math.cos(t1), s1 = Math.sin(t1);
+    quad(body(0, c0, s0), body(1, c0, s0), body(1, c1, s1), body(0, c1, s1));
+    for (let j = 0; j < rings; j++) {
+      const f0 = (Math.PI / 2) * (j / rings), f1 = (Math.PI / 2) * ((j + 1) / rings);
+      const sf0 = Math.cos(f0), cf0 = Math.sin(f0), sf1 = Math.cos(f1), cf1 = Math.sin(f1);
+      // cap at b (+d)
+      quad(capV(b, 1, sf0, cf0, c0, s0), capV(b, 1, sf1, cf1, c0, s0),
+        capV(b, 1, sf1, cf1, c1, s1), capV(b, 1, sf0, cf0, c1, s1));
+      // cap at a (-d)
+      quad(capV(a, -1, sf0, cf0, c1, s1), capV(a, -1, sf1, cf1, c1, s1),
+        capV(a, -1, sf1, cf1, c0, s0), capV(a, -1, sf0, cf0, c0, s0));
+    }
+  }
+}
+
+// Valve marker: a small capsule at the rim pointing inward (like a presta
+// valve). Built into the mesh so it's always shown as a lacing reference.
 function addValve(m: Mesh, angle: number, col: number[]) {
   const rx = Math.cos(angle), ry = Math.sin(angle);
-  const nx = -Math.sin(angle), ny = Math.cos(angle); // flag-plane normal (tangential)
-  const w = 0.035; // half-width along the axle
-  const rOut = 1.0, rIn = 0.85;
-  const P = (r: number, z: number) => [r * rx, r * ry, z];
-  const p0 = P(rOut, w), p1 = P(rOut, -w), p2 = P(rIn, -w), p3 = P(rIn, w);
-  const tri = (a: number[], b: number[], c: number[], n: number[]) => {
-    for (const p of [a, b, c]) m.push(p[0], p[1], p[2], n[0], n[1], n[2], col[0], col[1], col[2]);
-  };
-  tri(p0, p1, p2, [nx, ny, 0]); tri(p0, p2, p3, [nx, ny, 0]);
-  tri(p0, p3, p2, [-nx, -ny, 0]); tri(p0, p2, p1, [-nx, -ny, 0]);
+  addCapsule(m, [1.02 * rx, 1.02 * ry, 0], [0.85 * rx, 0.85 * ry, 0], 0.028, 14, col);
 }
 
 const VERT_SRC = `
@@ -207,6 +246,7 @@ export function Wheel3D(props: Wheel3DProps) {
   const glRef = useRef<GLState | null>(null);
   const [failed, setFailed] = useState(false);
   const [rot, setRot] = useState({ x: 0.5, y: -0.6 });
+  const [zoom, setZoom] = useState(1); // 1 = whole wheel, higher = closer to hub
   const drag = useRef<{ x: number; y: number } | null>(null);
 
   const {
@@ -374,8 +414,8 @@ export function Wheel3D(props: Wheel3DProps) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     const model = multiply(rotateX(rot.x), rotateY(rot.y));
-    const view = translateZ(-3.4);
-    const proj = perspective(0.74, 1, 0.1, 20);
+    const view = translateZ(-3.4 / zoom); // zoom in by moving the camera closer
+    const proj = perspective(0.74, 1, 0.05, 20);
     const mvp = multiply(proj, multiply(view, model));
 
     gl.useProgram(s.program);
@@ -434,6 +474,19 @@ export function Wheel3D(props: Wheel3DProps) {
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       />
+      <div className="wd-build">
+        <span className="wd-zoom-ico" aria-hidden="true">🔍</span>
+        <input
+          className="wd-scrubber"
+          type="range"
+          min={1}
+          max={3.2}
+          step={0.05}
+          value={zoom}
+          aria-label="Zoom"
+          onChange={(e) => setZoom(Number(e.target.value))}
+        />
+      </div>
       <div className="wd-caption">3D · drag to rotate</div>
     </div>
   );

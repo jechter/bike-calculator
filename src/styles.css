@@ -682,6 +682,53 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .gc-tt-row { display: flex; justify-content: space-between; gap: 18px; }
 .gc-tt-row span { color: var(--muted); }
 
+/* Spoke-tension curve: reading → tension graph with a hover crosshair */
+.tc-chart {
+  position: relative;
+  margin-top: 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 8px 4px;
+}
+.tc-chart svg { display: block; cursor: crosshair; }
+.tc-grid { stroke: var(--muted); opacity: 0.35; stroke-width: 1; stroke-dasharray: 3 4; }
+.tc-tick { fill: var(--muted); font-size: 12px; }
+.tc-axis-title { fill: var(--muted); font-size: 12px; font-weight: 600; }
+.tc-area { fill: var(--accent); opacity: 0.08; stroke: none; }
+.tc-line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.tc-cross { stroke: var(--accent); stroke-width: 1; opacity: 0.55; stroke-dasharray: 4 4; }
+.tc-marker { fill: var(--accent); stroke: var(--panel); stroke-width: 2.5; }
+
+.tc-tooltip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 14px));
+  pointer-events: none;
+  z-index: 30;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  padding: 6px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+  text-align: center;
+}
+.tc-tt-reading { color: var(--muted); }
+.tc-tt-tension { margin-top: 2px; }
+.tc-tt-tension b { color: var(--accent); }
+
+.tc-readout {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 10px;
+  margin-top: 8px; padding: 0 4px 4px;
+  font-size: 14px; color: var(--text);
+}
+.tc-readout-reading { color: var(--muted); }
+.tc-readout-arrow { color: var(--muted); }
+.tc-readout-tension { color: var(--accent); font-size: 16px; }
+.tc-readout-hint { flex-basis: 100%; font-size: 12px; color: var(--muted); }
+.tc-caption { margin-top: 10px; max-width: 70ch; }
+
 /* Wheel building: per-side input groups, boxed and colour-accented */
 .wb-sides { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 14px; }
 .wb-side {

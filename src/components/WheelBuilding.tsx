@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
 import {
   spokeLength,
-  readingToKgf,
-  kgfToN,
   maxCross,
   checkWheelLacing,
   TENSION_CURVES,
@@ -11,6 +9,7 @@ import {
 } from "../lib/spokes";
 import { Field, NumberInput, Select, PresetMenu, Result, Note, Section } from "./ui";
 import { WheelDiagram } from "./WheelDiagram";
+import { TensionCurveChart } from "./TensionCurveChart";
 
 const RIM_OPTIONS = RIM_PRESETS.map((p) => ({ value: String(p.erdMm), label: p.label }));
 const HUB_OPTIONS = HUB_GEOMETRY_PRESETS.map((p, i) => ({ value: String(i), label: p.label }));
@@ -100,7 +99,6 @@ export function WheelBuilding() {
     TENSION_CURVES.find((c) => c.spokeType === "steel round 2.0 mm") ?? TENSION_CURVES[0];
   const [tool, setTool] = useState(defaultCurve.tool);
   const [spokeType, setSpokeType] = useState(defaultCurve.spokeType);
-  const [reading, setReading] = useState(20);
 
   const spokeOptions = useMemo(() => TENSION_CURVES.filter((c) => c.tool === tool), [tool]);
   const curve = spokeOptions.find((c) => c.spokeType === spokeType) ?? spokeOptions[0];
@@ -112,13 +110,6 @@ export function WheelBuilding() {
     const opts = TENSION_CURVES.filter((c) => c.tool === next);
     if (!opts.some((c) => c.spokeType === spokeType)) setSpokeType(opts[0].spokeType);
   }
-
-  const tPts = curve.points;
-  const minReading = tPts[0].reading;
-  const maxReading = tPts[tPts.length - 1].reading;
-  const hasReading = Number.isFinite(reading);
-  const inBand = hasReading && reading >= minReading && reading <= maxReading;
-  const kgf = readingToKgf(curve, reading);
 
   return (
     <>
@@ -278,24 +269,15 @@ export function WheelBuilding() {
               options={spokeOptions.map((c) => ({ value: c.spokeType, label: c.spokeType }))}
             />
           </Field>
-          <Field label="Tensiometer reading">
-            <NumberInput value={reading} onChange={setReading} step={0.1} />
-          </Field>
-          <Result
-            label="Tension"
-            value={inBand ? `${kgf.toFixed(0)} kgf · ${kgfToN(kgf).toFixed(0)} N` : "—"}
-            big
-          />
         </div>
-        {hasReading && !inBand && (
-          <Note tone="warn">
-            A reading of {reading} is outside this curve's range. The {tool} only
-            converts {spokeType} between readings {minReading} and {maxReading} (
-            {tPts[0].kgf}–{tPts[tPts.length - 1].kgf} kgf). Outside that band the
-            reading isn't meaningful — choose the spoke size that puts your reading in
-            range.
-          </Note>
-        )}
+        <TensionCurveChart curve={curve} />
+        <p className="field-hint tc-caption">
+          The graph reads both ways: mouse over (or drag on touch) to convert a
+          tensiometer reading to tension, or find your target tension on the vertical
+          axis and read across to the reading you're aiming for. The curve only spans
+          the readings this spoke measures meaningfully — pick a spoke size that lands
+          your build tension inside it.
+        </p>
       </Section>
     </>
   );

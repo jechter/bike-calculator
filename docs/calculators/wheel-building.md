@@ -136,23 +136,30 @@ the spoke's shape/gauge. This is a natural companion to building the wheel.
 
 ### Inputs
 - **Tensiometer model** (each brand/tool has its own conversion table).
-- **Deflection reading** from the tool.
 - **Spoke type/gauge**: round (e.g. 2.0 / 1.8 / 1.6 mm) or bladed with its
   cross-section, since the conversion depends on spoke stiffness.
 
-### Outputs
-- **Tension** in kgf and N (`1 kgf ≈ 9.81 N`).
-- A **target-tension check**: compare against the rim manufacturer's max spoke
-  tension (rim-limited, typically ~100–120 kgf) and flag over/under.
-- **Left/right balance**: on dished (rear, or disc front) wheels the two sides
-  sit at different tensions by design; report both and their ratio so the build
-  can be checked for even tension **within** each side.
+### Output — the conversion as a graph
+Rather than typing a single deflection number and reading one tension out, the
+converter draws the whole tool + spoke curve as a graph: **deflection reading on
+the x-axis, tension (kgf) on the y-axis**. Hovering (or dragging, on touch)
+snaps a crosshair onto the curve and shows the exact `reading → kgf · N` pair.
+
+Because it's a graph it reads **both ways**: pick a deflection on the x-axis and
+read up to its tension, or pick a target tension on the y-axis and read across
+to the deflection you're aiming for. The curve spans only the readings that
+spoke measures meaningfully, so out-of-range values simply aren't offered —
+choose a spoke size that lands your build tension inside the curve. Tension is
+shown in both kgf and N (`1 kgf ≈ 9.81 N`); compare against the rim
+manufacturer's max spoke tension (rim-limited, typically ~100–120 kgf). On
+dished (rear, or disc front) wheels the two sides sit at different tensions by
+design.
 
 ### Notes
 - The conversion tables are **tool- and spoke-specific data** — store them as
   cited data keyed by tool + spoke type; do not reproduce from memory. Let the
   user pick their tool, or enter a custom table/curve.
-- Readings are nonlinear; interpolate between table points rather than assuming
-  a straight line.
+- Readings are nonlinear; the graph interpolates linearly between table points
+  rather than assuming a single straight line across the whole range.
 - Pairs with the spoke-length output above so a full build (lengths + target
   tension + balance) is covered in one calculator.

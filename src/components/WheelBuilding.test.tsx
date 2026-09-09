@@ -12,29 +12,26 @@ describe("Wheel building page", () => {
     expect(getByRole("heading", { name: "Hub" })).toBeTruthy();
   });
 
-  it("shows a single tension field with both kgf and N", () => {
-    const { getByText, container } = render(<WheelBuilding />);
-    // reading 20 on the TM-1 round 2.0mm curve -> 70 kgf -> 686 N
-    expect(getByText(/70 kgf · 686 N/)).toBeTruthy();
-    // exactly one Tension result label
-    const labels = Array.from(container.querySelectorAll(".result-label")).filter(
-      (n) => n.textContent === "Tension",
-    );
-    expect(labels.length).toBe(1);
+  it("plots the tension curve as a reading → tension graph", () => {
+    const { container } = render(<WheelBuilding />);
+    const chart = container.querySelector(".tc-chart");
+    expect(chart).toBeTruthy();
+    // the curve is drawn as a polyline
+    expect(chart!.querySelector("polyline.tc-line")).toBeTruthy();
+    // and there's an always-on readout in kgf and N (no type-in reading field)
+    const readout = container.querySelector(".tc-readout")!;
+    expect(readout.textContent).toMatch(/kgf · \d+ N/);
   });
 
-  it("flags an out-of-band tensiometer reading instead of capping it", () => {
-    const { container, getByText } = render(<WheelBuilding />);
-    const reading = Array.from(container.querySelectorAll('input[type="number"]')).find(
-      (i) => (i as HTMLInputElement).value === "20",
-    ) as HTMLInputElement;
-    fireEvent.change(reading, { target: { value: "0" } });
-    // warns rather than reporting the clamped floor tension
-    expect(getByText(/outside this curve's range/)).toBeTruthy();
-    const tensionCard = Array.from(container.querySelectorAll(".result")).find(
-      (n) => n.querySelector(".result-label")?.textContent === "Tension",
-    )!;
-    expect(tensionCard.querySelector(".result-value")?.textContent).toBe("—");
+  it("reads a value off the graph on hover/drag, in both kgf and N", () => {
+    const { container } = render(<WheelBuilding />);
+    const svg = container.querySelector(".tc-chart svg") as SVGSVGElement;
+    // jsdom has no layout, so getBoundingClientRect is zero-sized; the pointer
+    // handler falls back to the sticky mid-curve reading (21) -> 77 kgf -> 755 N.
+    fireEvent.pointerMove(svg, { clientX: 300 });
+    const tooltip = container.querySelector(".tc-tooltip")!;
+    expect(tooltip.textContent).toMatch(/Reading 21\.0/);
+    expect(tooltip.textContent).toMatch(/77 kgf · 755 N/);
   });
 
   it("applies a hub preset, shows its name, and reverts on edit", () => {

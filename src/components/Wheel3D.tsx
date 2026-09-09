@@ -15,11 +15,13 @@ const NDS: [number, number, number] = [0.043, 0.42, 0.796]; // #0b6bcb
 const METAL: [number, number, number] = [0.62, 0.66, 0.71];
 const VALVE: [number, number, number] = [0.78, 0.62, 0.22]; // brass valve marker
 
-// One spoke draws as three line segments so the elbow and head are visible:
-// the main body (flange face -> rim), a short axial segment through the flange,
-// and the head nub lying on the far face. Heads-out spokes sit on the outboard
-// face, heads-in on the inboard face — so you can see inside vs outside lacing.
-const VERTS_PER_SPOKE = 6;
+// One spoke draws as three thin tubes so the elbow and head read as solid 3D
+// even when zoomed in: the body (flange face -> rim), a short segment through
+// the flange, and the head nub on the far face. Heads-out spokes sit on the
+// outboard face, heads-in on the inboard — so you can see inside vs outside
+// lacing. Each tube is SPOKE_SEG sides * 2 triangles * 3 verts.
+const SPOKE_SEG = 6;
+const VERTS_PER_SPOKE = 3 * SPOKE_SEG * 6;
 
 export interface Wheel3DProps {
   erdMm: number;
@@ -184,11 +186,37 @@ function addCapsule(m: Mesh, a: number[], b: number[], rad: number, seg: number,
   }
 }
 
-// Valve marker: a small capsule at the rim pointing inward (like a presta
+// Valve marker: a slim capsule at the rim pointing inward (like a presta
 // valve). Built into the mesh so it's always shown as a lacing reference.
 function addValve(m: Mesh, angle: number, col: number[]) {
   const rx = Math.cos(angle), ry = Math.sin(angle);
-  addCapsule(m, [1.02 * rx, 1.02 * ry, 0], [0.85 * rx, 0.85 * ry, 0], 0.028, 14, col);
+  addCapsule(m, [1.02 * rx, 1.02 * ry, 0], [0.85 * rx, 0.85 * ry, 0], 0.017, 14, col);
+}
+
+// A thin open cylinder (no caps) between two points — used for spoke segments.
+function addTube(m: Mesh, a: number[], b: number[], rad: number, seg: number, col: number[]) {
+  let dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+  const len = Math.hypot(dx, dy, dz) || 1;
+  dx /= len; dy /= len; dz /= len;
+  let rx = 1, ry = 0, rz = 0;
+  if (Math.abs(dx) > 0.9) { rx = 0; ry = 1; rz = 0; }
+  let ux = ry * dz - rz * dy, uy = rz * dx - rx * dz, uz = rx * dy - ry * dx;
+  const ul = Math.hypot(ux, uy, uz) || 1;
+  ux /= ul; uy /= ul; uz /= ul;
+  const vx = dy * uz - dz * uy, vy = dz * ux - dx * uz, vz = dx * uy - dy * ux;
+  const push = (p: number[], n: number[]) =>
+    m.push(p[0], p[1], p[2], n[0], n[1], n[2], col[0], col[1], col[2]);
+  const ring = (e: number[], ct: number, st: number) => {
+    const nx = ct * ux + st * vx, ny = ct * uy + st * vy, nz = ct * uz + st * vz;
+    return { p: [e[0] + nx * rad, e[1] + ny * rad, e[2] + nz * rad], n: [nx, ny, nz] };
+  };
+  for (let i = 0; i < seg; i++) {
+    const t0 = (2 * Math.PI * i) / seg, t1 = (2 * Math.PI * (i + 1)) / seg;
+    const c0 = Math.cos(t0), s0 = Math.sin(t0), c1 = Math.cos(t1), s1 = Math.sin(t1);
+    const a0 = ring(a, c0, s0), b0 = ring(b, c0, s0), b1 = ring(b, c1, s1), a1 = ring(a, c1, s1);
+    push(a0.p, a0.n); push(b0.p, b0.n); push(b1.p, b1.n);
+    push(a0.p, a0.n); push(b1.p, b1.n); push(a1.p, a1.n);
+  }
 }
 
 const VERT_SRC = `
@@ -348,16 +376,13 @@ export function Wheel3D(props: Wheel3DProps) {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh), gl.STATIC_DRAW);
     s.meshVerts = mesh.length / 9;
 
-    // Spoke lines, ordered by the build sequence so drawing the first `step`
+    // Spoke tubes, ordered by the build sequence so drawing the first `step`
     // spokes reveals them in build order (matches the 2D scrubber exactly).
-    // Each spoke is three segments: body (flange face -> rim), the elbow through
+    // Each spoke is three tubes: body (flange face -> rim), the elbow through
     // the flange, and the head nub on the far face.
     const n = spokeCount;
-    const line: Mesh = [];
-    const seg = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, c: number[]) => {
-      line.push(x0, y0, z0, 0, 0, 0, c[0], c[1], c[2]);
-      line.push(x1, y1, z1, 0, 0, 0, c[0], c[1], c[2]);
-    };
+    const tube: Mesh = [];
+    const rad = 0.007; // spoke radius (~2 mm at a 700C ERD)
     for (const i of sequence) {
       const isDrive = i % 2 === 0;
       const fR = isDrive ? rfR : lfR;
@@ -373,18 +398,21 @@ export function Wheel3D(props: Wheel3DProps) {
       // Outboard is the direction away from the wheel centre for this flange.
       const outSign = isDrive ? 1 : -1;
       const headsOut = lead === 1; // alternates per flange -> in/out lacing
-      const bodyZ = zF - outSign * face * (headsOut ? 1 : -1); // body leaves the near face
-      const headZ = zF + outSign * face * (headsOut ? 1 : -1); // head sits on the far face
+      const off = face + 0.004; // sit clearly proud of the flange face
+      const bodyZ = zF - outSign * off * (headsOut ? 1 : -1); // body leaves the near face
+      const headZ = zF + outSign * off * (headsOut ? 1 : -1); // head sits on the far face
       // head nub direction: tangent to the flange, trailing the elbow
       const tx = -Math.sin(flA) * -lead;
       const ty = Math.cos(flA) * -lead;
-      const headLen = 0.045;
-      seg(hx, hy, bodyZ, rimR * Math.cos(rimA), rimR * Math.sin(rimA), zRim, col); // body
-      seg(hx, hy, bodyZ, hx, hy, headZ, col); // elbow through flange
-      seg(hx, hy, headZ, hx + tx * headLen, hy + ty * headLen, headZ, col); // head
+      const headLen = 0.05;
+      const bodyP = [hx, hy, bodyZ];
+      const headP = [hx, hy, headZ];
+      addTube(tube, bodyP, [rimR * Math.cos(rimA), rimR * Math.sin(rimA), zRim], rad, SPOKE_SEG, col);
+      addTube(tube, bodyP, headP, rad, SPOKE_SEG, col); // elbow through flange
+      addTube(tube, headP, [hx + tx * headLen, hy + ty * headLen, headZ], rad, SPOKE_SEG, col); // head
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, s.spokes);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(line), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tube), gl.STATIC_DRAW);
   }, [
     erdMm,
     spokeCount,
@@ -436,7 +464,7 @@ export function Wheel3D(props: Wheel3DProps) {
     bind(s.mesh);
     gl.drawArrays(gl.TRIANGLES, 0, s.meshVerts);
     bind(s.spokes);
-    gl.drawArrays(gl.LINES, 0, Math.max(0, step) * VERTS_PER_SPOKE);
+    gl.drawArrays(gl.TRIANGLES, 0, Math.max(0, step) * VERTS_PER_SPOKE);
   });
 
   const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {

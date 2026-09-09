@@ -24,9 +24,10 @@ const VALVE: [number, number, number] = [0.78, 0.62, 0.22]; // brass valve marke
 // disc parallel to the flange), and a nipple at the rim bed. The head sits on
 // the outboard face for heads-out spokes and the inboard face for heads-in ones,
 // so you can read inside vs outside lacing. Vert budget per spoke: body + elbow
-// + nipple (SPOKE_SEG*6 each) + button disc (SPOKE_SEG*12).
+// + nipple (SPOKE_SEG*6 each) + button disc (SPOKE_SEG*12) + nipple cap
+// (SPOKE_SEG*3).
 const SPOKE_SEG = 6;
-const VERTS_PER_SPOKE = SPOKE_SEG * 30;
+const VERTS_PER_SPOKE = SPOKE_SEG * 33;
 
 export interface Wheel3DProps {
   erdMm: number;
@@ -233,6 +234,26 @@ function addTube(m: Mesh, a: number[], b: number[], rad: number, seg: number, co
   }
 }
 
+// A flat disc closing one end of a tube: centre c, facing along unit dir d.
+function addCap(m: Mesh, c: number[], d: number[], rad: number, seg: number, col: number[]) {
+  let rx = 1, ry = 0, rz = 0;
+  if (Math.abs(d[0]) > 0.9) { rx = 0; ry = 1; rz = 0; }
+  let ux = ry * d[2] - rz * d[1], uy = rz * d[0] - rx * d[2], uz = rx * d[1] - ry * d[0];
+  const ul = Math.hypot(ux, uy, uz) || 1;
+  ux /= ul; uy /= ul; uz /= ul;
+  const vx = d[1] * uz - d[2] * uy, vy = d[2] * ux - d[0] * uz, vz = d[0] * uy - d[1] * ux;
+  const push = (p: number[]) => m.push(p[0], p[1], p[2], d[0], d[1], d[2], col[0], col[1], col[2]);
+  const rim = (ct: number, st: number) => [
+    c[0] + (ct * ux + st * vx) * rad,
+    c[1] + (ct * uy + st * vy) * rad,
+    c[2] + (ct * uz + st * vz) * rad,
+  ];
+  for (let i = 0; i < seg; i++) {
+    const t0 = (2 * Math.PI * i) / seg, t1 = (2 * Math.PI * (i + 1)) / seg;
+    push(c); push(rim(Math.cos(t0), Math.sin(t0))); push(rim(Math.cos(t1), Math.sin(t1)));
+  }
+}
+
 // A thin disc (short capped cylinder along Z) centred at (cx, cy, cz), lying in
 // a plane parallel to the flange — the spoke's round button head.
 function addButton(m: Mesh, cx: number, cy: number, cz: number, r: number, half: number, seg: number, col: number[]) {
@@ -307,7 +328,7 @@ export function Wheel3D(props: Wheel3DProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const glRef = useRef<GLState | null>(null);
   const [failed, setFailed] = useState(false);
-  const [rot, setRot] = useState({ x: 0.5, y: -0.6 });
+  const [rot, setRot] = useState({ x: 0, y: Math.PI / 2 }); // default: side (dish) view
   const [zoom, setZoom] = useState(1); // 1 = whole wheel, higher = closer to hub
   const drag = useRef<{ x: number; y: number } | null>(null);
   const raf = useRef(0);
@@ -478,6 +499,7 @@ export function Wheel3D(props: Wheel3DProps) {
       addTube(tube, bodyP, headP, rad, SPOKE_SEG, col); // elbow through the flange
       addButton(tube, hx, hy, headZ, 0.014, 0.004, SPOKE_SEG, col); // round button head
       addTube(tube, bed, nipHead, 0.009, SPOKE_SEG, col); // nipple seated in the rim
+      addCap(tube, nipHead, [ca, sa, 0], 0.009, SPOKE_SEG, col); // closed nipple end
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, s.spokes);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tube), gl.STATIC_DRAW);
@@ -561,36 +583,38 @@ export function Wheel3D(props: Wheel3DProps) {
 
   return (
     <div className="wd-view">
-      <canvas
-        ref={canvasRef}
-        className="wd-canvas"
-        role="img"
-        aria-label="Rotatable 3D wheel — drag to turn"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-      />
-      <div className="wd-align">
-        <button type="button" className="wd-align-btn" onClick={() => animateTo(0, 0)}>
-          Face
-        </button>
-        <button type="button" className="wd-align-btn" onClick={() => animateTo(0, Math.PI / 2)}>
-          Side
-        </button>
-      </div>
-      <div className="wd-build">
-        <span className="wd-zoom-ico" aria-hidden="true">🔍</span>
-        <input
-          className="wd-scrubber"
-          type="range"
-          min={1}
-          max={3.2}
-          step={0.05}
-          value={zoom}
-          aria-label="Zoom"
-          onChange={(e) => setZoom(Number(e.target.value))}
+      <div className="wd-stage">
+        <canvas
+          ref={canvasRef}
+          className="wd-canvas"
+          role="img"
+          aria-label="Rotatable 3D wheel — drag to turn"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
         />
+        <div className="wd-side">
+          <span className="wd-zoom-ico" aria-hidden="true">🔍</span>
+          <input
+            className="wd-zoom-v"
+            type="range"
+            min={1}
+            max={3.2}
+            step={0.05}
+            value={zoom}
+            aria-label="Zoom"
+            onChange={(e) => setZoom(Number(e.target.value))}
+          />
+          <div className="wd-align">
+            <button type="button" className="wd-align-btn" onClick={() => animateTo(0, 0)}>
+              Face
+            </button>
+            <button type="button" className="wd-align-btn" onClick={() => animateTo(0, Math.PI / 2)}>
+              Side
+            </button>
+          </div>
+        </div>
       </div>
       <div className="wd-caption">3D · drag to rotate</div>
     </div>

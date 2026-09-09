@@ -705,13 +705,20 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .wd-view { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .wd-caption { font-size: 12px; color: var(--muted); }
+.wd-stage { display: flex; align-items: center; gap: 12px; }
 .wd-canvas {
   width: 300px; height: 300px; max-width: 70vw; display: block;
   touch-action: none; cursor: grab; background: transparent;
 }
 .wd-canvas:active { cursor: grabbing; }
-/* View controls: Face/Side buttons and zoom */
-.wd-align { display: flex; gap: 8px; }
+/* View controls on the right: vertical zoom, then Face/Side buttons */
+.wd-side { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.wd-zoom-v {
+  writing-mode: vertical-lr; direction: rtl; /* up = zoom in */
+  -webkit-appearance: slider-vertical; width: 8px; height: 190px;
+  accent-color: var(--accent); cursor: pointer;
+}
+.wd-align { display: flex; flex-direction: column; gap: 6px; }
 .wd-align-btn {
   padding: 4px 14px; font-size: 12px; cursor: pointer; color: var(--text);
   background: var(--panel); border: 1px solid var(--border); border-radius: 6px;

@@ -473,9 +473,13 @@ export function Wheel3D(props: Wheel3DProps) {
     addCoin(mesh, zR, rfR + flEdge, flHalf, 48, METAL);
     addValve(mesh, -Math.PI / spokeCount, VALVE);
 
-    // Empty spoke holes drilled in the flanges and the rim bed. Static, so they
-    // show through the lacing animation until a spoke/nipple fills each one.
+    // Empty spoke holes drilled in the flanges and the rim (bed + tyre channel).
+    // Static, so they show through the lacing animation until a spoke/nipple
+    // fills each one.
     const holeR = 0.008;
+    // Radius of the tyre-channel floor at the (staggered) hole depth, so the
+    // outer hole sits just proud of it.
+    const outerR = 1 + depth * (0.4 + (0.6 * stagger) / halfW) + 0.002;
     for (let i = 0; i < spokeCount; i++) {
       const isDrive = i % 2 === 0;
       const fR = isDrive ? rfR : lfR;
@@ -486,10 +490,12 @@ export function Wheel3D(props: Wheel3DProps) {
       const flA = rimA + lead * ((4 * Math.PI * k) / spokeCount);
       // flange hole: a dark disc set through the flange thickness
       addButton(mesh, fR * Math.cos(flA), fR * Math.sin(flA), zF, holeR, flHalf + 0.001, SPOKE_SEG, HOLE);
-      // rim-bed hole: a dark disc on the inner wall, facing the hub
       const ca = Math.cos(rimA), sa = Math.sin(rimA);
       const zRim = isDrive ? stagger : -stagger;
+      // rim-bed hole: a dark disc on the inner wall, facing the hub
       addCap(mesh, [0.999 * ca, 0.999 * sa, zRim], [-ca, -sa, 0], holeR, SPOKE_SEG, HOLE);
+      // outer hole: a dark disc on the tyre-channel floor, facing outward
+      addCap(mesh, [outerR * ca, outerR * sa, zRim], [ca, sa, 0], holeR, SPOKE_SEG, HOLE);
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, s.mesh);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh), gl.STATIC_DRAW);

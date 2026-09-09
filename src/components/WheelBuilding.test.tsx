@@ -63,13 +63,13 @@ describe("Wheel building page", () => {
     expect(has538).toBe(true);
   });
 
-  it("renders the wheel diagram with a spoke line per spoke", () => {
+  it("renders the wheel diagram with a build scrubber", () => {
     const { container } = render(<WheelBuilding />);
-    const svgs = container.querySelectorAll(".wheel-diagram svg");
-    expect(svgs.length).toBe(2); // face view + cross-section
-    // 32 spokes in the face view + section lines
-    const lines = container.querySelectorAll(".wheel-diagram line");
-    expect(lines.length).toBeGreaterThanOrEqual(32);
+    expect(container.querySelector(".wheel-diagram")).toBeTruthy();
+    const scrubber = container.querySelector(".wd-scrubber") as HTMLInputElement;
+    expect(scrubber).toBeTruthy();
+    expect(scrubber.max).toBe("32"); // one step per spoke, defaults to fully laced
+    expect(scrubber.value).toBe("32");
   });
 
   it("shows an error and hides the diagram for an infeasible lacing", () => {
@@ -87,43 +87,20 @@ describe("Wheel building page", () => {
     expect(values).toContain("—");
   });
 
-  it("uses each rim hole exactly once (30 spokes, no shared/unused holes)", () => {
-    const { container } = render(<WheelBuilding />);
-    // 30 spokes needs at most 3-cross (30/8 = 3), default 3-cross is feasible
-    const count = Array.from(container.querySelectorAll('input[type="number"]')).find(
-      (i) => (i as HTMLInputElement).value === "32",
-    ) as HTMLInputElement;
-    fireEvent.change(count, { target: { value: "30" } });
-    const holes = Array.from(container.querySelectorAll(".wd-hole"));
-    expect(holes.length).toBe(30);
-    // every rim hole position is distinct (rounded to avoid fp noise)
-    const positions = new Set(
-      holes.map((h) => {
-        const x = Math.round(parseFloat(h.getAttribute("cx")!) * 100) / 100;
-        const y = Math.round(parseFloat(h.getAttribute("cy")!) * 100) / 100;
-        return `${x},${y}`;
-      }),
-    );
-    expect(positions.size).toBe(30);
-  });
-
-  it("scrubs the build: fewer spokes are drawn part-way through, all at the end", () => {
+  it("scrubs the build: the caption reflects the current step", () => {
     const { container } = render(<WheelBuilding />);
     const scrubber = container.querySelector(".wd-scrubber") as HTMLInputElement;
-    expect(scrubber).toBeTruthy();
-    // spoke lines in the face view, excluding the valve marker line
-    const spokeLines = () =>
-      container.querySelectorAll(".wd-view:not(.wd-section) line:not(.wd-valve)").length;
+    const caption = () =>
+      Array.from(container.querySelectorAll(".wd-caption")).map((n) => n.textContent).join(" ");
     // defaults to a fully laced 32h wheel
     expect(scrubber.max).toBe("32");
-    expect(spokeLines()).toBe(32);
-    // scrub back to 8 spokes placed -> 8 spoke lines drawn
+    expect(caption()).toMatch(/Fully laced · 32h/);
+    // scrub part-way -> caption names the step and build group
     fireEvent.change(scrubber, { target: { value: "8" } });
-    expect(spokeLines()).toBe(8);
-    // a bare rim still shows all 32 rim holes (empty), just no spoke lines
+    expect(caption()).toMatch(/Spoke 8 of 32/);
+    // scrub to a bare rim
     fireEvent.change(scrubber, { target: { value: "0" } });
-    expect(spokeLines()).toBe(0);
-    expect(container.querySelectorAll(".wd-hole").length).toBe(32);
+    expect(caption()).toMatch(/Bare rim/);
   });
 
   it("resets the build scrubber to a full wheel when the spoke count changes", () => {
@@ -140,16 +117,15 @@ describe("Wheel building page", () => {
     expect(scrubber().value).toBe("24");
   });
 
-  it("updates the diagram when the spoke count changes", () => {
+  it("updates the build range when the spoke count changes", () => {
     const { container } = render(<WheelBuilding />);
-    const before = container.querySelectorAll(".wheel-diagram line").length;
-    // find the spoke-count input by its current value (32)
+    const scrubber = () => container.querySelector(".wd-scrubber") as HTMLInputElement;
+    expect(scrubber().max).toBe("32");
     const count = Array.from(container.querySelectorAll('input[type="number"]')).find(
       (i) => (i as HTMLInputElement).value === "32",
     ) as HTMLInputElement;
     expect(count).toBeTruthy();
     fireEvent.change(count, { target: { value: "24" } });
-    const after = container.querySelectorAll(".wheel-diagram line").length;
-    expect(after).toBeLessThan(before);
+    expect(scrubber().max).toBe("24");
   });
 });

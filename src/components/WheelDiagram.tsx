@@ -1,11 +1,7 @@
-// A proportional rendering of the wheel to visualise how the inputs affect the
-// spokes: a face-on lacing view (shows spoke count, cross pattern and the
-// rim-vs-flange proportions) and a cross-section (shows dish from the L/R
-// flange offsets). Not a precise CAD drawing — a build sanity-check.
-//
-// The face-on view also doubles as a build guide: a slider (and play button)
-// steps through lacing the wheel one spoke at a time, in the order a wheel is
-// actually built — see sheldonbrown.com/wheelbuild.html.
+// A 3D rendering of the wheel (see Wheel3D) plus a build scrubber that laces it
+// one spoke at a time, in the order a wheel is actually built — see
+// sheldonbrown.com/wheelbuild.html. The scrubber drives the 3D view; the view
+// itself has Face/Side buttons and a zoom control.
 
 import { useEffect, useMemo, useState } from "react";
 import { Wheel3D } from "./Wheel3D";
@@ -50,12 +46,6 @@ export function WheelDiagram(props: WheelDiagramProps) {
       return ga !== gb ? ga - gb : Math.floor(a / 4) - Math.floor(b / 4);
     });
   }, [n]);
-  // order[rimIndex] = the step at which that spoke goes in.
-  const order = useMemo(() => {
-    const o = new Array<number>(n);
-    sequence.forEach((rimIndex, step) => (o[rimIndex] = step));
-    return o;
-  }, [sequence, n]);
 
   // How many spokes are currently laced. Defaults to a fully built wheel; reset
   // when the spoke count changes (the classic "derive state from props" pattern).
@@ -83,61 +73,6 @@ export function WheelDiagram(props: WheelDiagramProps) {
     return <p className="field-hint">Enter an even spoke count and rim ERD to see the wheel.</p>;
   }
 
-  const rimR = 100;
-  const lfR = rimR * (props.leftFlangeDiaMm / erdMm);
-  const rfR = rimR * (props.rightFlangeDiaMm / erdMm);
-
-  // Face-on lacing, indexed by rim hole so each of the n rim holes is used
-  // exactly once. A k-cross spoke's flange end is offset by θ = 4π·k/n, which
-  // lands on a real flange hole; leading/trailing alternates per side to cross.
-  const faceSpokes = [] as JSX.Element[];
-  const rimDots = [] as JSX.Element[];
-  for (let i = 0; i < n; i++) {
-    const isDrive = i % 2 === 0;
-    const fR = isDrive ? rfR : lfR;
-    const k = isDrive ? props.rightCross : props.leftCross;
-    const color = isDrive ? DRIVE : NDS;
-    const lead = Math.floor(i / 2) % 2 === 0 ? 1 : -1;
-    const rimA = (2 * Math.PI * i) / n;
-    const flA = rimA + lead * ((4 * Math.PI * k) / n);
-    const rx = rimR * Math.cos(rimA);
-    const ry = rimR * Math.sin(rimA);
-
-    const placed = order[i] < step;
-    const current = order[i] === step - 1;
-    if (placed) {
-      faceSpokes.push(
-        <line
-          key={i}
-          x1={fR * Math.cos(flA)}
-          y1={fR * Math.sin(flA)}
-          x2={rx}
-          y2={ry}
-          stroke={color}
-          strokeWidth={current ? 2 : 0.8}
-          strokeLinecap="round"
-          opacity={current ? 1 : 0.9}
-        />,
-      );
-    }
-    rimDots.push(
-      <circle
-        key={"d" + i}
-        className={placed ? "wd-hole" : "wd-hole wd-hole-empty"}
-        cx={rx}
-        cy={ry}
-        r={1.4}
-        fill={placed ? color : "none"}
-      />,
-    );
-  }
-
-  // Valve marker just clockwise of rim hole 0, so "start next to the valve" lines
-  // up with the first spoke placed.
-  const valveA = -Math.PI / n;
-  const vx = Math.cos(valveA);
-  const vy = Math.sin(valveA);
-
   // Build-guide caption for the current step.
   let buildCaption: string;
   if (step <= 0) {
@@ -149,67 +84,8 @@ export function WheelDiagram(props: WheelDiagramProps) {
     buildCaption = `Spoke ${step} of ${n} · ${GROUP_LABELS[group]}`;
   }
 
-  // Cross-section (dish) — true proportions: offsets share the rim's scale.
-  const secH = 200; // px for the rim radius
-  const secScale = secH / (erdMm / 2);
-  const lOff = props.leftOffsetMm * secScale;
-  const rOff = props.rightOffsetMm * secScale;
-  const lFy = (props.leftFlangeDiaMm / 2) * secScale;
-  const rFy = (props.rightFlangeDiaMm / 2) * secScale;
-  const maxOff = Math.max(lOff, rOff, 8) + 6;
-  const dishThreshold = 1.5; // mm difference to call it "dished"
-  const dished = Math.abs(props.leftOffsetMm - props.rightOffsetMm) > dishThreshold;
-
   return (
     <div className="wheel-diagram">
-      <div className="wd-view">
-        <svg viewBox="-118 -118 236 236" role="img" aria-label="Face-on lacing view">
-          <circle r={rimR} className="wd-rim" />
-          <circle r={rfR} className="wd-flange" />
-          <circle r={lfR} className="wd-flange" />
-          <line
-            className="wd-valve"
-            x1={rimR * vx}
-            y1={rimR * vy}
-            x2={(rimR - 9) * vx}
-            y2={(rimR - 9) * vy}
-          />
-          {faceSpokes}
-          {rimDots}
-          <circle r={2.5} className="wd-hub" />
-        </svg>
-        <div className="wd-build">
-          <button
-            type="button"
-            className="wd-play"
-            onClick={() => {
-              if (playing) {
-                setPlaying(false);
-              } else {
-                if (step >= n) setStep(0);
-                setPlaying(true);
-              }
-            }}
-            aria-label={playing ? "Pause build" : "Play build"}
-          >
-            {playing ? "❚❚" : "▶"}
-          </button>
-          <input
-            className="wd-scrubber"
-            type="range"
-            min={0}
-            max={n}
-            value={step}
-            aria-label="Wheel build step"
-            onChange={(e) => {
-              setPlaying(false);
-              setStep(Number(e.target.value));
-            }}
-          />
-        </div>
-        <div className="wd-caption">{buildCaption}</div>
-      </div>
-
       <Wheel3D
         erdMm={erdMm}
         spokeCount={n}
@@ -223,30 +99,36 @@ export function WheelDiagram(props: WheelDiagramProps) {
         sequence={sequence}
       />
 
-      <div className="wd-view wd-section">
-        <svg
-          viewBox={`${-maxOff} ${-secH - 12} ${2 * maxOff} ${2 * secH + 24}`}
-          role="img"
-          aria-label="Cross-section showing dish"
-          preserveAspectRatio="xMidYMid meet"
+      <div className="wd-build">
+        <button
+          type="button"
+          className="wd-play"
+          onClick={() => {
+            if (playing) {
+              setPlaying(false);
+            } else {
+              if (step >= n) setStep(0);
+              setPlaying(true);
+            }
+          }}
+          aria-label={playing ? "Pause build" : "Play build"}
         >
-          {/* rim plane (edge-on) */}
-          <line x1={0} y1={-secH} x2={0} y2={secH} className="wd-rim-edge" />
-          {/* axle line */}
-          <line x1={-maxOff} y1={0} x2={maxOff} y2={0} className="wd-axle" />
-          {/* left / non-drive spokes */}
-          <line x1={-lOff} y1={-lFy} x2={0} y2={-secH} stroke={NDS} strokeWidth={1} />
-          <line x1={-lOff} y1={lFy} x2={0} y2={secH} stroke={NDS} strokeWidth={1} />
-          {/* right / drive spokes */}
-          <line x1={rOff} y1={-rFy} x2={0} y2={-secH} stroke={DRIVE} strokeWidth={1} />
-          <line x1={rOff} y1={rFy} x2={0} y2={secH} stroke={DRIVE} strokeWidth={1} />
-          {/* flanges */}
-          <line x1={-lOff} y1={-lFy} x2={-lOff} y2={lFy} stroke={NDS} strokeWidth={2.5} />
-          <line x1={rOff} y1={-rFy} x2={rOff} y2={rFy} stroke={DRIVE} strokeWidth={2.5} />
-          <circle cx={0} cy={0} r={3} className="wd-hub" />
-        </svg>
-        <div className="wd-caption">{dished ? "Dish (rear/disc)" : "Symmetric"}</div>
+          {playing ? "❚❚" : "▶"}
+        </button>
+        <input
+          className="wd-scrubber"
+          type="range"
+          min={0}
+          max={n}
+          value={step}
+          aria-label="Wheel build step"
+          onChange={(e) => {
+            setPlaying(false);
+            setStep(Number(e.target.value));
+          }}
+        />
       </div>
+      <div className="wd-caption">{buildCaption}</div>
 
       <div className="wd-legend">
         <span>

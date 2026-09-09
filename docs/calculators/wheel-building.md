@@ -33,31 +33,29 @@ always overridable, and clearly flagged as starting points to measure against.
 
 ### Wheel diagram
 
-The page renders the wheel **proportionally** so you can see how the inputs
-affect the spokes:
+The page renders the wheel as a **rotatable 3D view** — a WebGL rendering (a
+box-section rim with a concave tyre channel and nipples seated in the bed, hub
+barrel + flanges, and spokes with button heads on the flange faces) so you can
+see how the inputs affect the spokes. Spokes are coloured by side, with a
+lighter shade for outer-laced (heads-out) and a darker shade for inner-laced
+(heads-in) spokes; nipples match their spoke's colour.
 
-- a **face-on lacing view** — rim at ERD with the hub flange drawn to scale,
-  and every spoke drawn in the chosen cross pattern (left = blue, right = red),
-  so spoke count, cross and rim-vs-flange proportions are visible; and
-- a **cross-section** — flanges at their L/R offsets showing the **dish** and
-  bracing angles; and
-- a **rotatable 3D view** — a WebGL rendering (a box-section rim with a concave
-  tyre channel and brass nipples in the bed, hub barrel + flanges, and spokes
-  with button heads on the flange faces) that you can **drag with the mouse to
-  turn** and **zoom** into the hub. Spokes are coloured by side, with a lighter
-  shade for outer-laced (heads-out) and a darker shade for inner-laced (heads-in)
-  spokes. Raw WebGL, no 3D library. Falls back to a short message where WebGL
-  isn't available.
+- **Drag** with the mouse to turn the wheel, and use the **zoom** slider to
+  inspect the lacing at the hub.
+- **Face** and **Side** buttons animate the view to a head-on lacing view or an
+  edge-on view that shows the **dish** and bracing angles.
 
-Under the face-on view a **build scrubber** (slider + play button) steps through
-lacing the wheel one spoke at a time, in the order a wheel is actually built:
-drive-side first set (heads-out, every other flange hole), then the non-drive
-first set, then the drive-side crossing set, then the non-drive crossing set —
-each group filled in around the wheel starting next to the valve. It follows the
-grouping in [Sheldon Brown's wheelbuilding guide](https://www.sheldonbrown.com/wheelbuild.html).
-It's a build-order guide, not a weave animation — the straight lines don't show
-the over/under of the crossing sets. The scrubber drives the face-on and 3D
-views together, so spokes appear in build order in both.
+Raw WebGL, no 3D library — falls back to a short message where WebGL isn't
+available.
+
+A **build scrubber** (slider + play button) steps through lacing the wheel one
+spoke at a time, in the order a wheel is actually built: drive-side first set
+(heads-out, every other flange hole), then the non-drive first set, then the
+drive-side crossing set, then the non-drive crossing set — each group filled in
+around the wheel starting next to the valve. It follows the grouping in
+[Sheldon Brown's wheelbuilding guide](https://www.sheldonbrown.com/wheelbuild.html).
+It's a build-order guide, not a weave animation — the straight spokes don't show
+the over/under of the crossing sets.
 
 ### Lacing feasibility
 

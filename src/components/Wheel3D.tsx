@@ -310,6 +310,27 @@ export function Wheel3D(props: Wheel3DProps) {
   const [rot, setRot] = useState({ x: 0.5, y: -0.6 });
   const [zoom, setZoom] = useState(1); // 1 = whole wheel, higher = closer to hub
   const drag = useRef<{ x: number; y: number } | null>(null);
+  const raf = useRef(0);
+
+  // Animate the camera to a preset orientation (Face / Side) and whole-wheel zoom.
+  const animateTo = (tx: number, ty: number) => {
+    cancelAnimationFrame(raf.current);
+    const from = { x: rot.x, y: rot.y, z: zoom };
+    // shortest angular path for the yaw
+    const toY = ty + 2 * Math.PI * Math.round((from.y - ty) / (2 * Math.PI));
+    const start = performance.now();
+    const dur = 420;
+    const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / dur);
+      const e = ease(t);
+      setRot({ x: from.x + (tx - from.x) * e, y: from.y + (toY - from.y) * e });
+      setZoom(from.z + (1 - from.z) * e);
+      if (t < 1) raf.current = requestAnimationFrame(tick);
+    };
+    raf.current = requestAnimationFrame(tick);
+  };
+  useEffect(() => () => cancelAnimationFrame(raf.current), []);
 
   const {
     erdMm,
@@ -515,6 +536,7 @@ export function Wheel3D(props: Wheel3DProps) {
   });
 
   const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    cancelAnimationFrame(raf.current); // grabbing cancels any align animation
     drag.current = { x: e.clientX, y: e.clientY };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
@@ -549,6 +571,14 @@ export function Wheel3D(props: Wheel3DProps) {
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       />
+      <div className="wd-align">
+        <button type="button" className="wd-align-btn" onClick={() => animateTo(0, 0)}>
+          Face
+        </button>
+        <button type="button" className="wd-align-btn" onClick={() => animateTo(0, Math.PI / 2)}>
+          Side
+        </button>
+      </div>
       <div className="wd-build">
         <span className="wd-zoom-ico" aria-hidden="true">🔍</span>
         <input

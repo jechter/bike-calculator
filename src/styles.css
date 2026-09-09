@@ -699,21 +699,26 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* Wheel diagram */
 .wheel-diagram {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 24px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
   background: var(--panel-2); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 16px;
 }
-.wd-view { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.wd-view svg { display: block; }
-.wd-view:not(.wd-section) svg { width: 300px; height: 300px; max-width: 70vw; }
-.wd-section svg { height: 300px; width: 120px; }
+.wd-view { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .wd-caption { font-size: 12px; color: var(--muted); }
-.wd-rim { fill: none; stroke: var(--text); stroke-width: 3; }
-.wd-flange { fill: none; stroke: var(--border); stroke-width: 1; }
-.wd-hub { fill: var(--muted); }
-.wd-hole-empty { stroke: var(--border); stroke-width: 0.6; }
-.wd-valve { stroke: var(--muted); stroke-width: 3; stroke-linecap: round; }
-/* Build scrubber under the face-on view */
+.wd-canvas {
+  width: 300px; height: 300px; max-width: 70vw; display: block;
+  touch-action: none; cursor: grab; background: transparent;
+}
+.wd-canvas:active { cursor: grabbing; }
+/* View controls: Face/Side buttons and zoom */
+.wd-align { display: flex; gap: 8px; }
+.wd-align-btn {
+  padding: 4px 14px; font-size: 12px; cursor: pointer; color: var(--text);
+  background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+}
+.wd-align-btn:hover { border-color: var(--muted); }
+.wd-zoom-ico { flex: none; font-size: 14px; line-height: 1; opacity: 0.7; }
+/* Build scrubber */
 .wd-build { display: flex; align-items: center; gap: 10px; width: 300px; max-width: 70vw; }
 .wd-play {
   flex: none; width: 28px; height: 28px; padding: 0; line-height: 1;
@@ -723,15 +728,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .wd-play:hover { border-color: var(--muted); }
 .wd-scrubber { flex: 1 1 auto; min-width: 0; accent-color: var(--accent); cursor: pointer; }
-.wd-canvas {
-  width: 300px; height: 300px; max-width: 70vw; display: block;
-  touch-action: none; cursor: grab; background: transparent;
-}
-.wd-canvas:active { cursor: grabbing; }
-.wd-zoom-ico { flex: none; font-size: 14px; line-height: 1; opacity: 0.7; }
-.wd-rim-edge { stroke: var(--text); stroke-width: 3; }
-.wd-axle { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 3; }
-.wd-legend { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+.wd-legend { display: flex; gap: 18px; font-size: 13px; color: var(--muted); }
 .wd-legend span { display: flex; align-items: center; gap: 8px; }
 .wd-legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
 .lacing-errors { margin: 6px 0 0; padding-left: 18px; }

@@ -1561,6 +1561,83 @@ export function Drivetrain() {
 
   const focusLabel = focus === "B" ? "Drivetrain B" : "Drivetrain A";
 
+  // Shifting: step through gears like a real drivetrain rather than jumping
+  // between chainrings by raw ratio. Shifting stays within the current "shift
+  // group", stepping to the next usable cog in the shift direction. When the
+  // group runs out of usable cogs (the next one would be cross-chained), it
+  // rolls onto the next group and lands on the first gear that's actually higher
+  // (shifting up) or lower (down) than the current one — matching a real front
+  // shift's overlap, not the lowest usable gear on the new group.
+  //
+  // A shift group is the chainring for a cassette, or the hub gear for a
+  // hub+cassette combo (its steps read like extra front gears over the
+  // cassette), so combos shift front-then-rear just like a multi-ring crankset.
+  const isCrossChained = makeCrossChained(focusCfg.mode, chainrings, cogs);
+  const usableGears = focusDerived.gears.filter((g) => !isCrossChained(g));
+  const activeRatio = activeCog > 0 ? (activeChainring / activeCog) * activeHubRatio : 0;
+  const isCombo = comboActive(focusCfg);
+  const groupKey = (g: GearResult) => (isCombo ? g.hubGear?.name ?? "" : String(g.chainring));
+  const activeGroupKey = isCombo ? activeHubGear?.name ?? "" : String(activeChainring);
+  // Group keys ordered by their ratio multiplier (hub ratio / chainring size), so
+  // switching groups moves in one direction.
+  const groupsOrdered = isCombo
+    ? (focusHubGears ?? [])
+        .slice()
+        .sort((a, b) => a.ratio - b.ratio)
+        .map((h) => h.name)
+    : [...new Set(focusDerived.gears.map((g) => g.chainring))].sort((a, b) => a - b).map(String);
+  // The usable gear in a group that sits just beyond the current ratio in the
+  // shift direction, or undefined if the group has none.
+  const nearest = (key: string, dir: number) => {
+    const cand = usableGears.filter(
+      (g) => groupKey(g) === key && (dir > 0 ? g.ratio > activeRatio : g.ratio < activeRatio),
+    );
+    if (!cand.length) return undefined;
+    return cand.reduce((a, b) => (dir > 0 ? (b.ratio < a.ratio ? b : a) : b.ratio > a.ratio ? b : a));
+  };
+  const findShift = (dir: number): GearResult | undefined => {
+    if (!usableGears.length) return undefined;
+    // Prefer the same group; otherwise walk to adjacent groups in the shift
+    // direction until one has a gear beyond the current ratio.
+    const same = nearest(activeGroupKey, dir);
+    if (same) return same;
+    const gi = groupsOrdered.indexOf(activeGroupKey);
+    for (let i = gi + dir; i >= 0 && i < groupsOrdered.length; i += dir) {
+      const t = nearest(groupsOrdered[i], dir);
+      if (t) return t;
+    }
+    return undefined;
+  };
+  const shiftGear = (delta: number) => {
+    const g = findShift(delta > 0 ? 1 : -1);
+    if (!g) return;
+    setActiveGear({
+      chainring: g.chainring,
+      cog: g.cog,
+      hubName: g.hubGear?.name,
+      hubRatio: g.hubGear?.ratio,
+    });
+  };
+  const canShiftUp = !!findShift(1);
+  const canShiftDown = !!findShift(-1);
+
+  // Wire ←/→ to shift, ignoring keystrokes aimed at form fields. A ref keeps the
+  // listener pointed at the latest shiftGear (which closes over this render).
+  const shiftGearRef = useRef(shiftGear);
+  shiftGearRef.current = shiftGear;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || t?.isContentEditable) return;
+      e.preventDefault();
+      shiftGearRef.current(e.key === "ArrowRight" ? 1 : -1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   return (
     <>
       <Section
@@ -1757,6 +1834,10 @@ export function Drivetrain() {
           hubRatio={activeHubRatio}
           hubLabel={activeHubGear?.name}
           isGearbox={isGearbox}
+          onShiftDown={() => shiftGear(-1)}
+          onShiftUp={() => shiftGear(1)}
+          canShiftDown={canShiftDown}
+          canShiftUp={canShiftUp}
         />
 
         <div className="dt-controls">

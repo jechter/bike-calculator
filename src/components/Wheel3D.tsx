@@ -446,7 +446,9 @@ export function Wheel3D(props: Wheel3DProps) {
     const rfR = (rightFlangeDiaMm / 2) * scale;
     const zL = -leftOffsetMm * scale;
     const zR = rightOffsetMm * scale;
-    const stagger = 2 * scale; // rim holes drilled toward their flange
+    // Axial offset of each rim hole toward the flange it serves. 0 = centred
+    // (single-drilled); a future rim option could enable alternating drilling.
+    const stagger = 0 * scale;
 
     const flHalf = 0.008; // flange half-thickness
     // The flange diameter is the spoke-hole circle (PCD); the flange disc extends

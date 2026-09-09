@@ -697,39 +697,45 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .wb-side-left .wb-side-title { color: #0b6bcb; }
 .wb-side-right .wb-side-title { color: #c0392b; }
 
-/* Wheel diagram */
+/* Wheel diagram — the 3D canvas fills the panel; controls overlay the corners */
 .wheel-diagram {
-  display: flex; flex-direction: column; align-items: stretch; gap: 14px;
-  background: var(--panel-2); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 16px;
+  position: relative; height: min(520px, 86vw); overflow: hidden;
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius);
 }
-.wd-view { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
-.wd-caption { font-size: 12px; color: var(--muted); }
-/* Main row: Face/Side at far left, canvas centred, zoom at far right */
-.wd-main { width: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.wd-view { position: absolute; inset: 0; }
 .wd-canvas {
-  width: 440px; height: 440px; max-width: 78vw; display: block; justify-self: center;
+  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
   touch-action: none; cursor: grab; background: transparent;
 }
 .wd-canvas:active { cursor: grabbing; }
-.wd-align { justify-self: start; display: flex; flex-direction: column; gap: 8px; }
+.wd-caption { font-size: 12px; color: var(--muted); }
+/* Overlay cards sit above the canvas */
+.wd-align, .wd-zoomcol, .wd-lacing, .wd-legend, .wd-hint { position: absolute; z-index: 2; }
+.wd-align { top: 12px; left: 12px; display: flex; gap: 8px; }
 .wd-align-btn {
   padding: 4px 14px; font-size: 12px; cursor: pointer; color: var(--text);
   background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
 }
 .wd-align-btn:hover { border-color: var(--muted); }
-.wd-zoomcol { justify-self: end; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.wd-zoomcol {
+  top: 50%; right: 12px; transform: translateY(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
 .wd-zoom-ico { font-size: 14px; line-height: 1; opacity: 0.7; }
 .wd-zoom-v {
   writing-mode: vertical-lr; direction: rtl; /* up = zoom in */
-  -webkit-appearance: slider-vertical; width: 8px; height: 300px;
+  -webkit-appearance: slider-vertical; width: 8px; height: min(320px, 60%);
   accent-color: var(--accent); cursor: pointer;
 }
-/* Bottom row: lacing-order scrubber at left, colour legend at right */
-.wd-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
-.wd-lacing { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.wd-hint { bottom: 10px; left: 50%; transform: translateX(-50%); pointer-events: none; }
+/* Lacing-order scrubber at bottom-left, colour legend at bottom-right */
+.wd-lacing {
+  left: 12px; bottom: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+  background: color-mix(in srgb, var(--panel-2) 78%, transparent);
+  backdrop-filter: blur(2px); border-radius: 8px; padding: 8px 10px;
+}
 .wd-lacing-label { font-size: 12px; font-weight: 600; color: var(--text); }
-.wd-build { display: flex; align-items: center; gap: 10px; width: 340px; max-width: 60vw; }
+.wd-build { display: flex; align-items: center; gap: 10px; width: min(320px, 44vw); }
 .wd-play {
   flex: none; width: 28px; height: 28px; padding: 0; line-height: 1;
   display: flex; align-items: center; justify-content: center;
@@ -738,7 +744,12 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .wd-play:hover { border-color: var(--muted); }
 .wd-scrubber { flex: 1 1 auto; min-width: 0; accent-color: var(--accent); cursor: pointer; }
-.wd-legend { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+.wd-legend {
+  right: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 6px;
+  font-size: 13px; color: var(--muted);
+  background: color-mix(in srgb, var(--panel-2) 78%, transparent);
+  backdrop-filter: blur(2px); border-radius: 8px; padding: 8px 10px;
+}
 .wd-legend span { display: flex; align-items: center; gap: 8px; }
 .wd-legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
 .lacing-errors { margin: 6px 0 0; padding-left: 18px; }

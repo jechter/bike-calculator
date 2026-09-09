@@ -330,8 +330,18 @@ export function Wheel3D(props: Wheel3DProps) {
   const [failed, setFailed] = useState(false);
   const [rot, setRot] = useState({ x: 0, y: 0 }); // default: face-on view
   const [zoom, setZoom] = useState(1); // 1 = whole wheel, higher = closer to hub
+  const [, force] = useState(0); // bump to redraw (e.g. on resize)
   const drag = useRef<{ x: number; y: number } | null>(null);
   const raf = useRef(0);
+
+  // Redraw when the canvas (which fills the panel) is resized.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => force((v) => v + 1));
+    ro.observe(canvas);
+    return () => ro.disconnect();
+  }, []);
 
   // Animate the camera to a preset orientation (Face / Side) and whole-wheel zoom.
   const animateTo = (tx: number, ty: number) => {
@@ -522,18 +532,23 @@ export function Wheel3D(props: Wheel3DProps) {
     const { gl, loc } = s;
     const canvas = gl.canvas as HTMLCanvasElement;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const size = canvas.clientWidth || 300;
-    const px = Math.round(size * dpr);
-    if (canvas.width !== px) {
-      canvas.width = px;
-      canvas.height = px;
+    const cw = Math.max(1, Math.round((canvas.clientWidth || 300) * dpr));
+    const ch = Math.max(1, Math.round((canvas.clientHeight || 300) * dpr));
+    if (canvas.width !== cw || canvas.height !== ch) {
+      canvas.width = cw;
+      canvas.height = ch;
     }
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    // Keep the wheel circular whatever the panel's shape: widen the vertical FOV
+    // when the canvas is taller than wide so the wheel always fits.
+    const aspect = cw / ch;
+    let fovy = 0.74;
+    if (aspect < 1) fovy = 2 * Math.atan(Math.tan(fovy / 2) / aspect);
     const model = multiply(rotateX(rot.x), rotateY(rot.y));
     const view = translateZ(-3.4 / zoom); // zoom in by moving the camera closer
-    const proj = perspective(0.74, 1, 0.05, 20);
+    const proj = perspective(fovy, aspect, 0.05, 20);
     const mvp = multiply(proj, multiply(view, model));
 
     gl.useProgram(s.program);
@@ -583,40 +598,38 @@ export function Wheel3D(props: Wheel3DProps) {
 
   return (
     <div className="wd-view">
-      <div className="wd-main">
-        <div className="wd-align">
-          <button type="button" className="wd-align-btn" onClick={() => animateTo(0, 0)}>
-            Face
-          </button>
-          <button type="button" className="wd-align-btn" onClick={() => animateTo(0, Math.PI / 2)}>
-            Side
-          </button>
-        </div>
-        <canvas
-          ref={canvasRef}
-          className="wd-canvas"
-          role="img"
-          aria-label="Rotatable 3D wheel — drag to turn"
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-        />
-        <div className="wd-zoomcol">
-          <span className="wd-zoom-ico" aria-hidden="true">🔍</span>
-          <input
-            className="wd-zoom-v"
-            type="range"
-            min={1}
-            max={3.2}
-            step={0.05}
-            value={zoom}
-            aria-label="Zoom"
-            onChange={(e) => setZoom(Number(e.target.value))}
-          />
-        </div>
+      <canvas
+        ref={canvasRef}
+        className="wd-canvas"
+        role="img"
+        aria-label="Rotatable 3D wheel — drag to turn"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      />
+      <div className="wd-align">
+        <button type="button" className="wd-align-btn" onClick={() => animateTo(0, 0)}>
+          Face
+        </button>
+        <button type="button" className="wd-align-btn" onClick={() => animateTo(0, Math.PI / 2)}>
+          Side
+        </button>
       </div>
-      <div className="wd-caption">3D · drag to rotate</div>
+      <div className="wd-zoomcol">
+        <span className="wd-zoom-ico" aria-hidden="true">🔍</span>
+        <input
+          className="wd-zoom-v"
+          type="range"
+          min={1}
+          max={3.2}
+          step={0.05}
+          value={zoom}
+          aria-label="Zoom"
+          onChange={(e) => setZoom(Number(e.target.value))}
+        />
+      </div>
+      <div className="wd-caption wd-hint">3D · drag to rotate</div>
     </div>
   );
 }

@@ -43,11 +43,16 @@ export function spokeLength(input: SpokeInput): number {
 }
 
 // --- Lacing feasibility -----------------------------------------------------
-// A k-cross spoke subtends 720°·k/n at the hub. Past 90° the spoke would have to
-// wrap backwards, which isn't buildable, so the max cross is floor(n/8) — the
-// same limit as the standard max-cross tables (e.g. 32h → 4x, 24h → 3x).
+// Two limits bound the cross count:
+//  1. Symmetric cross lacing splits each side's n/2 spokes into equal leading
+//     and trailing halves, so it needs n/4 spokes per group — the count must be
+//     divisible by 4. Counts like 22 or 26 (n/2 odd) can't be cross-laced at all
+//     (two spokes would be forced to share a flange hole); they lace radially only.
+//  2. A k-cross spoke subtends 720°·k/n at the hub. Past 90° it would have to wrap
+//     backwards, so the max is floor(n/8) — the standard table (32h → 4x, 24h → 3x).
 
 export function maxCross(spokeCount: number): number {
+  if (spokeCount % 4 !== 0) return 0; // not divisible by 4 → radial only
   return Math.floor(spokeCount / 8);
 }
 
@@ -69,9 +74,15 @@ export function checkWheelLacing(
   } else {
     const kmax = maxCross(spokeCount);
     const maxLabel = kmax === 0 ? "radial (0-cross)" : `${kmax}-cross`;
+    const notDivisibleBy4 = spokeCount % 4 !== 0;
     const sideCheck = (label: string, k: number) => {
       if (!Number.isInteger(k) || k < 0) {
         errors.push(`${label}: cross count must be 0 or a positive whole number.`);
+      } else if (notDivisibleBy4 && k > 0) {
+        errors.push(
+          `${label}: cross lacing needs a spoke count divisible by 4 — ` +
+            `${spokeCount} spokes (${spokeCount / 2} per side) can only be laced radially (0-cross).`,
+        );
       } else if (k > kmax) {
         errors.push(
           `${label}: ${k}-cross isn't buildable with ${spokeCount} spokes ` +

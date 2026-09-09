@@ -59,13 +59,21 @@ the over/under of the crossing sets.
 
 ### Lacing feasibility
 
-A `k`-cross spoke subtends `720°·k/n` at the hub; once that exceeds 90° the spoke
-would have to wrap backwards and the wheel isn't buildable. So the **maximum
-cross is `floor(n/8)`** (matching the standard tables: 32h → 4×, 24h → 3×,
-20h → 2×, 10h → 1×). The calculator validates the spoke count (even, ≥ 8) and each
-side's cross; for an infeasible combination it shows an error and hides the
-(meaningless) diagram and spoke lengths rather than drawing a wheel that can't
-exist.
+Two limits bound the cross count:
+
+1. **Divisibility.** Symmetric cross lacing splits each side's `n/2` spokes into
+   equal leading and trailing halves, so it needs `n/4` spokes per group — the
+   count must be **divisible by 4**. Counts like 22 or 26 (`n/2` odd) can't be
+   cross-laced at all: the alternation can't balance, and two spokes would be
+   forced into the same flange hole. They lace **radially only**.
+2. **Angle.** A `k`-cross spoke subtends `720°·k/n` at the hub; once that exceeds
+   90° the spoke would have to wrap backwards. So for divisible counts the
+   **maximum cross is `floor(n/8)`** (matching the standard tables: 32h → 4×,
+   24h → 3×, 20h → 2×, 8h → 1×).
+
+The calculator validates the spoke count (even, ≥ 8) and each side's cross; for an
+infeasible combination it shows an error and hides the (meaningless) diagram and
+spoke lengths rather than drawing a wheel that can't exist.
 
 ## Outputs
 

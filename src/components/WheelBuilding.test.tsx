@@ -78,7 +78,7 @@ describe("Wheel building page", () => {
     fireEvent.change(count, { target: { value: "10" } });
     expect(getByText(/can't be built/i)).toBeTruthy();
     expect(container.querySelector(".wheel-diagram")).toBeNull();
-    expect(container.textContent).toMatch(/isn't buildable with 10 spokes/);
+    expect(container.textContent).toMatch(/divisible by 4/);
     // spoke length results show a dash rather than a bogus number
     const values = Array.from(container.querySelectorAll(".result-value")).map((n) => n.textContent);
     expect(values).toContain("—");

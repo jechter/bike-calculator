@@ -41,17 +41,34 @@ describe('maxCross / checkWheelLacing', () => {
     expect(maxCross(36)).toBe(4);
     expect(maxCross(24)).toBe(3);
     expect(maxCross(20)).toBe(2);
-    expect(maxCross(10)).toBe(1);
+    expect(maxCross(8)).toBe(1);
+  });
+
+  it('allows only radial when the count is not divisible by 4', () => {
+    // n/2 is odd (11, 5) so the leading/trailing halves can't balance — a
+    // cross-laced wheel would force two spokes into one flange hole.
+    expect(maxCross(22)).toBe(0);
+    expect(maxCross(10)).toBe(0);
   });
 
   it('accepts a normal 32h 3-cross build', () => {
     expect(checkWheelLacing(32, 3, 3).ok).toBe(true);
   });
 
-  it('rejects 10 spokes with 3-cross (the reported case)', () => {
+  it('accepts radial on a count not divisible by 4', () => {
+    expect(checkWheelLacing(22, 0, 0).ok).toBe(true);
+  });
+
+  it('rejects 22 spokes with 2-cross (the reported case)', () => {
+    const r = checkWheelLacing(22, 2, 2);
+    expect(r.ok).toBe(false);
+    expect(r.errors.join(" ")).toMatch(/divisible by 4/);
+  });
+
+  it('rejects 10 spokes with 3-cross (not divisible by 4)', () => {
     const r = checkWheelLacing(10, 3, 3);
     expect(r.ok).toBe(false);
-    expect(r.errors.join(" ")).toMatch(/isn't buildable with 10 spokes/);
+    expect(r.errors.join(" ")).toMatch(/divisible by 4/);
   });
 
   it('rejects an odd spoke count', () => {

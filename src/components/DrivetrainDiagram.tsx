@@ -107,10 +107,11 @@ export interface DrivetrainDiagramProps {
    *  while the chainring turns at cadence × the active gear's ratio; otherwise
    *  crank and chainring are rigidly linked and turn together. */
   isGearbox?: boolean;
-  /** Shift the active gear one step down/up (lower/higher ratio). Drives the
-   *  ‹ / › buttons; the parent also wires ←/→ to the same handlers. */
-  onShiftDown?: () => void;
-  onShiftUp?: () => void;
+  /** Start/stop shifting in a direction (-1 down / +1 up). Held down, a stepped
+   *  drivetrain repeats and a CVT sweeps continuously. Drives the ‹ / › buttons;
+   *  the parent also wires ←/→ to the same handlers. */
+  onShiftStart?: (dir: -1 | 1) => void;
+  onShiftStop?: () => void;
   canShiftDown?: boolean;
   canShiftUp?: boolean;
 }
@@ -434,10 +435,10 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
         <button
           type="button"
           className="dt-shift-btn"
-          onClick={props.onShiftDown}
+          onPointerDown={() => props.onShiftStart?.(-1)}
           disabled={!props.canShiftDown}
           aria-label="Shift to a lower gear"
-          title="Shift down (←)"
+          title="Shift down (←) — hold to keep shifting"
         >
           ‹
         </button>
@@ -449,10 +450,10 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
         <button
           type="button"
           className="dt-shift-btn"
-          onClick={props.onShiftUp}
+          onPointerDown={() => props.onShiftStart?.(1)}
           disabled={!props.canShiftUp}
           aria-label="Shift to a higher gear"
-          title="Shift up (→)"
+          title="Shift up (→) — hold to keep shifting"
         >
           ›
         </button>

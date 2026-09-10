@@ -1533,8 +1533,24 @@ export function Drivetrain() {
   const defaultHubGear = focusHubGears?.length
     ? focusHubGears[Math.floor(focusHubGears.length / 2)]
     : undefined;
-  const activeHubGear =
-    activeGear?.hubName && focusHubGears?.some((h) => h.name === activeGear.hubName)
+  // A CVT exposes a continuous ratio between its low/high endpoints, so its
+  // active "gear" is any value in that range (picked by hovering the chart band
+  // or holding a shift button), not one of a discrete list.
+  const isCvtFocus = isCvt(focusCfg);
+  const cvtRange =
+    isCvtFocus && focusHubGears && focusHubGears.length >= 2
+      ? { lo: focusHubGears[0].ratio, hi: focusHubGears[focusHubGears.length - 1].ratio }
+      : null;
+  const activeHubGear = cvtRange
+    ? (() => {
+        const r = Math.min(
+          cvtRange.hi,
+          Math.max(cvtRange.lo, activeGear?.hubRatio ?? (cvtRange.lo + cvtRange.hi) / 2),
+        );
+        const pct = Math.round(((r - cvtRange.lo) / (cvtRange.hi - cvtRange.lo)) * 100);
+        return { name: `${pct}%`, ratio: r };
+      })()
+    : activeGear?.hubName && focusHubGears?.some((h) => h.name === activeGear.hubName)
       ? { name: activeGear.hubName, ratio: activeGear.hubRatio ?? 1 }
       : defaultHubGear;
   const activeHubRatio = activeHubGear?.ratio ?? 1;
@@ -1618,24 +1634,95 @@ export function Drivetrain() {
       hubRatio: g.hubGear?.ratio,
     });
   };
-  const canShiftUp = !!findShift(1);
-  const canShiftDown = !!findShift(-1);
+  // CVT: set the continuous ratio directly (clamped to the range).
+  const setCvtRatio = (r: number) => {
+    if (!cvtRange) return;
+    setActiveGear({
+      chainring: activeChainring,
+      cog: activeCog,
+      hubName: "cvt",
+      hubRatio: Math.min(cvtRange.hi, Math.max(cvtRange.lo, r)),
+    });
+  };
+  const canShiftUp = cvtRange ? activeHubRatio < cvtRange.hi - 1e-6 : !!findShift(1);
+  const canShiftDown = cvtRange ? activeHubRatio > cvtRange.lo + 1e-6 : !!findShift(-1);
 
-  // Wire ←/→ to shift, ignoring keystrokes aimed at form fields. A ref keeps the
-  // listener pointed at the latest shiftGear (which closes over this render).
+  // Refs keep the hold loop / key listeners pointed at the latest closures
+  // (which capture this render's active gear, range, etc.).
   const shiftGearRef = useRef(shiftGear);
   shiftGearRef.current = shiftGear;
+  const setCvtRatioRef = useRef(setCvtRatio);
+  setCvtRatioRef.current = setCvtRatio;
+  const activeHubRatioRef = useRef(activeHubRatio);
+  activeHubRatioRef.current = activeHubRatio;
+  const cvtRangeRef = useRef(cvtRange);
+  cvtRangeRef.current = cvtRange;
+
+  // Hold-to-shift: a CVT sweeps its ratio continuously for as long as a button
+  // or arrow key is held (longer press = more shift); a stepped drivetrain steps
+  // once, then repeats at an interval while held.
+  const holdRef = useRef<{ cancel: () => void } | null>(null);
+  const stopShift = () => {
+    holdRef.current?.cancel();
+    holdRef.current = null;
+  };
+  const startShift = (dir: number) => {
+    if (holdRef.current) return;
+    const range = cvtRangeRef.current;
+    if (range) {
+      // A small immediate nudge so a quick tap still moves noticeably; holding
+      // then sweeps the rest of the range.
+      setCvtRatioRef.current(activeHubRatioRef.current + dir * (range.hi - range.lo) * 0.04);
+      const perSec = (range.hi - range.lo) / 2.5; // full range in ~2.5 s
+      let raf = 0;
+      let last: number | null = null;
+      const tick = (t: number) => {
+        if (last != null) {
+          setCvtRatioRef.current(activeHubRatioRef.current + dir * perSec * ((t - last) / 1000));
+        }
+        last = t;
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+      holdRef.current = { cancel: () => cancelAnimationFrame(raf) };
+    } else {
+      shiftGearRef.current(dir);
+      const id = window.setInterval(() => shiftGearRef.current(dir), 220);
+      holdRef.current = { cancel: () => window.clearInterval(id) };
+    }
+  };
+  const startShiftRef = useRef(startShift);
+  startShiftRef.current = startShift;
+
+  // ←/→ start/stop a hold, ignoring keystrokes aimed at form fields. A pointerup
+  // / blur anywhere also stops, so a hold can't get stuck (e.g. if the button
+  // becomes disabled at the end of the range while still pressed).
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-      const t = e.target as HTMLElement | null;
+    const isField = (t: HTMLElement | null) => {
       const tag = t?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || t?.isContentEditable) return;
-      e.preventDefault();
-      shiftGearRef.current(e.key === "ArrowRight" ? 1 : -1);
+      return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || !!t?.isContentEditable;
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      if (isField(e.target as HTMLElement)) return;
+      e.preventDefault();
+      if (e.repeat) return; // our own loop handles the hold
+      startShiftRef.current(e.key === "ArrowRight" ? 1 : -1);
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") stopShift();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("pointerup", stopShift);
+    window.addEventListener("blur", stopShift);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("pointerup", stopShift);
+      window.removeEventListener("blur", stopShift);
+      stopShift();
+    };
   }, []);
 
   return (
@@ -1760,6 +1847,8 @@ export function Drivetrain() {
           pointLabel={pointLabel}
           cadenceRpm={rpm}
           isActive={isActiveGear}
+          activeRatio={activeRatio}
+          activeSeriesId={focusId}
           onHover={(g, seriesId) => {
             // Hovering a gear selects it in the diagram; if it belongs to the
             // other drivetrain, switch the diagram (and detail sections) to it.
@@ -1834,8 +1923,8 @@ export function Drivetrain() {
           hubRatio={activeHubRatio}
           hubLabel={activeHubGear?.name}
           isGearbox={isGearbox}
-          onShiftDown={() => shiftGear(-1)}
-          onShiftUp={() => shiftGear(1)}
+          onShiftStart={(dir) => startShift(dir)}
+          onShiftStop={stopShift}
           canShiftDown={canShiftDown}
           canShiftUp={canShiftUp}
         />

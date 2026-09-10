@@ -51,10 +51,35 @@ export interface GearChartProps {
   cadenceRpm: number;
   /** Optional extra control rendered in the axis bar (e.g. cadence). */
   extra?: ReactNode;
-  /** Called when a gear dot is hovered (for the drivetrain diagram). */
+  /** Called when a gear dot is hovered (for the drivetrain diagram). Continuous
+   *  (CVT) rows report a synthetic gear interpolated to the hovered spot. */
   onHover?: (g: GearResult, seriesId: string) => void;
   /** The gear currently shown in the diagram — highlighted with a halo. */
   isActive?: (g: GearResult, seriesId: string) => boolean;
+  /** For a continuous (CVT) row: the active overall ratio and its series, so a
+   *  handle can be drawn at the current spot along the band. */
+  activeRatio?: number;
+  activeSeriesId?: string;
+}
+
+// Linear interpolation between a CVT's low and high endpoint gears. Every metric
+// (ratio, speed, gear inches, development) is linear in the hub ratio, so the
+// spot the mouse points at along the band maps straight through.
+function lerpGear(lo: GearResult, hi: GearResult, f: number): GearResult {
+  const m = (a: number, b: number) => a + (b - a) * f;
+  return {
+    chainring: lo.chainring,
+    cog: lo.cog,
+    hubGear:
+      lo.hubGear && hi.hubGear
+        ? { name: "cvt", ratio: m(lo.hubGear.ratio, hi.hubGear.ratio) }
+        : lo.hubGear,
+    ratio: m(lo.ratio, hi.ratio),
+    gearInches: m(lo.gearInches, hi.gearInches),
+    developmentM: m(lo.developmentM, hi.developmentM),
+    gainRatio: m(lo.gainRatio ?? 0, hi.gainRatio ?? 0),
+    speedKmh: m(lo.speedKmh, hi.speedKmh),
+  };
 }
 
 interface Row {
@@ -82,6 +107,8 @@ export function GearChart({
   extra,
   onHover,
   isActive,
+  activeRatio,
+  activeSeriesId,
 }: GearChartProps) {
   const units = useUnits();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -191,6 +218,21 @@ export function GearChart({
     onHover?.(g, row.seriesId);
   };
 
+  // Hovering anywhere along a CVT band picks the ratio at that spot: map the
+  // pointer's x to a fraction of the band and report an interpolated gear.
+  const pickBand = (row: Row, x0: number, x1: number) => (e: React.MouseEvent) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    const svg = (e.currentTarget as SVGElement).ownerSVGElement;
+    if (!rect || !svg || row.points.length < 2) return;
+    // x0/x1 are in SVG user units, so map the pointer through the svg's own box.
+    const svgRect = svg.getBoundingClientRect();
+    const localX = (e.clientX - svgRect.left) / (svgRect.width / W);
+    const f = x1 > x0 ? Math.min(1, Math.max(0, (localX - x0) / (x1 - x0))) : 0;
+    const g = lerpGear(row.points[0].g, row.points[row.points.length - 1].g, f);
+    setHover({ g, row, left: e.clientX - rect.left, top: e.clientY - rect.top });
+    onHover?.(g, row.seriesId);
+  };
+
   return (
     <div className="gear-chart" ref={containerRef}>
       <div className="gc-scroll">
@@ -277,6 +319,31 @@ export function GearChart({
                   </g>
                 );
               })}
+              {row.continuous && row.points.length >= 2 && (() => {
+                // A handle marks the current pick, and a wide invisible line lets
+                // you hover anywhere along the band to choose a ratio.
+                const lo = row.points[0].g.ratio;
+                const hi = row.points[row.points.length - 1].g.ratio;
+                const showHandle =
+                  row.seriesId === activeSeriesId && activeRatio != null && hi > lo;
+                const hf = showHandle ? Math.min(1, Math.max(0, (activeRatio! - lo) / (hi - lo))) : 0;
+                return (
+                  <>
+                    {showHandle && (
+                      <circle cx={x0 + hf * (x1 - x0)} cy={y} r={7} className="gc-cvt-handle" />
+                    )}
+                    <line
+                      x1={x0}
+                      y1={y}
+                      x2={x1}
+                      y2={y}
+                      className="gc-cvt-hit"
+                      onMouseMove={pickBand(row, x0, x1)}
+                      onMouseLeave={() => setHover(null)}
+                    />
+                  </>
+                );
+              })()}
             </g>
           );
         })}

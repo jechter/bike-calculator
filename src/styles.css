@@ -261,7 +261,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .dt-shift-btn {
   flex: 0 0 auto; width: 30px; height: 30px; padding: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; line-height: 1; cursor: pointer;
+  font-size: 18px; line-height: 1; cursor: pointer; touch-action: none;
   color: var(--text); background: var(--panel); border: 1px solid var(--border);
   border-radius: var(--radius);
 }
@@ -595,6 +595,10 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* CVT: thick rounded bar spanning the continuous low–high range. */
 .gc-row-line-cvt { stroke-width: 8; opacity: 0.3; stroke-linecap: round; }
+/* CVT: a wide invisible hit line to pick a ratio anywhere along the band, and a
+   handle marking the current pick. */
+.gc-cvt-hit { stroke: transparent; stroke-width: 22; cursor: ew-resize; }
+.gc-cvt-handle { fill: var(--accent); stroke: var(--panel); stroke-width: 2; pointer-events: none; }
 
 /* The gear currently shown in the diagram gets a ring + emphasised label. */
 .gc-dot-halo { stroke-width: 2.5; opacity: 0.9; }

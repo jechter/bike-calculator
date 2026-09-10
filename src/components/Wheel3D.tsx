@@ -344,6 +344,21 @@ export function Wheel3D(props: Wheel3DProps) {
     return () => ro.disconnect();
   }, []);
 
+  // Trackpad pinch-zoom: macOS delivers it as a wheel event with ctrlKey set.
+  // Plain two-finger scroll (no ctrlKey) is left alone so the page still scrolls.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      cancelAnimationFrame(raf.current);
+      setZoom((z) => Math.max(1, Math.min(3.2, z * Math.exp(-e.deltaY * 0.01))));
+    };
+    canvas.addEventListener("wheel", onWheel, { passive: false });
+    return () => canvas.removeEventListener("wheel", onWheel);
+  }, []);
+
   // Animate the camera to a preset orientation (Face / Side) and whole-wheel zoom.
   const animateTo = (tx: number, ty: number) => {
     cancelAnimationFrame(raf.current);

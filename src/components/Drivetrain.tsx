@@ -1031,7 +1031,7 @@ function SetupFields({ cfg }: { cfg: DrivetrainConfig }) {
         options={[
           { value: "cassette", label: "Derailleur (cassette)" },
           { value: "single", label: "Single speed / fixed" },
-          { value: "hub", label: "Internally geared hub" },
+          { value: "hub", label: "Internal gears" },
         ]}
       />
     </Field>

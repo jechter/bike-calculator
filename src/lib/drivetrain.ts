@@ -269,7 +269,8 @@ export const CASSETTE_PRESETS: CassettePreset[] = (
   source: c.source,
 }));
 
-// Internally geared hub / bottom-bracket gearbox / CVT presets. Ratios are
+// Internal-gears presets: internally geared hubs, bottom-bracket gearboxes and
+// CVTs. Ratios are
 // gear ratios relative to 1:1 direct drive (1.000 == direct drive), each with a
 // primary/secondary source. The rows live in data/hub-gears.json — add or edit
 // hubs there (no code change). See src/data/README.md.

@@ -10,15 +10,16 @@ worn chain.
 - **Drivetrain type** — pick one:
   - **Derailleur (cassette)**: multiple chainrings × multiple cogs.
   - **Single speed / fixed**: one chainring × one cog (see below).
-  - **Internally geared hub (IGH)**: chainring × sprocket, then multiplied by the
-    hub's internal gear ratios (see below).
+  - **Internal gears**: chainring × sprocket, then multiplied by the internal
+    gear ratios of an internally geared hub, bottom-bracket gearbox or CVT
+    (see below).
 - **Chainrings**: list of tooth counts, e.g. `50, 34` or `48` for 1×. An
   editable field with a preset button for **common cranksets** (compact 50/34,
   standard 53/39, sub-compact, gravel 2×, triples, 1× options).
-  (Single speed / IGH: a single chainring.)
+  (Single speed / internal gears: a single chainring.)
 - **Cassette/cogs**: list of tooth counts, e.g. `11, 12, 13, 14, 15, 17, 19,
   21, 24, 28`. Editable field with a preset button for common cassettes (11–28,
-  11–34, 10–52, etc.). (Single speed / IGH: a single sprocket.)
+  11–34, 10–52, etc.). (Single speed / internal gears: a single sprocket.)
 - **Rolling circumference** (mm): an editable field with an integrated tire-size
   picker — a compact embed of the [tire calculator](tire.md)'s size field. Type
   any format (`700x28C`, `26-559`, `28x1 3/8`…) or click a suggestion and it
@@ -69,25 +70,26 @@ a "skid patch" count (`cog / gcd(cog, chainring)`, doubled if the rider is
 ambidextrous) and a chain-tension/"magic gear" note — see
 [additional-ideas.md](../additional-ideas.md).
 
-### Internally geared hub (IGH)
-The transmission ratio is the chainring/sprocket ratio **multiplied by the hub's
-internal ratio** for each hub gear:
+### Internal gears
+Covers internally geared hubs (IGH), bottom-bracket gearboxes and CVTs. The
+transmission ratio is the chainring/sprocket ratio **multiplied by the internal
+ratio** for each gear:
 
 ```
 overall_ratio(gear) = (chainring / sprocket) × hub_ratio(gear)
 ```
 
 Feed `overall_ratio` into all the outputs below (gear inches, development, speed
-at cadence). Provide presets for common hubs with their published internal
+at cadence). Provide presets for common units with their published internal
 ratios, e.g. Shimano Nexus/Alfine (3/7/8/11-speed), Sturmey-Archer (3-speed),
 Rohloff Speedhub (14-speed), Kindernay. Store these ratios as **cited data** (do
-not reproduce from memory) and let the user override. Useful IGH outputs:
-per-gear overall ratio and speed, plus the **total gear range**
+not reproduce from memory) and let the user override. Useful internal-gear
+outputs: per-gear overall ratio and speed, plus the **total gear range**
 (`top ratio / bottom ratio`, often quoted as a %) and the **step between gears**.
 
-> IGHs use a single chainring and single sprocket, so the chain-length and
-> single-speed tensioning notes apply. There is no front/rear derailleur
-> capacity to worry about.
+> Internal-gear drivetrains use a single chainring and single sprocket, so the
+> chain-length and single-speed tensioning notes apply. There is no front/rear
+> derailleur capacity to worry about.
 
 ## Outputs
 
@@ -208,7 +210,7 @@ cut. The formula is inch-based internally only.
 > cog and pick the shortest link that lets the wheel sit within its adjustment
 > range at correct tension; a half-link fine-tunes horizontal/track dropouts,
 > and a tensioner is used with vertical dropouts. The app shows this guidance
-> instead of a (misleading) number for single speed / IGH.
+> instead of a (misleading) number for single speed / internal gears.
 
 **2. Largest-largest ("big-big") method:**
 

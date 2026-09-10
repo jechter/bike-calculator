@@ -86,3 +86,7 @@ All seven calculators implemented and building. Calculation functions are
 covered by unit tests. Reference data flagged in the specs (IGH ratios,
 tensiometer curves, derailleur actuation ratios) uses illustrative/placeholder
 values that should be replaced with cited sources before relying on them.
+
+## License
+
+Released under the [MIT License](LICENSE).

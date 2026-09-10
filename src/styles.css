@@ -220,7 +220,15 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .dr-note { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
 /* Drivetrain (crankset + cassette) diagram */
-.dt-diagram { margin-top: 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+.dt-diagram { position: relative; margin-top: 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+.dt-slomo {
+  position: absolute; top: 10px; right: 10px; z-index: 1;
+  padding: 4px 10px; font-size: 12px; cursor: pointer;
+  color: var(--muted); background: var(--panel); border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.dt-slomo:hover { border-color: var(--accent); color: var(--accent); }
+.dt-slomo.active { color: #fff; background: var(--accent); border-color: var(--accent); }
 .dt-diagram svg { width: 100%; max-width: 760px; display: block; margin: 0 auto; }
 .dt-gear { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 2 2.5; }
 .dt-gear-active { fill: none; stroke: var(--accent); stroke-width: 3; }
@@ -229,17 +237,27 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .dt-pulley { fill: var(--panel); stroke: var(--muted); stroke-width: 1.5; }
 .dt-cage { stroke: var(--muted); stroke-width: 4; stroke-linecap: round; }
 .dt-spoke { fill: none; stroke: var(--muted); stroke-width: 1.2; opacity: 0.45; }
+.dt-spider { fill: none; stroke: var(--muted); stroke-width: 2; opacity: 0.6; }
 .dt-crank { fill: none; stroke: var(--muted); stroke-width: 2; stroke-linejoin: round; opacity: 0.7; }
 .dt-crank-pedal { fill: none; stroke: var(--muted); stroke-width: 2; opacity: 0.85; }
 .dt-tire { fill: none; stroke: var(--muted); opacity: 0.18; }
 .dt-rim { fill: none; stroke: var(--muted); stroke-width: 1.5; opacity: 0.3; }
 .dt-wheel-spoke { fill: none; stroke: var(--muted); stroke-width: 1; opacity: 0.3; }
+.dt-valve { fill: var(--muted); stroke: none; opacity: 0.65; }
 .dt-label {
   fill: var(--text); font-size: 11px; font-weight: 700;
   paint-order: stroke; stroke: var(--panel-2); stroke-width: 3px; stroke-linejoin: round;
 }
-.dt-shift { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 6px; }
-.dt-shift .dt-cap { margin-top: 0; flex: 0 1 auto; }
+/* The caption + shift buttons float over the bottom of the diagram so the wheel
+   shows behind them; a translucent backdrop keeps the text legible. */
+.dt-shift {
+  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 4px 8px; border-radius: 999px;
+  background: color-mix(in srgb, var(--panel-2) 78%, transparent);
+  backdrop-filter: blur(2px);
+}
+.dt-shift .dt-cap { margin-top: 0; flex: 0 1 auto; white-space: nowrap; }
 .dt-shift-btn {
   flex: 0 0 auto; width: 30px; height: 30px; padding: 0;
   display: flex; align-items: center; justify-content: center;

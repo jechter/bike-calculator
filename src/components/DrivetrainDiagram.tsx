@@ -4,6 +4,7 @@
 // setup a rear derailleur is simulated: the tension pulley swings on its cage so
 // the total chain length stays constant as the gear changes.
 
+import { useEffect, useRef, useState } from "react";
 import { PALETTE } from "./GearChart";
 
 const PITCH = 12.7; // chain pitch, mm
@@ -221,7 +222,10 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   // Bottom must clear the lowest of: chainring, cog, and (if present) the
   // derailleur's downward reach — otherwise a big chainring gets culled in
   // single-speed/hub mode where there's no derailleur to extend the bounds.
-  const maxY = Math.max(rfMax, rrMax, hasDerailleur ? derailBottom : 0) + m;
+  // A little extra room (~the height of the caption/shift bar, which floats over
+  // the diagram) so those controls sit below the drivetrain rather than on it.
+  const captionRoom = (maxX - minX) * 0.07;
+  const maxY = Math.max(rfMax, rrMax, hasDerailleur ? derailBottom : 0) + m + captionRoom;
   const W = maxX - minX;
   const H = maxY - minY;
 
@@ -231,20 +235,26 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   // Effective ratio includes the hub ratio (1 for cassette/single-speed), so the
   // rear wheel spins at the right speed for the selected hub gear.
   const ratio = (props.activeChainring / props.activeCog) * (props.hubRatio ?? 1);
-  const period = 60 / rpm;
-  const cogPeriod = Math.max(0.1, 60 / (rpm * ratio));
+  // Slo-mo stretches every period by the same factor, so the wheel/crank slow
+  // down together (relative speeds preserved) enough to actually watch them turn
+  // instead of strobing — a fast gear can otherwise reach ~10 rev/s.
+  const [slowMo, setSlowMo] = useState(false);
+  const slow = slowMo ? 10 : 1;
+  const period = (60 / rpm) * slow;
+  const cogPeriod = Math.max(0.1, 60 / (rpm * ratio)) * slow;
   // The crank always turns at the pedalling cadence. The chainring turns with it,
   // except on a bottom-bracket gearbox where the gearbox sits between them — the
   // ring then turns at cadence × the active gear's ratio (its hub ratio).
   const isGearbox = !!props.isGearbox;
   const crankPeriod = period;
   const chainringRpm = isGearbox ? rpm * (props.hubRatio ?? 1) : rpm;
-  const chainringPeriod = Math.max(0.05, 60 / chainringRpm);
+  const chainringPeriod = Math.max(0.05, 60 / chainringRpm) * slow;
   const reduceMotion =
     typeof window !== "undefined" &&
     !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
   // Wide outlined spoke "blades" (rounded bars) from rInner to rOuter, evenly
-  // spaced — used for the chainring and the three-spoke rear wheel.
+  // spaced — used for the crank spider and the three-spoke rear wheel. offsetDeg
+  // rotates the whole set (the spider sits 45° off the crank arm).
   const blades = (
     cx: number,
     cy: number,
@@ -253,6 +263,7 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
     count: number,
     w: number,
     cls: string,
+    offsetDeg = 0,
   ) =>
     Array.from({ length: count }, (_, i) => (
       <rect
@@ -262,35 +273,98 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
         width={rOuter - rInner}
         height={w}
         rx={w / 2}
-        transform={`rotate(${(360 * i) / count} ${cx} ${cy})`}
+        transform={`rotate(${(360 * i) / count + offsetDeg} ${cx} ${cy})`}
         className={cls}
       />
     ));
+
+  // Rotation is driven imperatively with a requestAnimationFrame loop that sets
+  // each group's SVG `rotate(angle cx cy)` transform. This rotates about an
+  // explicit point (the hub / bottom bracket) in user coordinates, which every
+  // engine handles the same way — unlike CSS transform-box/transform-origin,
+  // which can pivot off-centre. Each part keeps a running angle, so a gear or
+  // slo-mo change only alters its angular velocity: the crank and wheels keep
+  // their current angle instead of jumping back to the start.
+  const wheelRef = useRef<SVGGElement>(null);
+  const spiderRef = useRef<SVGGElement>(null);
+  const crankRef = useRef<SVGGElement>(null);
+  // Live rotation state (angle in degrees, velocity in deg/s, pivot in user
+  // units); mutated in place so the rAF loop always sees the latest values.
+  const spin = useRef([
+    { ref: wheelRef, angle: 0, vel: 0, cx: 0, cy: 0 },
+    { ref: spiderRef, angle: 0, vel: 0, cx: 0, cy: 0 },
+    { ref: crankRef, angle: 0, vel: 0, cx: 0, cy: 0 },
+  ]);
+  // Refresh velocities/pivots each render (CCW = negative). Angles are left
+  // untouched so speed changes never restart the spin.
+  const [w, s, c] = spin.current;
+  w.vel = reduceMotion ? 0 : -360 / cogPeriod;
+  w.cx = R.x;
+  w.cy = R.y;
+  s.vel = reduceMotion ? 0 : -360 / chainringPeriod;
+  s.cx = F.x;
+  s.cy = F.y;
+  c.vel = reduceMotion ? 0 : -360 / crankPeriod;
+  c.cx = F.x;
+  c.cy = F.y;
+  useEffect(() => {
+    let raf = 0;
+    let last: number | null = null;
+    const tick = (t: number) => {
+      if (last != null) {
+        const dt = (t - last) / 1000;
+        for (const p of spin.current) {
+          p.angle += p.vel * dt;
+          p.ref.current?.setAttribute("transform", `rotate(${p.angle} ${p.cx} ${p.cy})`);
+        }
+      }
+      last = t;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   // Selected-gear colour matches the chainring's line in the gear chart.
   const activeColor = PALETTE[Math.max(0, rings.indexOf(props.activeChainring)) % PALETTE.length];
 
   return (
     <div className="dt-diagram">
+      {!reduceMotion && (
+        <button
+          type="button"
+          className={"dt-slomo" + (slowMo ? " active" : "")}
+          onClick={() => setSlowMo((s) => !s)}
+          aria-pressed={slowMo}
+          title="Slow the animation 10× to watch the wheel turn"
+        >
+          10× slo-mo
+        </button>
+      )}
       <svg viewBox={`${minX} ${minY} ${W} ${H}`} width="100%" role="img" aria-label="Drivetrain view">
         {/* rear wheel to scale (rolling circumference), spinning at wheel speed */}
         {wheelR > 0 && (
-          <g key={"wh" + Math.round(rpm * ratio)}>
+          <g ref={wheelRef}>
             <circle cx={R.x} cy={R.y} r={wheelR - tireW / 2} className="dt-tire" style={{ strokeWidth: tireW }} />
             <circle cx={R.x} cy={R.y} r={wheelR - tireW} className="dt-rim" />
             {/* three-spoke design so the spin is legible */}
             {blades(R.x, R.y, rrMax + 8, wheelR - tireW, 3, 18, "dt-wheel-spoke")}
-            {!reduceMotion && (
-              <animateTransform
-                attributeName="transform"
-                attributeType="XML"
-                type="rotate"
-                from={`0 ${R.x} ${R.y}`}
-                to={`-360 ${R.x} ${R.y}`}
-                dur={`${cogPeriod}s`}
-                repeatCount="indefinite"
-              />
-            )}
+            {/* tyre valve: a stem on the rim (pointing at the hub) with a nut at
+                its base — an asymmetric marker that makes the wheel's rotation
+                easy to follow. Resting at 9 o'clock keeps it in the visible
+                left arc when motion is reduced. */}
+            {(() => {
+              const rimBed = wheelR - tireW;
+              const valveLen = Math.min(60, wheelR * 0.18);
+              const base = onCircle(R, rimBed, Math.PI);
+              const tip = onCircle(R, rimBed - valveLen, Math.PI);
+              return (
+                <>
+                  <path d={capsule(base, tip, 3.5)} className="dt-valve" />
+                  <circle cx={base.x} cy={base.y} r={6} className="dt-valve" />
+                </>
+              );
+            })()}
           </g>
         )}
         {/* cassette cogs */}
@@ -315,21 +389,11 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
             style={r === props.activeChainring ? { stroke: activeColor } : undefined}
           />
         ))}
-        {/* chainring spokes (sized to the biggest ring), spinning at the ring's
-            speed (CCW) — cadence normally, cadence × ratio on a gearbox */}
-        <g key={"cr" + Math.round(chainringRpm)}>
-          {blades(F.x, F.y, 4, rfMax, 4, 10, "dt-spoke")}
-          {!reduceMotion && (
-            <animateTransform
-              attributeName="transform"
-              attributeType="XML"
-              type="rotate"
-              from={`0 ${F.x} ${F.y}`}
-              to={`-360 ${F.x} ${F.y}`}
-              dur={`${chainringPeriod}s`}
-              repeatCount="indefinite"
-            />
-          )}
+        {/* crank spider arms (sized to the biggest ring), spinning at the ring's
+            speed (CCW) — cadence normally, cadence × ratio on a gearbox. Four
+            thick arms, set 45° off the crank arm so they read as a crankset. */}
+        <g ref={spiderRef}>
+          {blades(F.x, F.y, 4, rfMax - crankHalfW, 4, crankHalfW * 1.4, "dt-spider", 45)}
         </g>
         {/* rear derailleur cage + pulleys */}
         {pulleys.length === 2 && (
@@ -350,21 +414,10 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
         {/* crankset: a single outlined crank arm out to the pedal, drawn in
             front of the chainrings and turning at the pedalling cadence — on a
             gearbox that's independent of the geared chainring. */}
-        <g key={"ck" + Math.round(rpm)}>
+        <g ref={crankRef}>
           {/* a single crank arm from the bottom bracket out to the pedal */}
           <path d={capsule(F, { x: F.x + crankLen, y: F.y }, crankHalfW)} className="dt-crank" />
           <circle cx={F.x + crankLen} cy={F.y} r={pedalR} className="dt-crank-pedal" />
-          {!reduceMotion && (
-            <animateTransform
-              attributeName="transform"
-              attributeType="XML"
-              type="rotate"
-              from={`0 ${F.x} ${F.y}`}
-              to={`-360 ${F.x} ${F.y}`}
-              dur={`${crankPeriod}s`}
-              repeatCount="indefinite"
-            />
-          )}
         </g>
         {/* crank spindle + rear axle */}
         <circle cx={F.x} cy={F.y} r={3} className="dt-hub" />

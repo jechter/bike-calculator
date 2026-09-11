@@ -26,14 +26,14 @@ const LOCKNUT: [number, number, number] = [0.32, 0.34, 0.38]; // end lock-nut / 
 const SHELL: [number, number, number] = [0.4, 0.42, 0.47]; // fat dynamo / gear shell
 const FREEHUB: [number, number, number] = [0.2, 0.21, 0.24]; // dark freehub driver body
 
-// One spoke draws as: a body of four tubes (nipple -> flange face) that lets it
-// bend to weave, a short elbow tube through the flange, a round button head lying
-// flat on the far face, and a nipple at the rim bed. A crossing pair of spokes
-// cross over each other at their shared outermost crossing — the leading one
-// dips inboard (behind), the trailing one swings outboard (in front) — so they
-// interlace (Sheldon Brown's "the last cross is laced on the inside"). Vert budget
-// per spoke: body (SPOKE_SEG*6 * 4) + elbow + nipple (SPOKE_SEG*6 each) + button
-// disc (SPOKE_SEG*12) + nipple cap (SPOKE_SEG*3) = SPOKE_SEG*51.
+// One spoke draws as: a body of four tubes (so it can bend once), a short elbow
+// tube through the flange, a round button head lying flat on the far face, and a
+// nipple at the rim bed. A crossing pair each kink once at their shared outermost
+// crossing — the leading spoke a hair inboard so it passes behind, the trailing a
+// hair outboard so it passes in front — leaving a small axial gap there so which
+// spoke is in front reads clearly. Vert budget per spoke: body (SPOKE_SEG*6 * 4) +
+// elbow + nipple (SPOKE_SEG*6 each) + button disc (SPOKE_SEG*12) + nipple cap
+// (SPOKE_SEG*3) = SPOKE_SEG*51.
 const SPOKE_SEG = 6;
 const VERTS_PER_SPOKE = SPOKE_SEG * 51;
 
@@ -659,52 +659,43 @@ export function Wheel3D(props: Wheel3DProps) {
       const ca = Math.cos(rimA), sa = Math.sin(rimA);
       const bed = [ca, sa, zRim]; // spoke bed at radius 1 (ERD)
 
-      // Outboard is away from the wheel centre for this flange. The leading group
-      // rides on the outboard face (so it sits outside the trailing spokes); the
-      // trailing group rides inboard. The head sits on the opposite face.
+      // Outboard is away from the wheel centre for this flange. The body leaves the
+      // flange centre and the elbow/head sit on one face for the J-bend look.
       const outSign = isDrive ? 1 : -1;
-      const bodySign = leading ? outSign : -outSign; // face the body emerges from
-      const bodyZ = zF + bodySign * flHalf;
-      const headZ = zF - bodySign * (flHalf + 0.003);
+      const headZ = zF + (leading ? 1 : -1) * outSign * (flHalf + 0.003);
 
-      // Body point at chord fraction t (0 = hub, 1 = rim) along the straight
-      // natural (dished) line, with an optional axial nudge dz.
+      // Straight body point at chord fraction t (0 = hub, 1 = rim), z on the
+      // undished line from the flange centre to the rim bed, plus a nudge dz.
       const at = (t: number, dz: number) => [
         lerp(hx, ca, t),
         lerp(hy, sa, t),
-        lerp(bodyZ, zRim, t) + dz,
+        lerp(zF, zRim, t) + dz,
       ];
-      // A crossing pair both run nearly straight, then cross over each other at
-      // their shared outermost crossing: the leading spoke dips inboard (behind)
-      // and the trailing spoke swings outboard (in front), so they interlace as a
-      // real wheel does. Away from the cross each sits a hair off a shared centre
-      // line — leading outboard, trailing inboard — so the inner crosses read as
-      // "leading outside" without any big bend near the hub.
+      // A crossing pair each bend once, near their shared outermost crossing: the
+      // leading spoke kinks a hair inboard (so it passes behind), the trailing spoke
+      // a hair outboard (in front). Each then runs dead straight to its nipple. The
+      // small axial gap at the crossing is what makes which-is-in-front readable.
       const cross = outermostCross(i);
       let pts: number[][];
       if (cross) {
         const tc = cross.t;
-        const amp = 0.02; // weave offset from the centre line
-        const w = 0.09; // spread of the crossover, in chord fraction
-        const before = leading ? 1 : -1; // leading rides outboard before the cross
-        const cz = (t: number) => lerp(zF, zRim, t); // shared centre line
-        const xy = (t: number) => [lerp(hx, ca, t), lerp(hy, sa, t)];
-        const t1 = Math.max(0.02, tc - w), t3 = Math.min(0.98, tc + w);
-        const c1 = xy(t1), c3 = xy(t3), cc = xy(tc);
-        pts = [
-          [hx, hy, bodyZ],
-          [c1[0], c1[1], cz(t1) + outSign * amp * before],
-          [cc[0], cc[1], cz(tc)],
-          [c3[0], c3[1], cz(t3) - outSign * amp * before],
-          bed,
+        const gap = 0.016; // half the axial separation at the crossing (~5 mm)
+        const s = leading ? -1 : 1; // leading dips inboard, trailing lifts outboard
+        const bend = at(tc, outSign * gap * s);
+        const flange = [hx, hy, zF];
+        const mid = (p: number[], q: number[]) => [
+          (p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (p[2] + q[2]) / 2,
         ];
+        // Two straight legs (flange -> bend -> nipple), each split to keep the
+        // vertex count fixed; the only kink is at the crossing.
+        pts = [flange, mid(flange, bend), bend, mid(bend, bed), bed];
       } else {
         // Radial / uncrossed: straight (collinear points keep the vertex count fixed).
         pts = [at(0, 0), at(0.25, 0), at(0.5, 0), at(0.75, 0), bed];
       }
-      addPolyTube(tube, pts, rad, SPOKE_SEG, col); // woven body
+      addPolyTube(tube, pts, rad, SPOKE_SEG, col); // bent body
 
-      const bodyP = [hx, hy, bodyZ];
+      const bodyP = [hx, hy, zF];
       const headP = [hx, hy, headZ];
       const nipHead = [1.045 * ca, 1.045 * sa, zRim]; // nipple head, up inside the rim
       addTube(tube, bodyP, headP, rad, SPOKE_SEG, col); // elbow through the flange

@@ -106,10 +106,18 @@ fields (and snaps the spoke count to a drilling the hub offers):
   circle through the spoke holes (mm). Left = non-drive, right = drive.
 - `leftOffsetMm`, `rightOffsetMm` — centre-to-flange distances (mm).
 - `spokeHoleMm` — flange spoke-hole diameter (mm).
-- `source` — `{ url, sourceType, note }`. The shipped rows are transcribed from
-  Damon Rinard's public-domain spoke database (spocalc,
-  <https://sheldonbrown.com/rinard/spocalc.htm>). Flange geometry varies between
-  production runs — treat these as starting points and measure your own hub.
+- `source` — `{ url, sourceType, note }`. `sourceType` is `"primary"` when the
+  numbers are the hub maker's own published figures and `"secondary"` when they
+  come from a third-party measurement (e.g. DT Swiss measuring another brand's
+  hub) or a community contribution; the `note` says which.
+
+The shipped rows are individual flange measurements (facts, not creative
+expression) transcribed and re-keyed from **Damon Rinard's spoke database**
+(spocalc, <https://sheldonbrown.com/rinard/spocalc.htm>, © 1997–2001). We use a
+small, re-selected subset with attribution — not the whole compiled database,
+which carries its own copyright notice and no redistribution licence. Flange
+geometry varies between production runs, so treat every row as a starting point
+and measure your own hub. To add hubs, follow the same shape and cite a source.
 
 ### `tension-curves.json`
 Each entry is a `TensionCurve` (see `src/lib/spokes.ts`):

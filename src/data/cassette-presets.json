@@ -1,6 +1,6 @@
 {
   "description": "Cassette / sprocket sets keyed by brand and model, with cog (sprocket) tooth counts, freehub body, speeds, weight, price and a per-entry source. The drivetrain calculator groups models under a brand picker; picking one fills the cassette cog field. Reference data — verify against the manufacturer before relying on it.",
-  "count": 1006,
+  "count": 1015,
   "sources": [
     {
       "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
@@ -25202,6 +25202,28 @@
       }
     },
     {
+      "brand": "TRP",
+      "model": "EVO 7 DH CS-M8070-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        11,
+        13,
+        15,
+        17,
+        19,
+        21,
+        24
+      ],
+      "weightGrams": 240,
+      "priceUsd": 80,
+      "source": {
+        "url": "https://www.bike-components.de/en/TRP/EVO-7-DH-CS-M8070-7-Cassette-p217770/",
+        "sourceType": "primary",
+        "note": "TRP EVO 7 downhill cassette, 11-24 (11-13-15-17-19-21-24). Shimano HG spline, 240 g. bike-components price EUR 79.99."
+      }
+    },
+    {
       "brand": "TRW Active",
       "model": "Rocket 3",
       "freehub": "HG 8, HG 11",
@@ -25628,6 +25650,116 @@
     },
     {
       "brand": "Shimano",
+      "model": "CS-HG200-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        12,
+        14,
+        16,
+        18,
+        21,
+        24,
+        28
+      ],
+      "weightGrams": null,
+      "priceUsd": 20,
+      "source": {
+        "url": "https://www.bike-components.de/en/Shimano/CS-HG200-7-7-Speed-Cassette-p227186/",
+        "sourceType": "primary",
+        "note": "Shimano Tourney CS-HG200-7 HYPERGLIDE; 12-28 splits 12-14-16-18-21-24-28. Steel sprockets, HG spline. ~255g (per-option weight not published by Shimano)."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG200-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        12,
+        14,
+        16,
+        18,
+        21,
+        26,
+        32
+      ],
+      "weightGrams": null,
+      "priceUsd": 16,
+      "source": {
+        "url": "https://www.bike-components.de/en/Shimano/CS-HG200-7-7-Speed-Cassette-p227186/",
+        "sourceType": "primary",
+        "note": "Shimano Tourney CS-HG200-7 HYPERGLIDE; 12-32 splits 12-14-16-18-21-26-32. Steel sprockets, HG spline. ~270g (per-option weight not published by Shimano)."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG210-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        12,
+        14,
+        16,
+        18,
+        21,
+        24,
+        28
+      ],
+      "weightGrams": null,
+      "priceUsd": 20,
+      "source": {
+        "url": "https://www.bike-components.de/en/Shimano/CS-HG210-7-7-Speed-Cassette-p227178/",
+        "sourceType": "primary",
+        "note": "Shimano Tourney CS-HG210-7 HYPERGLIDE (successor to CS-HG200-7); 12-28 splits 12-14-16-18-21-24-28. Steel sprockets, HG spline. Weight not published by Shimano."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG210-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        12,
+        14,
+        16,
+        18,
+        21,
+        26,
+        32
+      ],
+      "weightGrams": null,
+      "priceUsd": 20,
+      "source": {
+        "url": "https://www.bike-components.de/en/Shimano/CS-HG210-7-7-Speed-Cassette-p227178/",
+        "sourceType": "primary",
+        "note": "Shimano Tourney CS-HG210-7 HYPERGLIDE (successor to CS-HG200-7); 12-32 splits 12-14-16-18-21-26-32. Steel sprockets, HG spline. Weight not published by Shimano."
+      }
+    },
+    {
+      "brand": "Shimano",
+      "model": "CS-HG400-7",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        11,
+        13,
+        15,
+        18,
+        21,
+        24,
+        28
+      ],
+      "weightGrams": null,
+      "priceUsd": 16,
+      "source": {
+        "url": "https://www.bike-components.de/en/Shimano/CS-HG400-7-7-Speed-Cassette-p227190/",
+        "sourceType": "primary",
+        "note": "Shimano CUES/Alivio-class CS-HG400-7 HYPERGLIDE; 11-28 splits 11-13-15-18-21-24-28. HG spline. Weight not published by Shimano."
+      }
+    },
+    {
+      "brand": "Shimano",
       "model": "CS-HG50-8",
       "freehub": "HG 8, HG 11",
       "speeds": 8,
@@ -25693,6 +25825,72 @@
         "url": "https://www.sram.com/en/sram/models/cs-pg-730-a1",
         "sourceType": "primary",
         "note": "SRAM official CS-PG-730-A1 page; 12-32 splits as 12-14-16-18-21-26-32. Weight 302g and ~$20 from retailers."
+      }
+    },
+    {
+      "brand": "SRAM",
+      "model": "XS-797 T-Type XD 7-speed",
+      "freehub": "XD",
+      "speeds": 7,
+      "sprockets": [
+        10,
+        12,
+        14,
+        16,
+        18,
+        21,
+        24
+      ],
+      "weightGrams": null,
+      "priceUsd": 545,
+      "source": {
+        "url": "https://www.bike-components.de/en/SRAM/XS-797-T-Type-XD-7-speed-cassette-p228926/",
+        "sourceType": "primary",
+        "note": "SRAM XS-797 Eagle T-Type DH cassette, 10-24 (10-12-14-16-18-21-24). Steel, XD driver body. bike-components MSRP EUR 545."
+      }
+    },
+    {
+      "brand": "SRAM",
+      "model": "XS-797 T-Type XD Slim 7-Speed",
+      "freehub": "XD Slim",
+      "speeds": 7,
+      "sprockets": [
+        10,
+        12,
+        14,
+        16,
+        18,
+        21,
+        24
+      ],
+      "weightGrams": null,
+      "priceUsd": 545,
+      "source": {
+        "url": "https://www.bike-components.de/en/SRAM/XS-797-T-Type-XD-Slim-7-Speed-Cassette-p248808/",
+        "sourceType": "primary",
+        "note": "SRAM XS-797 Eagle T-Type DH cassette for the narrow XD Slim driver body, 10-24 (10-12-14-16-18-21-24). bike-components MSRP EUR 545."
+      }
+    },
+    {
+      "brand": "SRAM",
+      "model": "PG 720 Downhill",
+      "freehub": "HG 7",
+      "speeds": 7,
+      "sprockets": [
+        11,
+        13,
+        15,
+        17,
+        19,
+        22,
+        25
+      ],
+      "weightGrams": null,
+      "priceUsd": 27,
+      "source": {
+        "url": "https://www.bike-components.de/en/SRAM/PG-720-Downhill-11-25-7-speed-Cassette-p215189/",
+        "sourceType": "primary",
+        "note": "SRAM PG-720 downhill cassette, 11-25 (11-13-15-17-19-22-25). Shimano HG spline. bike-components price EUR 26.99."
       }
     },
     {

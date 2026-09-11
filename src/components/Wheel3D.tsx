@@ -676,9 +676,10 @@ export function Wheel3D(props: Wheel3DProps) {
       const cross = leading ? outermostCross(i) : null;
       let pts: number[][];
       if (cross) {
-        // Ride ~one spoke-width proud of the trailing spokes, then dive inboard
-        // through the outermost crossing so it laces inside that last spoke.
-        const A = outSign * 0.014;
+        // Ride proud of the trailing spokes, then dive inboard through the
+        // outermost crossing so it laces inside that last spoke. The amplitude is
+        // a little exaggerated (~6 mm) so the weave reads at a glance.
+        const A = outSign * 0.02;
         const tc = cross.t;
         pts = [
           at(0, 0),

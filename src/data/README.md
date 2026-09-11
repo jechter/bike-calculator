@@ -14,7 +14,7 @@ the manufacturer or your own measurements before relying on them.
 | `hub-gears.json` | Drivetrain calculator | Internal-gear-hub, bottom-bracket-gearbox, and CVT gearing (Rohloff, Pinion, Nexus, Alfine, Enviolo, …), with a source per entry. |
 | `chainring-presets.json` | Drivetrain calculator | Common crankset chainring combinations. |
 | `cassette-presets.json` | Drivetrain calculator | Cassette / sprocket sets by brand & model, with a source per entry. |
-| `hub-geometry.json` | Wheel-building calculator | Hub flange diameters / offsets for spoke-length presets. |
+| `hubs.json` | Wheel-building calculator | Real hubs — flange diameters / offsets for spoke lengths, plus type / width / drillings for the picker. |
 | `tension-curves.json` | Wheel-building calculator | Tensiometer reading → tension (kgf) conversion tables. |
 
 ## Field reference
@@ -91,12 +91,25 @@ speeds / range** filters. Picking one fills the editable cog field:
 - `source` — `{ url, sourceType: "primary" | "secondary", note }` citing where
   the tooth counts came from.
 
-### `hub-geometry.json`
-Each entry is a `HubGeometryPreset` (see `src/lib/spokes.ts`):
-- `label` — display name.
-- `leftFlangeDiaMm`, `rightFlangeDiaMm` — flange diameters (mm).
+### `hubs.json`
+An array of real hubs; each is a `Hub` (see `src/lib/spokes.ts`). The
+wheel-building calculator's **Hub** section has a searchable picker with
+**maker / type / spoke-count / width** filters; picking one fills the flange
+fields (and snaps the spoke count to a drilling the hub offers):
+- `manufacturer`, `model` — display strings; the picker groups by maker.
+- `type` — one of `"front"`, `"front-dynamo"`, `"rear-cassette"`,
+  `"rear-internal"` (internal-gear/coaster), or `"rear-single"` (track/
+  single-speed). Only affects filtering/labels, not the geometry math.
+- `widthMm` — over-locknut dimension / frame spacing (mm).
+- `spokeCounts` — drillings the hub is offered in (e.g. `[28, 32, 36]`).
+- `leftFlangeDiaMm`, `rightFlangeDiaMm` — flange diameters, i.e. the pitch
+  circle through the spoke holes (mm). Left = non-drive, right = drive.
 - `leftOffsetMm`, `rightOffsetMm` — centre-to-flange distances (mm).
 - `spokeHoleMm` — flange spoke-hole diameter (mm).
+- `source` — `{ url, sourceType, note }`. The shipped rows are transcribed from
+  Damon Rinard's public-domain spoke database (spocalc,
+  <https://sheldonbrown.com/rinard/spocalc.htm>). Flange geometry varies between
+  production runs — treat these as starting points and measure your own hub.
 
 ### `tension-curves.json`
 Each entry is a `TensionCurve` (see `src/lib/spokes.ts`):

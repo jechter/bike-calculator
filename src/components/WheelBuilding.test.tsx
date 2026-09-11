@@ -34,20 +34,43 @@ describe("Wheel building page", () => {
     expect(tooltip.textContent).toMatch(/77 kgf · 755 N/);
   });
 
-  it("applies a hub preset, shows its name, and reverts on edit", () => {
-    const { getByText, container } = render(<WheelBuilding />);
-    fireEvent.click(getByText("Common hub presets"));
-    fireEvent.click(getByText("Road front — QR 100 mm"));
-    // flanges become 38 mm (default was 45)
+  it("picks a hub from the database, shows its name, and reverts on edit", () => {
+    const { getByText, getByLabelText, container } = render(<WheelBuilding />);
+    // trigger starts unset
+    expect(getByText("Choose a hub…")).toBeTruthy();
+    fireEvent.click(getByLabelText("Browse the hub database"));
+    // pick a front hub with 38 mm flanges (default flanges are 45 mm)
+    fireEvent.click(getByText("Shimano 105 HB-5501"));
     const flange = Array.from(container.querySelectorAll('input[type="number"]')).find(
       (i) => (i as HTMLInputElement).value === "38",
     ) as HTMLInputElement;
     expect(flange).toBeTruthy();
-    // the button now reflects the chosen preset
-    expect(getByText("Road front — QR 100 mm")).toBeTruthy();
-    // editing a hub value reverts the label
+    // the trigger now reflects the chosen hub (popover closed, so it's the only match)
+    expect(getByText("Shimano 105 HB-5501")).toBeTruthy();
+    // editing a hub value clears the selection
     fireEvent.change(flange, { target: { value: "40" } });
-    expect(getByText("Common hub presets")).toBeTruthy();
+    expect(getByText("Choose a hub…")).toBeTruthy();
+  });
+
+  it("assigns the spoke count from the hub and links to its source", () => {
+    const { getByText, getByLabelText, container } = render(<WheelBuilding />);
+    const inputWithValue = (v: string) =>
+      Array.from(container.querySelectorAll('input[type="number"]')).find(
+        (i) => (i as HTMLInputElement).value === v,
+      ) as HTMLInputElement | undefined;
+    // default spoke count is 32 (the only field at that value)
+    expect(inputWithValue("32")).toBeTruthy();
+    fireEvent.click(getByLabelText("Browse the hub database"));
+    // Sachs Super 7 is drilled 36h only, so picking it moves the count to 36
+    fireEvent.click(getByText("Sachs Super 7 (coaster)"));
+    expect(inputWithValue("36")).toBeTruthy();
+    expect(inputWithValue("32")).toBeFalsy();
+    // a source link to the hub's provenance appears, opening in a new tab
+    const link = container.querySelector("a.inline-link") as HTMLAnchorElement;
+    expect(link).toBeTruthy();
+    expect(link.getAttribute("href")).toContain("spocalc");
+    expect(link.getAttribute("target")).toBe("_blank");
+    expect(link.textContent).toContain("Sachs Super 7");
   });
 
   it("fills ERD from a rim preset", () => {

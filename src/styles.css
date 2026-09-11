@@ -472,7 +472,17 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .cp-search:focus { outline: none; border-color: var(--accent); }
 .cp-filters { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.cp-filters-4 { grid-template-columns: 1fr 1fr; }
 .cp-filters select { width: 100%; min-width: 0; }
+
+/* Hub-picker trigger (section-header action): the selected hub's name ellipsises
+   rather than pushing the caret off the edge on a narrow header. */
+.hub-trigger .ds-name { display: inline-block; max-width: 220px; }
+@media (max-width: 560px) {
+  .hub-trigger .ds-name { max-width: 150px; }
+}
+/* Source line under the hub fields once a hub is picked from the database. */
+.wb-hub-source { margin: 14px 0 0; }
 .cp-list {
   list-style: none;
   margin: 0;

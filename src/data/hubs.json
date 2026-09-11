@@ -1,0 +1,747 @@
+[
+  {
+    "manufacturer": "Shimano",
+    "model": "Dura-Ace HB-7800",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 40,
+    "rightFlangeDiaMm": 40,
+    "leftOffsetMm": 38.65,
+    "rightOffsetMm": 38.65,
+    "spokeHoleMm": 2.4,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Shimano",
+    "model": "105 HB-5501",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 38,
+    "rightFlangeDiaMm": 38,
+    "leftOffsetMm": 38.65,
+    "rightOffsetMm": 38.65,
+    "spokeHoleMm": 2.4,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Campagnolo",
+    "model": "Record OS",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 39,
+    "rightFlangeDiaMm": 39,
+    "leftOffsetMm": 35.35,
+    "rightOffsetMm": 35.4,
+    "spokeHoleMm": 2.4,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc) — from Campagnolo"
+    }
+  },
+  {
+    "manufacturer": "Campagnolo",
+    "model": "High-flange (Record/C-Record)",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 67,
+    "rightFlangeDiaMm": 67,
+    "leftOffsetMm": 34,
+    "rightOffsetMm": 34,
+    "spokeHoleMm": 2.3,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "White Industries",
+    "model": "Road",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 34,
+    "rightFlangeDiaMm": 34,
+    "leftOffsetMm": 38,
+    "rightOffsetMm": 38,
+    "spokeHoleMm": 2.3,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Mavic",
+    "model": "500/520/530 series",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 40,
+    "rightFlangeDiaMm": 40,
+    "leftOffsetMm": 27,
+    "rightOffsetMm": 27,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Shimano",
+    "model": "Deore XT HB-M756 (disc)",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 61,
+    "rightFlangeDiaMm": 61,
+    "leftOffsetMm": 21.1,
+    "rightOffsetMm": 31.7,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Chris King",
+    "model": "ISO Disc",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 57.6,
+    "rightFlangeDiaMm": 57.6,
+    "leftOffsetMm": 22.5,
+    "rightOffsetMm": 30.4,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Hope",
+    "model": "Pro Sport (disc)",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 56,
+    "rightFlangeDiaMm": 45,
+    "leftOffsetMm": 20,
+    "rightOffsetMm": 34,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc) — from DT Swiss"
+    }
+  },
+  {
+    "manufacturer": "DT Swiss",
+    "model": "240 Disc",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 58,
+    "rightFlangeDiaMm": 46,
+    "leftOffsetMm": 22,
+    "rightOffsetMm": 34.8,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc) — from DT Swiss"
+    }
+  },
+  {
+    "manufacturer": "Schmidt (SON)",
+    "model": "SON 20-28\" dynamo",
+    "type": "front-dynamo",
+    "widthMm": 100,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 70,
+    "rightFlangeDiaMm": 70,
+    "leftOffsetMm": 30,
+    "rightOffsetMm": 30,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Schmidt (SON)",
+    "model": "SON 20-28\" dynamo (disc)",
+    "type": "front-dynamo",
+    "widthMm": 100,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 70,
+    "rightFlangeDiaMm": 70,
+    "leftOffsetMm": 21.5,
+    "rightOffsetMm": 30,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Shimano",
+    "model": "Nexus DH-3N70 dynamo",
+    "type": "front-dynamo",
+    "widthMm": 100,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 74,
+    "rightFlangeDiaMm": 74,
+    "leftOffsetMm": 30,
+    "rightOffsetMm": 30,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Shimano",
+    "model": "Nexus DH-3D70 dynamo (disc)",
+    "type": "front-dynamo",
+    "widthMm": 100,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 74,
+    "rightFlangeDiaMm": 74,
+    "leftOffsetMm": 22.3,
+    "rightOffsetMm": 30,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Shimano",
+    "model": "Dura-Ace FH-7700 (9s)",
+    "type": "rear-cassette",
+    "widthMm": 130,
+    "spokeCounts": [
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 44,
+    "rightFlangeDiaMm": 44,
+    "leftOffsetMm": 36.9,
+    "rightOffsetMm": 21.1,
+    "spokeHoleMm": 2.4,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Shimano",
+    "model": "Dura-Ace FH-7800 (10s)",
+    "type": "rear-cassette",
+    "widthMm": 130,
+    "spokeCounts": [
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 44,
+    "rightFlangeDiaMm": 44,
+    "leftOffsetMm": 38,
+    "rightOffsetMm": 22.2,
+    "spokeHoleMm": 2.4,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Shimano",
+    "model": "105 FH-5500",
+    "type": "rear-cassette",
+    "widthMm": 130,
+    "spokeCounts": [
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 45,
+    "rightFlangeDiaMm": 45,
+    "leftOffsetMm": 32.5,
+    "rightOffsetMm": 20.5,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Campagnolo",
+    "model": "Record/Chorus OS (9/10s)",
+    "type": "rear-cassette",
+    "widthMm": 130,
+    "spokeCounts": [
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 44,
+    "rightFlangeDiaMm": 46,
+    "leftOffsetMm": 36.76,
+    "rightOffsetMm": 16.8,
+    "spokeHoleMm": 2.4,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc) — from Campagnolo"
+    }
+  },
+  {
+    "manufacturer": "White Industries",
+    "model": "Cassette (130 mm)",
+    "type": "rear-cassette",
+    "widthMm": 130,
+    "spokeCounts": [
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 54,
+    "rightFlangeDiaMm": 54,
+    "leftOffsetMm": 34.3,
+    "rightOffsetMm": 20.1,
+    "spokeHoleMm": 2.4,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Mavic",
+    "model": "MR601",
+    "type": "rear-cassette",
+    "widthMm": 130,
+    "spokeCounts": [
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 46,
+    "rightFlangeDiaMm": 48,
+    "leftOffsetMm": 34,
+    "rightOffsetMm": 17.4,
+    "spokeHoleMm": 2.4,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Shimano",
+    "model": "Deore XT FH-M756 (disc)",
+    "type": "rear-cassette",
+    "widthMm": 135,
+    "spokeCounts": [
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 61,
+    "rightFlangeDiaMm": 61,
+    "leftOffsetMm": 32,
+    "rightOffsetMm": 18.5,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Shimano",
+    "model": "Deore LX FH-570",
+    "type": "rear-cassette",
+    "widthMm": 135,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 45,
+    "rightFlangeDiaMm": 45,
+    "leftOffsetMm": 36.8,
+    "rightOffsetMm": 23.2,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Chris King",
+    "model": "Cassette MTB (disc)",
+    "type": "rear-cassette",
+    "widthMm": 135,
+    "spokeCounts": [
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 44,
+    "rightFlangeDiaMm": 53,
+    "leftOffsetMm": 36,
+    "rightOffsetMm": 21,
+    "spokeHoleMm": 2.3,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Hope",
+    "model": "Pro Sport (disc)",
+    "type": "rear-cassette",
+    "widthMm": 135,
+    "spokeCounts": [
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 45,
+    "rightFlangeDiaMm": 45,
+    "leftOffsetMm": 33,
+    "rightOffsetMm": 20,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc) — from DT Swiss"
+    }
+  },
+  {
+    "manufacturer": "DT Swiss",
+    "model": "240 Disc",
+    "type": "rear-cassette",
+    "widthMm": 135,
+    "spokeCounts": [
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 58,
+    "rightFlangeDiaMm": 46,
+    "leftOffsetMm": 33.5,
+    "rightOffsetMm": 19.2,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc) — from DT Swiss"
+    }
+  },
+  {
+    "manufacturer": "DT Swiss",
+    "model": "240 FR (150x12 thru-axle)",
+    "type": "rear-cassette",
+    "widthMm": 150,
+    "spokeCounts": [
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 58.5,
+    "rightFlangeDiaMm": 58.5,
+    "leftOffsetMm": 25.8,
+    "rightOffsetMm": 25.8,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc) — from DT Swiss"
+    }
+  },
+  {
+    "manufacturer": "Shimano",
+    "model": "Dura-Ace track (high flange)",
+    "type": "rear-single",
+    "widthMm": 120,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 67,
+    "rightFlangeDiaMm": 67,
+    "leftOffsetMm": 41,
+    "rightOffsetMm": 30,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Phil Wood",
+    "model": "Track (large flange)",
+    "type": "rear-single",
+    "widthMm": 120,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 66,
+    "rightFlangeDiaMm": 66,
+    "leftOffsetMm": 43,
+    "rightOffsetMm": 29,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Chris King",
+    "model": "Single Speed",
+    "type": "rear-single",
+    "widthMm": 135,
+    "spokeCounts": [
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 53,
+    "rightFlangeDiaMm": 53,
+    "leftOffsetMm": 33.7,
+    "rightOffsetMm": 33.7,
+    "spokeHoleMm": 2.3,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Surly",
+    "model": "1x1 Single Speed",
+    "type": "rear-single",
+    "widthMm": 135,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 43,
+    "rightFlangeDiaMm": 43,
+    "leftOffsetMm": 39,
+    "rightOffsetMm": 39,
+    "spokeHoleMm": 2.4,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc) — from Surly"
+    }
+  },
+  {
+    "manufacturer": "Surly",
+    "model": "New Track",
+    "type": "rear-single",
+    "widthMm": 120,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 54,
+    "rightFlangeDiaMm": 54,
+    "leftOffsetMm": 30.1,
+    "rightOffsetMm": 30.1,
+    "spokeHoleMm": 2.4,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc) — from Surly"
+    }
+  },
+  {
+    "manufacturer": "Campagnolo",
+    "model": "Track (low flange)",
+    "type": "rear-single",
+    "widthMm": 120,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 44,
+    "rightFlangeDiaMm": 44,
+    "leftOffsetMm": 44.5,
+    "rightOffsetMm": 31.5,
+    "spokeHoleMm": 2.3,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Rohloff",
+    "model": "Speedhub 500/14",
+    "type": "rear-internal",
+    "widthMm": 135,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 100,
+    "rightFlangeDiaMm": 100,
+    "leftOffsetMm": 30,
+    "rightOffsetMm": 30,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc) — from DT Swiss"
+    }
+  },
+  {
+    "manufacturer": "Shimano",
+    "model": "Nexus Inter-8 (SG-8R)",
+    "type": "rear-internal",
+    "widthMm": 132,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 92.6,
+    "rightFlangeDiaMm": 92.6,
+    "leftOffsetMm": 29.3,
+    "rightOffsetMm": 24.9,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Shimano",
+    "model": "Nexus Inter-7 (SG-7R40)",
+    "type": "rear-internal",
+    "widthMm": 130,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 87,
+    "rightFlangeDiaMm": 87,
+    "leftOffsetMm": 31.15,
+    "rightOffsetMm": 23.45,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "SRAM",
+    "model": "i-Motion 9",
+    "type": "rear-internal",
+    "widthMm": 135,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 93.6,
+    "rightFlangeDiaMm": 93.6,
+    "leftOffsetMm": 26.5,
+    "rightOffsetMm": 31.5,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  },
+  {
+    "manufacturer": "Sachs",
+    "model": "Super 7 (coaster)",
+    "type": "rear-internal",
+    "widthMm": 130,
+    "spokeCounts": [
+      36
+    ],
+    "leftFlangeDiaMm": 75,
+    "rightFlangeDiaMm": 75,
+    "leftOffsetMm": 35.5,
+    "rightOffsetMm": 33,
+    "spokeHoleMm": 2.4,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Damon Rinard's spoke database (spocalc)"
+    }
+  }
+]

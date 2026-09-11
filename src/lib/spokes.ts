@@ -1,11 +1,11 @@
 // Spoke length geometry and spoke-tension conversion.
 // See docs/calculators/wheel-building.md.
 //
-// The hub geometry presets and tensiometer curves live in
-// data/hub-geometry.json and data/tension-curves.json so they can be added or
-// edited without touching code — see src/data/README.md.
+// The hub database and tensiometer curves live in data/hubs.json and
+// data/tension-curves.json so they can be added or edited without touching
+// code — see src/data/README.md.
 
-import hubGeometryData from '../data/hub-geometry.json';
+import hubsData from '../data/hubs.json';
 import tensionCurvesData from '../data/tension-curves.json';
 
 export interface SpokeSideInput {
@@ -149,17 +149,49 @@ export const RIM_PRESETS: RimPreset[] = [
   { label: '20" (406) (~390)', erdMm: 390 },
 ];
 
-export interface HubGeometryPreset {
-  label: string;
+// A real hub from the database, with the flange geometry a spoke-length build
+// needs plus the metadata the picker filters on (maker, type, width, drillings).
+// Left/right follow the wheel convention: left = non-drive, right = drive.
+export type HubType =
+  | 'front'
+  | 'front-dynamo'
+  | 'rear-cassette'
+  | 'rear-internal'
+  | 'rear-single';
+
+export interface HubSource {
+  url: string;
+  sourceType?: 'primary' | 'secondary';
+  note?: string;
+}
+
+export interface Hub {
+  manufacturer: string;
+  model: string;
+  type: HubType;
+  /** Over-locknut dimension / frame spacing (mm). */
+  widthMm: number;
+  /** Spoke-hole drillings the hub is offered in (e.g. [28, 32, 36]). */
+  spokeCounts: number[];
   leftFlangeDiaMm: number;
   rightFlangeDiaMm: number;
   leftOffsetMm: number;
   rightOffsetMm: number;
   spokeHoleMm: number;
+  source?: HubSource;
 }
 
-// The rows live in data/hub-geometry.json — add or edit hubs there (no code change).
-export const HUB_GEOMETRY_PRESETS: HubGeometryPreset[] = hubGeometryData as HubGeometryPreset[];
+// Human labels for the hub-type filter, in the order they read best.
+export const HUB_TYPE_LABELS: Record<HubType, string> = {
+  front: 'Front',
+  'front-dynamo': 'Front (dynamo)',
+  'rear-cassette': 'Rear (cassette)',
+  'rear-internal': 'Rear (internal gears)',
+  'rear-single': 'Rear (single speed)',
+};
+
+// The rows live in data/hubs.json — add or edit hubs there (no code change).
+export const HUBS: Hub[] = hubsData as Hub[];
 
 // Tensiometer conversion curves. The rows live in data/tension-curves.json — add
 // tools/spoke types there (no code change). Values are reference data generated

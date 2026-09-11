@@ -61,16 +61,14 @@ body {
   display: flex;
   flex-direction: column;
 }
-.sidebar-footer { margin-top: auto; padding-top: 14px; }
-.brand {
-  font-weight: 700;
-  font-size: 16px;
-  padding: 6px 10px 14px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
+.sidebar-footer { margin-top: auto; padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.repo-link {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--muted); font-size: 12px; text-decoration: none;
+  padding: 0 4px;
 }
-.brand .dot { color: var(--accent); }
+.repo-link:hover { color: var(--accent); }
+.repo-icon { flex: none; }
 .nav { display: flex; flex-direction: column; gap: 2px; }
 .nav button {
   text-align: left;

@@ -679,10 +679,11 @@ export function Wheel3D(props: Wheel3DProps) {
       let pts: number[][];
       if (cross) {
         const tc = cross.t;
-        const gap = 0.016; // half the axial separation at the crossing (~5 mm)
+        const gap = 0.005; // half the axial separation at the crossing (~5 mm)
         const s = leading ? -1 : 1; // leading dips inboard, trailing lifts outboard
-        const bend = at(tc, outSign * gap * s);
-        const flange = [hx, hy, zF];
+        const bend = at(tc, -outSign * gap * s);
+        const hubGap = 0.01; // half the axial separation at the flange (try 0.006–0.012); 0 = both start centred
+        const flange = [hx, hy, zF + outSign * hubGap * s];
         const mid = (p: number[], q: number[]) => [
           (p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (p[2] + q[2]) / 2,
         ];

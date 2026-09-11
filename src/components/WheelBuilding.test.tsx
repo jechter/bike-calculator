@@ -36,10 +36,10 @@ describe("Wheel building page", () => {
 
   it("picks a hub from the database, shows its name, and reverts on edit", () => {
     const { getByText, getByLabelText, container } = render(<WheelBuilding />);
-    // trigger starts unset
-    expect(getByText("Choose a hub…")).toBeTruthy();
+    // trigger starts on the default hub
+    expect(getByText("Chris King R45 Rear")).toBeTruthy();
     fireEvent.click(getByLabelText("Browse the hub database"));
-    // pick a front hub with 35 mm flanges (default flanges are 45 mm)
+    // pick a front hub with 35 mm flanges (the default R45 Rear has 51 mm flanges)
     fireEvent.click(getByText("White Industries T11 Front"));
     const flange = Array.from(container.querySelectorAll('input[type="number"]')).find(
       (i) => (i as HTMLInputElement).value === "35",

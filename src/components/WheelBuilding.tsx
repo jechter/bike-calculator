@@ -212,26 +212,32 @@ function HubPicker({
   );
 }
 
+// The page opens on a common, well-documented hub so the rendering isn't blank.
+const DEFAULT_HUB = HUBS.find((h) => h.manufacturer === "Chris King" && h.model === "R45 Rear");
+
 export function WheelBuilding() {
   const [erd, setErd] = useState(602);
   const [spokes, setSpokes] = useState(32);
-  const [holeDia, setHoleDia] = useState(2.6);
+  const [holeDia, setHoleDia] = useState(DEFAULT_HUB?.spokeHoleMm ?? 2.6);
 
-  const [leftFlange, setLeftFlange] = useState(45);
-  const [leftOffset, setLeftOffset] = useState(34);
+  const [leftFlange, setLeftFlange] = useState(DEFAULT_HUB?.leftFlangeDiaMm ?? 45);
+  const [leftOffset, setLeftOffset] = useState(DEFAULT_HUB?.leftOffsetMm ?? 34);
   const [leftCross, setLeftCross] = useState(3);
 
-  const [rightFlange, setRightFlange] = useState(45);
-  const [rightOffset, setRightOffset] = useState(17.5);
+  const [rightFlange, setRightFlange] = useState(DEFAULT_HUB?.rightFlangeDiaMm ?? 45);
+  const [rightOffset, setRightOffset] = useState(DEFAULT_HUB?.rightOffsetMm ?? 17.5);
   const [rightCross, setRightCross] = useState(3);
 
   // The hub picked from the database, if any (cleared once a hub value is edited
-  // by hand, so the trigger no longer claims a specific hub).
-  const [hub, setHub] = useState<Hub | null>(null);
+  // by hand, so the trigger no longer claims a specific hub). Defaults to a
+  // common hub so the page opens on a real, fully-specified wheel.
+  const [hub, setHub] = useState<Hub | null>(DEFAULT_HUB ?? null);
   // The hub type + width driving the 3D rendering. Kept separate from `hub` so it
   // survives hand-edits — you keep the dynamo/gear/freehub look and axle length
   // even after tweaking a flange or offset.
-  const [hubStyle, setHubStyle] = useState<{ type: HubType; widthMm: number } | null>(null);
+  const [hubStyle, setHubStyle] = useState<{ type: HubType; widthMm: number } | null>(
+    DEFAULT_HUB ? { type: DEFAULT_HUB.type, widthMm: DEFAULT_HUB.widthMm } : null,
+  );
 
   const applyHub = (h: Hub, count: number | null) => {
     setLeftFlange(h.leftFlangeDiaMm);

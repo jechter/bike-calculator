@@ -28,9 +28,10 @@ const FREEHUB: [number, number, number] = [0.2, 0.21, 0.24]; // dark freehub dri
 
 // One spoke draws as: a body of four tubes (nipple -> flange face) that lets it
 // bend to weave, a short elbow tube through the flange, a round button head lying
-// flat on the far face, and a nipple at the rim bed. The leading group rides
-// outboard and dives inboard at its outermost crossing (Sheldon Brown's "the last
-// cross is laced on the inside"); the trailing group runs straight. Vert budget
+// flat on the far face, and a nipple at the rim bed. A crossing pair of spokes
+// cross over each other at their shared outermost crossing — the leading one
+// dips inboard (behind), the trailing one swings outboard (in front) — so they
+// interlace (Sheldon Brown's "the last cross is laced on the inside"). Vert budget
 // per spoke: body (SPOKE_SEG*6 * 4) + elbow + nipple (SPOKE_SEG*6 each) + button
 // disc (SPOKE_SEG*12) + nipple cap (SPOKE_SEG*3) = SPOKE_SEG*51.
 const SPOKE_SEG = 6;
@@ -666,30 +667,39 @@ export function Wheel3D(props: Wheel3DProps) {
       const bodyZ = zF + bodySign * flHalf;
       const headZ = zF - bodySign * (flHalf + 0.003);
 
-      // Body point at chord fraction t (0 = hub, 1 = rim) with an extra axial nudge
-      // dz — the weave. Straight in the wheel plane; only z bends.
+      // Body point at chord fraction t (0 = hub, 1 = rim) along the straight
+      // natural (dished) line, with an optional axial nudge dz.
       const at = (t: number, dz: number) => [
         lerp(hx, ca, t),
         lerp(hy, sa, t),
         lerp(bodyZ, zRim, t) + dz,
       ];
-      const cross = leading ? outermostCross(i) : null;
+      // A crossing pair both run nearly straight, then cross over each other at
+      // their shared outermost crossing: the leading spoke dips inboard (behind)
+      // and the trailing spoke swings outboard (in front), so they interlace as a
+      // real wheel does. Away from the cross each sits a hair off a shared centre
+      // line — leading outboard, trailing inboard — so the inner crosses read as
+      // "leading outside" without any big bend near the hub.
+      const cross = outermostCross(i);
       let pts: number[][];
       if (cross) {
-        // Ride proud of the trailing spokes, then dive inboard through the
-        // outermost crossing so it laces inside that last spoke. The amplitude is
-        // a little exaggerated (~6 mm) so the weave reads at a glance.
-        const A = outSign * 0.02;
         const tc = cross.t;
+        const amp = 0.02; // weave offset from the centre line
+        const w = 0.09; // spread of the crossover, in chord fraction
+        const before = leading ? 1 : -1; // leading rides outboard before the cross
+        const cz = (t: number) => lerp(zF, zRim, t); // shared centre line
+        const xy = (t: number) => [lerp(hx, ca, t), lerp(hy, sa, t)];
+        const t1 = Math.max(0.02, tc - w), t3 = Math.min(0.98, tc + w);
+        const c1 = xy(t1), c3 = xy(t3), cc = xy(tc);
         pts = [
-          at(0, 0),
-          at(tc * 0.5, A),
-          at(Math.max(0.05, tc - 0.05), A),
-          at(Math.min(0.99, tc + 0.03), -A),
+          [hx, hy, bodyZ],
+          [c1[0], c1[1], cz(t1) + outSign * amp * before],
+          [cc[0], cc[1], cz(tc)],
+          [c3[0], c3[1], cz(t3) - outSign * amp * before],
           bed,
         ];
       } else {
-        // Trailing / radial: straight (collinear points keep the vertex count fixed).
+        // Radial / uncrossed: straight (collinear points keep the vertex count fixed).
         pts = [at(0, 0), at(0.25, 0), at(0.5, 0), at(0.75, 0), bed];
       }
       addPolyTube(tube, pts, rad, SPOKE_SEG, col); // woven body

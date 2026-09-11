@@ -58,9 +58,6 @@ reverse-threaded so pedalling forces tighten rather than loosen them. Knowing th
   viewpoint ("as you look at this side of the bike").
 - Highlight the left-hand gotchas (left pedal, English drive-side cup, Italian
   mix-up). No search — the list is short enough to scan.
-- Optional torque cross-link: if a **torque calculator / spec reference** is
-  added (see [additional-ideas.md](../additional-ideas.md)), link each part to
-  its torque spec.
 - Keep the data in a single **cited, dated data module** and let items be
   corrected — thread standards (especially older BB/pedal variants) have
   exceptions, and marketing/regional differences exist.

@@ -65,10 +65,7 @@ The default: every chainring × cog combination, presented as a grid (below).
 ### Single speed / fixed gear
 One chainring, one cog → a single ratio. Still useful to show gear inches,
 development, and speed-at-cadence, and to help pick a cog/chainring for a target
-gear inch. For **fixed-gear/track and horizontal dropouts**, also consider adding
-a "skid patch" count (`cog / gcd(cog, chainring)`, doubled if the rider is
-ambidextrous) and a chain-tension/"magic gear" note — see
-[additional-ideas.md](../additional-ideas.md).
+gear inch.
 
 ### Internal gears
 Covers internally geared hubs (IGH), bottom-bracket gearboxes and CVTs. The

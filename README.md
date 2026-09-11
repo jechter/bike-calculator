@@ -1,28 +1,15 @@
 # Bike Workshop Calculator
 
-A single web page collecting the calculators most commonly needed when working
-on bikes in a community workshop. Instead of googling for a different calculator
-every time, everything lives in one place with a sidebar to pick the task.
+I am volunteering in a community bike workshop. We repair donated bikes for refugees, and teach people how to fix bikes. Working on bikes often involves small calculations, for which there are many many great web calculators out there. So, why build another one?
 
-## Motivation
+- I never remember which one I liked best for which task, so I figured I would like to have a collection of different useful calculators all in one place.
+- I wanted to build something which is very visual to let us use this as a tool to teach people how bike components work. So, the drivetrain calculator will actually show an animation of what the drivetrain would look like, and how shifting between the different gears works. The wheel building calculator can show a 3d visualization of the wheel with an animation of which order to put in the spokes when lacing the wheels.
+- In our bike workshop, we often have old donated bikes with a very random mix of components - or you may try to find replacements from a box of used parts - and you don't know if components are actually compatible. So one goal of this calculator is to help you answer such questions. The drivetrain calculator lets you specify components (derailleurs, shifters and cassettes) and will validate them against known specs for the parts (gear counts, derailleur pull ratio, max cog size, capacity), to give you a judgement if they are expected to work together or not.
 
-Working on bikes in a community workshop, you repeatedly need small
-calculations: what gear ratios a drivetrain gives, what spoke length a wheel
-needs, what frame size fits a person, how to convert a tyre marking, whether a
-derailleur is compatible, and so on. This project brings those together in one
-tool that is trustworthy, consistent, and offline-capable.
+You can try the calculator live on the [Rückenwind web site](https://rueckenwind.berlin/bikeworkshopcalc/).
 
-## Goals
-
-- **One page, many calculators.** A sidebar lists all calculators; selecting one
-  shows its inputs and results in the main area.
-- **Correct and transparent.** Every calculator documents the formula and
-  reference data it uses (see [`docs/`](docs/)). Where results are approximate
-  (frame sizing, tyre pressure), the tool says so.
-- **Fast and offline.** No account, no server round-trips for a calculation.
-  Should work on a shop laptop or phone with flaky wifi.
-- **Metric and imperial.** The workshop is metric-first, but tyres, torque and
-  frame sizes routinely appear in inches/psi, so support both.
+![Drivetrain visualization](docs/images/drivetrain.png)
+![Wheelbuilding visualization](docs/images/wheelbuilding.png)
 
 ## Calculators
 
@@ -31,13 +18,9 @@ tool that is trustworthy, consistent, and offline-capable.
 | 1 | Drivetrain | Gear ratios, speed at cadence, gear inches/development (cassette, single speed, or geared hub), chain length, chain wear | [drivetrain.md](docs/calculators/drivetrain.md) |
 | 2 | Wheel building | Spoke lengths for a given hub + rim + lacing, plus spoke tension converter | [wheel-building.md](docs/calculators/wheel-building.md) |
 | 3 | Frame size | Frame size / saddle height / crank length from inseam or body height | [frame-size.md](docs/calculators/frame-size.md) |
-| 4 | Tyre | Convert tyre size formats; recommend pressure | [tire.md](docs/calculators/tire.md) |
-| 5 | Derailleur compatibility | Pull ratios, capacity, max sprocket reference | [derailleur-compatibility.md](docs/calculators/derailleur-compatibility.md) |
-| 6 | Cycling power | Watts needed for a speed/gradient, and speed from watts | [power.md](docs/calculators/power.md) |
-| 7 | Thread direction | Reference: which parts are left-hand threaded, and which way to turn to loosen/tighten | [thread-direction.md](docs/calculators/thread-direction.md) |
-
-See [docs/additional-ideas.md](docs/additional-ideas.md) for further calculators
-and reference tools worth adding.
+| 4 | Tire | Convert tire size formats; recommend pressure | [tire.md](docs/calculators/tire.md) |
+| 5 | Cycling power | Watts needed for a speed/gradient, and speed from watts | [power.md](docs/calculators/power.md) |
+| 6 | Thread direction | Reference: which parts are left-hand threaded, and which way to turn to loosen/tighten | [thread-direction.md](docs/calculators/thread-direction.md) |
 
 ## Documentation
 
@@ -45,8 +28,6 @@ and reference tools worth adding.
   suggested tech approach.
 - [`docs/calculators/`](docs/calculators/) — one spec per calculator with
   inputs, outputs, formulas, and reference data.
-- [`docs/additional-ideas.md`](docs/additional-ideas.md) — ideas beyond the
-  initial six.
 
 ## Running locally
 
@@ -80,12 +61,9 @@ offline; `vite.config.ts` uses a relative base so it works from any subpath.
   the sidebar/routing shell is [`src/App.tsx`](src/App.tsx) with a hash router so
   each calculator is bookmarkable (e.g. `#/drivetrain`).
 
-## Status
+## Contributing
 
-All seven calculators implemented and building. Calculation functions are
-covered by unit tests. Reference data flagged in the specs (IGH ratios,
-tensiometer curves, derailleur actuation ratios) uses illustrative/placeholder
-values that should be replaced with cited sources before relying on them.
+Feedback and suggestions are welcome. So are contributions/pull requests - in particular in the area of adding component data to the Cassette/Hub/Derailleur/Internal Gears [databases](src/data/README.md), but I will look at any submissions.
 
 ## License
 

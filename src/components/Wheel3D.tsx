@@ -26,15 +26,15 @@ const LOCKNUT: [number, number, number] = [0.32, 0.34, 0.38]; // end lock-nut / 
 const SHELL: [number, number, number] = [0.4, 0.42, 0.47]; // fat dynamo / gear shell
 const FREEHUB: [number, number, number] = [0.2, 0.21, 0.24]; // dark freehub driver body
 
-// One spoke draws as: a body tube (nipple -> flange face), a short elbow tube
-// through the flange, a round button head lying flat on the far face (a little
-// disc parallel to the flange), and a nipple at the rim bed. The head sits on
-// the outboard face for heads-out spokes and the inboard face for heads-in ones,
-// so you can read inside vs outside lacing. Vert budget per spoke: body + elbow
-// + nipple (SPOKE_SEG*6 each) + button disc (SPOKE_SEG*12) + nipple cap
-// (SPOKE_SEG*3).
+// One spoke draws as: a body of four tubes (nipple -> flange face) that lets it
+// bend to weave, a short elbow tube through the flange, a round button head lying
+// flat on the far face, and a nipple at the rim bed. The leading group rides
+// outboard and dives inboard at its outermost crossing (Sheldon Brown's "the last
+// cross is laced on the inside"); the trailing group runs straight. Vert budget
+// per spoke: body (SPOKE_SEG*6 * 4) + elbow + nipple (SPOKE_SEG*6 each) + button
+// disc (SPOKE_SEG*12) + nipple cap (SPOKE_SEG*3) = SPOKE_SEG*51.
 const SPOKE_SEG = 6;
-const VERTS_PER_SPOKE = SPOKE_SEG * 33;
+const VERTS_PER_SPOKE = SPOKE_SEG * 51;
 
 export interface Wheel3DProps {
   erdMm: number;
@@ -282,6 +282,29 @@ function addButton(m: Mesh, cx: number, cy: number, cz: number, r: number, half:
     p(cx, cy, zf, [0, 0, 1]); p(x0, y0, zf, [0, 0, 1]); p(x1, y1, zf, [0, 0, 1]);
     p(cx, cy, zb, [0, 0, -1]); p(x1, y1, zb, [0, 0, -1]); p(x0, y0, zb, [0, 0, -1]);
   }
+}
+
+// A bent spoke: a chain of straight tubes through the given points. Lets a spoke
+// weave (the small z-bend where it dives under a crossing spoke) rather than run
+// dead straight. Point count is fixed so every spoke has the same vertex count.
+function addPolyTube(m: Mesh, pts: number[][], rad: number, seg: number, col: number[]) {
+  for (let i = 0; i < pts.length - 1; i++) addTube(m, pts[i], pts[i + 1], rad, seg, col);
+}
+
+// Where two spoke chords cross in the wheel plane. Returns the crossing point and
+// its parameter t along the first chord (0 = hub, 1 = rim), or null if the
+// straight segments don't meet away from their ends. Used to find a leading
+// spoke's outermost crossing — the one it must dive under.
+function chordCross(a: number[], b: number[], c: number[], d: number[]) {
+  const rx = b[0] - a[0], ry = b[1] - a[1];
+  const sx = d[0] - c[0], sy = d[1] - c[1];
+  const den = rx * sy - ry * sx;
+  if (Math.abs(den) < 1e-9) return null;
+  const qx = c[0] - a[0], qy = c[1] - a[1];
+  const t = (qx * sy - qy * sx) / den;
+  const u = (qx * ry - qy * rx) / den;
+  if (t < 0.02 || t > 0.98 || u < 0.02 || u > 0.98) return null;
+  return { x: a[0] + t * rx, y: a[1] + t * ry, t };
 }
 
 const VERT_SRC = `
@@ -578,38 +601,101 @@ export function Wheel3D(props: Wheel3DProps) {
 
     // Spoke tubes, ordered by the build sequence so drawing the first `step`
     // spokes reveals them in build order (matches the 2D scrubber exactly). Each
-    // spoke: body (nipple -> flange), elbow through the flange, button head on
-    // the far face, and a nipple seated in the rim bed.
+    // spoke: a four-segment body (so it can weave), an elbow through the flange, a
+    // button head on the far face, and a nipple seated in the rim bed.
     const n = spokeCount;
     const tube: Mesh = [];
     const rad = 0.005; // spoke radius (~1.5 mm at a 700C ERD)
+
+    // Every spoke's flange hole and rim hole in the wheel plane (radius 1 = ERD),
+    // plus its lead/flange, so we can find where leading and trailing spokes cross.
+    const chords = Array.from({ length: n }, (_, i) => {
+      const isDrive = i % 2 === 0;
+      const fR = isDrive ? rfR : lfR;
+      const k = isDrive ? rightCross : leftCross;
+      const lead = Math.floor(i / 2) % 2 === 0 ? 1 : -1;
+      const rimA = (2 * Math.PI * i) / n;
+      const flA = rimA + lead * ((4 * Math.PI * k) / n);
+      return {
+        isDrive,
+        lead,
+        hub: [fR * Math.cos(flA), fR * Math.sin(flA)],
+        rim: [Math.cos(rimA), Math.sin(rimA)],
+      };
+    });
+    // A leading spoke's outermost crossing (largest radius) with a trailing spoke
+    // on the same flange — the one it dives inboard of. null for radial / uncrossed.
+    const outermostCross = (idx: number) => {
+      const L = chords[idx];
+      let best: { x: number; y: number; t: number } | null = null;
+      let bestR = -1;
+      for (let j = 0; j < n; j++) {
+        const T = chords[j];
+        if (T.isDrive !== L.isDrive || T.lead === L.lead) continue;
+        const x = chordCross(L.hub, L.rim, T.hub, T.rim);
+        if (x) {
+          const r = Math.hypot(x.x, x.y);
+          if (r > bestR) { bestR = r; best = x; }
+        }
+      }
+      return best;
+    };
+
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
     for (const i of sequence) {
       const isDrive = i % 2 === 0;
       const fR = isDrive ? rfR : lfR;
       const zF = isDrive ? zR : zL;
-      const k = isDrive ? rightCross : leftCross;
       const lead = Math.floor(i / 2) % 2 === 0 ? 1 : -1;
-      const headsOut = lead === 1; // alternates per flange -> in/out lacing
-      const col = isDrive ? (headsOut ? DRIVE_OUT : DRIVE_IN) : headsOut ? NDS_OUT : NDS_IN;
+      const leading = lead === 1; // the group laced last, woven under at the last cross
+      const col = isDrive ? (leading ? DRIVE_OUT : DRIVE_IN) : leading ? NDS_OUT : NDS_IN;
+      const k = isDrive ? rightCross : leftCross;
       const rimA = (2 * Math.PI * i) / n;
       const flA = rimA + lead * ((4 * Math.PI * k) / n);
       const zRim = isDrive ? stagger : -stagger;
       const hx = fR * Math.cos(flA);
       const hy = fR * Math.sin(flA);
-      // Outboard is the direction away from the wheel centre for this flange.
-      const outSign = isDrive ? 1 : -1;
-      // headDir points along the axle toward the face the head rests on.
-      const headDir = outSign * (headsOut ? 1 : -1);
-      const headZ = zF + headDir * (flHalf + 0.003); // button sits on the far face
-      const bodyZ = zF - headDir * flHalf; // body emerges from the opposite face
-      const bodyP = [hx, hy, bodyZ];
-      const headP = [hx, hy, headZ];
-      // Spoke rises to the rim bed (ERD); the nipple seats there and its head sits
-      // up inside the rim channel, in the spoke's colour.
       const ca = Math.cos(rimA), sa = Math.sin(rimA);
       const bed = [ca, sa, zRim]; // spoke bed at radius 1 (ERD)
+
+      // Outboard is away from the wheel centre for this flange. The leading group
+      // rides on the outboard face (so it sits outside the trailing spokes); the
+      // trailing group rides inboard. The head sits on the opposite face.
+      const outSign = isDrive ? 1 : -1;
+      const bodySign = leading ? outSign : -outSign; // face the body emerges from
+      const bodyZ = zF + bodySign * flHalf;
+      const headZ = zF - bodySign * (flHalf + 0.003);
+
+      // Body point at chord fraction t (0 = hub, 1 = rim) with an extra axial nudge
+      // dz — the weave. Straight in the wheel plane; only z bends.
+      const at = (t: number, dz: number) => [
+        lerp(hx, ca, t),
+        lerp(hy, sa, t),
+        lerp(bodyZ, zRim, t) + dz,
+      ];
+      const cross = leading ? outermostCross(i) : null;
+      let pts: number[][];
+      if (cross) {
+        // Ride ~one spoke-width proud of the trailing spokes, then dive inboard
+        // through the outermost crossing so it laces inside that last spoke.
+        const A = outSign * 0.014;
+        const tc = cross.t;
+        pts = [
+          at(0, 0),
+          at(tc * 0.5, A),
+          at(Math.max(0.05, tc - 0.05), A),
+          at(Math.min(0.99, tc + 0.03), -A),
+          bed,
+        ];
+      } else {
+        // Trailing / radial: straight (collinear points keep the vertex count fixed).
+        pts = [at(0, 0), at(0.25, 0), at(0.5, 0), at(0.75, 0), bed];
+      }
+      addPolyTube(tube, pts, rad, SPOKE_SEG, col); // woven body
+
+      const bodyP = [hx, hy, bodyZ];
+      const headP = [hx, hy, headZ];
       const nipHead = [1.045 * ca, 1.045 * sa, zRim]; // nipple head, up inside the rim
-      addTube(tube, bodyP, bed, rad, SPOKE_SEG, col); // body
       addTube(tube, bodyP, headP, rad, SPOKE_SEG, col); // elbow through the flange
       addButton(tube, hx, hy, headZ, 0.014, 0.004, SPOKE_SEG, col); // round button head
       addTube(tube, bed, nipHead, 0.009, SPOKE_SEG, col); // nipple seated in the rim

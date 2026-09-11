@@ -88,9 +88,37 @@ describe('deriveActuation', () => {
       (d) => d.brand === 'SRAM' && d.discipline === 'MTB' && d.speeds === 12 && !d.electronic,
     );
     expect(eagle?.actuation).toBe('SRAM Eagle (X-Actuation)');
-    // Non-Microshift third-party stays unknown (compatibility varies by model).
-    const sunrace = DERAILLEURS.find((d) => d.brand === 'Sunrace');
-    expect(sunrace?.actuation).toBeUndefined();
+    // Proprietary / version-specific third-party stays unknown (TRP and Ingrid
+    // use their own or shifter-specific actuation — not derivable).
+    expect(DERAILLEURS.find((d) => d.brand === 'TRP')?.actuation).toBeUndefined();
+    expect(DERAILLEURS.find((d) => d.brand === 'Ingrid')?.actuation).toBeUndefined();
+  });
+
+  it('maps Shimano/SRAM-cloning third-party brands, leaves proprietary ones unknown', () => {
+    const one = (brand: string, pred: (d: (typeof DERAILLEURS)[number]) => boolean) =>
+      DERAILLEURS.find((d) => d.brand === brand && pred(d))!;
+    // L-TWOO: road/gravel copy Shimano road; 12-speed MTB is SRAM Eagle; the
+    // 10/11-speed MTB (conflicting evidence) and wireless eRX stay unknown.
+    expect(one('L-TWOO', (d) => d.model === 'RD-R5010-M').actuation).toBe('Shimano road 1.7 (classic)');
+    expect(one('L-TWOO', (d) => d.model === 'RD-R5011-M').actuation).toBe('Shimano road 1.4 (11-speed & Tiagra 4700)');
+    expect(one('L-TWOO', (d) => d.model === 'RD-A12-AT-G').actuation).toBe('SRAM Eagle (X-Actuation)');
+    expect(one('L-TWOO', (d) => d.model === 'RD-V5010-L').actuation).toBeUndefined(); // A7 10sp
+    expect(one('L-TWOO', (d) => d.electronic === 'eRX').actuation).toBeUndefined();
+    // Sunrace: Shimano by default; U-series is CUES/LinkGlide.
+    expect(one('Sunrace', (d) => d.series === 'R' && d.speeds === 9).actuation).toBe('Shimano road 1.7 (classic)');
+    expect(one('Sunrace', (d) => d.model === 'RDUX600').actuation).toBe('Shimano CUES / LinkGlide');
+    expect(one('Sunrace', (d) => d.model === 'RDMS10').actuation).toBe('Shimano MTB 10-speed (Dynasys)');
+    expect(one('Sunrace', (d) => d.model === 'RDMZ600').actuation).toBe('Shimano MTB 11/12-speed (Hyperglide+ / Micro Spline)');
+    // S-Ride: 1.7/1.2 Shimano; SRAM-labelled 1.1 ≤9sp is SRAM 1:1; 1.1 12sp unknown.
+    expect(one('S-Ride', (d) => d.model === 'RD-M200').actuation).toBe('Shimano MTB 6/7/8/9-speed');
+    expect(one('S-Ride', (d) => d.model === 'RD-M310').actuation).toBe('SRAM 1:1 (older MTB)');
+    expect(one('S-Ride', (d) => d.model === 'RD-M600C').actuation).toBeUndefined();
+    // Box: only the One/Two 11-speed cross-indexes with Shimano; Prime 9 is its own.
+    expect(one('Box', (d) => d.model === '11-Speed').actuation).toBe('Shimano MTB 11/12-speed (Hyperglide+ / Micro Spline)');
+    expect(one('Box', (d) => d.model === 'Prime 9').actuation).toBeUndefined();
+    // Closed electronic / own-shifter systems stay unknown.
+    expect(one('WheelTop', () => true).actuation).toBeUndefined();
+    expect(one('Tektro', () => true).actuation).toBeUndefined();
   });
 
   it('maps Shimano-compatible Microshift groups to their Shimano family, keeps Advent/Acolyte proprietary', () => {

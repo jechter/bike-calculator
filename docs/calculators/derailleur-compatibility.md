@@ -33,10 +33,15 @@ a row has none. The estimates are **disputed between sources and definitions** �
 a rough guide, not gospel (≈1.7:1 old Shimano, ≈1.4:1 Shimano 11-sp road, ≈1.1:1
 SRAM Exact Actuation, electronic groups have none). Verify before relying on it.
 
-The **actuation family** is *derived* from brand + type + speeds + electronic,
-so each row links to the compatibility chart. It's best-effort: third-party
-brands (Microshift, Sunrace, L-TWOO, …) and ambiguous cases are left "unknown"
-rather than guessed.
+The **actuation family** is *derived* from brand + type + speeds + electronic
+(and the sourced pull ratio). It's best-effort, and links each row to the
+compatibility chart. Many third-party groups deliberately clone a Shimano or
+SRAM cable pull and are mapped to that family — e.g. Microshift's road and
+traditional-MTB groups, Sunrace, and L-TWOO's road/gravel range copy Shimano;
+L-TWOO's 12-speed MTB copies SRAM Eagle. Groups that use their own proprietary
+or shifter-specific pull (Microshift Advent/Advent X/Sword, Box Prime 9, TRP,
+Ingrid, closed wireless systems like WheelTop/L-TWOO eRX) — and genuinely
+ambiguous cases — are left "unknown" rather than guessed.
 
 ## Part 2 — Compatibility reference
 

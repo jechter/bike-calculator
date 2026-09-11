@@ -255,6 +255,26 @@ function slugify(s: string): string {
 }
 
 /**
+ * The Shimano family a Shimano-cloning third-party row copies, keyed off
+ * discipline + sourced pull ratio + speed count. Used for brands whose road and
+ * classic-MTB groups deliberately match a Shimano cable-pull ratio (Sunrace,
+ * L-TWOO road, S-Ride). Returns undefined for the ratios OUTSIDE the confidently-
+ * Shimano set (notably the ~1.1 MTB zone, which is SRAM-family or proprietary
+ * depending on brand) — the caller decides those per brand.
+ */
+function shimanoCloneFamily(r: RawDerailleur): string | undefined {
+  const road = r.type === 'Road' || r.type === 'Gravel';
+  if (road) {
+    if (r.pullRatio === 1.4) return 'Shimano road 1.4 (11-speed & Tiagra 4700)';
+    if (r.pullRatio === 1.7) return 'Shimano road 1.7 (classic)';
+    return undefined;
+  }
+  if (r.pullRatio === 1.7 && r.nominalSpeeds <= 9) return 'Shimano MTB 6/7/8/9-speed';
+  if (r.pullRatio === 1.2) return 'Shimano MTB 10-speed (Dynasys)';
+  return undefined;
+}
+
+/**
  * Best-effort actuation family from brand + discipline + speeds + electronic.
  * Third-party brands and genuinely ambiguous cases return undefined ("unknown")
  * — better to say so than to guess a family. Ratios/families are DISPUTED; this
@@ -321,8 +341,55 @@ function deriveActuation(r: RawDerailleur): string | undefined {
     if (s === 10) return 'Shimano MTB 10-speed (Dynasys)'; // XLE 10
     return 'Shimano MTB 6/7/8/9-speed'; // Mezzo / Marvo
   }
-  // Other third-party (Sunrace, L-TWOO, Box, …): compatibility varies by model
-  // and isn't reliably derivable — leave as unknown.
+  if (r.brand === 'Sunrace') {
+    // Sunrace's own FAQ: its derailleurs/shifters are Shimano-compatible cable
+    // pull by default unless explicitly marked SRAM (none here are). The U-series
+    // (U/US/UX) targets Shimano's CUES/LinkGlide standard; the R-series copies
+    // classic Shimano road; the M-series copies Shimano MTB by generation. The
+    // 11/12-speed wide-range MTB (MS/MX/MZ) follow the Shimano MTB HG+ pull by
+    // design (SRAM shifters only work by fiddling — not native).
+    if (series.startsWith('u')) return 'Shimano CUES / LinkGlide';
+    if (road) return shimanoCloneFamily(r) ?? 'Shimano road 1.7 (classic)';
+    if (s <= 9) return 'Shimano MTB 6/7/8/9-speed';
+    if (s === 10) return 'Shimano MTB 10-speed (Dynasys)';
+    return 'Shimano MTB 11/12-speed (Hyperglide+ / Micro Spline)';
+  }
+  if (r.brand === 'L-TWOO') {
+    // eRX/eGR are a closed wireless protocol (no Di2/AXS interop) — unknown.
+    if (r.electronic) return undefined;
+    // Road & gravel R/GR series copy Shimano road pull (1.7 ≤10sp, 1.4 at 11sp).
+    if (road) return shimanoCloneFamily(r);
+    // 12-speed MTB (A12/AX) is SRAM Eagle 1:1 per L-TWOO's own OEM spec ("1:1
+    // Sram"), on an XD driver — NOT Shimano. The 10/11-speed MTB (A7/AX-11)
+    // evidence conflicts (Shimano-Deore marketing vs the 1:1 spec) — leave those
+    // unknown.
+    if (s >= 12) return 'SRAM Eagle (X-Actuation)';
+    return undefined;
+  }
+  if (r.brand === 'S-Ride') {
+    // S-Ride tags groups "2:1" (Shimano-family) or "1:1"/"SRAM" (SRAM-family);
+    // the sourced pull ratios split them. 1.7/1.2 MTB copy classic/Dynasys
+    // Shimano; the 1.4 11-speed is Shimano road/GRX (bench-verified with GRX600);
+    // the ~1.1 ≤9-speed E-series/M310 are SRAM 1:1. The ~1.1 12/13-speed
+    // (M500C/M600C/M610C/M700) claim Shimano 12sp but the pull conflicts and is
+    // unverified — leave unknown.
+    if (road) return shimanoCloneFamily(r);
+    if (r.pullRatio === 1.7 && s <= 9) return 'Shimano MTB 6/7/8/9-speed';
+    if (r.pullRatio === 1.2) return 'Shimano MTB 10-speed (Dynasys)';
+    if (r.pullRatio === 1.4) return 'Shimano road 1.4 (11-speed & Tiagra 4700)';
+    if (r.pullRatio === 1.1 && s <= 9) return 'SRAM 1:1 (older MTB)';
+    return undefined;
+  }
+  if (r.brand === 'Box') {
+    // Box One/Two 11-speed cross-index with Shimano 11-speed MTB shifters
+    // (verified both directions). Prime 9, the e-bike -E groups, and the 7-speed
+    // DH use Box's own proprietary "wide" pull — leave unknown.
+    if (r.model === '11-Speed') return 'Shimano MTB 11/12-speed (Hyperglide+ / Micro Spline)';
+    return undefined;
+  }
+  // Remaining third-party (Ingrid version-specific "fins", TRP/Tektro own-shifter
+  // systems, WheelTop closed wireless): compatibility is version-specific or
+  // proprietary and isn't reliably derivable — leave as unknown.
   return undefined;
 }
 

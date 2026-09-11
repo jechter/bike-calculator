@@ -228,6 +228,10 @@ export function WheelBuilding() {
   // The hub picked from the database, if any (cleared once a hub value is edited
   // by hand, so the trigger no longer claims a specific hub).
   const [hub, setHub] = useState<Hub | null>(null);
+  // The hub type + width driving the 3D rendering. Kept separate from `hub` so it
+  // survives hand-edits — you keep the dynamo/gear/freehub look and axle length
+  // even after tweaking a flange or offset.
+  const [hubStyle, setHubStyle] = useState<{ type: HubType; widthMm: number } | null>(null);
 
   const applyHub = (h: Hub, count: number | null) => {
     setLeftFlange(h.leftFlangeDiaMm);
@@ -248,6 +252,7 @@ export function WheelBuilding() {
             : h.spokeCounts[0];
     setSpokes(next);
     setHub(h);
+    setHubStyle({ type: h.type, widthMm: h.widthMm });
   };
 
   // Editing any hub-geometry value clears the selected hub.
@@ -430,8 +435,8 @@ export function WheelBuilding() {
             rightOffsetMm={rightOffset}
             leftCross={leftCross}
             rightCross={rightCross}
-            hubType={hub?.type}
-            hubWidthMm={hub?.widthMm}
+            hubType={hubStyle?.type}
+            hubWidthMm={hubStyle?.widthMm}
           />
         ) : (
           <Note tone="warn">

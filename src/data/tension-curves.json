@@ -1,0 +1,1946 @@
+[
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "steel round 1.4 mm",
+    "points": [
+      {
+        "reading": 4,
+        "kgf": 40
+      },
+      {
+        "reading": 5,
+        "kgf": 43
+      },
+      {
+        "reading": 6,
+        "kgf": 46
+      },
+      {
+        "reading": 7,
+        "kgf": 50
+      },
+      {
+        "reading": 8,
+        "kgf": 54
+      },
+      {
+        "reading": 9,
+        "kgf": 58
+      },
+      {
+        "reading": 10,
+        "kgf": 63
+      },
+      {
+        "reading": 11,
+        "kgf": 69
+      },
+      {
+        "reading": 12,
+        "kgf": 75
+      },
+      {
+        "reading": 13,
+        "kgf": 83
+      },
+      {
+        "reading": 14,
+        "kgf": 91
+      },
+      {
+        "reading": 15,
+        "kgf": 100
+      },
+      {
+        "reading": 16,
+        "kgf": 111
+      },
+      {
+        "reading": 17,
+        "kgf": 123
+      },
+      {
+        "reading": 18,
+        "kgf": 138
+      },
+      {
+        "reading": 19,
+        "kgf": 154
+      },
+      {
+        "reading": 20,
+        "kgf": 172
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "steel round 1.5 mm",
+    "points": [
+      {
+        "reading": 6,
+        "kgf": 42
+      },
+      {
+        "reading": 7,
+        "kgf": 45
+      },
+      {
+        "reading": 8,
+        "kgf": 48
+      },
+      {
+        "reading": 9,
+        "kgf": 52
+      },
+      {
+        "reading": 10,
+        "kgf": 56
+      },
+      {
+        "reading": 11,
+        "kgf": 61
+      },
+      {
+        "reading": 12,
+        "kgf": 66
+      },
+      {
+        "reading": 13,
+        "kgf": 72
+      },
+      {
+        "reading": 14,
+        "kgf": 80
+      },
+      {
+        "reading": 15,
+        "kgf": 88
+      },
+      {
+        "reading": 16,
+        "kgf": 97
+      },
+      {
+        "reading": 17,
+        "kgf": 107
+      },
+      {
+        "reading": 18,
+        "kgf": 119
+      },
+      {
+        "reading": 19,
+        "kgf": 133
+      },
+      {
+        "reading": 20,
+        "kgf": 148
+      },
+      {
+        "reading": 21,
+        "kgf": 166
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "steel round 1.6 mm",
+    "points": [
+      {
+        "reading": 7,
+        "kgf": 40
+      },
+      {
+        "reading": 8,
+        "kgf": 43
+      },
+      {
+        "reading": 9,
+        "kgf": 46
+      },
+      {
+        "reading": 10,
+        "kgf": 50
+      },
+      {
+        "reading": 11,
+        "kgf": 54
+      },
+      {
+        "reading": 12,
+        "kgf": 58
+      },
+      {
+        "reading": 13,
+        "kgf": 64
+      },
+      {
+        "reading": 14,
+        "kgf": 70
+      },
+      {
+        "reading": 15,
+        "kgf": 76
+      },
+      {
+        "reading": 16,
+        "kgf": 84
+      },
+      {
+        "reading": 17,
+        "kgf": 93
+      },
+      {
+        "reading": 18,
+        "kgf": 103
+      },
+      {
+        "reading": 19,
+        "kgf": 114
+      },
+      {
+        "reading": 20,
+        "kgf": 128
+      },
+      {
+        "reading": 21,
+        "kgf": 143
+      },
+      {
+        "reading": 22,
+        "kgf": 160
+      },
+      {
+        "reading": 23,
+        "kgf": 180
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "steel round 1.7 mm",
+    "points": [
+      {
+        "reading": 9,
+        "kgf": 41
+      },
+      {
+        "reading": 10,
+        "kgf": 44
+      },
+      {
+        "reading": 11,
+        "kgf": 48
+      },
+      {
+        "reading": 12,
+        "kgf": 52
+      },
+      {
+        "reading": 13,
+        "kgf": 56
+      },
+      {
+        "reading": 14,
+        "kgf": 61
+      },
+      {
+        "reading": 15,
+        "kgf": 67
+      },
+      {
+        "reading": 16,
+        "kgf": 73
+      },
+      {
+        "reading": 17,
+        "kgf": 81
+      },
+      {
+        "reading": 18,
+        "kgf": 89
+      },
+      {
+        "reading": 19,
+        "kgf": 99
+      },
+      {
+        "reading": 20,
+        "kgf": 110
+      },
+      {
+        "reading": 21,
+        "kgf": 122
+      },
+      {
+        "reading": 22,
+        "kgf": 137
+      },
+      {
+        "reading": 23,
+        "kgf": 154
+      },
+      {
+        "reading": 24,
+        "kgf": 174
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "steel round 1.8 mm",
+    "points": [
+      {
+        "reading": 11,
+        "kgf": 42
+      },
+      {
+        "reading": 12,
+        "kgf": 45
+      },
+      {
+        "reading": 13,
+        "kgf": 49
+      },
+      {
+        "reading": 14,
+        "kgf": 53
+      },
+      {
+        "reading": 15,
+        "kgf": 58
+      },
+      {
+        "reading": 16,
+        "kgf": 64
+      },
+      {
+        "reading": 17,
+        "kgf": 70
+      },
+      {
+        "reading": 18,
+        "kgf": 77
+      },
+      {
+        "reading": 19,
+        "kgf": 85
+      },
+      {
+        "reading": 20,
+        "kgf": 94
+      },
+      {
+        "reading": 21,
+        "kgf": 105
+      },
+      {
+        "reading": 22,
+        "kgf": 117
+      },
+      {
+        "reading": 23,
+        "kgf": 131
+      },
+      {
+        "reading": 24,
+        "kgf": 148
+      },
+      {
+        "reading": 25,
+        "kgf": 167
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "steel round 2.0 mm",
+    "points": [
+      {
+        "reading": 14,
+        "kgf": 41
+      },
+      {
+        "reading": 15,
+        "kgf": 44
+      },
+      {
+        "reading": 16,
+        "kgf": 48
+      },
+      {
+        "reading": 17,
+        "kgf": 53
+      },
+      {
+        "reading": 18,
+        "kgf": 58
+      },
+      {
+        "reading": 19,
+        "kgf": 63
+      },
+      {
+        "reading": 20,
+        "kgf": 70
+      },
+      {
+        "reading": 21,
+        "kgf": 77
+      },
+      {
+        "reading": 22,
+        "kgf": 86
+      },
+      {
+        "reading": 23,
+        "kgf": 96
+      },
+      {
+        "reading": 24,
+        "kgf": 107
+      },
+      {
+        "reading": 25,
+        "kgf": 120
+      },
+      {
+        "reading": 26,
+        "kgf": 135
+      },
+      {
+        "reading": 27,
+        "kgf": 153
+      },
+      {
+        "reading": 28,
+        "kgf": 173
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "steel round 2.3 mm",
+    "points": [
+      {
+        "reading": 19,
+        "kgf": 41
+      },
+      {
+        "reading": 20,
+        "kgf": 44
+      },
+      {
+        "reading": 21,
+        "kgf": 49
+      },
+      {
+        "reading": 22,
+        "kgf": 54
+      },
+      {
+        "reading": 23,
+        "kgf": 59
+      },
+      {
+        "reading": 24,
+        "kgf": 66
+      },
+      {
+        "reading": 25,
+        "kgf": 73
+      },
+      {
+        "reading": 26,
+        "kgf": 82
+      },
+      {
+        "reading": 27,
+        "kgf": 92
+      },
+      {
+        "reading": 28,
+        "kgf": 104
+      },
+      {
+        "reading": 29,
+        "kgf": 117
+      },
+      {
+        "reading": 30,
+        "kgf": 133
+      },
+      {
+        "reading": 31,
+        "kgf": 151
+      },
+      {
+        "reading": 32,
+        "kgf": 172
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "steel round 2.5 mm",
+    "points": [
+      {
+        "reading": 23,
+        "kgf": 43
+      },
+      {
+        "reading": 24,
+        "kgf": 48
+      },
+      {
+        "reading": 25,
+        "kgf": 53
+      },
+      {
+        "reading": 26,
+        "kgf": 59
+      },
+      {
+        "reading": 27,
+        "kgf": 66
+      },
+      {
+        "reading": 28,
+        "kgf": 74
+      },
+      {
+        "reading": 29,
+        "kgf": 83
+      },
+      {
+        "reading": 30,
+        "kgf": 93
+      },
+      {
+        "reading": 31,
+        "kgf": 106
+      },
+      {
+        "reading": 32,
+        "kgf": 120
+      },
+      {
+        "reading": 33,
+        "kgf": 137
+      },
+      {
+        "reading": 34,
+        "kgf": 157
+      },
+      {
+        "reading": 35,
+        "kgf": 180
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "steel round 2.6 mm",
+    "points": [
+      {
+        "reading": 24,
+        "kgf": 41
+      },
+      {
+        "reading": 25,
+        "kgf": 45
+      },
+      {
+        "reading": 26,
+        "kgf": 50
+      },
+      {
+        "reading": 27,
+        "kgf": 55
+      },
+      {
+        "reading": 28,
+        "kgf": 62
+      },
+      {
+        "reading": 29,
+        "kgf": 69
+      },
+      {
+        "reading": 30,
+        "kgf": 78
+      },
+      {
+        "reading": 31,
+        "kgf": 88
+      },
+      {
+        "reading": 32,
+        "kgf": 100
+      },
+      {
+        "reading": 33,
+        "kgf": 114
+      },
+      {
+        "reading": 34,
+        "kgf": 130
+      },
+      {
+        "reading": 35,
+        "kgf": 150
+      },
+      {
+        "reading": 36,
+        "kgf": 172
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "steel blade 0.9 x 2.0 mm",
+    "points": [
+      {
+        "reading": 3,
+        "kgf": 48
+      },
+      {
+        "reading": 4,
+        "kgf": 51
+      },
+      {
+        "reading": 5,
+        "kgf": 55
+      },
+      {
+        "reading": 6,
+        "kgf": 60
+      },
+      {
+        "reading": 7,
+        "kgf": 65
+      },
+      {
+        "reading": 8,
+        "kgf": 71
+      },
+      {
+        "reading": 9,
+        "kgf": 77
+      },
+      {
+        "reading": 10,
+        "kgf": 84
+      },
+      {
+        "reading": 11,
+        "kgf": 93
+      },
+      {
+        "reading": 12,
+        "kgf": 102
+      },
+      {
+        "reading": 13,
+        "kgf": 113
+      },
+      {
+        "reading": 14,
+        "kgf": 125
+      },
+      {
+        "reading": 15,
+        "kgf": 139
+      },
+      {
+        "reading": 16,
+        "kgf": 155
+      },
+      {
+        "reading": 17,
+        "kgf": 173
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "steel blade 0.9 x 2.3 mm",
+    "points": [
+      {
+        "reading": 3,
+        "kgf": 47
+      },
+      {
+        "reading": 4,
+        "kgf": 50
+      },
+      {
+        "reading": 5,
+        "kgf": 54
+      },
+      {
+        "reading": 6,
+        "kgf": 58
+      },
+      {
+        "reading": 7,
+        "kgf": 63
+      },
+      {
+        "reading": 8,
+        "kgf": 69
+      },
+      {
+        "reading": 9,
+        "kgf": 75
+      },
+      {
+        "reading": 10,
+        "kgf": 82
+      },
+      {
+        "reading": 11,
+        "kgf": 90
+      },
+      {
+        "reading": 12,
+        "kgf": 99
+      },
+      {
+        "reading": 13,
+        "kgf": 109
+      },
+      {
+        "reading": 14,
+        "kgf": 121
+      },
+      {
+        "reading": 15,
+        "kgf": 134
+      },
+      {
+        "reading": 16,
+        "kgf": 150
+      },
+      {
+        "reading": 17,
+        "kgf": 167
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "steel blade 1.0 x 2.3 mm",
+    "points": [
+      {
+        "reading": 3,
+        "kgf": 42
+      },
+      {
+        "reading": 4,
+        "kgf": 45
+      },
+      {
+        "reading": 5,
+        "kgf": 48
+      },
+      {
+        "reading": 6,
+        "kgf": 52
+      },
+      {
+        "reading": 7,
+        "kgf": 56
+      },
+      {
+        "reading": 8,
+        "kgf": 60
+      },
+      {
+        "reading": 9,
+        "kgf": 66
+      },
+      {
+        "reading": 10,
+        "kgf": 72
+      },
+      {
+        "reading": 11,
+        "kgf": 78
+      },
+      {
+        "reading": 12,
+        "kgf": 86
+      },
+      {
+        "reading": 13,
+        "kgf": 94
+      },
+      {
+        "reading": 14,
+        "kgf": 104
+      },
+      {
+        "reading": 15,
+        "kgf": 115
+      },
+      {
+        "reading": 16,
+        "kgf": 128
+      },
+      {
+        "reading": 17,
+        "kgf": 143
+      },
+      {
+        "reading": 18,
+        "kgf": 160
+      },
+      {
+        "reading": 19,
+        "kgf": 179
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "steel blade 1.2 x 2.4 mm",
+    "points": [
+      {
+        "reading": 6,
+        "kgf": 41
+      },
+      {
+        "reading": 7,
+        "kgf": 44
+      },
+      {
+        "reading": 8,
+        "kgf": 47
+      },
+      {
+        "reading": 9,
+        "kgf": 51
+      },
+      {
+        "reading": 10,
+        "kgf": 55
+      },
+      {
+        "reading": 11,
+        "kgf": 60
+      },
+      {
+        "reading": 12,
+        "kgf": 65
+      },
+      {
+        "reading": 13,
+        "kgf": 71
+      },
+      {
+        "reading": 14,
+        "kgf": 78
+      },
+      {
+        "reading": 15,
+        "kgf": 85
+      },
+      {
+        "reading": 16,
+        "kgf": 94
+      },
+      {
+        "reading": 17,
+        "kgf": 104
+      },
+      {
+        "reading": 18,
+        "kgf": 116
+      },
+      {
+        "reading": 19,
+        "kgf": 129
+      },
+      {
+        "reading": 20,
+        "kgf": 144
+      },
+      {
+        "reading": 21,
+        "kgf": 162
+      },
+      {
+        "reading": 22,
+        "kgf": 182
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "steel DT Revolite 1.27 x 2.21 mm",
+    "points": [
+      {
+        "reading": 6,
+        "kgf": 40
+      },
+      {
+        "reading": 7,
+        "kgf": 44
+      },
+      {
+        "reading": 8,
+        "kgf": 47
+      },
+      {
+        "reading": 9,
+        "kgf": 52
+      },
+      {
+        "reading": 10,
+        "kgf": 56
+      },
+      {
+        "reading": 11,
+        "kgf": 61
+      },
+      {
+        "reading": 12,
+        "kgf": 67
+      },
+      {
+        "reading": 13,
+        "kgf": 74
+      },
+      {
+        "reading": 14,
+        "kgf": 81
+      },
+      {
+        "reading": 15,
+        "kgf": 89
+      },
+      {
+        "reading": 16,
+        "kgf": 98
+      },
+      {
+        "reading": 17,
+        "kgf": 109
+      },
+      {
+        "reading": 18,
+        "kgf": 120
+      },
+      {
+        "reading": 19,
+        "kgf": 134
+      },
+      {
+        "reading": 20,
+        "kgf": 149
+      },
+      {
+        "reading": 21,
+        "kgf": 166
+      },
+      {
+        "reading": 22,
+        "kgf": 185
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "aluminum round 2.28 mm",
+    "points": [
+      {
+        "reading": 11,
+        "kgf": 40
+      },
+      {
+        "reading": 12,
+        "kgf": 42
+      },
+      {
+        "reading": 13,
+        "kgf": 45
+      },
+      {
+        "reading": 14,
+        "kgf": 48
+      },
+      {
+        "reading": 15,
+        "kgf": 52
+      },
+      {
+        "reading": 16,
+        "kgf": 55
+      },
+      {
+        "reading": 17,
+        "kgf": 59
+      },
+      {
+        "reading": 18,
+        "kgf": 64
+      },
+      {
+        "reading": 19,
+        "kgf": 69
+      },
+      {
+        "reading": 20,
+        "kgf": 74
+      },
+      {
+        "reading": 21,
+        "kgf": 80
+      },
+      {
+        "reading": 22,
+        "kgf": 87
+      },
+      {
+        "reading": 23,
+        "kgf": 94
+      },
+      {
+        "reading": 24,
+        "kgf": 102
+      },
+      {
+        "reading": 25,
+        "kgf": 112
+      },
+      {
+        "reading": 26,
+        "kgf": 122
+      },
+      {
+        "reading": 27,
+        "kgf": 133
+      },
+      {
+        "reading": 28,
+        "kgf": 146
+      },
+      {
+        "reading": 29,
+        "kgf": 160
+      },
+      {
+        "reading": 30,
+        "kgf": 176
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "aluminum round 2.54 mm",
+    "points": [
+      {
+        "reading": 17,
+        "kgf": 40
+      },
+      {
+        "reading": 18,
+        "kgf": 44
+      },
+      {
+        "reading": 19,
+        "kgf": 48
+      },
+      {
+        "reading": 20,
+        "kgf": 52
+      },
+      {
+        "reading": 21,
+        "kgf": 57
+      },
+      {
+        "reading": 22,
+        "kgf": 62
+      },
+      {
+        "reading": 23,
+        "kgf": 68
+      },
+      {
+        "reading": 24,
+        "kgf": 75
+      },
+      {
+        "reading": 25,
+        "kgf": 82
+      },
+      {
+        "reading": 26,
+        "kgf": 91
+      },
+      {
+        "reading": 27,
+        "kgf": 100
+      },
+      {
+        "reading": 28,
+        "kgf": 110
+      },
+      {
+        "reading": 29,
+        "kgf": 122
+      },
+      {
+        "reading": 30,
+        "kgf": 135
+      },
+      {
+        "reading": 31,
+        "kgf": 150
+      },
+      {
+        "reading": 32,
+        "kgf": 167
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "aluminum round 2.8 mm",
+    "points": [
+      {
+        "reading": 23,
+        "kgf": 42
+      },
+      {
+        "reading": 24,
+        "kgf": 46
+      },
+      {
+        "reading": 25,
+        "kgf": 51
+      },
+      {
+        "reading": 26,
+        "kgf": 57
+      },
+      {
+        "reading": 27,
+        "kgf": 63
+      },
+      {
+        "reading": 28,
+        "kgf": 70
+      },
+      {
+        "reading": 29,
+        "kgf": 79
+      },
+      {
+        "reading": 30,
+        "kgf": 88
+      },
+      {
+        "reading": 31,
+        "kgf": 98
+      },
+      {
+        "reading": 32,
+        "kgf": 110
+      },
+      {
+        "reading": 33,
+        "kgf": 124
+      },
+      {
+        "reading": 34,
+        "kgf": 140
+      },
+      {
+        "reading": 35,
+        "kgf": 157
+      },
+      {
+        "reading": 36,
+        "kgf": 178
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "aluminum round 3.3 mm",
+    "points": [
+      {
+        "reading": 31,
+        "kgf": 42
+      },
+      {
+        "reading": 32,
+        "kgf": 49
+      },
+      {
+        "reading": 33,
+        "kgf": 56
+      },
+      {
+        "reading": 34,
+        "kgf": 65
+      },
+      {
+        "reading": 35,
+        "kgf": 76
+      },
+      {
+        "reading": 36,
+        "kgf": 89
+      },
+      {
+        "reading": 37,
+        "kgf": 105
+      },
+      {
+        "reading": 38,
+        "kgf": 124
+      },
+      {
+        "reading": 39,
+        "kgf": 146
+      },
+      {
+        "reading": 40,
+        "kgf": 174
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "aluminum blade 1.5 x 3.9 mm",
+    "points": [
+      {
+        "reading": 5,
+        "kgf": 42
+      },
+      {
+        "reading": 6,
+        "kgf": 46
+      },
+      {
+        "reading": 7,
+        "kgf": 52
+      },
+      {
+        "reading": 8,
+        "kgf": 58
+      },
+      {
+        "reading": 9,
+        "kgf": 65
+      },
+      {
+        "reading": 10,
+        "kgf": 72
+      },
+      {
+        "reading": 11,
+        "kgf": 81
+      },
+      {
+        "reading": 12,
+        "kgf": 91
+      },
+      {
+        "reading": 13,
+        "kgf": 103
+      },
+      {
+        "reading": 14,
+        "kgf": 116
+      },
+      {
+        "reading": 15,
+        "kgf": 130
+      },
+      {
+        "reading": 16,
+        "kgf": 147
+      },
+      {
+        "reading": 17,
+        "kgf": 166
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "aluminum blade 1.8 x 5.3 mm",
+    "points": [
+      {
+        "reading": 12,
+        "kgf": 43
+      },
+      {
+        "reading": 13,
+        "kgf": 46
+      },
+      {
+        "reading": 14,
+        "kgf": 51
+      },
+      {
+        "reading": 15,
+        "kgf": 56
+      },
+      {
+        "reading": 16,
+        "kgf": 61
+      },
+      {
+        "reading": 17,
+        "kgf": 68
+      },
+      {
+        "reading": 18,
+        "kgf": 75
+      },
+      {
+        "reading": 19,
+        "kgf": 83
+      },
+      {
+        "reading": 20,
+        "kgf": 92
+      },
+      {
+        "reading": 21,
+        "kgf": 103
+      },
+      {
+        "reading": 22,
+        "kgf": 115
+      },
+      {
+        "reading": 23,
+        "kgf": 130
+      },
+      {
+        "reading": 24,
+        "kgf": 146
+      },
+      {
+        "reading": 25,
+        "kgf": 165
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "aluminum blade 2.1 x 4.2 mm",
+    "points": [
+      {
+        "reading": 19,
+        "kgf": 44
+      },
+      {
+        "reading": 20,
+        "kgf": 50
+      },
+      {
+        "reading": 21,
+        "kgf": 56
+      },
+      {
+        "reading": 22,
+        "kgf": 63
+      },
+      {
+        "reading": 23,
+        "kgf": 71
+      },
+      {
+        "reading": 24,
+        "kgf": 81
+      },
+      {
+        "reading": 25,
+        "kgf": 92
+      },
+      {
+        "reading": 26,
+        "kgf": 104
+      },
+      {
+        "reading": 27,
+        "kgf": 118
+      },
+      {
+        "reading": 28,
+        "kgf": 134
+      },
+      {
+        "reading": 29,
+        "kgf": 153
+      },
+      {
+        "reading": 30,
+        "kgf": 174
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "titanium round 2.0 mm",
+    "points": [
+      {
+        "reading": 11,
+        "kgf": 40
+      },
+      {
+        "reading": 12,
+        "kgf": 43
+      },
+      {
+        "reading": 13,
+        "kgf": 45
+      },
+      {
+        "reading": 14,
+        "kgf": 48
+      },
+      {
+        "reading": 15,
+        "kgf": 52
+      },
+      {
+        "reading": 16,
+        "kgf": 56
+      },
+      {
+        "reading": 17,
+        "kgf": 61
+      },
+      {
+        "reading": 18,
+        "kgf": 66
+      },
+      {
+        "reading": 19,
+        "kgf": 73
+      },
+      {
+        "reading": 20,
+        "kgf": 80
+      },
+      {
+        "reading": 21,
+        "kgf": 88
+      },
+      {
+        "reading": 22,
+        "kgf": 98
+      },
+      {
+        "reading": 23,
+        "kgf": 108
+      },
+      {
+        "reading": 24,
+        "kgf": 121
+      },
+      {
+        "reading": 25,
+        "kgf": 136
+      },
+      {
+        "reading": 26,
+        "kgf": 154
+      },
+      {
+        "reading": 27,
+        "kgf": 174
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "titanium blade 1.4 x 2.6 mm",
+    "points": [
+      {
+        "reading": 5,
+        "kgf": 41
+      },
+      {
+        "reading": 6,
+        "kgf": 44
+      },
+      {
+        "reading": 7,
+        "kgf": 46
+      },
+      {
+        "reading": 8,
+        "kgf": 50
+      },
+      {
+        "reading": 9,
+        "kgf": 53
+      },
+      {
+        "reading": 10,
+        "kgf": 57
+      },
+      {
+        "reading": 11,
+        "kgf": 62
+      },
+      {
+        "reading": 12,
+        "kgf": 67
+      },
+      {
+        "reading": 13,
+        "kgf": 72
+      },
+      {
+        "reading": 14,
+        "kgf": 79
+      },
+      {
+        "reading": 15,
+        "kgf": 86
+      },
+      {
+        "reading": 16,
+        "kgf": 95
+      },
+      {
+        "reading": 17,
+        "kgf": 105
+      },
+      {
+        "reading": 18,
+        "kgf": 116
+      },
+      {
+        "reading": 19,
+        "kgf": 129
+      },
+      {
+        "reading": 20,
+        "kgf": 143
+      },
+      {
+        "reading": 21,
+        "kgf": 160
+      },
+      {
+        "reading": 22,
+        "kgf": 180
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "UHMWPE blade 1.7 x 2.0 mm",
+    "points": [
+      {
+        "reading": 8,
+        "kgf": 44
+      },
+      {
+        "reading": 9,
+        "kgf": 48
+      },
+      {
+        "reading": 10,
+        "kgf": 53
+      },
+      {
+        "reading": 11,
+        "kgf": 58
+      },
+      {
+        "reading": 12,
+        "kgf": 64
+      },
+      {
+        "reading": 13,
+        "kgf": 70
+      },
+      {
+        "reading": 14,
+        "kgf": 77
+      },
+      {
+        "reading": 15,
+        "kgf": 84
+      },
+      {
+        "reading": 16,
+        "kgf": 92
+      },
+      {
+        "reading": 17,
+        "kgf": 101
+      },
+      {
+        "reading": 18,
+        "kgf": 110
+      },
+      {
+        "reading": 19,
+        "kgf": 120
+      },
+      {
+        "reading": 20,
+        "kgf": 131
+      },
+      {
+        "reading": 21,
+        "kgf": 142
+      },
+      {
+        "reading": 22,
+        "kgf": 154
+      },
+      {
+        "reading": 23,
+        "kgf": 167
+      },
+      {
+        "reading": 24,
+        "kgf": 181
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "PBO round 2.6-3.0 mm",
+    "points": [
+      {
+        "reading": 5,
+        "kgf": 40
+      },
+      {
+        "reading": 6,
+        "kgf": 42
+      },
+      {
+        "reading": 7,
+        "kgf": 44
+      },
+      {
+        "reading": 8,
+        "kgf": 46
+      },
+      {
+        "reading": 9,
+        "kgf": 49
+      },
+      {
+        "reading": 10,
+        "kgf": 51
+      },
+      {
+        "reading": 11,
+        "kgf": 54
+      },
+      {
+        "reading": 12,
+        "kgf": 57
+      },
+      {
+        "reading": 13,
+        "kgf": 61
+      },
+      {
+        "reading": 14,
+        "kgf": 64
+      },
+      {
+        "reading": 15,
+        "kgf": 68
+      },
+      {
+        "reading": 16,
+        "kgf": 73
+      },
+      {
+        "reading": 17,
+        "kgf": 78
+      },
+      {
+        "reading": 18,
+        "kgf": 83
+      },
+      {
+        "reading": 19,
+        "kgf": 88
+      },
+      {
+        "reading": 20,
+        "kgf": 95
+      },
+      {
+        "reading": 21,
+        "kgf": 102
+      },
+      {
+        "reading": 22,
+        "kgf": 109
+      },
+      {
+        "reading": 23,
+        "kgf": 118
+      },
+      {
+        "reading": 24,
+        "kgf": 127
+      },
+      {
+        "reading": 25,
+        "kgf": 137
+      },
+      {
+        "reading": 26,
+        "kgf": 148
+      },
+      {
+        "reading": 27,
+        "kgf": 160
+      },
+      {
+        "reading": 28,
+        "kgf": 174
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "PBO round 3.75-4.0 mm",
+    "points": [
+      {
+        "reading": 18,
+        "kgf": 44
+      },
+      {
+        "reading": 19,
+        "kgf": 49
+      },
+      {
+        "reading": 20,
+        "kgf": 55
+      },
+      {
+        "reading": 21,
+        "kgf": 61
+      },
+      {
+        "reading": 22,
+        "kgf": 68
+      },
+      {
+        "reading": 23,
+        "kgf": 75
+      },
+      {
+        "reading": 24,
+        "kgf": 83
+      },
+      {
+        "reading": 25,
+        "kgf": 92
+      },
+      {
+        "reading": 26,
+        "kgf": 101
+      },
+      {
+        "reading": 27,
+        "kgf": 111
+      },
+      {
+        "reading": 28,
+        "kgf": 121
+      },
+      {
+        "reading": 29,
+        "kgf": 132
+      },
+      {
+        "reading": 30,
+        "kgf": 143
+      },
+      {
+        "reading": 31,
+        "kgf": 155
+      },
+      {
+        "reading": 32,
+        "kgf": 168
+      },
+      {
+        "reading": 33,
+        "kgf": 181
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "PBO blade 1.8 x 4.7 mm",
+    "points": [
+      {
+        "reading": 3,
+        "kgf": 57
+      },
+      {
+        "reading": 4,
+        "kgf": 60
+      },
+      {
+        "reading": 5,
+        "kgf": 63
+      },
+      {
+        "reading": 6,
+        "kgf": 66
+      },
+      {
+        "reading": 7,
+        "kgf": 70
+      },
+      {
+        "reading": 8,
+        "kgf": 74
+      },
+      {
+        "reading": 9,
+        "kgf": 79
+      },
+      {
+        "reading": 10,
+        "kgf": 84
+      },
+      {
+        "reading": 11,
+        "kgf": 89
+      },
+      {
+        "reading": 12,
+        "kgf": 95
+      },
+      {
+        "reading": 13,
+        "kgf": 101
+      },
+      {
+        "reading": 14,
+        "kgf": 108
+      },
+      {
+        "reading": 15,
+        "kgf": 116
+      },
+      {
+        "reading": 16,
+        "kgf": 125
+      },
+      {
+        "reading": 17,
+        "kgf": 134
+      },
+      {
+        "reading": 18,
+        "kgf": 145
+      },
+      {
+        "reading": 19,
+        "kgf": 157
+      },
+      {
+        "reading": 20,
+        "kgf": 170
+      },
+      {
+        "reading": 21,
+        "kgf": 184
+      }
+    ]
+  },
+  {
+    "tool": "Park Tool TM-1",
+    "spokeType": "carbon blade 1.5 x 5.0 mm",
+    "points": [
+      {
+        "reading": 3,
+        "kgf": 51
+      },
+      {
+        "reading": 4,
+        "kgf": 54
+      },
+      {
+        "reading": 5,
+        "kgf": 56
+      },
+      {
+        "reading": 6,
+        "kgf": 59
+      },
+      {
+        "reading": 7,
+        "kgf": 63
+      },
+      {
+        "reading": 8,
+        "kgf": 67
+      },
+      {
+        "reading": 9,
+        "kgf": 72
+      },
+      {
+        "reading": 10,
+        "kgf": 77
+      },
+      {
+        "reading": 11,
+        "kgf": 82
+      },
+      {
+        "reading": 12,
+        "kgf": 89
+      },
+      {
+        "reading": 13,
+        "kgf": 96
+      },
+      {
+        "reading": 14,
+        "kgf": 105
+      },
+      {
+        "reading": 15,
+        "kgf": 114
+      },
+      {
+        "reading": 16,
+        "kgf": 125
+      },
+      {
+        "reading": 17,
+        "kgf": 137
+      },
+      {
+        "reading": 18,
+        "kgf": 151
+      },
+      {
+        "reading": 19,
+        "kgf": 167
+      }
+    ]
+  }
+]

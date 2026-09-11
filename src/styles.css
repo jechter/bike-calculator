@@ -1,0 +1,872 @@
+:root {
+  --bg: #f6f7f9;
+  --panel: #ffffff;
+  --panel-2: #f0f2f5;
+  --text: #1b1f24;
+  --muted: #616b76;
+  --border: #d9dee4;
+  --accent: #0b6bcb;
+  --accent-soft: #e5f0fb;
+  --ok: #157347;
+  --warn: #b7791f;
+  --danger: #c0392b;
+  --radius: 10px;
+  --sidebar-w: 240px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14181d;
+    --panel: #1c2229;
+    --panel-2: #232b33;
+    --text: #e7ecf1;
+    --muted: #9aa7b3;
+    --border: #313a44;
+    --accent: #4c9dff;
+    --accent-soft: #1d2b3a;
+    --ok: #46c07a;
+    --warn: #e0a44a;
+    --danger: #e8695b;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 16px 12px;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-footer { margin-top: auto; padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.repo-link {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--muted); font-size: 12px; text-decoration: none;
+  padding: 0 4px;
+}
+.repo-link:hover { color: var(--accent); }
+.repo-icon { flex: none; }
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav button {
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text);
+  padding: 9px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.nav button:hover { background: var(--panel-2); }
+.nav button.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.nav .icon {
+  width: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+.nav button.active .icon { color: var(--accent); }
+.nav button:hover .icon { color: var(--text); }
+.nav .icon svg { display: block; }
+
+/* Main */
+.main { padding: 28px 32px 60px; max-width: 900px; }
+.main h1 { margin: 0 0 4px; font-size: 24px; }
+.main .subtitle { color: var(--muted); margin: 0 0 24px; }
+
+/* Each section is a card so the fields under one heading read as a group. */
+.section {
+  margin-bottom: 18px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px 18px;
+}
+/* position+z-index so the info popover paints above sticky table headers below it */
+.section-head { position: relative; z-index: 5; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.section-head h3 { margin: 0; }
+.section h3 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+
+/* Info popover next to a section title */
+.infotip { position: relative; display: inline-flex; }
+.infotip-btn {
+  width: 18px; height: 18px; padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
+  font: italic 700 11px/1 Georgia, "Times New Roman", serif;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.infotip-btn:hover, .infotip-btn.open { border-color: var(--accent); color: var(--accent); }
+.infotip-pop {
+  position: absolute; z-index: 40;
+  top: calc(100% + 6px); left: 0;
+  width: 340px; max-width: 78vw;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  padding: 10px 12px;
+  font-size: 13px; line-height: 1.5; color: var(--text);
+  text-transform: none; letter-spacing: normal; font-weight: 400;
+}
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+
+/* Fields */
+.field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 4px; }
+.field-label { font-weight: 600; font-size: 13px; }
+.field-hint { font-size: 12px; color: var(--muted); }
+/* Accent the input itself to mark the value you set in a two-way solve
+   (e.g. Speed ⇄ Power) — a thicker top border matching the wheel-building
+   side cards, to keep it uncluttered. */
+/* Highlight the value you set in a two-way solve with a thick accent top
+   border (like the wheel-building side cards). The 2px extra border is offset
+   by 2px less top padding so the input keeps its height — no layout shift when
+   the highlight moves. Attribute selectors raise specificity above the base
+   input rule, which otherwise resets the border after this one. */
+.field-highlight .field-label { color: var(--accent); }
+.field-highlight input[type="number"],
+.field-highlight input[type="text"] {
+  border-top: 3px solid var(--accent);
+  padding-top: 6px;
+}
+input[type="number"], input[type="text"], select {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  width: 100%;
+}
+/* Read-only computed value styled like an input */
+.static-value {
+  padding: 8px 10px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.number-input { display: flex; align-items: center; gap: 6px; }
+.number-input input { flex: 1; }
+.number-input .suffix { color: var(--muted); font-size: 13px; }
+
+/* Results */
+.results { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.result { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+.result-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.result-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: baseline; }
+
+/* Stacked bar visualising the power split (gravity / rolling / aero) */
+.split-bar {
+  display: flex; height: 14px; margin-top: 12px;
+  border-radius: 7px; overflow: hidden; background: var(--panel-2);
+}
+.split-seg { height: 100%; transition: width 0.15s ease; }
+.split-seg + .split-seg { box-shadow: -1px 0 0 var(--panel); }
+.result-value { font-size: 18px; font-weight: 600; }
+.result-big .result-value { font-size: 26px; }
+.result-sub { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+.result-accent-left { border-top: 3px solid #0b6bcb; }
+.result-accent-right { border-top: 3px solid #c0392b; }
+
+/* Notes */
+.note { border-radius: 8px; padding: 10px 12px; font-size: 13px; margin: 12px 0; border: 1px solid var(--border); }
+.note-info { background: var(--panel-2); }
+.note-warn { background: color-mix(in srgb, var(--warn) 14%, var(--panel)); border-color: color-mix(in srgb, var(--warn) 40%, var(--border)); }
+
+/* Tables */
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--panel-2); }
+/* isolation traps the sticky <th> stacking context inside the table so it can't
+   paint over section info popovers that overlap the table from above */
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel-2); isolation: isolate; }
+tr.highlight td { background: var(--accent-soft); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.dr-note { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* Drivetrain (crankset + cassette) diagram */
+.dt-diagram { position: relative; margin-top: 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+.dt-slomo {
+  position: absolute; top: 10px; right: 10px; z-index: 1;
+  padding: 4px 10px; font-size: 12px; cursor: pointer;
+  color: var(--muted); background: var(--panel); border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.dt-slomo:hover { border-color: var(--accent); color: var(--accent); }
+.dt-slomo.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+.dt-diagram svg { width: 100%; max-width: 760px; display: block; margin: 0 auto; }
+.dt-gear { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 2 2.5; }
+.dt-gear-active { fill: none; stroke: var(--accent); stroke-width: 3; }
+.dt-hub { fill: var(--muted); }
+.dt-chain { fill: none; stroke: var(--text); stroke-width: 3; stroke-linejoin: round; }
+.dt-pulley { fill: var(--panel); stroke: var(--muted); stroke-width: 1.5; }
+.dt-cage { stroke: var(--muted); stroke-width: 4; stroke-linecap: round; }
+.dt-spoke { fill: none; stroke: var(--muted); stroke-width: 1.2; opacity: 0.45; }
+.dt-spider { fill: none; stroke: var(--muted); stroke-width: 2; opacity: 0.6; }
+.dt-crank { fill: none; stroke: var(--muted); stroke-width: 2; stroke-linejoin: round; opacity: 0.7; }
+.dt-crank-pedal { fill: none; stroke: var(--muted); stroke-width: 2; opacity: 0.85; }
+.dt-tire { fill: none; stroke: var(--muted); opacity: 0.18; }
+.dt-rim { fill: none; stroke: var(--muted); stroke-width: 1.5; opacity: 0.3; }
+.dt-wheel-spoke { fill: none; stroke: var(--muted); stroke-width: 1; opacity: 0.3; }
+.dt-valve { fill: var(--muted); stroke: none; opacity: 0.65; }
+.dt-label {
+  fill: var(--text); font-size: 11px; font-weight: 700;
+  paint-order: stroke; stroke: var(--panel-2); stroke-width: 3px; stroke-linejoin: round;
+}
+/* The caption + shift buttons float over the bottom of the diagram so the wheel
+   shows behind them; a translucent backdrop keeps the text legible. */
+.dt-shift {
+  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 4px 8px; border-radius: 999px;
+  background: color-mix(in srgb, var(--panel-2) 78%, transparent);
+  backdrop-filter: blur(2px);
+}
+.dt-shift .dt-cap { margin-top: 0; flex: 0 1 auto; white-space: nowrap; }
+.dt-shift-btn {
+  flex: 0 0 auto; width: 30px; height: 30px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; line-height: 1; cursor: pointer; touch-action: none;
+  color: var(--text); background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.dt-shift-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.dt-shift-btn:disabled { opacity: 0.35; cursor: default; }
+.dt-cap { text-align: center; color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+/* Thread direction: left/right table + hover diagram */
+.td-layout { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+.td-table { flex: 0 1 auto; }
+.td-table table { width: auto; table-layout: fixed; }
+.td-table th:nth-child(1), .td-table td:nth-child(1) { width: 300px; }
+.td-table th:nth-child(2), .td-table td:nth-child(2),
+.td-table th:nth-child(3), .td-table td:nth-child(3) { width: 120px; }
+.td-cellnote { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.td-cell { cursor: pointer; }
+.td-cell:hover { background: var(--panel-2); }
+.td-cell.lh { background: color-mix(in srgb, var(--danger) 8%, transparent); }
+.td-cell.sel { box-shadow: inset 0 0 0 2px var(--accent); }
+
+.td-diagram {
+  flex: none; width: 230px;
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; text-align: center;
+  position: sticky; top: 16px;
+}
+.td-dia-title { font-weight: 600; font-size: 14px; }
+.td-dia-sub { color: var(--muted); font-size: 13px; margin: 2px 0 8px; }
+.td-diagram svg { width: 190px; height: 190px; }
+.td-fastener { fill: var(--panel); stroke: var(--border); stroke-width: 2; }
+.td-fastener-center { fill: var(--muted); stroke: none; }
+.td-loosen { color: var(--ok); }
+.td-tighten { color: var(--danger); }
+.td-key { text-align: left; margin-top: 10px; font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
+.td-key-row { display: flex; align-items: center; gap: 8px; }
+.td-swatch { width: 14px; height: 6px; border-radius: 3px; flex: none; }
+.td-swatch.loosen { background: var(--ok); }
+.td-swatch.tighten { background: var(--danger); }
+.td-dia-foot { margin-top: 8px; font-size: 12px; color: var(--muted); }
+
+.badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.badge.ok { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+.badge.warn { background: color-mix(in srgb, var(--warn) 20%, transparent); color: var(--warn); }
+.badge.danger { background: color-mix(in srgb, var(--danger) 18%, transparent); color: var(--danger); }
+.badge.lh { background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger); }
+.badge.rh { background: var(--panel-2); color: var(--muted); }
+
+.turn { font-weight: 700; }
+.turn.cw { color: var(--accent); }
+.turn.ccw { color: var(--accent); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--border); background: var(--panel); border-radius: 999px; padding: 4px 12px; cursor: pointer; font: inherit; font-size: 13px; }
+.chip:hover { border-color: var(--accent); }
+
+/* Full-width stacked rows (fields that should never share a line) */
+.rows { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; max-width: 520px; }
+
+/* Combobox: an editable field with an integrated preset dropdown caret.
+   The wrapper carries the border; the input and caret sit inside it. */
+.combo {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.combo:focus-within { border-color: var(--accent); }
+.combo > input[type="text"],
+.combo > .number-input { flex: 1; min-width: 0; }
+.combo > input[type="text"],
+.combo .number-input input {
+  border: none;
+  background: transparent;
+}
+.combo > input[type="text"]:focus,
+.combo .number-input input:focus { outline: none; }
+.combo .number-input { align-items: center; padding-right: 2px; }
+.number-input > .combo { flex: 1; min-width: 0; }
+
+.preset-menu { position: relative; flex: none; display: flex; }
+.preset-btn {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border-left: 1px solid var(--border);
+}
+.preset-btn:hover { color: var(--accent); }
+.preset-btn .caret { transition: transform 0.15s ease; }
+.preset-btn.open .caret { transform: rotate(180deg); }
+
+/* Labelled preset button (section-level, multi-field presets) */
+.preset-menu-labelled { display: inline-flex; }
+.preset-labelbtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--panel-2); color: var(--text);
+  font: inherit; font-size: 13px; padding: 6px 10px; cursor: pointer;
+}
+.preset-labelbtn:hover { border-color: var(--accent); }
+.preset-labelbtn .caret { color: var(--muted); transition: transform 0.15s ease; }
+.preset-labelbtn.open .caret { transform: rotate(180deg); }
+.preset-menu-labelled .preset-list { left: auto; right: 0; }
+
+/* Section header right-side action (e.g. preset picker) */
+.section-action { margin-left: auto; }
+.preset-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 220px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.preset-list li { margin: 0; }
+.preset-list button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  padding: 7px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.preset-list button:hover { background: var(--accent-soft); color: var(--accent); }
+
+/* Cassette browse-and-filter picker (foldout next to the cog field) */
+.cassette-picker { position: relative; flex: none; display: flex; }
+.cassette-picker .preset-btn { gap: 4px; font-weight: 500; }
+
+/* The rear-derailleur picker's trigger is a full-width box, matching the
+   chainring / cassette input fields (rather than the compact caret button). */
+.derailleur-select { display: block; width: 100%; }
+.derailleur-select > .preset-btn {
+  width: 100%;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: inherit;
+  font-weight: 400;
+}
+.derailleur-select > .preset-btn:hover { color: var(--text); border-color: var(--accent); }
+.derailleur-select > .preset-btn.open { border-color: var(--accent); }
+.derailleur-select > .preset-btn .caret { color: var(--muted); flex: none; }
+.ds-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Shifter control: an actuation-family select + a speed-count select (the speed
+   select is hidden for Friction). Family gets the extra room. */
+.shifter-field { display: flex; gap: 8px; }
+.shifter-field select { min-width: 0; flex: 1; }
+.shifter-field select:first-child { flex: 2; }
+
+/* Derailleur · Shifter · Cassette share one row on a single drivetrain (3-across
+   once the shifter appears, 2-across before). In the narrower Compare columns
+   they stack, one field per line. */
+.dt-setup-trio { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 14px; }
+.dt-config .dt-setup-trio { grid-template-columns: 1fr; }
+
+/* Note shown when a derailleur-compatible hub auto-reveals its cassette row */
+.dt-combo-note {
+  margin: 14px 0 0; padding: 8px 12px;
+  border-left: 3px solid var(--accent); border-radius: 6px;
+  background: var(--panel-2); color: var(--muted);
+  font-size: 12.5px; line-height: 1.5;
+}
+.dt-combo-note strong { color: var(--text); }
+.cp-pop {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  right: 0;
+  width: min(420px, 88vw);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cp-search {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+}
+.cp-search:focus { outline: none; border-color: var(--accent); }
+.cp-filters { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.cp-filters-4 { grid-template-columns: 1fr 1fr; }
+.cp-filters select { width: 100%; min-width: 0; }
+
+/* Hub-picker trigger (section-header action): the selected hub's name ellipsises
+   rather than pushing the caret off the edge on a narrow header. */
+.hub-trigger .ds-name { display: inline-block; max-width: 220px; }
+@media (max-width: 560px) {
+  .hub-trigger .ds-name { max-width: 150px; }
+}
+/* Source line under the hub fields once a hub is picked from the database. */
+.wb-hub-source { margin: 14px 0 0; }
+.cp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.cp-list li { margin: 0; }
+.cp-list button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font: inherit;
+  padding: 7px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.cp-list li:last-child button { border-bottom: none; }
+.cp-list button:hover { background: var(--accent-soft); }
+.cp-list button.active { background: var(--accent-soft); }
+.cp-list button.active .cp-name { color: var(--accent); font-weight: 600; }
+.cp-name { font-size: 13px; }
+.cp-meta { font-size: 11px; color: var(--muted); }
+.cp-empty { padding: 12px 10px; color: var(--muted); font-size: 13px; }
+.cp-foot { font-size: 11px; color: var(--muted); padding: 0 2px; }
+
+/* Fit dots on cassette rows when a derailleur is selected (green/amber/red). */
+.cp-fit-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 7px;
+  vertical-align: middle;
+  flex: none;
+}
+.cp-fit-dot.ok { background: var(--ok); }
+.cp-fit-dot.caution { background: var(--warn); }
+.cp-fit-dot.incompatible { background: var(--danger); }
+.cp-legend { font-size: 11px; color: var(--muted); padding: 0 2px; display: flex; align-items: center; gap: 3px; flex-wrap: wrap; }
+.cp-legend .cp-fit-dot { margin: 0 2px 0 6px; }
+
+/* Embedded tire-size picker in the rolling-circumference field */
+.tire-picker { position: relative; flex: none; display: flex; }
+.tire-picker .preset-btn { gap: 4px; font-weight: 500; }
+.tp-pop {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  right: 0;
+  width: min(340px, 88vw);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tp-apply {
+  width: 100%;
+  text-align: left;
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tp-apply:hover { border-color: var(--accent); }
+.tp-apply-main { font-size: 14px; font-weight: 600; color: var(--accent); }
+.tp-apply-sub { font-size: 11px; color: var(--muted); }
+.tp-empty { padding: 4px 2px; color: var(--muted); font-size: 13px; }
+.tp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* Slider + number combo */
+.slider-row { display: flex; align-items: center; gap: 12px; }
+.slider-row input[type="range"] { flex: 1; accent-color: var(--accent); }
+.slider-row .number-input { width: 120px; flex: none; }
+
+.inline-link { color: var(--accent); text-decoration: none; }
+.inline-link:hover { text-decoration: underline; }
+
+/* Gear chart */
+.chart-controls { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.chart-controls .field { margin-bottom: 0; }
+.chart-controls .result { padding: 6px 12px; }
+.gear-chart {
+  position: relative;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 4px;
+}
+.gc-scroll { overflow-x: auto; }
+.gc-grid { stroke: var(--muted); opacity: 0.4; stroke-width: 1; stroke-dasharray: 3 4; }
+.gc-tick { fill: var(--muted); font-size: 12px; }
+.gc-row-label { fill: var(--text); font-size: 13px; font-weight: 700; }
+.gc-row-line { stroke-width: 2; opacity: 0.5; }
+.gc-pt-label { fill: var(--muted); font-size: 10px; }
+.gc-dot { cursor: pointer; }
+.gc-dot:hover { stroke: var(--panel); stroke-width: 3; }
+
+.gc-crossed .gc-dot { opacity: 0.5; }
+.gc-crossed .gc-pt-label { opacity: 0.45; }
+
+/* CVT: thick rounded bar spanning the continuous low–high range. */
+.gc-row-line-cvt { stroke-width: 8; opacity: 0.3; stroke-linecap: round; }
+/* CVT: a wide invisible hit line to pick a ratio anywhere along the band, and a
+   handle marking the current pick. */
+.gc-cvt-hit { stroke: transparent; stroke-width: 22; cursor: ew-resize; }
+.gc-cvt-handle { fill: var(--accent); stroke: var(--panel); stroke-width: 2; pointer-events: none; }
+
+/* The gear currently shown in the diagram gets a ring + emphasised label. */
+.gc-dot-halo { stroke-width: 2.5; opacity: 0.9; }
+.gc-active .gc-pt-label { fill: var(--text); font-weight: 700; opacity: 1; }
+.gc-tt-warn { margin-top: 5px; color: var(--warn); font-weight: 600; }
+
+/* In-chart axis label + metric dropdown */
+.gc-axis { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 4px; flex-wrap: wrap; }
+.gc-axis-extra { display: flex; align-items: center; }
+.gc-cadence { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.gc-cadence label { font-weight: 600; }
+.gc-cadence input[type="range"] { width: 96px; accent-color: var(--accent); }
+.gc-cadence-num {
+  width: 54px; padding: 4px 6px;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--panel); color: var(--text); font: inherit; font-size: 13px;
+}
+
+/* Chainstay slider under the drivetrain diagram */
+.dt-controls {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 10px; font-size: 13px; color: var(--muted);
+}
+.dt-controls label { font-weight: 600; }
+.dt-controls input[type="range"] { width: 140px; accent-color: var(--accent); }
+.dt-hint {
+  margin: 10px auto 0; max-width: 60ch; text-align: center;
+  font-size: 12px; color: var(--muted); line-height: 1.5;
+}
+
+/* Compare a second drivetrain */
+.dt-compare-toggle {
+  border: 1px solid var(--border); border-radius: 999px;
+  background: var(--panel); color: var(--text);
+  padding: 5px 12px; font: inherit; font-size: 13px; cursor: pointer;
+}
+.dt-compare-toggle:hover { border-color: var(--accent); }
+
+.dt-configs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.dt-config {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 12px; background: var(--panel-2);
+}
+.dt-config-a { border-top: 3px solid #0b6bcb; }
+.dt-config-b { border-top: 3px solid var(--warn); }
+.dt-config-head { font-weight: 700; font-size: 13px; margin-bottom: 10px; }
+.dt-config-a .dt-config-head { color: #0b6bcb; }
+.dt-config-b .dt-config-head { color: var(--warn); }
+
+/* Compared (config B) series in the gear chart */
+.gc-band { fill: var(--warn); opacity: 0.06; }
+.gc-row-line-b { stroke-dasharray: 4 4; }
+.gc-tt-tag {
+  display: inline-block; min-width: 15px; margin-right: 6px; padding: 0 4px;
+  border-radius: 4px; background: var(--panel-2); color: var(--muted);
+  font-size: 11px; text-align: center;
+}
+
+/* A/B selector for the per-drivetrain detail sections */
+.dt-focus {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-top: 12px; font-size: 13px; color: var(--muted);
+}
+.dt-focus-seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.dt-focus-seg button {
+  border: none; background: var(--panel); color: var(--text);
+  padding: 5px 12px; font: inherit; font-size: 13px; cursor: pointer;
+}
+.dt-focus-seg button + button { border-left: 1px solid var(--border); }
+.dt-focus-seg button.active { background: var(--accent); color: #fff; }
+
+/* Sidebar global unit switcher */
+.unit-switcher { position: relative; }
+.unit-btn {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font: inherit; font-size: 13px; padding: 8px 10px; cursor: pointer;
+}
+.unit-btn:hover { border-color: var(--accent); }
+.unit-btn .caret { margin-left: auto; color: var(--muted); transition: transform 0.15s ease; }
+.unit-btn.open .caret { transform: rotate(180deg); }
+.unit-icon { color: var(--accent); }
+.unit-list { top: auto; bottom: calc(100% + 4px); left: 0; right: auto; min-width: 150px; }
+.gc-axis-caption { color: var(--muted); font-size: 13px; }
+.gc-axis-menu { position: relative; }
+.gc-axis-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--panel); color: var(--text);
+  font: inherit; font-size: 13px; font-weight: 600;
+  padding: 6px 10px; cursor: pointer;
+}
+.gc-axis-btn:hover { border-color: var(--accent); }
+.gc-axis-btn .caret { color: var(--muted); transition: transform 0.15s ease; }
+.gc-axis-btn.open .caret { transform: rotate(180deg); }
+.gc-axis-list { left: 50%; right: auto; transform: translateX(-50%); min-width: 240px; }
+.preset-list button.active { color: var(--accent); font-weight: 600; }
+
+/* Hover tooltip for a gear dot */
+.gc-tooltip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 14px));
+  pointer-events: none;
+  z-index: 30;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  padding: 8px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.gc-tt-title { font-weight: 700; margin-bottom: 4px; }
+.gc-tt-row { display: flex; justify-content: space-between; gap: 18px; }
+.gc-tt-row span { color: var(--muted); }
+
+/* Spoke-tension curve: reading → tension graph with a hover crosshair */
+.tc-chart {
+  position: relative;
+  margin-top: 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 8px 4px;
+}
+.tc-chart svg { display: block; cursor: crosshair; }
+.tc-grid { stroke: var(--muted); opacity: 0.35; stroke-width: 1; stroke-dasharray: 3 4; }
+.tc-tick { fill: var(--muted); font-size: 12px; }
+.tc-axis-title { fill: var(--muted); font-size: 12px; font-weight: 600; }
+.tc-area { fill: var(--accent); opacity: 0.08; stroke: none; }
+.tc-line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.tc-cross { stroke: var(--accent); stroke-width: 1; opacity: 0.55; stroke-dasharray: 4 4; }
+.tc-marker { fill: var(--accent); stroke: var(--panel); stroke-width: 2.5; }
+
+.tc-tooltip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 14px));
+  pointer-events: none;
+  z-index: 30;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  padding: 6px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+  text-align: center;
+}
+.tc-tt-reading { color: var(--muted); }
+.tc-tt-tension { margin-top: 2px; }
+.tc-tt-tension b { color: var(--accent); }
+
+.tc-readout {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 10px;
+  margin-top: 8px; padding: 0 4px 4px;
+  font-size: 14px; color: var(--text);
+}
+.tc-readout-reading { color: var(--muted); }
+.tc-readout-arrow { color: var(--muted); }
+.tc-readout-tension { color: var(--accent); font-size: 16px; }
+.tc-readout-hint { flex-basis: 100%; font-size: 12px; color: var(--muted); }
+.tc-caption { margin-top: 10px; max-width: 70ch; }
+
+/* Wheel building: per-side input groups, boxed and colour-accented */
+.wb-sides { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 14px; }
+.wb-side {
+  display: flex; flex-direction: column; gap: 10px;
+  border: 1px solid var(--border);
+  border-top-width: 3px;
+  border-radius: 10px;
+  padding: 14px;
+}
+.wb-side-left { border-top-color: #0b6bcb; }
+.wb-side-right { border-top-color: #c0392b; }
+.wb-side-title { margin: 0 0 2px; font-size: 13px; font-weight: 700; }
+.wb-side-left .wb-side-title { color: #0b6bcb; }
+.wb-side-right .wb-side-title { color: #c0392b; }
+
+/* Wheel diagram — the 3D canvas fills the panel; controls overlay the corners */
+.wheel-diagram {
+  position: relative; height: min(520px, 86vw); overflow: hidden;
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.wd-view { position: absolute; inset: 0; }
+.wd-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+  touch-action: none; cursor: grab; background: transparent;
+}
+.wd-canvas:active { cursor: grabbing; }
+.wd-caption { font-size: 12px; color: var(--muted); }
+/* Overlay cards sit above the canvas */
+.wd-align, .wd-zoomcol, .wd-lacing, .wd-legend, .wd-hint { position: absolute; z-index: 2; }
+.wd-align { top: 12px; left: 12px; display: flex; gap: 8px; }
+.wd-align-btn {
+  padding: 4px 14px; font-size: 12px; cursor: pointer; color: var(--text);
+  background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+}
+.wd-align-btn:hover { border-color: var(--muted); }
+.wd-zoomcol {
+  top: 50%; right: 12px; transform: translateY(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.wd-zoom-ico { font-size: 14px; line-height: 1; opacity: 0.7; }
+.wd-zoom-v {
+  writing-mode: vertical-lr; direction: rtl; /* up = zoom in */
+  -webkit-appearance: slider-vertical; width: 8px; height: min(320px, 60%);
+  accent-color: var(--accent); cursor: pointer;
+}
+.wd-hint { bottom: 10px; left: 50%; transform: translateX(-50%); pointer-events: none; }
+/* Lacing-order scrubber at bottom-left, colour legend at bottom-right */
+.wd-lacing {
+  left: 12px; bottom: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+}
+.wd-lacing-label { font-size: 12px; font-weight: 600; color: var(--text); }
+.wd-build { display: flex; align-items: center; gap: 10px; width: min(320px, 44vw); }
+.wd-play {
+  flex: none; width: 28px; height: 28px; padding: 0; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; cursor: pointer; color: var(--text);
+  background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+}
+.wd-play:hover { border-color: var(--muted); }
+.wd-scrubber { flex: 1 1 auto; min-width: 0; accent-color: var(--accent); cursor: pointer; }
+.wd-legend {
+  right: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 6px;
+  font-size: 13px; color: var(--muted);
+  background: color-mix(in srgb, var(--panel-2) 78%, transparent);
+  backdrop-filter: blur(2px); border-radius: 8px; padding: 8px 10px;
+}
+.wd-legend span { display: flex; align-items: center; gap: 8px; }
+.wd-legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+.lacing-errors { margin: 6px 0 0; padding-left: 18px; }
+.lacing-errors li { margin: 2px 0; }
+
+.hamburger { display: none; }
+
+/* Responsive */
+@media (max-width: 720px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .main { padding: 20px 16px 48px; }
+}
+
+/* Embedded in an auto-resizing iframe (see main.tsx): size to content rather
+   than the viewport. Without this, .app's min-height:100vh and the sidebar's
+   height:100vh equal the iframe's current height, so the reported height can
+   only ratchet up and the frame never shrinks back down. */
+html.embedded .app { min-height: 0; }
+html.embedded .sidebar {
+  position: static;
+  height: auto;
+  align-self: stretch;
+}
+/* Standalone leaves 60px under the content so it clears the viewport edge; when
+   embedded the frame is sized to fit, so trim the trailing whitespace (plus the
+   last block's own margin) to a small, symmetric inset above the host's border. */
+html.embedded .main { padding-bottom: 24px; }
+html.embedded .main > :last-child { margin-bottom: 0; }

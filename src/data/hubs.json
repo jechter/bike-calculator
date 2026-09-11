@@ -1,0 +1,533 @@
+[
+  {
+    "manufacturer": "Chris King",
+    "model": "R45 Front",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      16,
+      18,
+      20,
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 39.8,
+    "rightFlangeDiaMm": 39.8,
+    "leftOffsetMm": 34.8,
+    "rightOffsetMm": 34.8,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://cdn.shopify.com/s/files/1/2920/2114/files/r45_and_r45d_hub_specifications_and_wheel_building_information_3_17_2.pdf",
+      "sourceType": "primary",
+      "note": "Chris King's published wheel-building specs"
+    }
+  },
+  {
+    "manufacturer": "White Industries",
+    "model": "T11 Front",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      16,
+      18,
+      20,
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 35,
+    "rightFlangeDiaMm": 35,
+    "leftOffsetMm": 35.8,
+    "rightOffsetMm": 35.8,
+    "spokeHoleMm": 2.3,
+    "source": {
+      "url": "https://www.whiteind.com/product/t11-front/",
+      "sourceType": "primary",
+      "note": "White Industries' published hub specs"
+    }
+  },
+  {
+    "manufacturer": "Onyx",
+    "model": "Vesper Road Front",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      20,
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 34,
+    "rightFlangeDiaMm": 34,
+    "leftOffsetMm": 37.4,
+    "rightOffsetMm": 37.4,
+    "source": {
+      "url": "https://onyxrp.com/store/road-gravel-hubs/onyx-vesper-road-100-qr-front-hub/",
+      "sourceType": "primary",
+      "note": "Onyx's published spoke-hole-circle (PCD) diameter and flange offsets; spoke-hole bore not published"
+    }
+  },
+  {
+    "manufacturer": "Chris King",
+    "model": "R45D Centerlock Front",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 57.4,
+    "rightFlangeDiaMm": 57.4,
+    "leftOffsetMm": 22.3,
+    "rightOffsetMm": 30.6,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://chrisking.com/products/r45d-centerlock-front",
+      "sourceType": "primary",
+      "note": "Chris King's published product-page specs"
+    }
+  },
+  {
+    "manufacturer": "Chris King",
+    "model": "ISO B Boost Front",
+    "type": "front",
+    "widthMm": 110,
+    "spokeCounts": [
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 57.4,
+    "rightFlangeDiaMm": 57.4,
+    "leftOffsetMm": 26.9,
+    "rightOffsetMm": 26.9,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://cdn.shopify.com/s/files/1/2920/2114/files/iso_hub_specifications_wheel_building_information_2018.pdf",
+      "sourceType": "primary",
+      "note": "Chris King's published wheel-building specs"
+    }
+  },
+  {
+    "manufacturer": "White Industries",
+    "model": "CLD Front",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      24,
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 45,
+    "rightFlangeDiaMm": 45,
+    "leftOffsetMm": 20.5,
+    "rightOffsetMm": 34.5,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://www.whiteind.com/product/cld-front/",
+      "sourceType": "primary",
+      "note": "White Industries' published hub specs"
+    }
+  },
+  {
+    "manufacturer": "White Industries",
+    "model": "CLD+ Boost Front",
+    "type": "front",
+    "widthMm": 110,
+    "spokeCounts": [
+      24,
+      28,
+      32,
+      36,
+      40
+    ],
+    "leftFlangeDiaMm": 60,
+    "rightFlangeDiaMm": 60,
+    "leftOffsetMm": 25.75,
+    "rightOffsetMm": 38.5,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://www.whiteind.com/product/cld-boost-front/",
+      "sourceType": "primary",
+      "note": "White Industries' published hub specs"
+    }
+  },
+  {
+    "manufacturer": "Schmidt (SON)",
+    "model": "SON 28",
+    "type": "front-dynamo",
+    "widthMm": 100,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 54,
+    "rightFlangeDiaMm": 54,
+    "leftOffsetMm": 31,
+    "rightOffsetMm": 31,
+    "source": {
+      "url": "https://nabendynamo.de/en/service/spoke-length/",
+      "sourceType": "primary",
+      "note": "Schmidt SON's official spoke-length data (pitch-circle diameter); spoke-hole bore not published"
+    }
+  },
+  {
+    "manufacturer": "Schmidt (SON)",
+    "model": "SON 28 Disc (6-bolt)",
+    "type": "front-dynamo",
+    "widthMm": 100,
+    "spokeCounts": [
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 59,
+    "rightFlangeDiaMm": 54,
+    "leftOffsetMm": 22.5,
+    "rightOffsetMm": 25,
+    "source": {
+      "url": "https://nabendynamo.de/en/service/spoke-length/",
+      "sourceType": "primary",
+      "note": "Schmidt SON's official spoke-length data (pitch-circle diameter); spoke-hole bore not published"
+    }
+  },
+  {
+    "manufacturer": "Schmidt (SON)",
+    "model": "SON 28 12 Disc (6-bolt)",
+    "type": "front-dynamo",
+    "widthMm": 100,
+    "spokeCounts": [
+      24,
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 59,
+    "rightFlangeDiaMm": 54,
+    "leftOffsetMm": 21,
+    "rightOffsetMm": 27,
+    "source": {
+      "url": "https://nabendynamo.de/en/service/spoke-length/",
+      "sourceType": "primary",
+      "note": "Schmidt SON's official spoke-length data (pitch-circle diameter); spoke-hole bore not published"
+    }
+  },
+  {
+    "manufacturer": "Schmidt (SON)",
+    "model": "SON 28 15 Boost Disc (6-bolt)",
+    "type": "front-dynamo",
+    "widthMm": 110,
+    "spokeCounts": [
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 59,
+    "rightFlangeDiaMm": 59,
+    "leftOffsetMm": 28,
+    "rightOffsetMm": 28,
+    "source": {
+      "url": "https://nabendynamo.de/en/service/spoke-length/",
+      "sourceType": "primary",
+      "note": "Schmidt SON's official spoke-length data (pitch-circle diameter); spoke-hole bore not published"
+    }
+  },
+  {
+    "manufacturer": "Schmidt (SON)",
+    "model": "SONdelux",
+    "type": "front-dynamo",
+    "widthMm": 100,
+    "spokeCounts": [
+      20,
+      24,
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 54,
+    "rightFlangeDiaMm": 54,
+    "leftOffsetMm": 25,
+    "rightOffsetMm": 25,
+    "source": {
+      "url": "https://nabendynamo.de/en/service/spoke-length/",
+      "sourceType": "primary",
+      "note": "Schmidt SON's official spoke-length data (pitch-circle diameter); spoke-hole bore not published"
+    }
+  },
+  {
+    "manufacturer": "Chris King",
+    "model": "R45 Rear",
+    "type": "rear-cassette",
+    "widthMm": 130,
+    "spokeCounts": [
+      20,
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 51.0,
+    "rightFlangeDiaMm": 51.0,
+    "leftOffsetMm": 34.3,
+    "rightOffsetMm": 17.0,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://cdn.shopify.com/s/files/1/2920/2114/files/r45_and_r45d_hub_specifications_and_wheel_building_information_3_17_2.pdf",
+      "sourceType": "primary",
+      "note": "Chris King's published wheel-building specs"
+    }
+  },
+  {
+    "manufacturer": "Chris King",
+    "model": "R45D Centerlock 142x12 Rear",
+    "type": "rear-cassette",
+    "widthMm": 142,
+    "spokeCounts": [
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 57.4,
+    "rightFlangeDiaMm": 57.4,
+    "leftOffsetMm": 33.0,
+    "rightOffsetMm": 18.7,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://chrisking.com/products/r45d-centerlock-rear",
+      "sourceType": "primary",
+      "note": "Chris King's published product-page specs"
+    }
+  },
+  {
+    "manufacturer": "White Industries",
+    "model": "T11 Rear",
+    "type": "rear-cassette",
+    "widthMm": 130,
+    "spokeCounts": [
+      20,
+      24,
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 40.5,
+    "rightFlangeDiaMm": 55,
+    "leftOffsetMm": 35,
+    "rightOffsetMm": 18,
+    "spokeHoleMm": 2.3,
+    "source": {
+      "url": "https://www.whiteind.com/product/tll-rear/",
+      "sourceType": "primary",
+      "note": "White Industries' published hub specs"
+    }
+  },
+  {
+    "manufacturer": "White Industries",
+    "model": "CLD Rear",
+    "type": "rear-cassette",
+    "widthMm": 142,
+    "spokeCounts": [
+      24,
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 45,
+    "rightFlangeDiaMm": 55,
+    "leftOffsetMm": 33,
+    "rightOffsetMm": 19,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://www.whiteind.com/product/cld-rear/",
+      "sourceType": "primary",
+      "note": "White Industries' published hub specs"
+    }
+  },
+  {
+    "manufacturer": "Onyx",
+    "model": "Vesper MTB Rear (XDR)",
+    "type": "rear-cassette",
+    "widthMm": 142,
+    "spokeCounts": [
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 42,
+    "rightFlangeDiaMm": 50,
+    "leftOffsetMm": 33.9,
+    "rightOffsetMm": 19.47,
+    "source": {
+      "url": "https://onyxrp.com/store/mtb-hubs/onyx-vesper-mtb-cl-xdr-142-12-thru-bolt-rear-hub/",
+      "sourceType": "primary",
+      "note": "Onyx's published spoke-hole-circle (PCD) diameter and flange offsets; spoke-hole bore not published"
+    }
+  },
+  {
+    "manufacturer": "White Industries",
+    "model": "CLD+ Boost Rear",
+    "type": "rear-cassette",
+    "widthMm": 148,
+    "spokeCounts": [
+      24,
+      28,
+      32,
+      36,
+      40
+    ],
+    "leftFlangeDiaMm": 60,
+    "rightFlangeDiaMm": 60,
+    "leftOffsetMm": 36.5,
+    "rightOffsetMm": 22.5,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://www.whiteind.com/product/cld-boost-rear/",
+      "sourceType": "primary",
+      "note": "White Industries' published hub specs"
+    }
+  },
+  {
+    "manufacturer": "Chris King",
+    "model": "ISO B Boost Rear",
+    "type": "rear-cassette",
+    "widthMm": 148,
+    "spokeCounts": [
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 57.4,
+    "rightFlangeDiaMm": 57.4,
+    "leftOffsetMm": 36.3,
+    "rightOffsetMm": 24.0,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://cdn.shopify.com/s/files/1/2920/2114/files/iso_hub_specifications_wheel_building_information_2018.pdf",
+      "sourceType": "primary",
+      "note": "Chris King's published wheel-building specs"
+    }
+  },
+  {
+    "manufacturer": "Onyx",
+    "model": "MTB Boost Rear (XD)",
+    "type": "rear-cassette",
+    "widthMm": 148,
+    "spokeCounts": [
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 50,
+    "rightFlangeDiaMm": 50,
+    "leftOffsetMm": 36.9,
+    "rightOffsetMm": 22.92,
+    "source": {
+      "url": "https://onyxrp.com/store/mtb-hubs/mtb-boost-cl-xd/mtb-boost-cl-xd-148-12mm-thru/",
+      "sourceType": "primary",
+      "note": "Onyx's published spoke-hole-circle (PCD) diameter and flange offsets; spoke-hole bore not published"
+    }
+  },
+  {
+    "manufacturer": "White Industries",
+    "model": "ENO Flip Flop Rear",
+    "type": "rear-single",
+    "widthMm": 135,
+    "spokeCounts": [
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 48,
+    "rightFlangeDiaMm": 48,
+    "leftOffsetMm": 32.5,
+    "rightOffsetMm": 32.5,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://www.whiteind.com/product/eno-flip-flop/",
+      "sourceType": "primary",
+      "note": "White Industries' published hub specs"
+    }
+  },
+  {
+    "manufacturer": "Chris King",
+    "model": "ISO SS 142x12 Rear",
+    "type": "rear-single",
+    "widthMm": 142,
+    "spokeCounts": [
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 57.4,
+    "rightFlangeDiaMm": 57.4,
+    "leftOffsetMm": 31.0,
+    "rightOffsetMm": 32.3,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://cdn.shopify.com/s/files/1/2920/2114/files/iso_hub_specifications_wheel_building_information_2018.pdf",
+      "sourceType": "primary",
+      "note": "Chris King's published wheel-building specs"
+    }
+  },
+  {
+    "manufacturer": "Rohloff",
+    "model": "Speedhub 500/14",
+    "type": "rear-internal",
+    "widthMm": 135,
+    "spokeCounts": [
+      32
+    ],
+    "leftFlangeDiaMm": 100,
+    "rightFlangeDiaMm": 100,
+    "leftOffsetMm": 30,
+    "rightOffsetMm": 30,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Community/aggregated figures via Damon Rinard's spocalc database — maker publishes no first-party flange geometry"
+    }
+  },
+  {
+    "manufacturer": "Shimano",
+    "model": "Nexus Inter-8 (SG-8R)",
+    "type": "rear-internal",
+    "widthMm": 132,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 92.6,
+    "rightFlangeDiaMm": 92.6,
+    "leftOffsetMm": 29.3,
+    "rightOffsetMm": 24.9,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Community/aggregated figures via Damon Rinard's spocalc database — maker publishes no first-party flange geometry"
+    }
+  },
+  {
+    "manufacturer": "SRAM",
+    "model": "i-Motion 9",
+    "type": "rear-internal",
+    "widthMm": 135,
+    "spokeCounts": [
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 93.6,
+    "rightFlangeDiaMm": 93.6,
+    "leftOffsetMm": 26.5,
+    "rightOffsetMm": 31.5,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "sourceType": "secondary",
+      "note": "Community/aggregated figures via Damon Rinard's spocalc database — maker publishes no first-party flange geometry"
+    }
+  }
+]

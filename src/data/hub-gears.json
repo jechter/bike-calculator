@@ -1,0 +1,1098 @@
+{
+  "description": "Internal gear hub, bottom-bracket gearbox, and CVT gearing data, extracted from Ritzelrechner / Gear Calculator and Cycling UK, with a manufacturer and primary/secondary source per entry. Ratios are gear ratios relative to a 1:1 direct drive. For entries with continuouslyVariable=true, numGears is null and ratios is [min, max] of the continuous range. Entries with derailleurCompatible=true are designed to be combined with a rear derailleur + cassette (the app multiplies the hub ratios through the cassette).",
+  "extractedOn": "2026-09-07",
+  "count": 55,
+  "hubs": [
+    {
+      "name": "Rohloff Speedhub",
+      "manufacturer": "Rohloff",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 14,
+      "ratios": [
+        0.279,
+        0.316,
+        0.36,
+        0.409,
+        0.464,
+        0.528,
+        0.6,
+        0.682,
+        0.774,
+        0.881,
+        1,
+        1.135,
+        1.292,
+        1.467
+      ],
+      "source": {
+        "url": "https://www.rohloff.de/en/service/handbook/speedhub/tables",
+        "sourceType": "primary",
+        "note": "Rohloff handbook: full gear-ratio table for gears 1-14 (0.279-1.467), 526% range, even 13.6% steps."
+      }
+    },
+    {
+      "name": "Shimano Inter 11",
+      "manufacturer": "Shimano",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 11,
+      "ratios": [
+        0.527,
+        0.681,
+        0.77,
+        0.878,
+        0.995,
+        1.134,
+        1.292,
+        1.462,
+        1.667,
+        1.888,
+        2.153
+      ],
+      "source": {
+        "url": "https://www.sheldonbrown.com/alfine-11.html",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown lists all 11 Alfine SG-S700 ratios (0.527-2.153, ~409%); Shimano's own pages show only range %."
+      }
+    },
+    {
+      "name": "Shimano Inter 8",
+      "manufacturer": "Shimano",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 8,
+      "ratios": [
+        0.527,
+        0.644,
+        0.748,
+        0.851,
+        1,
+        1.223,
+        1.419,
+        1.615
+      ],
+      "source": {
+        "url": "https://sheldonbrown.com/nexus8.shtml",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown 8-speed ratio table (0.527-1.615, 307%), shared by Nexus SG-C6001-8 and Alfine SG-S7001-8; Shimano manual has no per-gear table."
+      }
+    },
+    {
+      "name": "Pinion P1.18",
+      "manufacturer": "Pinion",
+      "type": "bottomBracket",
+      "continuouslyVariable": false,
+      "numGears": 18,
+      "ratios": [
+        0.549,
+        0.612,
+        0.683,
+        0.755,
+        0.843,
+        0.944,
+        1.056,
+        1.177,
+        1.313,
+        1.452,
+        1.621,
+        1.815,
+        2.03,
+        2.262,
+        2.524,
+        2.792,
+        3.117,
+        3.49
+      ],
+      "source": {
+        "url": "https://pinion.eu/en/p-line/",
+        "sourceType": "primary",
+        "note": "Pinion P-Line page: P1.18 = 636% range, 11.5% even steps; per-gear ratios via manufacturer calculator."
+      }
+    },
+    {
+      "name": "Pinion P/C1.12",
+      "manufacturer": "Pinion",
+      "type": "bottomBracket",
+      "continuouslyVariable": false,
+      "numGears": 12,
+      "ratios": [
+        0.549,
+        0.642,
+        0.755,
+        0.891,
+        1.056,
+        1.235,
+        1.452,
+        1.714,
+        2.03,
+        2.376,
+        2.792,
+        3.297
+      ],
+      "source": {
+        "url": "https://pinion.eu/en/c-line/",
+        "sourceType": "primary",
+        "note": "Pinion C-Line page: C1.12/P1.12 = 600% range, 17.7% steps."
+      }
+    },
+    {
+      "name": "Pinion P/C1.9 XR",
+      "manufacturer": "Pinion",
+      "type": "bottomBracket",
+      "continuouslyVariable": false,
+      "numGears": 9,
+      "ratios": [
+        0.549,
+        0.682,
+        0.843,
+        1.056,
+        1.313,
+        1.621,
+        2.03,
+        2.524,
+        3.117
+      ],
+      "source": {
+        "url": "https://pinion.eu/en/c-line/",
+        "sourceType": "primary",
+        "note": "Pinion C-Line page: C1.9/P1.9 XR = 568% range, 24.3% steps."
+      }
+    },
+    {
+      "name": "Pinion P1.9 CR",
+      "manufacturer": "Pinion",
+      "type": "bottomBracket",
+      "continuouslyVariable": false,
+      "numGears": 9,
+      "ratios": [
+        0.768,
+        0.898,
+        1.056,
+        1.242,
+        1.453,
+        1.708,
+        2.03,
+        2.376,
+        2.792
+      ],
+      "source": {
+        "url": "https://pinion.eu/en/p-line-calculator/",
+        "sourceType": "primary",
+        "note": "Official Pinion calculator lists P1.9cr (364% close-ratio 9-speed); holds the internal per-gear ratios."
+      }
+    },
+    {
+      "name": "Pinion P1.6",
+      "manufacturer": "Pinion",
+      "type": "bottomBracket",
+      "continuouslyVariable": false,
+      "numGears": 6,
+      "ratios": [
+        1.056,
+        1.313,
+        1.621,
+        2.03,
+        2.524,
+        3.117
+      ],
+      "source": {
+        "url": "https://pinion.eu/en/c-line/",
+        "sourceType": "primary",
+        "note": "Pinion C-Line page: C1.6/P1.6 = 295% range, 24.3% steps."
+      }
+    },
+    {
+      "name": "3x3 NINE",
+      "manufacturer": "3x3",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 9,
+      "ratios": [
+        0.5268,
+        0.6539,
+        0.8105,
+        1,
+        1.2413,
+        1.5385,
+        1.8982,
+        2.3562,
+        2.9204
+      ],
+      "source": {
+        "url": "https://www.3x3.bike/en/faq/",
+        "sourceType": "primary",
+        "note": "3x3 FAQ shows the NINE per-gear ratio table plus ~24% step percentages and 554.35% range."
+      }
+    },
+    {
+      "name": "3x3 SIX",
+      "manufacturer": "3x3",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 6,
+      "ratios": [
+        0.526,
+        0.649,
+        0.806,
+        1,
+        1.235,
+        1.538
+      ],
+      "source": {
+        "url": "https://www.3x3.bike/en/six/",
+        "sourceType": "primary",
+        "note": "3x3 SIX product page: 6 gears, 292% range, ~24% even steps (same progression as NINE)."
+      }
+    },
+    {
+      "name": "Classified Powershift",
+      "manufacturer": "Classified",
+      "type": "hub",
+      "derailleurCompatible": true,
+      "continuouslyVariable": false,
+      "numGears": 2,
+      "ratios": [
+        0.686,
+        1
+      ],
+      "source": {
+        "url": "https://www.classified-cycling.cc/pages/the-classified-manifesto",
+        "sourceType": "primary",
+        "note": "Classified page states the two ratios: 1:1 direct and 1:0.7 (0.686) reduction (mimics a 52/36 step)."
+      }
+    },
+    {
+      "name": "Effigear Original",
+      "manufacturer": "Effigear",
+      "type": "bottomBracket",
+      "continuouslyVariable": false,
+      "numGears": 9,
+      "ratios": [
+        0.94,
+        1.18,
+        1.41,
+        1.68,
+        2.01,
+        2.41,
+        2.9,
+        3.52,
+        4.58
+      ],
+      "source": {
+        "url": "https://www.cyclingabout.com/effigear-mimic-9-speed-gearbox/",
+        "sourceType": "secondary",
+        "note": "Original discontinued 2021; no manufacturer page shows its ratios. CyclingAbout is best authoritative source."
+      }
+    },
+    {
+      "name": "Effigear Mimic",
+      "manufacturer": "Effigear",
+      "type": "bottomBracket",
+      "continuouslyVariable": false,
+      "numGears": 9,
+      "ratios": [
+        0.85,
+        1.09,
+        1.35,
+        1.65,
+        1.96,
+        2.34,
+        2.82,
+        3.42,
+        4
+      ],
+      "source": {
+        "url": "https://www.effigear.com/en/content/50-mimic-evo",
+        "sourceType": "primary",
+        "note": "Effigear MIMIC Evo page: 9-speed, 469% range, lowest 0.85 / highest 4.00."
+      }
+    },
+    {
+      "name": "Kindernay XIV",
+      "manufacturer": "Kindernay",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 14,
+      "ratios": [
+        0.272,
+        0.309,
+        0.353,
+        0.402,
+        0.458,
+        0.521,
+        0.594,
+        0.676,
+        0.77,
+        0.878,
+        1,
+        1.138,
+        1.297,
+        1.477
+      ],
+      "source": {
+        "url": "https://kindernay.com/product/kindernay-xiv/",
+        "sourceType": "primary",
+        "note": "Kindernay product page: XIV 543% range, 13.9% even steps (no full per-gear table published)."
+      }
+    },
+    {
+      "name": "Kindernay VII",
+      "manufacturer": "Kindernay",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 7,
+      "ratios": [
+        0.48,
+        0.62,
+        0.78,
+        1,
+        1.27,
+        1.62,
+        2.07
+      ],
+      "source": {
+        "url": "https://kindernay.com/product/kindernay-vii/",
+        "sourceType": "primary",
+        "note": "Kindernay product page: VII 428% range, 28% even steps (no full per-gear table published)."
+      }
+    },
+    {
+      "name": "Enviolo City",
+      "manufacturer": "Enviolo",
+      "type": "hub",
+      "continuouslyVariable": true,
+      "numGears": null,
+      "ratios": [
+        0.55,
+        1.7
+      ],
+      "source": {
+        "url": "https://enviolo.com/products/",
+        "sourceType": "primary",
+        "note": "Enviolo product page: City = 310% CVT range (0.55-1.7)."
+      }
+    },
+    {
+      "name": "Enviolo Trekking",
+      "manufacturer": "Enviolo",
+      "type": "hub",
+      "continuouslyVariable": true,
+      "numGears": null,
+      "ratios": [
+        0.5,
+        1.9
+      ],
+      "source": {
+        "url": "https://enviolo.com/products/",
+        "sourceType": "primary",
+        "note": "Enviolo product page: Trekking = 380% CVT range (0.5-1.9)."
+      }
+    },
+    {
+      "name": "Enviolo Heavy Duty",
+      "manufacturer": "Enviolo",
+      "type": "hub",
+      "continuouslyVariable": true,
+      "numGears": null,
+      "ratios": [
+        0.5,
+        1.9
+      ],
+      "source": {
+        "url": "https://enviolo.com/products/",
+        "sourceType": "primary",
+        "note": "Enviolo product page: Heavy Duty = 380% CVT range (~0.5-1.9)."
+      }
+    },
+    {
+      "name": "NuVinci N380",
+      "manufacturer": "NuVinci",
+      "type": "hub",
+      "continuouslyVariable": true,
+      "numGears": null,
+      "ratios": [
+        0.5,
+        1.9
+      ],
+      "source": {
+        "url": "https://www.globenewswire.com/news-release/2015/07/16/752827/30981/en/NuVinci-R-Cycling-a-Division-of-Fallbrook-Technologies-Introduces-New-NuVinci-Optimized-TM-Bicycle-and-eBike-Products.html",
+        "sourceType": "primary",
+        "note": "Fallbrook/NuVinci press release: N380 = 380% ratio range (0.5-1.9)."
+      }
+    },
+    {
+      "name": "NuVinci N360",
+      "manufacturer": "NuVinci",
+      "type": "hub",
+      "continuouslyVariable": true,
+      "numGears": null,
+      "ratios": [
+        0.5,
+        1.8
+      ],
+      "source": {
+        "url": "https://www.prnewswire.com/news-releases/fallbrook-technologies-inc-announces-availability-of-the-n360-version-of-its-nuvinci-continuously-variable-bicycle-transmission-101902428.html",
+        "sourceType": "primary",
+        "note": "Fallbrook press release: N360 = 360% ratio range (0.5-1.8)."
+      }
+    },
+    {
+      "name": "NuVinci N330",
+      "manufacturer": "NuVinci",
+      "type": "hub",
+      "continuouslyVariable": true,
+      "numGears": null,
+      "ratios": [
+        0.5,
+        1.65
+      ],
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/NuVinci_Continuously_Variable_Transmission",
+        "sourceType": "secondary",
+        "note": "No live official N330 spec page; Wikipedia lists N330 = 330% (0.5-1.65)."
+      }
+    },
+    {
+      "name": "Shimano Inter 7",
+      "manufacturer": "Shimano",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 7,
+      "ratios": [
+        0.632,
+        0.741,
+        0.843,
+        0.989,
+        1.145,
+        1.335,
+        1.545
+      ],
+      "source": {
+        "url": "https://sheldonbrown.com/nexus7.shtml",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown lists Nexus 7-speed (SG-C3001-7) ratios 0.632-1.545 (~244%)."
+      }
+    },
+    {
+      "name": "Shimano Inter 4",
+      "manufacturer": "Shimano",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 4,
+      "ratios": [
+        1,
+        1.244,
+        1.5,
+        1.843
+      ],
+      "source": {
+        "url": "https://www.sheldonbrown.com/nexus4.html",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown Nexus 4-speed (SG-4R35) ratios 1.0/1.244/1.5/1.843, 184% range; 1st is direct drive."
+      }
+    },
+    {
+      "name": "Shimano Inter 5",
+      "manufacturer": "Shimano",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 5,
+      "ratios": [
+        0.75,
+        1.001,
+        1.159,
+        1.335,
+        1.545
+      ],
+      "source": {
+        "url": "https://bike.shimano.com/products/components/pdp.P-SG-C7000-5R.html",
+        "sourceType": "primary",
+        "note": "Shimano product page for Nexus Inter-5 SG-C7000-5 (206% range, 0.75-1.545)."
+      }
+    },
+    {
+      "name": "Shimano Inter 5E / Steps",
+      "manufacturer": "Shimano",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 5,
+      "ratios": [
+        1,
+        1.277,
+        1.622,
+        2.07,
+        2.63
+      ],
+      "source": {
+        "url": "https://si.shimano.com/en/pdfs/sm/IHG-INTER5E/SM-IHG-INTER5E-007-ENG.pdf",
+        "sourceType": "primary",
+        "note": "Shimano service manual for Inter-5E (SG-C7050-5) with explicit 'Gear Ratios For E-Bike' table (263% range)."
+      }
+    },
+    {
+      "name": "Shimano Inter 3",
+      "manufacturer": "Shimano",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 3,
+      "ratios": [
+        0.733,
+        1,
+        1.364
+      ],
+      "source": {
+        "url": "https://www.sheldonbrown.com/harris/shimano-nexus.html",
+        "sourceType": "secondary",
+        "note": "Nexus Inter-3 (SG-3R40) ratios 0.733/1/1.364 (186%); Shimano docs list only range."
+      }
+    },
+    {
+      "name": "Revolute HUB A8",
+      "manufacturer": "Revolute",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 8,
+      "ratios": [
+        0.45,
+        0.543,
+        0.649,
+        0.775,
+        0.935,
+        1.149,
+        1.429,
+        1.887
+      ],
+      "source": {
+        "url": "https://www.revolute.de/en/hub-a8/",
+        "sourceType": "primary",
+        "note": "Revolute HUB A8 page lists all 8 gear ratios and 419% range (shown as reciprocals of our input ratios)."
+      }
+    },
+    {
+      "name": "Revolute HUB1",
+      "manufacturer": "Revolute",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 6,
+      "ratios": [
+        0.3172,
+        0.4268,
+        0.5734,
+        0.6826,
+        1,
+        1.256
+      ],
+      "source": {
+        "url": "https://www.revolute.de/en/hub1/",
+        "sourceType": "primary",
+        "note": "Revolute Hub1 page lists all 6 gear ratios and ~396% range (shown as reciprocals of our input ratios)."
+      }
+    },
+    {
+      "name": "SRAM G8",
+      "manufacturer": "SRAM",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 8,
+      "ratios": [
+        0.609,
+        0.71,
+        0.803,
+        0.903,
+        1.054,
+        1.204,
+        1.355,
+        1.581
+      ],
+      "source": {
+        "url": "https://www.sram.com/globalassets/document-hierarchy/frame-fit-specifications/urban/gen-0000000004677-rev-a-2015-g8-g9-frame-fit-specifications.pdf",
+        "sourceType": "primary",
+        "note": "Official SRAM G8/G9 frame-fit spec PDF; ratios 0.609-1.581, 259% range."
+      }
+    },
+    {
+      "name": "SRAM iMotion 9",
+      "manufacturer": "SRAM",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 9,
+      "ratios": [
+        0.542,
+        0.621,
+        0.727,
+        0.853,
+        1,
+        1.172,
+        1.375,
+        1.611,
+        1.844
+      ],
+      "source": {
+        "url": "https://ciclocoimbroes.com/docs/SRAM_manual_tecnico_gear_hub_systems_2009.pdf",
+        "sourceType": "primary",
+        "note": "SRAM Technical Manual Gear Hub Systems 2009 (archived): i-Motion 9 = 340% range matching 0.542-1.844."
+      }
+    },
+    {
+      "name": "SRAM Spectro P5",
+      "manufacturer": "SRAM",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 5,
+      "ratios": [
+        0.633,
+        0.781,
+        1,
+        1.281,
+        1.579
+      ],
+      "source": {
+        "url": "https://sheldonbrown.com/sram/dtm_ghs_my00_e.pdf",
+        "sourceType": "primary",
+        "note": "SRAM Dealer Technical Manual 2000 (SRAM copyright): Spectro P5 speeds 63/78/100/128/158%, 249% total."
+      }
+    },
+    {
+      "name": "SRAM Spectro S7",
+      "manufacturer": "SRAM",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 7,
+      "ratios": [
+        0.574,
+        0.677,
+        0.809,
+        1,
+        1.236,
+        1.476,
+        1.742
+      ],
+      "source": {
+        "url": "https://sheldonbrown.com/sram/dtm_ghs_my00_e.pdf",
+        "sourceType": "primary",
+        "note": "SRAM DTM 2000: Spectro S7 speeds 57/68/81/100/124/148/174%, 303% total."
+      }
+    },
+    {
+      "name": "SRAM iM3 T3",
+      "manufacturer": "SRAM",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 3,
+      "ratios": [
+        0.734,
+        1,
+        1.362
+      ],
+      "source": {
+        "url": "https://sheldonbrown.com/sram/dtm_ghs_my00_e.pdf",
+        "sourceType": "primary",
+        "note": "SRAM DTM 2000: Spectro T3 speeds 73/100/136%, 186% total."
+      }
+    },
+    {
+      "name": "SRAM DualDrive3",
+      "manufacturer": "SRAM",
+      "type": "hub",
+      "derailleurCompatible": true,
+      "continuouslyVariable": false,
+      "numGears": 3,
+      "ratios": [
+        0.734,
+        1,
+        1.362
+      ],
+      "source": {
+        "url": "https://sheldonbrown.com/sachs-internal.html",
+        "sourceType": "secondary",
+        "note": "SRAM DualDrive / DualDrive3: the Sachs/SRAM 3-speed (iM3, 0.734/1/1.362, 186%) built onto a cassette freehub to pair with an 8/9-speed rear derailleur. Successor to the Sachs 3x7."
+      }
+    },
+    {
+      "name": "SRAM P5 Cargo",
+      "manufacturer": "SRAM",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 5,
+      "ratios": [
+        0.667,
+        0.778,
+        1,
+        1.286,
+        1.5
+      ],
+      "source": {
+        "url": "https://greenspeed-trikes.com/wp-content/uploads/2021/10/SRAM-Dual-Drive-Manual-.pdf",
+        "sourceType": "primary",
+        "note": "SRAM 2006 Technical Manual (archived): 'P5 CARGO' section shows 67/78/100/128/150% = 0.667-1.5."
+      }
+    },
+    {
+      "name": "SRAM Automatix",
+      "manufacturer": "SRAM",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 2,
+      "ratios": [
+        1,
+        1.362
+      ],
+      "source": {
+        "url": "https://www.sheldonbrown.com/automatix.html",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown documents the two ratios 1.00 and 1.36 (64/47); SRAM's Automatix manual lists no ratios."
+      }
+    },
+    {
+      "name": "Sachs 3x7 (3-speed hub)",
+      "manufacturer": "Sachs",
+      "type": "hub",
+      "derailleurCompatible": true,
+      "continuouslyVariable": false,
+      "numGears": 3,
+      "ratios": [
+        0.734,
+        1,
+        1.362
+      ],
+      "source": {
+        "url": "https://sheldonbrown.com/sachs-internal.html",
+        "sourceType": "secondary",
+        "note": "Sachs 3x7 / DualDrive 3-speed hub, designed to pair with a 7-speed derailleur cassette. Sheldon Brown gives the multipliers as 0.734 / 1.0 / 1.362; combine with a cassette for the full 21-speed range."
+      }
+    },
+    {
+      "name": "Sachs Super 7",
+      "manufacturer": "Sachs",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 7,
+      "ratios": [
+        0.594,
+        0.677,
+        0.814,
+        1,
+        1.227,
+        1.476,
+        1.685
+      ],
+      "source": {
+        "url": "https://sheldonbrown.com/sutherland/CB-IGH-sachs_super7.pdf",
+        "sourceType": "secondary",
+        "note": "Sutherland's Handbook Sachs Torpedo Super 7 (archived); ratios distinct from the later SRAM Spectro S7."
+      }
+    },
+    {
+      "name": "Sachs Pentasport",
+      "manufacturer": "Sachs",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 5,
+      "ratios": [
+        0.667,
+        0.778,
+        1,
+        1.286,
+        1.5
+      ],
+      "source": {
+        "url": "https://sheldonbrown.com/sutherland/CB-IGH-sachs_pentasport.pdf",
+        "sourceType": "secondary",
+        "note": "Sutherland's Handbook Sachs Pentasport 5-speed (archived): steps = 0.667/0.778/1/1.286/1.5."
+      }
+    },
+    {
+      "name": "Sachs Torpedo 3111",
+      "manufacturer": "Sachs",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 3,
+      "ratios": [
+        0.734,
+        1,
+        1.362
+      ],
+      "source": {
+        "url": "https://sheldonbrown.com/sutherland/CB-IGH-5-sachs.pdf",
+        "sourceType": "secondary",
+        "note": "Sutherland's Handbook Sachs (F&S) Torpedo 3-speed (archived); model H3111 (Torpedo 3111), 73/100/136%."
+      }
+    },
+    {
+      "name": "Sachs Torpedo 55",
+      "manufacturer": "Sachs",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 3,
+      "ratios": [
+        0.75,
+        1,
+        1.333
+      ],
+      "source": {
+        "url": "http://bernd.sluka.de/Fahrrad/55/index.html",
+        "sourceType": "secondary",
+        "note": "Scanned original Fichtel & Sachs Torpedo Modell 55 manual: low -25% / high +33.3% = 0.75/1/1.333."
+      }
+    },
+    {
+      "name": "Sachs Duomatic",
+      "manufacturer": "Sachs",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 2,
+      "ratios": [
+        1,
+        1.36
+      ],
+      "source": {
+        "url": "https://velobase.com/Pages/ViewComponent.aspx?ID=e7534e0a-6c17-4c5e-b940-144aff44cce2",
+        "sourceType": "secondary",
+        "note": "VeloBase entry for Sachs Torpedo Duomatic R2110: ratios 1:1 and 1:1.362."
+      }
+    },
+    {
+      "name": "Sturmey Archer X-R8",
+      "manufacturer": "Sturmey Archer",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 8,
+      "ratios": [
+        1,
+        1.3,
+        1.48,
+        1.69,
+        1.92,
+        2.2,
+        2.5,
+        3.25
+      ],
+      "source": {
+        "url": "https://web.archive.org/web/20250328093927/https://www.sturmey-archer.com/files/catalog/files/35/SPECIFICATIONS%20-%20IGH%20S80%20(W).pdf",
+        "sourceType": "primary",
+        "note": "Sturmey-Archer S80(W)/X-RD8 spec PDF: 8-speed, 325% range, direct-drive 1st gear (Wayback snapshot; live site blocks direct access)."
+      }
+    },
+    {
+      "name": "Sturmey Archer RX-5",
+      "manufacturer": "Sturmey Archer",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 5,
+      "ratios": [
+        0.625,
+        0.75,
+        1,
+        1.333,
+        1.6
+      ],
+      "source": {
+        "url": "https://www.sheldonbrown.com/cribsheet_s-a-hubs.html",
+        "sourceType": "secondary",
+        "note": "Discontinued wide-ratio RX-5 (250%, 0.625-1.6); Sheldon Brown cribsheet is authoritative (current RX-RD5 differs)."
+      }
+    },
+    {
+      "name": "Sturmey Archer S5",
+      "manufacturer": "Sturmey Archer",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 5,
+      "ratios": [
+        0.667,
+        0.789,
+        1,
+        1.266,
+        1.5
+      ],
+      "source": {
+        "url": "https://www.sheldonbrown.com/sturmey-archer/sprinter5.html",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown page for the discontinued Sturmey-Archer Sprinter 5-speed (S5)."
+      }
+    },
+    {
+      "name": "Sturmey Archer RX-4",
+      "manufacturer": "Sturmey Archer",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 4,
+      "ratios": [
+        1,
+        1.28,
+        1.64,
+        2.1
+      ],
+      "source": {
+        "url": "https://web.archive.org/web/20240415022946/https://www.sturmey-archer.com/en/products/detail/x-rd4",
+        "sourceType": "primary",
+        "note": "Sturmey-Archer X-RD4/X-RF4 page: 4-speed, 210% range, 28% steps = [1,1.28,1.64,2.1] (Wayback snapshot; live site blocks direct access)."
+      }
+    },
+    {
+      "name": "Sturmey Archer S3",
+      "manufacturer": "Sturmey Archer",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 3,
+      "ratios": [
+        0.75,
+        1,
+        1.333
+      ],
+      "source": {
+        "url": "https://web.archive.org/web/20240915093304/https://www.sturmey-archer.com/en/products/detail/s-rf3",
+        "sourceType": "primary",
+        "note": "Sturmey-Archer S-RF3 (AW-type 3-speed) page: 177% range, 0.75/1/1.333 (Wayback snapshot; live site blocks direct access)."
+      }
+    },
+    {
+      "name": "Sturmey Archer CS-RF3",
+      "manufacturer": "Sturmey Archer",
+      "type": "hub",
+      "derailleurCompatible": true,
+      "continuouslyVariable": false,
+      "numGears": 3,
+      "ratios": [
+        0.75,
+        1,
+        1.333
+      ],
+      "source": {
+        "url": "https://www.sturmey-archer.com/en/products/detail/cs-rf3-black",
+        "sourceType": "primary",
+        "note": "Sturmey-Archer CS-RF3: a 3-speed cassette freehub (177%, 33%+33% = 0.75/1/1.333) built to take a standard 8/9-speed cassette + rear derailleur. Same AW-type ratios as the S3 / Brompton BSR."
+      }
+    },
+    {
+      "name": "Sturmey Archer S2",
+      "manufacturer": "Sturmey Archer",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 2,
+      "ratios": [
+        1,
+        1.38
+      ],
+      "source": {
+        "url": "https://web.archive.org/web/20220518234448/https://www.sturmey-archer.com/en/products/detail/s2-silver",
+        "sourceType": "primary",
+        "note": "Sturmey-Archer S2 2-speed kickback page: 138% range, 1.0 + 1.38 (Wayback snapshot; live site blocks direct access)."
+      }
+    },
+    {
+      "name": "Brompton BSR",
+      "manufacturer": "Brompton",
+      "type": "hub",
+      "derailleurCompatible": true,
+      "continuouslyVariable": false,
+      "numGears": 3,
+      "ratios": [
+        0.75,
+        1,
+        1.333
+      ],
+      "source": {
+        "url": "https://us.brompton.com/p/1621/bsr-3-speed-hub-internals",
+        "sourceType": "primary",
+        "note": "Brompton product page for the BSR 3-speed hub (updated SA AW, 0.75/1/1.333)."
+      }
+    },
+    {
+      "name": "Brompton BWR",
+      "manufacturer": "Brompton",
+      "type": "hub",
+      "derailleurCompatible": true,
+      "continuouslyVariable": false,
+      "numGears": 3,
+      "ratios": [
+        0.638,
+        1,
+        1.567
+      ],
+      "source": {
+        "url": "https://www.sheldonbrown.com/cribsheet_s-a-hubs.html",
+        "sourceType": "secondary",
+        "note": "Brompton publishes no numeric BWR ratios; Sheldon Brown cribsheet documents the BWR 3-speed hub (~0.638/1/1.567)."
+      }
+    },
+    {
+      "name": "Schlumpf Mountain-Drive",
+      "manufacturer": "Schlumpf",
+      "type": "bottomBracket",
+      "derailleurCompatible": true,
+      "continuouslyVariable": false,
+      "numGears": 2,
+      "ratios": [
+        0.4,
+        1
+      ],
+      "source": {
+        "url": "https://www.drive-mobility.com/en/drives",
+        "sourceType": "primary",
+        "note": "Schlumpf/Haberstock Mobility: Mountain-Drive = 2.5:1 reduction + 1:1 direct (0.4 + 1.0)."
+      }
+    },
+    {
+      "name": "Schlumpf Speed-Drive",
+      "manufacturer": "Schlumpf",
+      "type": "bottomBracket",
+      "derailleurCompatible": true,
+      "continuouslyVariable": false,
+      "numGears": 2,
+      "ratios": [
+        1,
+        1.65
+      ],
+      "source": {
+        "url": "https://www.drive-mobility.com/en/drives",
+        "sourceType": "primary",
+        "note": "Schlumpf/Haberstock Mobility: Speed-Drive = 1:1 direct + 1:1.65 overdrive."
+      }
+    },
+    {
+      "name": "Schlumpf High-Speed-Drive",
+      "manufacturer": "Schlumpf",
+      "type": "bottomBracket",
+      "derailleurCompatible": true,
+      "continuouslyVariable": false,
+      "numGears": 2,
+      "ratios": [
+        1,
+        2.5
+      ],
+      "source": {
+        "url": "https://www.drive-mobility.com/en/drives",
+        "sourceType": "primary",
+        "note": "Schlumpf/Haberstock Mobility: High-Speed-Drive = 1:1 direct + 1:2.5 overdrive."
+      }
+    },
+    {
+      "name": "Sachs Elan",
+      "manufacturer": "Sachs",
+      "type": "hub",
+      "continuouslyVariable": false,
+      "numGears": 12,
+      "ratios": [
+        0.69,
+        0.85,
+        1,
+        1.18,
+        1.33,
+        1.49,
+        1.61,
+        1.75,
+        1.92,
+        2.08,
+        2.22,
+        2.38
+      ],
+      "source": {
+        "url": "https://sheldonbrown.com/elanratios.html",
+        "sourceType": "secondary",
+        "note": "Sheldon Brown / John Allen Elan analysis: 12 ratios derived from tooth counts (0.69-2.38, ~339%)."
+      }
+    }
+  ]
+}

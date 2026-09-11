@@ -5,6 +5,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Wheel3D } from "./Wheel3D";
+import type { HubType } from "../lib/spokes";
 
 const DRIVE = "#c0392b"; // right / drive side
 const NDS = "#0b6bcb"; // left / non-drive side
@@ -30,6 +31,10 @@ export interface WheelDiagramProps {
   rightOffsetMm: number;
   leftCross: number;
   rightCross: number;
+  /** Selected hub's type / over-locknut width, when a hub is chosen — drives the
+   *  axle length and the hub-shell shape in the 3D view. */
+  hubType?: HubType;
+  hubWidthMm?: number;
 }
 
 export function WheelDiagram(props: WheelDiagramProps) {
@@ -95,6 +100,8 @@ export function WheelDiagram(props: WheelDiagramProps) {
         rightOffsetMm={props.rightOffsetMm}
         leftCross={props.leftCross}
         rightCross={props.rightCross}
+        hubType={props.hubType}
+        hubWidthMm={props.hubWidthMm}
         step={step}
         sequence={sequence}
       />

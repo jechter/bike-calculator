@@ -9,6 +9,7 @@
 // dish and cross pattern read as real 3D.
 
 import { useEffect, useRef, useState } from "react";
+import type { HubType } from "../lib/spokes";
 
 // Two shades per side so outer-laced (heads-out) and inner-laced (heads-in)
 // spokes are visually distinct: the lighter shade is outer, the darker is inner.
@@ -19,6 +20,11 @@ const NDS_IN: [number, number, number] = [0.02, 0.26, 0.58];
 const METAL: [number, number, number] = [0.62, 0.66, 0.71];
 const VALVE: [number, number, number] = [0.78, 0.62, 0.22]; // brass valve marker
 const HOLE: [number, number, number] = [0.1, 0.11, 0.13]; // empty spoke hole
+const BARREL: [number, number, number] = [0.5, 0.54, 0.6]; // plain hub shell
+const AXLE: [number, number, number] = [0.44, 0.47, 0.52]; // axle through the locknuts
+const LOCKNUT: [number, number, number] = [0.32, 0.34, 0.38]; // end lock-nut / cap
+const SHELL: [number, number, number] = [0.4, 0.42, 0.47]; // fat dynamo / gear shell
+const FREEHUB: [number, number, number] = [0.2, 0.21, 0.24]; // dark freehub driver body
 
 // One spoke draws as: a body tube (nipple -> flange face), a short elbow tube
 // through the flange, a round button head lying flat on the far face (a little
@@ -39,6 +45,9 @@ export interface Wheel3DProps {
   rightOffsetMm: number;
   leftCross: number;
   rightCross: number;
+  /** Selected hub's type / over-locknut width (mm), when a hub is chosen. */
+  hubType?: HubType;
+  hubWidthMm?: number;
   /** How many spokes are laced (from the shared build scrubber). */
   step: number;
   /** Rim indices in build order; sequence[k] is the k-th spoke placed. */
@@ -388,6 +397,8 @@ export function Wheel3D(props: Wheel3DProps) {
     rightOffsetMm,
     leftCross,
     rightCross,
+    hubType,
+    hubWidthMm,
     step,
     sequence,
   } = props;
@@ -482,10 +493,54 @@ export function Wheel3D(props: Wheel3DProps) {
       [depth, -halfW],       // outer-left shoulder
     ];
 
-    // Shaded mesh: rim + hub barrel + two flanges + valve marker.
+    // Shaded mesh: rim + hub (axle, shell, flanges) + valve marker.
     const mesh: Mesh = [];
     addRim(mesh, bedR, rimProfile, 120, METAL);
-    addCoin(mesh, (zL + zR) / 2, 0.05, Math.abs(zR - zL) / 2 + 0.03, 24, [0.5, 0.54, 0.6]);
+
+    // --- Hub -----------------------------------------------------------------
+    // The shell spans between the flanges; the axle runs the full over-locknut
+    // width to a lock-nut at each end (when a hub with a known width is chosen).
+    // Different hub types get a distinct silhouette: a fat shell for dynamo and
+    // internal-gear hubs (the latter bulging toward the drive side), and a
+    // freehub driver body outboard of the drive flange for cassette hubs.
+    const zMid = (zL + zR) / 2;
+    const shellHalf = Math.abs(zR - zL) / 2 + 0.03;
+    const flMin = Math.min(lfR, rfR);
+    // Drive side is +Z (the right / drive flange sits at zR ≥ zL for a dished
+    // rear wheel); the freehub and gear bulge live out there.
+    const driveZ = Math.max(zL, zR);
+
+    if (hubWidthMm) {
+      const axleHalf = (hubWidthMm / 2) * scale;
+      addCoin(mesh, 0, 0.016, axleHalf, 18, AXLE); // axle across the locknuts
+      addCoin(mesh, axleHalf - 0.006, 0.03, 0.007, 18, LOCKNUT); // drive lock-nut
+      addCoin(mesh, -(axleHalf - 0.006), 0.03, 0.007, 18, LOCKNUT); // non-drive lock-nut
+    }
+
+    if (hubType === "front-dynamo") {
+      // Fat cylindrical dynamo shell nearly reaching the flanges.
+      addCoin(mesh, zMid, Math.max(0.085, 0.92 * flMin), shellHalf, 40, SHELL);
+    } else if (hubType === "rear-internal") {
+      // Fat gear shell, with an extra drum biased to the drive side (the gears).
+      const r = Math.max(0.085, 0.74 * flMin);
+      addCoin(mesh, zMid, r, shellHalf, 40, SHELL);
+      const bulgeOut = hubWidthMm ? (hubWidthMm / 2) * scale * 0.66 : driveZ + 0.06;
+      if (bulgeOut > zMid) {
+        addCoin(mesh, (zMid + bulgeOut) / 2, r * 1.16, (bulgeOut - zMid) / 2, 40, SHELL);
+      }
+    } else {
+      addCoin(mesh, zMid, 0.05, shellHalf, 24, BARREL); // slim barrel
+    }
+
+    // Freehub driver body: a dark splined drum outboard of the drive flange.
+    if (hubType === "rear-cassette" && hubWidthMm) {
+      const fhStart = driveZ + flHalf;
+      const fhEnd = (hubWidthMm / 2) * scale - 0.02;
+      if (fhEnd > fhStart + 0.01) {
+        addCoin(mesh, (fhStart + fhEnd) / 2, 0.036, (fhEnd - fhStart) / 2, 24, FREEHUB);
+      }
+    }
+
     addCoin(mesh, zL, lfR + flEdge, flHalf, 48, METAL);
     addCoin(mesh, zR, rfR + flEdge, flHalf, 48, METAL);
     addValve(mesh, -Math.PI / spokeCount, VALVE);
@@ -571,6 +626,8 @@ export function Wheel3D(props: Wheel3DProps) {
     rightOffsetMm,
     leftCross,
     rightCross,
+    hubType,
+    hubWidthMm,
     sequence,
   ]);
 

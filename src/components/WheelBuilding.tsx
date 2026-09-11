@@ -430,6 +430,8 @@ export function WheelBuilding() {
             rightOffsetMm={rightOffset}
             leftCross={leftCross}
             rightCross={rightCross}
+            hubType={hub?.type}
+            hubWidthMm={hub?.widthMm}
           />
         ) : (
           <Note tone="warn">

@@ -338,7 +338,7 @@ export function Wheel3D(props: Wheel3DProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const glRef = useRef<GLState | null>(null);
   const [failed, setFailed] = useState(false);
-  const [rot, setRot] = useState({ x: 0, y: 0 }); // default: face-on view
+  const [rot, setRot] = useState({ x: 0, y: Math.PI / 4 }); // default: 45° three-quarter view
   const [zoom, setZoom] = useState(1); // 1 = whole wheel, higher = closer to hub
   const [, force] = useState(0); // bump to redraw (e.g. on resize)
   const drag = useRef<{ x: number; y: number } | null>(null);

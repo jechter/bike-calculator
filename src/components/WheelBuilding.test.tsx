@@ -39,20 +39,20 @@ describe("Wheel building page", () => {
     // trigger starts unset
     expect(getByText("Choose a hub…")).toBeTruthy();
     fireEvent.click(getByLabelText("Browse the hub database"));
-    // pick a front hub with 38 mm flanges (default flanges are 45 mm)
-    fireEvent.click(getByText("Shimano 105 HB-5501"));
+    // pick a front hub with 35 mm flanges (default flanges are 45 mm)
+    fireEvent.click(getByText("White Industries T11 Front"));
     const flange = Array.from(container.querySelectorAll('input[type="number"]')).find(
-      (i) => (i as HTMLInputElement).value === "38",
+      (i) => (i as HTMLInputElement).value === "35",
     ) as HTMLInputElement;
     expect(flange).toBeTruthy();
     // the trigger now reflects the chosen hub (popover closed, so it's the only match)
-    expect(getByText("Shimano 105 HB-5501")).toBeTruthy();
+    expect(getByText("White Industries T11 Front")).toBeTruthy();
     // editing a hub value clears the selection
     fireEvent.change(flange, { target: { value: "40" } });
     expect(getByText("Choose a hub…")).toBeTruthy();
   });
 
-  it("assigns the spoke count from the hub and links to its source", () => {
+  it("assigns the spoke count from the filter and links to the maker's source", () => {
     const { getByText, getByLabelText, container } = render(<WheelBuilding />);
     const inputWithValue = (v: string) =>
       Array.from(container.querySelectorAll('input[type="number"]')).find(
@@ -61,16 +61,18 @@ describe("Wheel building page", () => {
     // default spoke count is 32 (the only field at that value)
     expect(inputWithValue("32")).toBeTruthy();
     fireEvent.click(getByLabelText("Browse the hub database"));
-    // Sachs Super 7 is drilled 36h only, so picking it moves the count to 36
-    fireEvent.click(getByText("Sachs Super 7 (coaster)"));
-    expect(inputWithValue("36")).toBeTruthy();
+    // filter to 28h (the third filter select), then pick a hub — it takes 28h
+    const filters = container.querySelectorAll(".cp-filters select");
+    fireEvent.change(filters[2], { target: { value: "28" } });
+    fireEvent.click(getByText("Chris King R45D Centerlock Front"));
+    expect(inputWithValue("28")).toBeTruthy();
     expect(inputWithValue("32")).toBeFalsy();
-    // a source link to the hub's provenance appears, opening in a new tab
-    const link = container.querySelector("a.inline-link") as HTMLAnchorElement;
+    // a first-party source link appears, opening in a new tab
+    const link = container.querySelector(".wb-hub-source a.inline-link") as HTMLAnchorElement;
     expect(link).toBeTruthy();
-    expect(link.getAttribute("href")).toContain("spocalc");
+    expect(link.getAttribute("href")).toContain("chrisking");
     expect(link.getAttribute("target")).toBe("_blank");
-    expect(link.textContent).toContain("Sachs Super 7");
+    expect(link.textContent).toContain("Chris King R45D Centerlock Front");
   });
 
   it("fills ERD from a rim preset", () => {

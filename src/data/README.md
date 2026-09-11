@@ -105,19 +105,32 @@ fields (and snaps the spoke count to a drilling the hub offers):
 - `leftFlangeDiaMm`, `rightFlangeDiaMm` — flange diameters, i.e. the pitch
   circle through the spoke holes (mm). Left = non-drive, right = drive.
 - `leftOffsetMm`, `rightOffsetMm` — centre-to-flange distances (mm).
-- `spokeHoleMm` — flange spoke-hole diameter (mm).
+- `spokeHoleMm` — flange spoke-hole diameter (mm). Optional: omitted when the
+  maker doesn't publish it (SON, Onyx); the calculator then uses its 2.6 mm
+  default.
 - `source` — `{ url, sourceType, note }`. `sourceType` is `"primary"` when the
-  numbers are the hub maker's own published figures and `"secondary"` when they
-  come from a third-party measurement (e.g. DT Swiss measuring another brand's
-  hub) or a community contribution; the `note` says which.
+  numbers are the hub maker's own published figures and `"secondary"` otherwise;
+  the `note` says where they came from.
 
-The shipped rows are individual flange measurements (facts, not creative
-expression) transcribed and re-keyed from **Damon Rinard's spoke database**
-(spocalc, <https://sheldonbrown.com/rinard/spocalc.htm>, © 1997–2001). We use a
-small, re-selected subset with attribution — not the whole compiled database,
-which carries its own copyright notice and no redistribution licence. Flange
-geometry varies between production runs, so treat every row as a starting point
-and measure your own hub. To add hubs, follow the same shape and cite a source.
+Most shipped rows are **first-party manufacturer geometry** taken from each
+maker's own published spec sheets / spoke-length data, cited per row:
+- **Chris King** — official wheel-building spec PDFs (flange diameter, centre-to-
+  flange DS/NDS, 2.5 mm holes).
+- **White Industries** — per-hub product pages (left/right flange diameter,
+  centre-to-flange, spoke-hole diameter).
+- **Onyx** — product-page "Spoke Hole Circle Diameter" (a true pitch circle) and
+  centre-to-flange offsets.
+- **Schmidt (SON)** — official spoke-length data; the diameter is the labelled
+  "PCD — Pitch Circle Diameter".
+
+The three internal-gear hubs (Rohloff, Shimano Nexus, SRAM i-Motion) are marked
+`"secondary"` — those makers don't publish first-party flange geometry, so the
+numbers come from Damon Rinard's spocalc database
+(<https://sheldonbrown.com/rinard/spocalc.htm>). DT Swiss (publishes no public
+geometry) and Industry Nine (publishes outer-flange Ø, not the spoke-hole pitch
+circle) are deliberately excluded. Flange geometry still varies between
+production runs — treat every row as a starting point and measure your own hub.
+To add hubs, follow the same shape and cite a first-party source where possible.
 
 ### `tension-curves.json`
 Each entry is a `TensionCurve` (see `src/lib/spokes.ts`):

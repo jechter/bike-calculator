@@ -177,7 +177,9 @@ export interface Hub {
   rightFlangeDiaMm: number;
   leftOffsetMm: number;
   rightOffsetMm: number;
-  spokeHoleMm: number;
+  /** Flange spoke-hole diameter (mm). Omitted when the maker doesn't publish it
+   *  (e.g. SON, Onyx); the calculator then falls back to its 2.6 mm default. */
+  spokeHoleMm?: number;
   source?: HubSource;
 }
 

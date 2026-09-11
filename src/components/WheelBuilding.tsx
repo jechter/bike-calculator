@@ -234,7 +234,7 @@ export function WheelBuilding() {
     setRightFlange(h.rightFlangeDiaMm);
     setLeftOffset(h.leftOffsetMm);
     setRightOffset(h.rightOffsetMm);
-    setHoleDia(h.spokeHoleMm);
+    setHoleDia(h.spokeHoleMm ?? 2.6);
     // Set the spoke count from the hub's drillings: the one filtered on if any,
     // else keep the current count when the hub offers it, else its default (32h
     // when available, otherwise the lowest drilling).

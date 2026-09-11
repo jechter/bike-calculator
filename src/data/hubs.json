@@ -1,628 +1,474 @@
 [
   {
-    "manufacturer": "Shimano",
-    "model": "Dura-Ace HB-7800",
+    "manufacturer": "Chris King",
+    "model": "R45 Front",
     "type": "front",
     "widthMm": 100,
     "spokeCounts": [
+      16,
+      18,
+      20,
       24,
       28,
       32
     ],
-    "leftFlangeDiaMm": 40,
-    "rightFlangeDiaMm": 40,
-    "leftOffsetMm": 38.65,
-    "rightOffsetMm": 38.65,
-    "spokeHoleMm": 2.4,
+    "leftFlangeDiaMm": 39.8,
+    "rightFlangeDiaMm": 39.8,
+    "leftOffsetMm": 34.8,
+    "rightOffsetMm": 34.8,
+    "spokeHoleMm": 2.5,
     "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Shimano",
-    "model": "105 HB-5501",
-    "type": "front",
-    "widthMm": 100,
-    "spokeCounts": [
-      28,
-      32,
-      36
-    ],
-    "leftFlangeDiaMm": 38,
-    "rightFlangeDiaMm": 38,
-    "leftOffsetMm": 38.65,
-    "rightOffsetMm": 38.65,
-    "spokeHoleMm": 2.4,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Campagnolo",
-    "model": "Record OS",
-    "type": "front",
-    "widthMm": 100,
-    "spokeCounts": [
-      28,
-      32
-    ],
-    "leftFlangeDiaMm": 39,
-    "rightFlangeDiaMm": 39,
-    "leftOffsetMm": 35.35,
-    "rightOffsetMm": 35.4,
-    "spokeHoleMm": 2.4,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "url": "https://cdn.shopify.com/s/files/1/2920/2114/files/r45_and_r45d_hub_specifications_and_wheel_building_information_3_17_2.pdf",
       "sourceType": "primary",
-      "note": "Campagnolo's published figures, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Campagnolo",
-    "model": "High-flange (Record/C-Record)",
-    "type": "front",
-    "widthMm": 100,
-    "spokeCounts": [
-      32,
-      36
-    ],
-    "leftFlangeDiaMm": 67,
-    "rightFlangeDiaMm": 67,
-    "leftOffsetMm": 34,
-    "rightOffsetMm": 34,
-    "spokeHoleMm": 2.3,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
+      "note": "Chris King's published wheel-building specs"
     }
   },
   {
     "manufacturer": "White Industries",
-    "model": "Road",
+    "model": "T11 Front",
     "type": "front",
     "widthMm": 100,
     "spokeCounts": [
+      16,
+      18,
+      20,
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 35,
+    "rightFlangeDiaMm": 35,
+    "leftOffsetMm": 35.8,
+    "rightOffsetMm": 35.8,
+    "spokeHoleMm": 2.3,
+    "source": {
+      "url": "https://www.whiteind.com/product/t11-front/",
+      "sourceType": "primary",
+      "note": "White Industries' published hub specs"
+    }
+  },
+  {
+    "manufacturer": "Onyx",
+    "model": "Vesper Road Front",
+    "type": "front",
+    "widthMm": 100,
+    "spokeCounts": [
+      20,
+      24,
       28,
       32
     ],
     "leftFlangeDiaMm": 34,
     "rightFlangeDiaMm": 34,
-    "leftOffsetMm": 38,
-    "rightOffsetMm": 38,
-    "spokeHoleMm": 2.3,
+    "leftOffsetMm": 37.4,
+    "rightOffsetMm": 37.4,
     "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Mavic",
-    "model": "500/520/530 series",
-    "type": "front",
-    "widthMm": 100,
-    "spokeCounts": [
-      32,
-      36
-    ],
-    "leftFlangeDiaMm": 40,
-    "rightFlangeDiaMm": 40,
-    "leftOffsetMm": 27,
-    "rightOffsetMm": 27,
-    "spokeHoleMm": 2.5,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Shimano",
-    "model": "Deore XT HB-M756 (disc)",
-    "type": "front",
-    "widthMm": 100,
-    "spokeCounts": [
-      28,
-      32
-    ],
-    "leftFlangeDiaMm": 61,
-    "rightFlangeDiaMm": 61,
-    "leftOffsetMm": 21.1,
-    "rightOffsetMm": 31.7,
-    "spokeHoleMm": 2.6,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
+      "url": "https://onyxrp.com/store/road-gravel-hubs/onyx-vesper-road-100-qr-front-hub/",
+      "sourceType": "primary",
+      "note": "Onyx's published spoke-hole-circle (PCD) diameter and flange offsets; spoke-hole bore not published"
     }
   },
   {
     "manufacturer": "Chris King",
-    "model": "ISO Disc",
+    "model": "R45D Centerlock Front",
     "type": "front",
     "widthMm": 100,
-    "spokeCounts": [
-      28,
-      32
-    ],
-    "leftFlangeDiaMm": 57.6,
-    "rightFlangeDiaMm": 57.6,
-    "leftOffsetMm": 22.5,
-    "rightOffsetMm": 30.4,
-    "spokeHoleMm": 2.5,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "primary",
-      "note": "Chris King's published figures, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Hope",
-    "model": "Pro Sport (disc)",
-    "type": "front",
-    "widthMm": 100,
-    "spokeCounts": [
-      28,
-      32,
-      36
-    ],
-    "leftFlangeDiaMm": 56,
-    "rightFlangeDiaMm": 45,
-    "leftOffsetMm": 20,
-    "rightOffsetMm": 34,
-    "spokeHoleMm": 2.6,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Measured by DT Swiss, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "DT Swiss",
-    "model": "240 Disc",
-    "type": "front",
-    "widthMm": 100,
-    "spokeCounts": [
-      28,
-      32
-    ],
-    "leftFlangeDiaMm": 58,
-    "rightFlangeDiaMm": 46,
-    "leftOffsetMm": 22,
-    "rightOffsetMm": 34.8,
-    "spokeHoleMm": 2.5,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "primary",
-      "note": "DT Swiss's published figures, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Schmidt (SON)",
-    "model": "SON 20-28\" dynamo",
-    "type": "front-dynamo",
-    "widthMm": 100,
-    "spokeCounts": [
-      32,
-      36
-    ],
-    "leftFlangeDiaMm": 70,
-    "rightFlangeDiaMm": 70,
-    "leftOffsetMm": 30,
-    "rightOffsetMm": 30,
-    "spokeHoleMm": 2.5,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Schmidt (SON)",
-    "model": "SON 20-28\" dynamo (disc)",
-    "type": "front-dynamo",
-    "widthMm": 100,
-    "spokeCounts": [
-      32,
-      36
-    ],
-    "leftFlangeDiaMm": 70,
-    "rightFlangeDiaMm": 70,
-    "leftOffsetMm": 21.5,
-    "rightOffsetMm": 30,
-    "spokeHoleMm": 2.5,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Shimano",
-    "model": "Nexus DH-3N70 dynamo",
-    "type": "front-dynamo",
-    "widthMm": 100,
-    "spokeCounts": [
-      32,
-      36
-    ],
-    "leftFlangeDiaMm": 74,
-    "rightFlangeDiaMm": 74,
-    "leftOffsetMm": 30,
-    "rightOffsetMm": 30,
-    "spokeHoleMm": 2.6,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "primary",
-      "note": "Shimano's published figures, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Shimano",
-    "model": "Nexus DH-3D70 dynamo (disc)",
-    "type": "front-dynamo",
-    "widthMm": 100,
-    "spokeCounts": [
-      32,
-      36
-    ],
-    "leftFlangeDiaMm": 74,
-    "rightFlangeDiaMm": 74,
-    "leftOffsetMm": 22.3,
-    "rightOffsetMm": 30,
-    "spokeHoleMm": 2.6,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "primary",
-      "note": "Shimano's published figures, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Shimano",
-    "model": "Dura-Ace FH-7700 (9s)",
-    "type": "rear-cassette",
-    "widthMm": 130,
-    "spokeCounts": [
-      28,
-      32
-    ],
-    "leftFlangeDiaMm": 44,
-    "rightFlangeDiaMm": 44,
-    "leftOffsetMm": 36.9,
-    "rightOffsetMm": 21.1,
-    "spokeHoleMm": 2.4,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Shimano",
-    "model": "Dura-Ace FH-7800 (10s)",
-    "type": "rear-cassette",
-    "widthMm": 130,
     "spokeCounts": [
       24,
       28,
       32
     ],
-    "leftFlangeDiaMm": 44,
-    "rightFlangeDiaMm": 44,
-    "leftOffsetMm": 38,
-    "rightOffsetMm": 22.2,
-    "spokeHoleMm": 2.4,
+    "leftFlangeDiaMm": 57.4,
+    "rightFlangeDiaMm": 57.4,
+    "leftOffsetMm": 22.3,
+    "rightOffsetMm": 30.6,
+    "spokeHoleMm": 2.5,
     "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Shimano",
-    "model": "105 FH-5500",
-    "type": "rear-cassette",
-    "widthMm": 130,
-    "spokeCounts": [
-      28,
-      32,
-      36
-    ],
-    "leftFlangeDiaMm": 45,
-    "rightFlangeDiaMm": 45,
-    "leftOffsetMm": 32.5,
-    "rightOffsetMm": 20.5,
-    "spokeHoleMm": 2.6,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "url": "https://chrisking.com/products/r45d-centerlock-front",
       "sourceType": "primary",
-      "note": "Shimano's published figures, transcribed from Damon Rinard's spocalc database"
+      "note": "Chris King's published product-page specs"
     }
   },
   {
-    "manufacturer": "Campagnolo",
-    "model": "Record/Chorus OS (9/10s)",
-    "type": "rear-cassette",
-    "widthMm": 130,
+    "manufacturer": "Chris King",
+    "model": "ISO B Boost Front",
+    "type": "front",
+    "widthMm": 110,
     "spokeCounts": [
+      24,
       28,
       32
     ],
-    "leftFlangeDiaMm": 44,
-    "rightFlangeDiaMm": 46,
-    "leftOffsetMm": 36.76,
-    "rightOffsetMm": 16.8,
-    "spokeHoleMm": 2.4,
+    "leftFlangeDiaMm": 57.4,
+    "rightFlangeDiaMm": 57.4,
+    "leftOffsetMm": 26.9,
+    "rightOffsetMm": 26.9,
+    "spokeHoleMm": 2.5,
     "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "url": "https://cdn.shopify.com/s/files/1/2920/2114/files/iso_hub_specifications_wheel_building_information_2018.pdf",
       "sourceType": "primary",
-      "note": "Campagnolo's published figures, transcribed from Damon Rinard's spocalc database"
+      "note": "Chris King's published wheel-building specs"
     }
   },
   {
     "manufacturer": "White Industries",
-    "model": "Cassette (130 mm)",
-    "type": "rear-cassette",
-    "widthMm": 130,
+    "model": "CLD Front",
+    "type": "front",
+    "widthMm": 100,
     "spokeCounts": [
-      28,
-      32
-    ],
-    "leftFlangeDiaMm": 54,
-    "rightFlangeDiaMm": 54,
-    "leftOffsetMm": 34.3,
-    "rightOffsetMm": 20.1,
-    "spokeHoleMm": 2.4,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Mavic",
-    "model": "MR601",
-    "type": "rear-cassette",
-    "widthMm": 130,
-    "spokeCounts": [
-      28,
-      32
-    ],
-    "leftFlangeDiaMm": 46,
-    "rightFlangeDiaMm": 48,
-    "leftOffsetMm": 34,
-    "rightOffsetMm": 17.4,
-    "spokeHoleMm": 2.4,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Shimano",
-    "model": "Deore XT FH-M756 (disc)",
-    "type": "rear-cassette",
-    "widthMm": 135,
-    "spokeCounts": [
-      28,
-      32
-    ],
-    "leftFlangeDiaMm": 61,
-    "rightFlangeDiaMm": 61,
-    "leftOffsetMm": 32,
-    "rightOffsetMm": 18.5,
-    "spokeHoleMm": 2.6,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Chris King",
-    "model": "Cassette MTB (disc)",
-    "type": "rear-cassette",
-    "widthMm": 135,
-    "spokeCounts": [
-      28,
-      32
-    ],
-    "leftFlangeDiaMm": 44,
-    "rightFlangeDiaMm": 53,
-    "leftOffsetMm": 36,
-    "rightOffsetMm": 21,
-    "spokeHoleMm": 2.3,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "primary",
-      "note": "Chris King's published figures, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Hope",
-    "model": "Pro Sport (disc)",
-    "type": "rear-cassette",
-    "widthMm": 135,
-    "spokeCounts": [
+      24,
       28,
       32,
       36
     ],
     "leftFlangeDiaMm": 45,
     "rightFlangeDiaMm": 45,
-    "leftOffsetMm": 33,
-    "rightOffsetMm": 20,
+    "leftOffsetMm": 20.5,
+    "rightOffsetMm": 34.5,
     "spokeHoleMm": 2.6,
     "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Measured by DT Swiss, transcribed from Damon Rinard's spocalc database"
+      "url": "https://www.whiteind.com/product/cld-front/",
+      "sourceType": "primary",
+      "note": "White Industries' published hub specs"
     }
   },
   {
-    "manufacturer": "DT Swiss",
-    "model": "240 Disc",
-    "type": "rear-cassette",
-    "widthMm": 135,
+    "manufacturer": "White Industries",
+    "model": "CLD+ Boost Front",
+    "type": "front",
+    "widthMm": 110,
     "spokeCounts": [
+      24,
       28,
-      32
+      32,
+      36,
+      40
     ],
-    "leftFlangeDiaMm": 58,
-    "rightFlangeDiaMm": 46,
-    "leftOffsetMm": 33.5,
-    "rightOffsetMm": 19.2,
-    "spokeHoleMm": 2.5,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "primary",
-      "note": "DT Swiss's published figures, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "DT Swiss",
-    "model": "240 FR (150x12 thru-axle)",
-    "type": "rear-cassette",
-    "widthMm": 150,
-    "spokeCounts": [
-      28,
-      32
-    ],
-    "leftFlangeDiaMm": 58.5,
-    "rightFlangeDiaMm": 58.5,
-    "leftOffsetMm": 25.8,
-    "rightOffsetMm": 25.8,
+    "leftFlangeDiaMm": 60,
+    "rightFlangeDiaMm": 60,
+    "leftOffsetMm": 25.75,
+    "rightOffsetMm": 38.5,
     "spokeHoleMm": 2.6,
     "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "url": "https://www.whiteind.com/product/cld-boost-front/",
       "sourceType": "primary",
-      "note": "DT Swiss's published figures, transcribed from Damon Rinard's spocalc database"
+      "note": "White Industries' published hub specs"
     }
   },
   {
-    "manufacturer": "Shimano",
-    "model": "Dura-Ace track (high flange)",
-    "type": "rear-single",
-    "widthMm": 120,
-    "spokeCounts": [
-      32,
-      36
-    ],
-    "leftFlangeDiaMm": 67,
-    "rightFlangeDiaMm": 67,
-    "leftOffsetMm": 41,
-    "rightOffsetMm": 30,
-    "spokeHoleMm": 2.6,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Phil Wood",
-    "model": "Track (large flange)",
-    "type": "rear-single",
-    "widthMm": 120,
-    "spokeCounts": [
-      32,
-      36
-    ],
-    "leftFlangeDiaMm": 66,
-    "rightFlangeDiaMm": 66,
-    "leftOffsetMm": 43,
-    "rightOffsetMm": 29,
-    "spokeHoleMm": 2.6,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Chris King",
-    "model": "Single Speed",
-    "type": "rear-single",
-    "widthMm": 135,
-    "spokeCounts": [
-      28,
-      32
-    ],
-    "leftFlangeDiaMm": 53,
-    "rightFlangeDiaMm": 53,
-    "leftOffsetMm": 33.7,
-    "rightOffsetMm": 33.7,
-    "spokeHoleMm": 2.3,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "primary",
-      "note": "Chris King's published figures, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Surly",
-    "model": "1x1 Single Speed",
-    "type": "rear-single",
-    "widthMm": 135,
-    "spokeCounts": [
-      32,
-      36
-    ],
-    "leftFlangeDiaMm": 43,
-    "rightFlangeDiaMm": 43,
-    "leftOffsetMm": 39,
-    "rightOffsetMm": 39,
-    "spokeHoleMm": 2.4,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "primary",
-      "note": "Surly's published figures, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Surly",
-    "model": "New Track",
-    "type": "rear-single",
-    "widthMm": 120,
+    "manufacturer": "Schmidt (SON)",
+    "model": "SON 28",
+    "type": "front-dynamo",
+    "widthMm": 100,
     "spokeCounts": [
       32,
       36
     ],
     "leftFlangeDiaMm": 54,
     "rightFlangeDiaMm": 54,
-    "leftOffsetMm": 30.1,
-    "rightOffsetMm": 30.1,
-    "spokeHoleMm": 2.4,
+    "leftOffsetMm": 31,
+    "rightOffsetMm": 31,
     "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
+      "url": "https://nabendynamo.de/en/service/spoke-length/",
       "sourceType": "primary",
-      "note": "Surly's published figures, transcribed from Damon Rinard's spocalc database"
+      "note": "Schmidt SON's official spoke-length data (pitch-circle diameter); spoke-hole bore not published"
     }
   },
   {
-    "manufacturer": "Campagnolo",
-    "model": "Track (low flange)",
-    "type": "rear-single",
-    "widthMm": 120,
+    "manufacturer": "Schmidt (SON)",
+    "model": "SON 28 Disc (6-bolt)",
+    "type": "front-dynamo",
+    "widthMm": 100,
     "spokeCounts": [
+      28,
       32,
       36
     ],
-    "leftFlangeDiaMm": 44,
-    "rightFlangeDiaMm": 44,
-    "leftOffsetMm": 44.5,
-    "rightOffsetMm": 31.5,
+    "leftFlangeDiaMm": 59,
+    "rightFlangeDiaMm": 54,
+    "leftOffsetMm": 22.5,
+    "rightOffsetMm": 25,
+    "source": {
+      "url": "https://nabendynamo.de/en/service/spoke-length/",
+      "sourceType": "primary",
+      "note": "Schmidt SON's official spoke-length data (pitch-circle diameter); spoke-hole bore not published"
+    }
+  },
+  {
+    "manufacturer": "Schmidt (SON)",
+    "model": "SON 28 12 Disc (6-bolt)",
+    "type": "front-dynamo",
+    "widthMm": 100,
+    "spokeCounts": [
+      24,
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 59,
+    "rightFlangeDiaMm": 54,
+    "leftOffsetMm": 21,
+    "rightOffsetMm": 27,
+    "source": {
+      "url": "https://nabendynamo.de/en/service/spoke-length/",
+      "sourceType": "primary",
+      "note": "Schmidt SON's official spoke-length data (pitch-circle diameter); spoke-hole bore not published"
+    }
+  },
+  {
+    "manufacturer": "Schmidt (SON)",
+    "model": "SON 28 15 Boost Disc (6-bolt)",
+    "type": "front-dynamo",
+    "widthMm": 110,
+    "spokeCounts": [
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 59,
+    "rightFlangeDiaMm": 59,
+    "leftOffsetMm": 28,
+    "rightOffsetMm": 28,
+    "source": {
+      "url": "https://nabendynamo.de/en/service/spoke-length/",
+      "sourceType": "primary",
+      "note": "Schmidt SON's official spoke-length data (pitch-circle diameter); spoke-hole bore not published"
+    }
+  },
+  {
+    "manufacturer": "Schmidt (SON)",
+    "model": "SONdelux",
+    "type": "front-dynamo",
+    "widthMm": 100,
+    "spokeCounts": [
+      20,
+      24,
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 54,
+    "rightFlangeDiaMm": 54,
+    "leftOffsetMm": 25,
+    "rightOffsetMm": 25,
+    "source": {
+      "url": "https://nabendynamo.de/en/service/spoke-length/",
+      "sourceType": "primary",
+      "note": "Schmidt SON's official spoke-length data (pitch-circle diameter); spoke-hole bore not published"
+    }
+  },
+  {
+    "manufacturer": "Chris King",
+    "model": "R45 Rear",
+    "type": "rear-cassette",
+    "widthMm": 130,
+    "spokeCounts": [
+      20,
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 51.0,
+    "rightFlangeDiaMm": 51.0,
+    "leftOffsetMm": 34.3,
+    "rightOffsetMm": 17.0,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://cdn.shopify.com/s/files/1/2920/2114/files/r45_and_r45d_hub_specifications_and_wheel_building_information_3_17_2.pdf",
+      "sourceType": "primary",
+      "note": "Chris King's published wheel-building specs"
+    }
+  },
+  {
+    "manufacturer": "Chris King",
+    "model": "R45D Centerlock 142x12 Rear",
+    "type": "rear-cassette",
+    "widthMm": 142,
+    "spokeCounts": [
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 57.4,
+    "rightFlangeDiaMm": 57.4,
+    "leftOffsetMm": 33.0,
+    "rightOffsetMm": 18.7,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://chrisking.com/products/r45d-centerlock-rear",
+      "sourceType": "primary",
+      "note": "Chris King's published product-page specs"
+    }
+  },
+  {
+    "manufacturer": "White Industries",
+    "model": "T11 Rear",
+    "type": "rear-cassette",
+    "widthMm": 130,
+    "spokeCounts": [
+      20,
+      24,
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 40.5,
+    "rightFlangeDiaMm": 55,
+    "leftOffsetMm": 35,
+    "rightOffsetMm": 18,
     "spokeHoleMm": 2.3,
     "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
+      "url": "https://www.whiteind.com/product/tll-rear/",
+      "sourceType": "primary",
+      "note": "White Industries' published hub specs"
+    }
+  },
+  {
+    "manufacturer": "White Industries",
+    "model": "CLD Rear",
+    "type": "rear-cassette",
+    "widthMm": 142,
+    "spokeCounts": [
+      24,
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 45,
+    "rightFlangeDiaMm": 55,
+    "leftOffsetMm": 33,
+    "rightOffsetMm": 19,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://www.whiteind.com/product/cld-rear/",
+      "sourceType": "primary",
+      "note": "White Industries' published hub specs"
+    }
+  },
+  {
+    "manufacturer": "Onyx",
+    "model": "Vesper MTB Rear (XDR)",
+    "type": "rear-cassette",
+    "widthMm": 142,
+    "spokeCounts": [
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 42,
+    "rightFlangeDiaMm": 50,
+    "leftOffsetMm": 33.9,
+    "rightOffsetMm": 19.47,
+    "source": {
+      "url": "https://onyxrp.com/store/mtb-hubs/onyx-vesper-mtb-cl-xdr-142-12-thru-bolt-rear-hub/",
+      "sourceType": "primary",
+      "note": "Onyx's published spoke-hole-circle (PCD) diameter and flange offsets; spoke-hole bore not published"
+    }
+  },
+  {
+    "manufacturer": "White Industries",
+    "model": "CLD+ Boost Rear",
+    "type": "rear-cassette",
+    "widthMm": 148,
+    "spokeCounts": [
+      24,
+      28,
+      32,
+      36,
+      40
+    ],
+    "leftFlangeDiaMm": 60,
+    "rightFlangeDiaMm": 60,
+    "leftOffsetMm": 36.5,
+    "rightOffsetMm": 22.5,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://www.whiteind.com/product/cld-boost-rear/",
+      "sourceType": "primary",
+      "note": "White Industries' published hub specs"
+    }
+  },
+  {
+    "manufacturer": "Chris King",
+    "model": "ISO B Boost Rear",
+    "type": "rear-cassette",
+    "widthMm": 148,
+    "spokeCounts": [
+      24,
+      28,
+      32
+    ],
+    "leftFlangeDiaMm": 57.4,
+    "rightFlangeDiaMm": 57.4,
+    "leftOffsetMm": 36.3,
+    "rightOffsetMm": 24.0,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://cdn.shopify.com/s/files/1/2920/2114/files/iso_hub_specifications_wheel_building_information_2018.pdf",
+      "sourceType": "primary",
+      "note": "Chris King's published wheel-building specs"
+    }
+  },
+  {
+    "manufacturer": "Onyx",
+    "model": "MTB Boost Rear (XD)",
+    "type": "rear-cassette",
+    "widthMm": 148,
+    "spokeCounts": [
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 50,
+    "rightFlangeDiaMm": 50,
+    "leftOffsetMm": 36.9,
+    "rightOffsetMm": 22.92,
+    "source": {
+      "url": "https://onyxrp.com/store/mtb-hubs/mtb-boost-cl-xd/mtb-boost-cl-xd-148-12mm-thru/",
+      "sourceType": "primary",
+      "note": "Onyx's published spoke-hole-circle (PCD) diameter and flange offsets; spoke-hole bore not published"
+    }
+  },
+  {
+    "manufacturer": "White Industries",
+    "model": "ENO Flip Flop Rear",
+    "type": "rear-single",
+    "widthMm": 135,
+    "spokeCounts": [
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 48,
+    "rightFlangeDiaMm": 48,
+    "leftOffsetMm": 32.5,
+    "rightOffsetMm": 32.5,
+    "spokeHoleMm": 2.6,
+    "source": {
+      "url": "https://www.whiteind.com/product/eno-flip-flop/",
+      "sourceType": "primary",
+      "note": "White Industries' published hub specs"
+    }
+  },
+  {
+    "manufacturer": "Chris King",
+    "model": "ISO SS 142x12 Rear",
+    "type": "rear-single",
+    "widthMm": 142,
+    "spokeCounts": [
+      28,
+      32,
+      36
+    ],
+    "leftFlangeDiaMm": 57.4,
+    "rightFlangeDiaMm": 57.4,
+    "leftOffsetMm": 31.0,
+    "rightOffsetMm": 32.3,
+    "spokeHoleMm": 2.5,
+    "source": {
+      "url": "https://cdn.shopify.com/s/files/1/2920/2114/files/iso_hub_specifications_wheel_building_information_2018.pdf",
+      "sourceType": "primary",
+      "note": "Chris King's published wheel-building specs"
     }
   },
   {
@@ -631,8 +477,7 @@
     "type": "rear-internal",
     "widthMm": 135,
     "spokeCounts": [
-      32,
-      36
+      32
     ],
     "leftFlangeDiaMm": 100,
     "rightFlangeDiaMm": 100,
@@ -642,7 +487,7 @@
     "source": {
       "url": "https://sheldonbrown.com/rinard/spocalc.htm",
       "sourceType": "secondary",
-      "note": "Measured by DT Swiss, transcribed from Damon Rinard's spocalc database"
+      "note": "Community/aggregated figures via Damon Rinard's spocalc database — maker publishes no first-party flange geometry"
     }
   },
   {
@@ -662,27 +507,7 @@
     "source": {
       "url": "https://sheldonbrown.com/rinard/spocalc.htm",
       "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Shimano",
-    "model": "Nexus Inter-7 (SG-7R40)",
-    "type": "rear-internal",
-    "widthMm": 130,
-    "spokeCounts": [
-      32,
-      36
-    ],
-    "leftFlangeDiaMm": 87,
-    "rightFlangeDiaMm": 87,
-    "leftOffsetMm": 31.15,
-    "rightOffsetMm": 23.45,
-    "spokeHoleMm": 2.6,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
+      "note": "Community/aggregated figures via Damon Rinard's spocalc database — maker publishes no first-party flange geometry"
     }
   },
   {
@@ -702,26 +527,7 @@
     "source": {
       "url": "https://sheldonbrown.com/rinard/spocalc.htm",
       "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
-    }
-  },
-  {
-    "manufacturer": "Sachs",
-    "model": "Super 7 (coaster)",
-    "type": "rear-internal",
-    "widthMm": 130,
-    "spokeCounts": [
-      36
-    ],
-    "leftFlangeDiaMm": 75,
-    "rightFlangeDiaMm": 75,
-    "leftOffsetMm": 35.5,
-    "rightOffsetMm": 33,
-    "spokeHoleMm": 2.4,
-    "source": {
-      "url": "https://sheldonbrown.com/rinard/spocalc.htm",
-      "sourceType": "secondary",
-      "note": "Community-contributed measurement, transcribed from Damon Rinard's spocalc database"
+      "note": "Community/aggregated figures via Damon Rinard's spocalc database — maker publishes no first-party flange geometry"
     }
   }
 ]

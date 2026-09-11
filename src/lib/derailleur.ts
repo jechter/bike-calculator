@@ -300,8 +300,29 @@ function deriveActuation(r: RawDerailleur): string | undefined {
     if (s === 11) return 'Campagnolo 11-speed';
     return 'Campagnolo 12-speed'; // mechanical 12s (13s is always electronic)
   }
-  // Third-party (Microshift, Sunrace, L-TWOO, Box, …): their compatibility
-  // varies by model and isn't reliably derivable — leave as unknown.
+  if (r.brand === 'Microshift') {
+    // Microshift deliberately builds most groups to a Shimano actuation ratio so
+    // they cross-index with Shimano shifters/derailleurs — its road groups
+    // (R8/R9/R10, Centos, Arsis, M21) and its traditional MTB groups (Mezzo,
+    // Marvo, XLE, XCD) all do. The EXCEPTIONS are its modern 1x groups — Advent,
+    // Advent X, Advent MX, Sword — and the entry-level Acolyte, which use
+    // Microshift's OWN proprietary cable pull and are NOT Shimano-compatible;
+    // leave those unknown. (Verified against Microshift's FAQ and BikeRadar's
+    // Microshift groupset guide.) For the Shimano-compatible groups, reuse the
+    // same family split as the equivalent Shimano part, keyed off the sourced
+    // pullRatio + discipline + speeds.
+    const proprietary = ['advent', 'sword', 'acolyte'];
+    if (proprietary.some((p) => series.includes(p))) return undefined;
+    if (road) {
+      if (r.pullRatio === 1.4) return 'Shimano road 1.4 (11-speed & Tiagra 4700)';
+      return 'Shimano road 1.7 (classic)'; // R-series / Centos / Arsis 1.7 road
+    }
+    if (s >= 11) return 'Shimano MTB 11/12-speed (Hyperglide+ / Micro Spline)'; // XLE 11 / XCD
+    if (s === 10) return 'Shimano MTB 10-speed (Dynasys)'; // XLE 10
+    return 'Shimano MTB 6/7/8/9-speed'; // Mezzo / Marvo
+  }
+  // Other third-party (Sunrace, L-TWOO, Box, …): compatibility varies by model
+  // and isn't reliably derivable — leave as unknown.
   return undefined;
 }
 

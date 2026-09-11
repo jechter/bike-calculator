@@ -80,7 +80,7 @@ describe('derailleurSpeeds / speedMatches', () => {
 });
 
 describe('deriveActuation', () => {
-  it('derives families for Shimano/SRAM, leaves third-party unknown', () => {
+  it('derives families for Shimano/SRAM, leaves other third-party unknown', () => {
     expect(derailleurByKey('shimano-rd-r7000-ss-11s')?.actuation).toBe(
       'Shimano road 1.4 (11-speed & Tiagra 4700)',
     );
@@ -88,8 +88,30 @@ describe('deriveActuation', () => {
       (d) => d.brand === 'SRAM' && d.discipline === 'MTB' && d.speeds === 12 && !d.electronic,
     );
     expect(eagle?.actuation).toBe('SRAM Eagle (X-Actuation)');
-    const microshift = DERAILLEURS.find((d) => d.brand === 'Microshift');
-    expect(microshift?.actuation).toBeUndefined();
+    // Non-Microshift third-party stays unknown (compatibility varies by model).
+    const sunrace = DERAILLEURS.find((d) => d.brand === 'Sunrace');
+    expect(sunrace?.actuation).toBeUndefined();
+  });
+
+  it('maps Shimano-compatible Microshift groups to their Shimano family, keeps Advent/Acolyte proprietary', () => {
+    const ms = (model: string) => DERAILLEURS.find((d) => d.brand === 'Microshift' && d.model === model)!;
+    // Road: R-series/old Centos/Arsis copy classic Shimano 1.7; newer Centos/Arsis
+    // 11 (and the Tiagra-4700-compatible Centos 10 R55S) copy the 1.4 pull.
+    expect(ms('RD-R42').actuation).toBe('Shimano road 1.7 (classic)'); // R9 9-speed
+    expect(ms('RD-R47').actuation).toBe('Shimano road 1.7 (classic)'); // R10 10-speed
+    expect(ms('RD-R55S').actuation).toBe('Shimano road 1.4 (11-speed & Tiagra 4700)'); // Centos 10
+    expect(ms('RD-R58S').actuation).toBe('Shimano road 1.4 (11-speed & Tiagra 4700)'); // Centos 11
+    // MTB: Mezzo/Marvo = classic 6-9 pull, XLE 10 = Dynasys, XLE 11/XCD = 11/12sp.
+    expect(ms('RD-M36L').actuation).toBe('Shimano MTB 6/7/8/9-speed'); // Mezzo 9sp
+    expect(ms('RD-M61L').actuation).toBe('Shimano MTB 10-speed (Dynasys)'); // XLE 10
+    expect(ms('RD-M665M').actuation).toBe('Shimano MTB 11/12-speed (Hyperglide+ / Micro Spline)'); // XLE 11
+    expect(ms('RD-M865M').actuation).toBe('Shimano MTB 11/12-speed (Hyperglide+ / Micro Spline)'); // XCD
+    // Proprietary Microshift pull — NOT Shimano-compatible, stays unknown.
+    expect(ms('RD-M6195L').actuation).toBeUndefined(); // Advent 9-speed
+    expect(ms('RD-M6205AM').actuation).toBeUndefined(); // Advent X 10-speed
+    expect(ms('RD-M7015M').actuation).toBeUndefined(); // Advent MX 11-speed
+    expect(ms('RD-G7900M').actuation).toBeUndefined(); // Sword gravel
+    expect(ms('RD-M5180M').actuation).toBeUndefined(); // Acolyte 8-speed
   });
 
   it('splits Shimano road families by pull ratio, not speed count', () => {

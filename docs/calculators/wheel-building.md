@@ -28,6 +28,12 @@ always overridable, and clearly flagged as starting points to measure against.
   - **Flange offset / centre-to-flange** (`W`, mm) — distance from the wheel
     centreline to the flange. Drive and non-drive differ on a dished wheel.
   - **Cross pattern** `k` (e.g. 3-cross, 2-cross, radial = 0).
+  - **Grouping** — how leading and trailing spokes are arranged around the
+    flange. Standard (**1L1T**) alternates leading/trailing spoke-by-spoke; the
+    grouped patterns **2L2T / 3L3T / 4L4T** run two/three/four leading spokes
+    together, then the same number trailing, giving the paired "clustered" look.
+    Grouping only re-pairs which flange hole each spoke uses — **spoke length is
+    unchanged** — but it has feasibility limits (see below).
 - The **hub preset** fills flange diameters, offsets and hole size for common
   hub types (road/MTB, front/rear, QR/Boost) — approximate; measure to confirm.
 
@@ -71,9 +77,28 @@ Two limits bound the cross count:
    **maximum cross is `floor(n/8)`** (matching the standard tables: 32h → 4×,
    24h → 3×, 20h → 2×, 8h → 1×).
 
-The calculator validates the spoke count (even, ≥ 8) and each side's cross; for an
-infeasible combination it shows an error and hides the (meaningless) diagram and
-spoke lengths rather than drawing a wheel that can't exist.
+Grouped lacing (`g`L`g`T for a run length `g`) adds two more rules, on top of the
+cross limits above, for it to stay a valid equal-length pattern on a normally
+drilled hub and rim:
+
+3. **Group divisibility.** Each flange must split into balanced runs of `g`
+   leading and `g` trailing spokes, so the count must be **divisible by `4·g`**
+   (2L2T → ÷8, 3L3T → ÷12, 4L4T → ÷16).
+4. **Cross must be a multiple of `g`.** The angular shift between a group's two
+   ends is `2k mod 2g`, which lands a leading and a trailing spoke in the *same*
+   flange hole unless `k` is a multiple of `g`. So 2L2T needs an **even** cross
+   (2×, 4×), 3L3T needs 3×, 4L4T needs 4×. Odd-cross grouped patterns are only
+   buildable on a specially paired-drilled rim, which this calculator doesn't
+   model. (Standard 1L1T has `g = 1`, so both rules vanish — any cross works.)
+
+The calculator validates the spoke count (even, ≥ 8), each side's cross, and the
+grouping; for an infeasible combination it shows an error and hides the
+(meaningless) diagram and spoke lengths rather than drawing a wheel that can't
+exist.
+
+Grouped lacing is largely a **cosmetic** choice: bunching the spoke pull into
+clusters leaves longer unsupported arcs of rim between groups, so it's generally
+considered slightly less structurally even than standard alternating lacing.
 
 ## Outputs
 

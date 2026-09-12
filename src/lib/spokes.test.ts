@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   spokeLength,
+  spokeLead,
   readingToKgf,
   maxCross,
   checkWheelLacing,
@@ -82,6 +83,76 @@ describe('maxCross / checkWheelLacing', () => {
     expect(r.ok).toBe(false);
     expect(r.errors).toHaveLength(1);
     expect(r.errors[0]).toMatch(/Right/);
+  });
+});
+
+describe('spokeLead (grouped lacing handedness)', () => {
+  it('alternates 1L1T for group size 1', () => {
+    const leads = [0, 1, 2, 3, 4, 5].map((j) => spokeLead(j, 1));
+    expect(leads).toEqual([1, -1, 1, -1, 1, -1]);
+  });
+
+  it('runs two-and-two for 2L2T', () => {
+    const leads = [0, 1, 2, 3, 4, 5, 6, 7].map((j) => spokeLead(j, 2));
+    expect(leads).toEqual([1, 1, -1, -1, 1, 1, -1, -1]);
+  });
+
+  it('runs three-and-three for 3L3T', () => {
+    const leads = [0, 1, 2, 3, 4, 5].map((j) => spokeLead(j, 3));
+    expect(leads).toEqual([1, 1, 1, -1, -1, -1]);
+  });
+});
+
+describe('grouped-lacing feasibility', () => {
+  // Rebuild the flange-hole map the renderer uses (flange hole = j + lead·k, mod
+  // m) and confirm it's a bijection — no two spokes share a hole and all lengths
+  // stay equal. This is the geometric rule the group validation encodes.
+  const isBijection = (spokeCount: number, cross: number, group: number) => {
+    const m = spokeCount / 2; // spokes per flange
+    const holes = new Set<number>();
+    for (let j = 0; j < m; j++) {
+      holes.add(((j + spokeLead(j, group) * cross) % m + m) % m);
+    }
+    return holes.size === m;
+  };
+
+  it('accepts 2L2T with an even cross (2× on 32h)', () => {
+    expect(checkWheelLacing(32, 2, 2, 2, 2).ok).toBe(true);
+    expect(isBijection(32, 2, 2)).toBe(true);
+  });
+
+  it('accepts 4L4T 4-cross on 32h', () => {
+    expect(checkWheelLacing(32, 4, 4, 4, 4).ok).toBe(true);
+    expect(isBijection(32, 4, 4)).toBe(true);
+  });
+
+  it('accepts 3L3T 3-cross on 24h', () => {
+    expect(checkWheelLacing(24, 3, 3, 3, 3).ok).toBe(true);
+    expect(isBijection(24, 3, 3)).toBe(true);
+  });
+
+  it('rejects 2L2T with an odd cross — spokes would collide in a hole', () => {
+    const r = checkWheelLacing(32, 3, 3, 2, 2);
+    expect(r.ok).toBe(false);
+    expect(r.errors.join(' ')).toMatch(/multiple of 2/);
+    expect(isBijection(32, 3, 2)).toBe(false); // the rule the message guards
+  });
+
+  it('rejects 2L2T on a count not divisible by 8 (28h)', () => {
+    const r = checkWheelLacing(28, 2, 2, 2, 2);
+    expect(r.ok).toBe(false);
+    expect(r.errors.join(' ')).toMatch(/divisible by 8/);
+  });
+
+  it('rejects grouping on a radial (no leading/trailing to group)', () => {
+    const r = checkWheelLacing(32, 0, 0, 2, 2);
+    expect(r.ok).toBe(false);
+    expect(r.errors.join(' ')).toMatch(/needs a cross pattern/);
+  });
+
+  it('leaves the standard 1L1T build unaffected', () => {
+    expect(checkWheelLacing(32, 3, 3, 1, 1).ok).toBe(true);
+    expect(checkWheelLacing(32, 3, 3).ok).toBe(true); // group defaults to 1
   });
 });
 

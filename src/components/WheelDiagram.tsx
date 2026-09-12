@@ -5,7 +5,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Wheel3D } from "./Wheel3D";
-import type { HubType } from "../lib/spokes";
+import { spokeLead, type HubType } from "../lib/spokes";
 
 const DRIVE = "#c0392b"; // right / drive side
 const NDS = "#0b6bcb"; // left / non-drive side
@@ -13,8 +13,10 @@ const NDS = "#0b6bcb"; // left / non-drive side
 // A spoke's build order is its group (0–3) then its position around the wheel.
 // The four groups follow Sheldon Brown's method: drive-side first set, then the
 // non-drive first set, then the drive-side crossing set, then the non-drive
-// crossing set. Rim holes alternate flanges (even = drive, odd = non-drive) and
-// lead/trail alternates per side, so group = i % 4 falls out for free.
+// crossing set. Rim holes alternate flanges (even = drive, odd = non-drive); the
+// heads-out (leading) spokes go in before the crossing (trailing) ones. With
+// grouped lacing (2L2T…) the lead/trail run isn't a simple alternation, so the
+// group is derived from each spoke's actual handedness rather than i % 4.
 const GROUP_LABELS = [
   "1st set · drive-side, heads-out",
   "2nd set · non-drive, heads-out",
@@ -31,6 +33,9 @@ export interface WheelDiagramProps {
   rightOffsetMm: number;
   leftCross: number;
   rightCross: number;
+  /** Grouped-lacing run length per side: 1 = standard 1L1T, 2 = 2L2T, 3 = 3L3T… */
+  leftGroup?: number;
+  rightGroup?: number;
   /** Selected hub's type / over-locknut width, when a hub is chosen — drives the
    *  axle length and the hub-shell shape in the 3D view. */
   hubType?: HubType;
@@ -38,19 +43,28 @@ export interface WheelDiagramProps {
 }
 
 export function WheelDiagram(props: WheelDiagramProps) {
-  const { erdMm, spokeCount } = props;
+  const { erdMm, spokeCount, leftGroup = 1, rightGroup = 1 } = props;
   const valid = !!erdMm && !!spokeCount && spokeCount >= 4 && spokeCount % 2 === 0;
   const n = valid ? spokeCount : 0;
 
+  // A spoke's build group: heads-out (leading) sets first, then crossing (trailing)
+  // sets, drive side before non-drive within each — 0..3 matching GROUP_LABELS.
+  const buildGroup = (i: number) => {
+    const isDrive = i % 2 === 0;
+    const leading = spokeLead(Math.floor(i / 2), isDrive ? rightGroup : leftGroup) === 1;
+    return (leading ? 0 : 2) + (isDrive ? 0 : 1);
+  };
+
   // Build order: sequence[step] = rim index of the spoke placed at that step.
-  // Sort rim holes by group (i % 4), then position within the group (i / 4).
+  // Sort rim holes by build group, then by position around the wheel.
   const sequence = useMemo(() => {
     return Array.from({ length: n }, (_, i) => i).sort((a, b) => {
-      const ga = a % 4;
-      const gb = b % 4;
-      return ga !== gb ? ga - gb : Math.floor(a / 4) - Math.floor(b / 4);
+      const ga = buildGroup(a);
+      const gb = buildGroup(b);
+      return ga !== gb ? ga - gb : a - b;
     });
-  }, [n]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [n, leftGroup, rightGroup]);
 
   // How many spokes are currently laced. Defaults to a fully built wheel; reset
   // when the spoke count changes (the classic "derive state from props" pattern).
@@ -79,13 +93,17 @@ export function WheelDiagram(props: WheelDiagramProps) {
   }
 
   // Build-guide caption for the current step.
+  const sideLabel = (cross: number, group: number) =>
+    `${cross}×${group > 1 ? ` ${group}L${group}T` : ""}`;
   let buildCaption: string;
   if (step <= 0) {
     buildCaption = "Bare rim & hub — drag to lace, starting by the valve";
   } else if (step >= n) {
-    buildCaption = `Fully laced · ${n}h · ${props.leftCross}× / ${props.rightCross}×`;
+    buildCaption =
+      `Fully laced · ${n}h · ` +
+      `${sideLabel(props.leftCross, leftGroup)} / ${sideLabel(props.rightCross, rightGroup)}`;
   } else {
-    const group = sequence[step - 1] % 4;
+    const group = buildGroup(sequence[step - 1]);
     buildCaption = `Spoke ${step} of ${n} · ${GROUP_LABELS[group]}`;
   }
 
@@ -100,6 +118,8 @@ export function WheelDiagram(props: WheelDiagramProps) {
         rightOffsetMm={props.rightOffsetMm}
         leftCross={props.leftCross}
         rightCross={props.rightCross}
+        leftGroup={leftGroup}
+        rightGroup={rightGroup}
         hubType={props.hubType}
         hubWidthMm={props.hubWidthMm}
         step={step}

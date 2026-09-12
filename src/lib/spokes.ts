@@ -42,6 +42,19 @@ export function spokeLength(input: SpokeInput): number {
   return Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3) - holeDia / 2;
 }
 
+/**
+ * Handedness (leading = +1, trailing = -1) of a flange's spokes for a gLgT
+ * grouped-lacing pattern. `flangeIndex` counts a single flange's spokes in order
+ * around it (0 … n/2-1); `group` is the run length: 1 = standard 1L1T alternation
+ * (leading, trailing, leading, …), 2 = 2L2T (two leading, two trailing, …), and
+ * so on. Grouping only re-pairs which hub hole each spoke uses — every spoke still
+ * spans the same k flange-hole pitches, so it never changes spoke length.
+ */
+export function spokeLead(flangeIndex: number, group: number): 1 | -1 {
+  const g = Math.max(1, Math.floor(group) || 1);
+  return Math.floor(flangeIndex / g) % 2 === 0 ? 1 : -1;
+}
+
 // --- Lacing feasibility -----------------------------------------------------
 // Two limits bound the cross count:
 //  1. Symmetric cross lacing splits each side's n/2 spokes into equal leading
@@ -61,10 +74,20 @@ export interface LacingCheck {
   errors: string[];
 }
 
+// Grouped lacing (gLgT) is a bijective, equal-length pattern on a normally-drilled
+// hub + rim only when two extra rules hold, on top of the ordinary cross limits:
+//   a. spokeCount % (4·g) === 0  — so each flange splits into balanced runs of g
+//      leading and g trailing spokes.
+//   b. cross % g === 0           — otherwise a leading and a trailing spoke land in
+//      the same flange hole (the shift between a group's ends is 2k mod 2g, which is
+//      only zero when k is a multiple of g). Odd crosses with 2L2T, etc., need a
+//      specially paired-drilled rim, which this calculator doesn't model.
 export function checkWheelLacing(
   spokeCount: number,
   leftCross: number,
   rightCross: number,
+  leftGroup: number = 1,
+  rightGroup: number = 1,
 ): LacingCheck {
   const errors: string[] = [];
   if (!Number.isFinite(spokeCount) || spokeCount < 8) {
@@ -75,23 +98,50 @@ export function checkWheelLacing(
     const kmax = maxCross(spokeCount);
     const maxLabel = kmax === 0 ? "radial (0-cross)" : `${kmax}-cross`;
     const notDivisibleBy4 = spokeCount % 4 !== 0;
-    const sideCheck = (label: string, k: number) => {
+    const sideCheck = (label: string, k: number, g: number) => {
+      let crossOk = true;
       if (!Number.isInteger(k) || k < 0) {
         errors.push(`${label}: cross count must be 0 or a positive whole number.`);
+        crossOk = false;
       } else if (notDivisibleBy4 && k > 0) {
         errors.push(
           `${label}: cross lacing needs a spoke count divisible by 4 — ` +
             `${spokeCount} spokes (${spokeCount / 2} per side) can only be laced radially (0-cross).`,
         );
+        crossOk = false;
       } else if (k > kmax) {
         errors.push(
           `${label}: ${k}-cross isn't buildable with ${spokeCount} spokes ` +
             `(the spoke angle would exceed 90°). Max is ${maxLabel}.`,
         );
+        crossOk = false;
+      }
+      // Grouped lacing only matters once the cross count itself is buildable.
+      if (crossOk && Number.isInteger(g) && g > 1) {
+        if (k === 0) {
+          errors.push(
+            `${label}: ${g}L${g}T grouping needs a cross pattern — radial spokes ` +
+              `have no leading/trailing to group.`,
+          );
+        } else {
+          if (spokeCount % (4 * g) !== 0) {
+            errors.push(
+              `${label}: ${g}L${g}T needs a spoke count divisible by ${4 * g} to split ` +
+                `into balanced groups — ${spokeCount} spokes won't.`,
+            );
+          }
+          if (k % g !== 0) {
+            errors.push(
+              `${label}: ${g}L${g}T laces cleanly only when the cross count is a multiple ` +
+                `of ${g} (e.g. ${g}-cross) — ${k}-cross would force two spokes into one ` +
+                `flange hole on a standard hub.`,
+            );
+          }
+        }
       }
     };
-    sideCheck("Left / non-drive", leftCross);
-    sideCheck("Right / drive", rightCross);
+    sideCheck("Left / non-drive", leftCross, leftGroup);
+    sideCheck("Right / drive", rightCross, rightGroup);
   }
   return { ok: errors.length === 0, errors };
 }

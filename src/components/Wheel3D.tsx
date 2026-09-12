@@ -9,7 +9,7 @@
 // dish and cross pattern read as real 3D.
 
 import { useEffect, useRef, useState } from "react";
-import type { HubType } from "../lib/spokes";
+import { spokeLead, type HubType } from "../lib/spokes";
 
 // Two shades per side so outer-laced (heads-out) and inner-laced (heads-in)
 // spokes are visually distinct: the lighter shade is outer, the darker is inner.
@@ -46,6 +46,9 @@ export interface Wheel3DProps {
   rightOffsetMm: number;
   leftCross: number;
   rightCross: number;
+  /** Grouped-lacing run length per side: 1 = standard 1L1T, 2 = 2L2T, 3 = 3L3T… */
+  leftGroup: number;
+  rightGroup: number;
   /** Selected hub's type / over-locknut width (mm), when a hub is chosen. */
   hubType?: HubType;
   hubWidthMm?: number;
@@ -421,6 +424,8 @@ export function Wheel3D(props: Wheel3DProps) {
     rightOffsetMm,
     leftCross,
     rightCross,
+    leftGroup,
+    rightGroup,
     hubType,
     hubWidthMm,
     step,
@@ -584,7 +589,7 @@ export function Wheel3D(props: Wheel3DProps) {
       const fR = isDrive ? rfR : lfR;
       const zF = isDrive ? zR : zL;
       const k = isDrive ? rightCross : leftCross;
-      const lead = Math.floor(i / 2) % 2 === 0 ? 1 : -1;
+      const lead = spokeLead(Math.floor(i / 2), isDrive ? rightGroup : leftGroup);
       const rimA = (2 * Math.PI * i) / spokeCount;
       const flA = rimA + lead * ((4 * Math.PI * k) / spokeCount);
       // flange hole: a dark disc set through the flange thickness
@@ -614,7 +619,7 @@ export function Wheel3D(props: Wheel3DProps) {
       const isDrive = i % 2 === 0;
       const fR = isDrive ? rfR : lfR;
       const k = isDrive ? rightCross : leftCross;
-      const lead = Math.floor(i / 2) % 2 === 0 ? 1 : -1;
+      const lead = spokeLead(Math.floor(i / 2), isDrive ? rightGroup : leftGroup);
       const rimA = (2 * Math.PI * i) / n;
       const flA = rimA + lead * ((4 * Math.PI * k) / n);
       return {
@@ -647,7 +652,7 @@ export function Wheel3D(props: Wheel3DProps) {
       const isDrive = i % 2 === 0;
       const fR = isDrive ? rfR : lfR;
       const zF = isDrive ? zR : zL;
-      const lead = Math.floor(i / 2) % 2 === 0 ? 1 : -1;
+      const lead = spokeLead(Math.floor(i / 2), isDrive ? rightGroup : leftGroup);
       const leading = lead === 1; // the group laced last, woven under at the last cross
       const col = isDrive ? (leading ? DRIVE_OUT : DRIVE_IN) : leading ? NDS_OUT : NDS_IN;
       const k = isDrive ? rightCross : leftCross;
@@ -715,6 +720,8 @@ export function Wheel3D(props: Wheel3DProps) {
     rightOffsetMm,
     leftCross,
     rightCross,
+    leftGroup,
+    rightGroup,
     hubType,
     hubWidthMm,
     sequence,

@@ -21,6 +21,15 @@ const crossOptions = [0, 1, 2, 3, 4].map((k) => ({
   label: k === 0 ? "Radial (0×)" : `${k}-cross`,
 }));
 
+// Grouped lacing: how many leading spokes run before switching to trailing.
+// 1 = the usual alternating 1L1T; 2/3/4 = decorative 2L2T / 3L3T / 4L4T. Only
+// buildable when the count divides by 4·g and the cross count is a multiple of g
+// (checkWheelLacing enforces both); invalid picks fall through to the warning.
+const groupOptions = [1, 2, 3, 4].map((g) => ({
+  value: g,
+  label: g === 1 ? "Standard (1L1T)" : `${g}L${g}T`,
+}));
+
 const hubName = (h: Hub) => `${h.manufacturer} ${h.model}`;
 const drillingsLabel = (h: Hub) => h.spokeCounts.join("/") + "h";
 
@@ -223,10 +232,12 @@ export function WheelBuilding() {
   const [leftFlange, setLeftFlange] = useState(DEFAULT_HUB?.leftFlangeDiaMm ?? 45);
   const [leftOffset, setLeftOffset] = useState(DEFAULT_HUB?.leftOffsetMm ?? 34);
   const [leftCross, setLeftCross] = useState(3);
+  const [leftGroup, setLeftGroup] = useState(1);
 
   const [rightFlange, setRightFlange] = useState(DEFAULT_HUB?.rightFlangeDiaMm ?? 45);
   const [rightOffset, setRightOffset] = useState(DEFAULT_HUB?.rightOffsetMm ?? 17.5);
   const [rightCross, setRightCross] = useState(3);
+  const [rightGroup, setRightGroup] = useState(1);
 
   // The hub picked from the database, if any (cleared once a hub value is edited
   // by hand, so the trigger no longer claims a specific hub). Defaults to a
@@ -293,7 +304,7 @@ export function WheelBuilding() {
   );
 
   // Lacing feasibility
-  const lacing = checkWheelLacing(spokes, leftCross, rightCross);
+  const lacing = checkWheelLacing(spokes, leftCross, rightCross, leftGroup, rightGroup);
   const kmax = maxCross(spokes);
   const countOk = spokes >= 8 && spokes % 2 === 0;
   const leftOk = countOk && leftCross >= 0 && leftCross <= kmax;
@@ -384,6 +395,9 @@ export function WheelBuilding() {
             <Field label="Lacing">
               <Select value={leftCross} onChange={setLeftCross} options={crossOptions} />
             </Field>
+            <Field label="Grouping">
+              <Select value={leftGroup} onChange={setLeftGroup} options={groupOptions} />
+            </Field>
           </div>
           <div className="wb-side wb-side-right">
             <h4 className="wb-side-title">Right / drive</h4>
@@ -395,6 +409,9 @@ export function WheelBuilding() {
             </Field>
             <Field label="Lacing">
               <Select value={rightCross} onChange={setRightCross} options={crossOptions} />
+            </Field>
+            <Field label="Grouping">
+              <Select value={rightGroup} onChange={setRightGroup} options={groupOptions} />
             </Field>
           </div>
         </div>
@@ -441,6 +458,8 @@ export function WheelBuilding() {
             rightOffsetMm={rightOffset}
             leftCross={leftCross}
             rightCross={rightCross}
+            leftGroup={leftGroup}
+            rightGroup={rightGroup}
             hubType={hubStyle?.type}
             hubWidthMm={hubStyle?.widthMm}
           />

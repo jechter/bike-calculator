@@ -226,6 +226,7 @@ const DEFAULT_HUB = HUBS.find((h) => h.manufacturer === "Chris King" && h.model 
 
 export function WheelBuilding() {
   const [erd, setErd] = useState(602);
+  const [rimHoleOffset, setRimHoleOffset] = useState(0);
   const [spokes, setSpokes] = useState(32);
   const [holeDia, setHoleDia] = useState(DEFAULT_HUB?.spokeHoleMm ?? 2.6);
 
@@ -341,7 +342,10 @@ export function WheelBuilding() {
           <>
             <strong>ERD</strong> (effective rim diameter) is the diameter at the
             nipple seats — the single biggest error source. Measure it; presets are
-            rough starting points that vary a lot by rim depth.
+            rough starting points that vary a lot by rim depth.{" "}
+            <strong>Spoke-hole offset</strong> models a rim drilled with
+            alternating left/right holes (each leaning toward the flange it feeds);
+            leave it 0 for a plain centre-drilled rim.
           </>
         }
       >
@@ -358,6 +362,19 @@ export function WheelBuilding() {
               </div>
               <span className="suffix">mm</span>
             </div>
+          </Field>
+          <Field
+            label="Spoke-hole offset (alternating drilling)"
+            hint="each hole nudged toward the flange it serves · 0 = centred"
+          >
+            <NumberInput
+              value={rimHoleOffset}
+              onChange={setRimHoleOffset}
+              min={0}
+              max={5}
+              step={0.5}
+              suffix="mm"
+            />
           </Field>
         </div>
       </Section>
@@ -460,6 +477,7 @@ export function WheelBuilding() {
             rightCross={rightCross}
             leftGroup={leftGroup}
             rightGroup={rightGroup}
+            rimHoleOffsetMm={rimHoleOffset}
             hubType={hubStyle?.type}
             hubWidthMm={hubStyle?.widthMm}
           />

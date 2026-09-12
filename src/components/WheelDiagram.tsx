@@ -36,6 +36,8 @@ export interface WheelDiagramProps {
   /** Grouped-lacing run length per side: 1 = standard 1L1T, 2 = 2L2T, 3 = 3L3T… */
   leftGroup?: number;
   rightGroup?: number;
+  /** Alternating rim drilling: each hole nudged this many mm toward its flange. */
+  rimHoleOffsetMm?: number;
   /** Selected hub's type / over-locknut width, when a hub is chosen — drives the
    *  axle length and the hub-shell shape in the 3D view. */
   hubType?: HubType;
@@ -120,6 +122,7 @@ export function WheelDiagram(props: WheelDiagramProps) {
         rightCross={props.rightCross}
         leftGroup={leftGroup}
         rightGroup={rightGroup}
+        rimHoleOffsetMm={props.rimHoleOffsetMm}
         hubType={props.hubType}
         hubWidthMm={props.hubWidthMm}
         step={step}

@@ -49,6 +49,9 @@ export interface Wheel3DProps {
   /** Grouped-lacing run length per side: 1 = standard 1L1T, 2 = 2L2T, 3 = 3L3T… */
   leftGroup: number;
   rightGroup: number;
+  /** Alternating rim drilling: each hole nudged this many mm toward the flange it
+   *  serves (0 = centred / single-drilled). Purely the rim-bed hole position. */
+  rimHoleOffsetMm?: number;
   /** Selected hub's type / over-locknut width (mm), when a hub is chosen. */
   hubType?: HubType;
   hubWidthMm?: number;
@@ -426,6 +429,7 @@ export function Wheel3D(props: Wheel3DProps) {
     rightCross,
     leftGroup,
     rightGroup,
+    rimHoleOffsetMm,
     hubType,
     hubWidthMm,
     step,
@@ -502,8 +506,9 @@ export function Wheel3D(props: Wheel3DProps) {
     const zL = -leftOffsetMm * scale;
     const zR = rightOffsetMm * scale;
     // Axial offset of each rim hole toward the flange it serves. 0 = centred
-    // (single-drilled); a future rim option could enable alternating drilling.
-    const stagger = 0 * scale;
+    // (single-drilled); a positive value models alternating (staggered) drilling.
+    // Clamped to the rim's half-width so the hole always lands on the spoke bed.
+    const stagger = Math.max(0, Math.min((rimHoleOffsetMm ?? 0) * scale, 0.04));
 
     const flHalf = 0.008; // flange half-thickness
     // The flange diameter is the spoke-hole circle (PCD); the flange disc extends
@@ -722,6 +727,7 @@ export function Wheel3D(props: Wheel3DProps) {
     rightCross,
     leftGroup,
     rightGroup,
+    rimHoleOffsetMm,
     hubType,
     hubWidthMm,
     sequence,

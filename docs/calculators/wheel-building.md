@@ -17,6 +17,12 @@ always overridable, and clearly flagged as starting points to measure against.
   sit (nipple seat), the single most important and error-prone number. Must be
   measured or taken from the rim spec, **not** the bead/tire diameter. The rim
   preset fills a rough ERD by wheel size.
+- **Spoke-hole offset (alternating drilling)** (mm) — many rims are drilled with
+  each hole nudged a little toward the flange it feeds, alternating left/right
+  around the rim, so the spoke enters the bed straighter. This drives the 3D
+  view's rim-hole placement (0 = a plain centre-drilled rim). It's a small axial
+  shift at the rim bed; it does **not** meaningfully change the computed spoke
+  length, so the length formula ignores it (as do the standard calculators).
 
 **Hub** section (spoke count, hole diameter, and per side L/R):
 

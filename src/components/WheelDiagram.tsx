@@ -11,8 +11,8 @@ import { spokePlan, type HubType, type LacingPattern } from "../lib/spokes";
 // (crow's foot centre spokes), dark = trailing.
 type Role = "lead" | "radial" | "trail";
 const ROLE_LABEL: Record<Role, string> = { lead: "Leading", radial: "Radial", trail: "Trailing" };
-const NDS_SHADES: Record<Role, string> = { lead: "#66adfc", radial: "#2166bf", trail: "#032461" };
-const DRIVE_SHADES: Record<Role, string> = { lead: "#f57057", radial: "#ad3326", trail: "#570a05" };
+const NDS_SHADES: Record<Role, string> = { lead: "#75b8ff", radial: "#3380e6", trail: "#1a57b3" };
+const DRIVE_SHADES: Record<Role, string> = { lead: "#f78066", radial: "#d94530", trail: "#9e241a" };
 
 // A spoke's build order is its group (0–3) then its position around the wheel.
 // The four groups follow Sheldon Brown's method: drive-side first set, then the

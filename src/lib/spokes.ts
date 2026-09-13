@@ -21,6 +21,62 @@ export interface SpokeInput {
   cross: number; // number of crosses per spoke (0 = radial)
   spokeHoleDiameterMm?: number; // flange hole diameter, default 2.6
   side: SpokeSideInput;
+  /** Spokes on THIS flange. Defaults to spokeCount/2 (symmetric); for a 2:1 hub
+   *  it's 2·n/3 on the drive side and n/3 on the non-drive side. */
+  flangeSpokeCount?: number;
+}
+
+// How the total spoke count is split between the two flanges.
+//  "1:1" — the usual even split (n/2 each).
+//  "2:1" — twice as many on the drive side (2n/3 drive, n/3 non-drive), a
+//          tension-balancing layout for heavily dished rear wheels.
+export type HubRatio = '1:1' | '2:1';
+
+export interface FlangeCounts {
+  drive: number;
+  nds: number;
+}
+
+export function flangeSpokeCounts(spokeCount: number, ratio: HubRatio): FlangeCounts {
+  if (ratio === '2:1') return { nds: spokeCount / 3, drive: (2 * spokeCount) / 3 };
+  return { nds: spokeCount / 2, drive: spokeCount / 2 };
+}
+
+export interface SpokeHole {
+  isDrive: boolean;
+  /** This spoke's index within its own flange (0-based, around the wheel). */
+  flangeIndex: number;
+  /** Total spokes on this flange (for the crossing angle + flange pitch). */
+  flangeSpokes: number;
+}
+
+/**
+ * Which flange each rim hole feeds, and its per-flange index. Rim holes stay
+ * evenly spaced; only the flange assignment changes. 1:1 alternates drive/non-
+ * drive; 2:1 repeats a drive-drive-non-drive triplet so the drive flange gets two
+ * thirds. `ndsCentre` puts the single non-drive hole in the middle of each triplet
+ * (drive-non-drive-drive) instead of at the edge — so with rim holes grouped in
+ * threes, the non-drive spoke lands in the centre of each cluster.
+ */
+export function wheelLayout(
+  spokeCount: number,
+  ratio: HubRatio,
+  ndsCentre: boolean = false,
+): SpokeHole[] {
+  const { drive, nds } = flangeSpokeCounts(spokeCount, ratio);
+  const ndsPos = ndsCentre ? 1 : 2; // position of the non-drive hole in the triplet
+  const out: SpokeHole[] = [];
+  let jd = 0;
+  let jn = 0;
+  for (let i = 0; i < spokeCount; i++) {
+    const isDrive = ratio === '2:1' ? i % 3 !== ndsPos : i % 2 === 0;
+    out.push(
+      isDrive
+        ? { isDrive: true, flangeIndex: jd++, flangeSpokes: drive }
+        : { isDrive: false, flangeIndex: jn++, flangeSpokes: nds },
+    );
+  }
+  return out;
 }
 
 /**
@@ -31,15 +87,90 @@ export interface SpokeInput {
  *   d3 = flange offset
  *   L  = sqrt(d1^2 + d2^2 + d3^2) - holeDia/2
  */
+/**
+ * Angular position (radians) of rim hole `i` for a rim drilled in groups. Holes
+ * within a group sit `a` apart, groups are separated by a wider `b = gap·a`; with
+ * `groupSize` 1 (or `gap` ≤ 1, or a count not divisible by the group) it falls back
+ * to plain even spacing (2π·i/n). `gap` is the between-group spacing as a multiple
+ * of the in-group spacing. Only the rim-hole position moves — the flange stays
+ * evenly drilled — so a grouped rim just fans the spokes toward the clusters.
+ */
+export function rimHoleAngle(i: number, n: number, groupSize: number, gap: number): number {
+  const g = Math.floor(groupSize);
+  if (g < 2 || n % g !== 0 || !(gap > 1)) return (2 * Math.PI * i) / n;
+  const groups = n / g;
+  // Each group is centred on the even position it would occupy ungrouped, so the
+  // holes spread symmetrically around that centre. For an odd group the middle
+  // hole therefore stays exactly on its even position (a centred radial spoke
+  // stays radial). In-group spacing `a` shrinks as the gap grows, conserving 2π.
+  const a = (2 * Math.PI) / groups / (g - 1 + gap);
+  const q = Math.floor(i / g); // group index
+  const p = i % g; // position within the group
+  const centre = ((2 * Math.PI) / n) * (q * g + (g - 1) / 2);
+  return centre + (p - (g - 1) / 2) * a;
+}
+
 export function spokeLength(input: SpokeInput): number {
   const { erdMm, spokeCount, cross, side } = input;
   const holeDia = input.spokeHoleDiameterMm ?? 2.6;
   const R = side.flangeDiameterMm / 2;
-  const thetaRad = (2 * Math.PI * cross) / (spokeCount / 2);
+  const perFlange = input.flangeSpokeCount ?? spokeCount / 2;
+  const thetaRad = (2 * Math.PI * cross) / perFlange;
   const d1 = R * Math.sin(thetaRad);
   const d2 = erdMm / 2 - R * Math.cos(thetaRad);
   const d3 = side.flangeOffsetMm;
   return Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3) - holeDia / 2;
+}
+
+/**
+ * Handedness (leading = +1, trailing = -1) of a flange's spokes for a gLgT
+ * grouped-lacing pattern. `flangeIndex` counts a single flange's spokes in order
+ * around it (0 … n/2-1); `group` is the run length: 1 = standard 1L1T alternation
+ * (leading, trailing, leading, …), 2 = 2L2T (two leading, two trailing, …), and
+ * so on. Grouping only re-pairs which hub hole each spoke uses — every spoke still
+ * spans the same k flange-hole pitches, so it never changes spoke length.
+ */
+export function spokeLead(flangeIndex: number, group: number): 1 | -1 {
+  const g = Math.max(1, Math.floor(group) || 1);
+  return Math.floor(flangeIndex / g) % 2 === 0 ? 1 : -1;
+}
+
+export type LacingPattern = 'standard' | 'crowsfoot';
+
+export interface SpokePlan {
+  /** Flange-hole offset from the radial position, in flange-hole pitches. */
+  offset: number;
+  /** Weave role: +1 leading, -1 trailing, 0 radial (never crosses). */
+  lead: 1 | -1 | 0;
+}
+
+/**
+ * Per-spoke lacing plan for a flange's j-th spoke. Standard (and grouped) lacing
+ * sends every spoke `lead·cross` hole-pitches from radial. Crow's foot repeats a
+ * group of three — a leading crossed spoke (+cross), a radial spoke (0), and a
+ * trailing crossed spoke (−cross) — so the two crossed spokes flank the radial and
+ * cross each other, forming the "foot". Spoke length still follows `offset` only:
+ * the crossed spokes get the cross-length, the radial ones the 0-cross length.
+ */
+export function spokePlan(
+  flangeIndex: number,
+  opts: { cross: number; group: number; pattern: LacingPattern; phase?: number },
+): SpokePlan {
+  if (opts.pattern === 'crowsfoot') {
+    const r = ((flangeIndex % 3) + 3) % 3;
+    if (r === 0) return { offset: opts.cross, lead: 1 };
+    if (r === 1) return { offset: 0, lead: 0 };
+    return { offset: -opts.cross, lead: -1 };
+  }
+  // A 0-cross spoke sits radially and never crosses another, so it has no
+  // leading/trailing role — treat it as radial (lead 0) like a crow's foot centre.
+  if (opts.cross === 0) return { offset: 0, lead: 0 };
+  // `phase` shifts the leading/trailing alternation by whole spokes. It's invisible
+  // on an evenly-spaced flange (just rotates the pattern), but on a clustered one it
+  // flips whether a cluster's crossed pair converges (crosses inside the cluster) or
+  // splays out to cross the neighbouring clusters — the latter gives G3-style lacing.
+  const lead = spokeLead(flangeIndex + (opts.phase ?? 0), opts.group);
+  return { offset: lead * opts.cross, lead };
 }
 
 // --- Lacing feasibility -----------------------------------------------------
@@ -61,37 +192,118 @@ export interface LacingCheck {
   errors: string[];
 }
 
+// Grouped lacing (gLgT) is a bijective, equal-length pattern on a normally-drilled
+// hub + rim only when two extra rules hold, on top of the ordinary cross limits:
+//   a. spokeCount % (4·g) === 0  — so each flange splits into balanced runs of g
+//      leading and g trailing spokes.
+//   b. cross % g === 0           — otherwise a leading and a trailing spoke land in
+//      the same flange hole (the shift between a group's ends is 2k mod 2g, which is
+//      only zero when k is a multiple of g). Odd crosses with 2L2T, etc., need a
+//      specially paired-drilled rim, which this calculator doesn't model.
 export function checkWheelLacing(
   spokeCount: number,
   leftCross: number,
   rightCross: number,
+  leftGroup: number = 1,
+  rightGroup: number = 1,
+  leftPattern: LacingPattern = 'standard',
+  rightPattern: LacingPattern = 'standard',
+  ratio: HubRatio = '1:1',
 ): LacingCheck {
   const errors: string[] = [];
+  // The count rule depends on the layout: 1:1 splits in half (needs an even total),
+  // 2:1 splits two-to-one (needs a multiple of 3 — odd totals like 21 are fine).
+  let countError: string | null = null;
   if (!Number.isFinite(spokeCount) || spokeCount < 8) {
-    errors.push("Spoke count should be at least 8.");
+    countError = "Spoke count should be at least 8.";
+  } else if (ratio === '2:1') {
+    if (spokeCount % 3 !== 0)
+      countError =
+        "A 2:1 hub splits the spokes two-to-one between the flanges, so the count " +
+        "must be divisible by 3 (e.g. 21, 24, 27, 30 or 36).";
   } else if (spokeCount % 2 !== 0) {
-    errors.push("Spoke count must be even — each side takes half the spokes.");
+    countError = "Spoke count must be even — each side takes half the spokes.";
+  }
+  if (countError) {
+    errors.push(countError);
   } else {
-    const kmax = maxCross(spokeCount);
-    const maxLabel = kmax === 0 ? "radial (0-cross)" : `${kmax}-cross`;
-    const notDivisibleBy4 = spokeCount % 4 !== 0;
-    const sideCheck = (label: string, k: number) => {
+    // Each flange is checked against its own spoke count: max cross is fSide/4
+    // (a k-cross spoke subtends 360°·k/fSide, capped at 90°), cross lacing needs
+    // an even fSide, grouping needs fSide divisible by 2·g, crow's foot by 3.
+    const { drive, nds } = flangeSpokeCounts(spokeCount, ratio);
+    const sideCheck = (label: string, k: number, g: number, pattern: LacingPattern, fSide: number) => {
+      const kmax = Math.floor(fSide / 4);
+      const maxLabel = kmax === 0 ? 'radial (0-cross)' : `${kmax}-cross`;
+      if (pattern === 'crowsfoot') {
+        if (fSide % 3 !== 0) {
+          errors.push(
+            `${label}: crow's foot laces three spokes per foot, so this flange's ` +
+              `${fSide} spokes must be divisible by 3.`,
+          );
+          return;
+        }
+        if (!Number.isInteger(k) || k < 2) {
+          errors.push(
+            `${label}: crow's foot needs at least a 2-cross for each foot's two outer ` +
+              `spokes — radial or 1-cross can't form a foot.`,
+          );
+        } else if (k % 3 === 1) {
+          errors.push(
+            `${label}: ${k}-cross can't lace crow's foot — a crossed spoke would land ` +
+              `in the radial spoke's hole. Use 2- or 3-cross.`,
+          );
+        } else if (k > kmax) {
+          errors.push(
+            `${label}: ${k}-cross crossed spokes would exceed 90° on this ${fSide}-spoke ` +
+              `flange — max is ${maxLabel}.`,
+          );
+        }
+        return;
+      }
+      let crossOk = true;
       if (!Number.isInteger(k) || k < 0) {
         errors.push(`${label}: cross count must be 0 or a positive whole number.`);
-      } else if (notDivisibleBy4 && k > 0) {
+        crossOk = false;
+      } else if (fSide % 2 !== 0 && k > 0) {
         errors.push(
-          `${label}: cross lacing needs a spoke count divisible by 4 — ` +
-            `${spokeCount} spokes (${spokeCount / 2} per side) can only be laced radially (0-cross).`,
+          `${label}: cross lacing splits a flange into equal leading/trailing halves, ` +
+            `so it needs an even spoke count per flange — this flange's ${fSide} can only ` +
+            `be laced radially (0-cross).`,
         );
+        crossOk = false;
       } else if (k > kmax) {
         errors.push(
-          `${label}: ${k}-cross isn't buildable with ${spokeCount} spokes ` +
+          `${label}: ${k}-cross isn't buildable on this ${fSide}-spoke flange ` +
             `(the spoke angle would exceed 90°). Max is ${maxLabel}.`,
         );
+        crossOk = false;
+      }
+      // Grouped lacing only matters once the cross count itself is buildable.
+      if (crossOk && Number.isInteger(g) && g > 1) {
+        if (k === 0) {
+          errors.push(
+            `${label}: ${g}L${g}T grouping needs a cross pattern — radial spokes ` +
+              `have no leading/trailing to group.`,
+          );
+        } else {
+          if (fSide % (2 * g) !== 0) {
+            errors.push(
+              `${label}: ${g}L${g}T needs this flange's spokes divisible by ${2 * g} to ` +
+                `split into balanced groups — ${fSide} won't.`,
+            );
+          }
+          if (k % g !== 0) {
+            errors.push(
+              `${label}: ${g}L${g}T laces cleanly only when the cross count is a multiple ` +
+                `of ${g} (e.g. ${g}-cross) — ${k}-cross would force two spokes into one ` +
+                `flange hole on a standard hub.`,
+            );
+          }
+        }
       }
     };
-    sideCheck("Left / non-drive", leftCross);
-    sideCheck("Right / drive", rightCross);
+    sideCheck('Left / non-drive', leftCross, leftGroup, leftPattern, nds);
+    sideCheck('Right / drive', rightCross, rightGroup, rightPattern, drive);
   }
   return { ok: errors.length === 0, errors };
 }

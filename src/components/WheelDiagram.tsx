@@ -5,16 +5,23 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Wheel3D } from "./Wheel3D";
-import type { HubType } from "../lib/spokes";
+import { spokePlan, wheelLayout, type HubType, type HubRatio, type LacingPattern } from "../lib/spokes";
 
-const DRIVE = "#c0392b"; // right / drive side
-const NDS = "#0b6bcb"; // left / non-drive side
+// Legend shades, matching the 3D spoke colours: light = leading, medium = radial
+// (crow's foot centre spokes), dark = trailing.
+type Role = "lead" | "radial" | "trail";
+const ROLE_LABEL: Record<Role, string> = { lead: "Leading", radial: "Radial", trail: "Trailing" };
+const ROLE_LEAD: Record<Role, number> = { lead: 1, radial: 0, trail: -1 };
+const NDS_SHADES: Record<Role, string> = { lead: "#75b8ff", radial: "#3380e6", trail: "#1a57b3" };
+const DRIVE_SHADES: Record<Role, string> = { lead: "#f78066", radial: "#d94530", trail: "#9e241a" };
 
 // A spoke's build order is its group (0–3) then its position around the wheel.
 // The four groups follow Sheldon Brown's method: drive-side first set, then the
 // non-drive first set, then the drive-side crossing set, then the non-drive
-// crossing set. Rim holes alternate flanges (even = drive, odd = non-drive) and
-// lead/trail alternates per side, so group = i % 4 falls out for free.
+// crossing set. Rim holes alternate flanges (even = drive, odd = non-drive); the
+// heads-out (leading) spokes go in before the crossing (trailing) ones. With
+// grouped lacing (2L2T…) the lead/trail run isn't a simple alternation, so the
+// group is derived from each spoke's actual handedness rather than i % 4.
 const GROUP_LABELS = [
   "1st set · drive-side, heads-out",
   "2nd set · non-drive, heads-out",
@@ -31,6 +38,24 @@ export interface WheelDiagramProps {
   rightOffsetMm: number;
   leftCross: number;
   rightCross: number;
+  /** Grouped-lacing run length per side: 1 = standard 1L1T, 2 = 2L2T, 3 = 3L3T… */
+  leftGroup?: number;
+  rightGroup?: number;
+  /** Lacing pattern per side: 'standard' (incl. grouped) or 'crowsfoot'. */
+  leftPattern?: LacingPattern;
+  rightPattern?: LacingPattern;
+  /** Flange spoke split: '1:1' (even) or '2:1' (drive-doubled). */
+  ratio?: HubRatio;
+  /** 2:1 only: non-drive hole in the centre of each triplet (D-N-D). */
+  ndsCentre?: boolean;
+  /** Flip lead phase so clustered pairs cross the neighbouring group (G3-style). */
+  crossPhase?: boolean;
+  /** Rim drilled in groups of this many holes (1 = evenly drilled), and the
+   *  between-group gap as a multiple of the in-group spacing. */
+  rimHoleGroup?: number;
+  rimHoleGap?: number;
+  /** Alternating rim drilling: each hole nudged this many mm toward its flange. */
+  rimHoleOffsetMm?: number;
   /** Selected hub's type / over-locknut width, when a hub is chosen — drives the
    *  axle length and the hub-shell shape in the 3D view. */
   hubType?: HubType;
@@ -38,25 +63,56 @@ export interface WheelDiagramProps {
 }
 
 export function WheelDiagram(props: WheelDiagramProps) {
-  const { erdMm, spokeCount } = props;
-  const valid = !!erdMm && !!spokeCount && spokeCount >= 4 && spokeCount % 2 === 0;
+  const {
+    erdMm,
+    spokeCount,
+    leftGroup = 1,
+    rightGroup = 1,
+    leftPattern = "standard",
+    rightPattern = "standard",
+    ratio = "1:1",
+    ndsCentre = false,
+    crossPhase = false,
+  } = props;
+  const valid =
+    !!erdMm &&
+    !!spokeCount &&
+    spokeCount >= 4 &&
+    (ratio === "2:1" ? spokeCount % 3 === 0 : spokeCount % 2 === 0);
   const n = valid ? spokeCount : 0;
+  const holes = wheelLayout(n, ratio, ndsCentre);
+
+  // A spoke's build group: heads-out (leading) and radial spokes first, then the
+  // crossing (trailing) sets, drive side before non-drive — 0..3 per GROUP_LABELS.
+  const buildGroup = (i: number) => {
+    const { isDrive, flangeIndex } = holes[i];
+    const plan = spokePlan(flangeIndex, {
+      cross: isDrive ? props.rightCross : props.leftCross,
+      group: isDrive ? rightGroup : leftGroup,
+      pattern: isDrive ? rightPattern : leftPattern,
+      phase: crossPhase ? 1 : 0,
+    });
+    return (plan.lead === -1 ? 2 : 0) + (isDrive ? 0 : 1);
+  };
 
   // Build order: sequence[step] = rim index of the spoke placed at that step.
-  // Sort rim holes by group (i % 4), then position within the group (i / 4).
+  // Sort rim holes by build group, then by position around the wheel.
   const sequence = useMemo(() => {
     return Array.from({ length: n }, (_, i) => i).sort((a, b) => {
-      const ga = a % 4;
-      const gb = b % 4;
-      return ga !== gb ? ga - gb : Math.floor(a / 4) - Math.floor(b / 4);
+      const ga = buildGroup(a);
+      const gb = buildGroup(b);
+      return ga !== gb ? ga - gb : a - b;
     });
-  }, [n]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [n, leftGroup, rightGroup, leftPattern, rightPattern, props.leftCross, props.rightCross, ratio, ndsCentre, crossPhase]);
 
   // How many spokes are currently laced. Defaults to a fully built wheel; reset
   // when the spoke count changes (the classic "derive state from props" pattern).
   const [step, setStep] = useState(n);
   const [prevN, setPrevN] = useState(n);
   const [playing, setPlaying] = useState(false);
+  // Legend hover: isolate one side and/or weave role in the 3D view.
+  const [hover, setHover] = useState<{ isDrive?: boolean; lead?: number } | null>(null);
   if (prevN !== n) {
     setPrevN(n);
     setStep(n);
@@ -75,17 +131,37 @@ export function WheelDiagram(props: WheelDiagramProps) {
   }, [playing, step, n]);
 
   if (!valid) {
-    return <p className="field-hint">Enter an even spoke count and rim ERD to see the wheel.</p>;
+    return <p className="field-hint">Enter a valid spoke count and rim ERD to see the wheel.</p>;
   }
 
   // Build-guide caption for the current step.
+  // Legend rows follow the roles actually on the wheel: a crossed side has
+  // leading + trailing, a crow's foot side adds radial, and a plain radial side
+  // (0-cross) has only radial spokes.
+  const roles = new Set<Role>();
+  const addRoles = (cross: number, pattern: LacingPattern) => {
+    if (pattern === "crowsfoot") ["lead", "radial", "trail"].forEach((r) => roles.add(r as Role));
+    else if (cross === 0) roles.add("radial");
+    else roles.add("lead"), roles.add("trail");
+  };
+  addRoles(props.leftCross, leftPattern);
+  addRoles(props.rightCross, rightPattern);
+  const roleRows: Role[] = (["lead", "radial", "trail"] as Role[]).filter((r) => roles.has(r));
+
+  const sideLabel = (cross: number, group: number, pattern: LacingPattern) =>
+    pattern === "crowsfoot"
+      ? `${cross}× crow's foot`
+      : `${cross}×${group > 1 ? ` ${group}L${group}T` : ""}`;
   let buildCaption: string;
   if (step <= 0) {
     buildCaption = "Bare rim & hub — drag to lace, starting by the valve";
   } else if (step >= n) {
-    buildCaption = `Fully laced · ${n}h · ${props.leftCross}× / ${props.rightCross}×`;
+    buildCaption =
+      `Fully laced · ${n}h${ratio === "2:1" ? " · 2:1" : ""} · ` +
+      `${sideLabel(props.leftCross, leftGroup, leftPattern)} / ` +
+      `${sideLabel(props.rightCross, rightGroup, rightPattern)}`;
   } else {
-    const group = sequence[step - 1] % 4;
+    const group = buildGroup(sequence[step - 1]);
     buildCaption = `Spoke ${step} of ${n} · ${GROUP_LABELS[group]}`;
   }
 
@@ -100,6 +176,17 @@ export function WheelDiagram(props: WheelDiagramProps) {
         rightOffsetMm={props.rightOffsetMm}
         leftCross={props.leftCross}
         rightCross={props.rightCross}
+        leftGroup={leftGroup}
+        rightGroup={rightGroup}
+        leftPattern={leftPattern}
+        rightPattern={rightPattern}
+        ratio={ratio}
+        ndsCentre={ndsCentre}
+        crossPhase={crossPhase}
+        rimHoleGroup={props.rimHoleGroup}
+        rimHoleGap={props.rimHoleGap}
+        rimHoleOffsetMm={props.rimHoleOffsetMm}
+        highlight={hover}
         hubType={props.hubType}
         hubWidthMm={props.hubWidthMm}
         step={step}
@@ -140,13 +227,46 @@ export function WheelDiagram(props: WheelDiagramProps) {
         <div className="wd-caption">{buildCaption}</div>
       </div>
 
-      <div className="wd-legend">
-        <span>
-          <i style={{ background: NDS }} /> Left / non-drive
-        </span>
-        <span>
-          <i style={{ background: DRIVE }} /> Right / drive
-        </span>
+      <div className="wd-legend" onMouseLeave={() => setHover(null)}>
+        <div className="wd-legend-grid">
+          <span />
+          <button
+            type="button"
+            className="wd-legend-col wd-legend-hit"
+            onMouseEnter={() => setHover({ isDrive: false })}
+          >
+            Non-drive
+          </button>
+          <button
+            type="button"
+            className="wd-legend-col wd-legend-hit"
+            onMouseEnter={() => setHover({ isDrive: true })}
+          >
+            Drive
+          </button>
+          {roleRows.flatMap((r) => [
+            <button
+              key={r + "-l"}
+              type="button"
+              className="wd-legend-role wd-legend-hit"
+              onMouseEnter={() => setHover({ lead: ROLE_LEAD[r] })}
+            >
+              {ROLE_LABEL[r]}
+            </button>,
+            <i
+              key={r + "-n"}
+              className="wd-legend-hit"
+              style={{ background: NDS_SHADES[r] }}
+              onMouseEnter={() => setHover({ isDrive: false, lead: ROLE_LEAD[r] })}
+            />,
+            <i
+              key={r + "-d"}
+              className="wd-legend-hit"
+              style={{ background: DRIVE_SHADES[r] }}
+              onMouseEnter={() => setHover({ isDrive: true, lead: ROLE_LEAD[r] })}
+            />,
+          ])}
+        </div>
       </div>
     </div>
   );

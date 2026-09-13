@@ -118,25 +118,49 @@ export function TextInput(props: {
   );
 }
 
+export interface SelectOption<T> {
+  value: T;
+  label: string;
+}
+export interface SelectGroup<T> {
+  label: string;
+  options: Array<SelectOption<T>>;
+}
+
+// A native select that also accepts <optgroup>s: any item with an `options` array
+// renders as a labelled group. Flat option arrays work unchanged.
 export function Select<T extends string | number>(props: {
   value: T;
-  options: Array<{ value: T; label: string }>;
+  options: Array<SelectOption<T> | SelectGroup<T>>;
   onChange: (v: T) => void;
 }) {
+  const isGroup = (o: SelectOption<T> | SelectGroup<T>): o is SelectGroup<T> =>
+    "options" in o;
+  const flat = props.options.flatMap((o) => (isGroup(o) ? o.options : [o]));
   return (
     <select
       value={String(props.value)}
       onChange={(e) => {
         const raw = e.target.value;
-        const match = props.options.find((o) => String(o.value) === raw);
+        const match = flat.find((o) => String(o.value) === raw);
         if (match) props.onChange(match.value);
       }}
     >
-      {props.options.map((o) => (
-        <option key={String(o.value)} value={String(o.value)}>
-          {o.label}
-        </option>
-      ))}
+      {props.options.map((o, i) =>
+        isGroup(o) ? (
+          <optgroup key={`g${i}`} label={o.label}>
+            {o.options.map((x) => (
+              <option key={String(x.value)} value={String(x.value)}>
+                {x.label}
+              </option>
+            ))}
+          </optgroup>
+        ) : (
+          <option key={String(o.value)} value={String(o.value)}>
+            {o.label}
+          </option>
+        ),
+      )}
     </select>
   );
 }

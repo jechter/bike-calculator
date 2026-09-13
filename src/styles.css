@@ -146,6 +146,7 @@ body {
 .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 4px; }
 .field-label { font-weight: 600; font-size: 13px; }
 .field-hint { font-size: 12px; color: var(--muted); }
+.field-hint-warn { color: var(--warn); font-weight: 500; }
 /* Accent the input itself to mark the value you set in a two-way solve
    (e.g. Speed ⇄ Power) — a thicker top border matching the wheel-building
    side cards, to keep it uncluttered. */
@@ -197,6 +198,15 @@ input[type="number"], input[type="text"], select {
 .result-value { font-size: 18px; font-weight: 600; }
 .result-big .result-value { font-size: 26px; }
 .result-sub { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+/* Spoke-length rows (count × length); crow's foot shows two per side. */
+.spoke-spec-line { display: block; }
+.spoke-spec-line + .spoke-spec-line { margin-top: 3px; }
+.spoke-spec-kind { font-size: 12px; font-weight: 500; color: var(--muted); }
+/* Inline slider (label value beside a range) for rim hole grouping gap */
+.wb-slider { display: flex; align-items: center; gap: 10px; }
+.wb-slider input[type="range"] { flex: 1 1 auto; min-width: 0; accent-color: var(--accent); cursor: pointer; }
+.wb-slider input[type="range"]:disabled { cursor: not-allowed; opacity: 0.5; }
+.wb-slider-val { flex: none; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
 .result-accent-left { border-top: 3px solid #0b6bcb; }
 .result-accent-right { border-top: 3px solid #c0392b; }
 
@@ -836,8 +846,18 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   background: color-mix(in srgb, var(--panel-2) 78%, transparent);
   backdrop-filter: blur(2px); border-radius: 8px; padding: 8px 10px;
 }
-.wd-legend span { display: flex; align-items: center; gap: 8px; }
-.wd-legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+.wd-legend-grid { display: grid; grid-template-columns: auto auto auto; gap: 5px 10px; align-items: center; }
+.wd-legend-col { font-size: 11px; text-align: center; }
+.wd-legend-role { font-size: 12px; text-align: left; }
+.wd-legend i { width: 16px; height: 4px; border-radius: 2px; display: inline-block; justify-self: center; }
+/* Hover a legend cell to isolate those spokes in the 3D view */
+.wd-legend-hit { cursor: pointer; }
+.wd-legend button.wd-legend-hit {
+  -webkit-appearance: none; appearance: none; background: none; border: 0;
+  padding: 0; margin: 0; color: inherit; font-family: inherit; line-height: inherit;
+}
+.wd-legend-hit:hover { opacity: 0.6; }
+.wd-legend i.wd-legend-hit { height: 6px; } /* a touch taller so it's easier to hit */
 .lacing-errors { margin: 6px 0 0; padding-left: 18px; }
 .lacing-errors li { margin: 2px 0; }
 

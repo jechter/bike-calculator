@@ -55,6 +55,37 @@ export function spokeLead(flangeIndex: number, group: number): 1 | -1 {
   return Math.floor(flangeIndex / g) % 2 === 0 ? 1 : -1;
 }
 
+export type LacingPattern = 'standard' | 'crowsfoot';
+
+export interface SpokePlan {
+  /** Flange-hole offset from the radial position, in flange-hole pitches. */
+  offset: number;
+  /** Weave role: +1 leading, -1 trailing, 0 radial (never crosses). */
+  lead: 1 | -1 | 0;
+}
+
+/**
+ * Per-spoke lacing plan for a flange's j-th spoke. Standard (and grouped) lacing
+ * sends every spoke `lead·cross` hole-pitches from radial. Crow's foot repeats a
+ * group of three — a leading crossed spoke (+cross), a radial spoke (0), and a
+ * trailing crossed spoke (−cross) — so the two crossed spokes flank the radial and
+ * cross each other, forming the "foot". Spoke length still follows `offset` only:
+ * the crossed spokes get the cross-length, the radial ones the 0-cross length.
+ */
+export function spokePlan(
+  flangeIndex: number,
+  opts: { cross: number; group: number; pattern: LacingPattern },
+): SpokePlan {
+  if (opts.pattern === 'crowsfoot') {
+    const r = ((flangeIndex % 3) + 3) % 3;
+    if (r === 0) return { offset: opts.cross, lead: 1 };
+    if (r === 1) return { offset: 0, lead: 0 };
+    return { offset: -opts.cross, lead: -1 };
+  }
+  const lead = spokeLead(flangeIndex, opts.group);
+  return { offset: lead * opts.cross, lead };
+}
+
 // --- Lacing feasibility -----------------------------------------------------
 // Two limits bound the cross count:
 //  1. Symmetric cross lacing splits each side's n/2 spokes into equal leading
@@ -88,6 +119,8 @@ export function checkWheelLacing(
   rightCross: number,
   leftGroup: number = 1,
   rightGroup: number = 1,
+  leftPattern: LacingPattern = 'standard',
+  rightPattern: LacingPattern = 'standard',
 ): LacingCheck {
   const errors: string[] = [];
   if (!Number.isFinite(spokeCount) || spokeCount < 8) {
@@ -98,7 +131,37 @@ export function checkWheelLacing(
     const kmax = maxCross(spokeCount);
     const maxLabel = kmax === 0 ? "radial (0-cross)" : `${kmax}-cross`;
     const notDivisibleBy4 = spokeCount % 4 !== 0;
-    const sideCheck = (label: string, k: number, g: number) => {
+    const sideCheck = (label: string, k: number, g: number, pattern: LacingPattern) => {
+      // Crow's foot: three spokes per foot (two crossed flanking one radial). Needs
+      // a count divisible by 6, and a crossed count that clears the radial hole —
+      // 2k mod 3 lands a crossed spoke in the radial's hole iff k ≡ 1 (mod 3).
+      if (pattern === 'crowsfoot') {
+        if (spokeCount % 6 !== 0) {
+          errors.push(
+            `${label}: crow's foot laces three spokes per foot, so it needs a spoke ` +
+              `count divisible by 6 — ${spokeCount} won't (try 24, 36 or 48).`,
+          );
+          return;
+        }
+        const kmaxCf = Math.floor(spokeCount / 8);
+        if (!Number.isInteger(k) || k < 2) {
+          errors.push(
+            `${label}: crow's foot needs at least a 2-cross for each foot's two outer ` +
+              `spokes — radial or 1-cross can't form a foot.`,
+          );
+        } else if (k % 3 === 1) {
+          errors.push(
+            `${label}: ${k}-cross can't lace crow's foot — a crossed spoke would land ` +
+              `in the radial spoke's hole. Use 2- or 3-cross.`,
+          );
+        } else if (k > kmaxCf) {
+          errors.push(
+            `${label}: ${k}-cross crossed spokes would exceed 90° on ${spokeCount}h — ` +
+              `max is ${kmaxCf}-cross.`,
+          );
+        }
+        return;
+      }
       let crossOk = true;
       if (!Number.isInteger(k) || k < 0) {
         errors.push(`${label}: cross count must be 0 or a positive whole number.`);
@@ -140,8 +203,8 @@ export function checkWheelLacing(
         }
       }
     };
-    sideCheck("Left / non-drive", leftCross, leftGroup);
-    sideCheck("Right / drive", rightCross, rightGroup);
+    sideCheck("Left / non-drive", leftCross, leftGroup, leftPattern);
+    sideCheck("Right / drive", rightCross, rightGroup, rightPattern);
   }
   return { ok: errors.length === 0, errors };
 }

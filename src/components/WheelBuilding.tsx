@@ -9,6 +9,7 @@ import {
   HUB_TYPE_LABELS,
   type Hub,
   type HubType,
+  type LacingPattern,
 } from "../lib/spokes";
 import { Field, NumberInput, Select, PresetMenu, Result, Note, Section } from "./ui";
 import { WheelDiagram } from "./WheelDiagram";
@@ -21,14 +22,48 @@ const crossOptions = [0, 1, 2, 3, 4].map((k) => ({
   label: k === 0 ? "Radial (0×)" : `${k}-cross`,
 }));
 
-// Grouped lacing: how many leading spokes run before switching to trailing.
-// 1 = the usual alternating 1L1T; 2/3/4 = decorative 2L2T / 3L3T / 4L4T. Only
-// buildable when the count divides by 4·g and the cross count is a multiple of g
-// (checkWheelLacing enforces both); invalid picks fall through to the warning.
-const groupOptions = [1, 2, 3, 4].map((g) => ({
-  value: g,
-  label: g === 1 ? "Standard (1L1T)" : `${g}L${g}T`,
-}));
+// Lacing pattern picker, merging the grouped variants and crow's foot into one
+// control. "1"–"4" are the standard alternating / grouped builds (1L1T … 4L4T);
+// "crowsfoot" is the three-per-foot decorative pattern. Feasibility (divisibility,
+// cross constraints) is enforced in checkWheelLacing; invalid picks show a warning.
+const PATTERN_OPTIONS = [
+  { value: "1", label: "Standard (1L1T)" },
+  { value: "2", label: "2L2T" },
+  { value: "3", label: "3L3T" },
+  { value: "4", label: "4L4T" },
+  { value: "crowsfoot", label: "Crow's foot" },
+];
+
+// A pattern-picker value splits into the run-length group + lacing pattern the
+// geometry uses. Crow's foot ignores grouping (its own three-spoke repeat).
+function parsePattern(sel: string): { group: number; pattern: LacingPattern } {
+  return sel === "crowsfoot"
+    ? { group: 1, pattern: "crowsfoot" }
+    : { group: Number(sel), pattern: "standard" };
+}
+
+// Spoke lengths a side needs, as (count × length) rows. Standard lacing is one
+// row (every spoke equal); crow's foot splits into crossed + radial lengths.
+interface SpokeSpec {
+  count: number;
+  lengthMm: number;
+  kind: "all" | "crossed" | "radial";
+}
+
+// One (count × length) row per distinct spoke a side needs — two rows for crow's
+// foot (crossed + radial), each tagged so it's clear which length is which.
+function SpokeSpecs({ specs }: { specs: SpokeSpec[] }) {
+  return (
+    <>
+      {specs.map((s) => (
+        <span className="spoke-spec-line" key={s.kind}>
+          {s.count} × {s.lengthMm.toFixed(1)} mm
+          {s.kind !== "all" && <span className="spoke-spec-kind"> · {s.kind}</span>}
+        </span>
+      ))}
+    </>
+  );
+}
 
 const hubName = (h: Hub) => `${h.manufacturer} ${h.model}`;
 const drillingsLabel = (h: Hub) => h.spokeCounts.join("/") + "h";
@@ -233,12 +268,15 @@ export function WheelBuilding() {
   const [leftFlange, setLeftFlange] = useState(DEFAULT_HUB?.leftFlangeDiaMm ?? 45);
   const [leftOffset, setLeftOffset] = useState(DEFAULT_HUB?.leftOffsetMm ?? 34);
   const [leftCross, setLeftCross] = useState(3);
-  const [leftGroup, setLeftGroup] = useState(1);
+  const [leftPat, setLeftPat] = useState("1");
 
   const [rightFlange, setRightFlange] = useState(DEFAULT_HUB?.rightFlangeDiaMm ?? 45);
   const [rightOffset, setRightOffset] = useState(DEFAULT_HUB?.rightOffsetMm ?? 17.5);
   const [rightCross, setRightCross] = useState(3);
-  const [rightGroup, setRightGroup] = useState(1);
+  const [rightPat, setRightPat] = useState("1");
+
+  const { group: leftGroup, pattern: leftPattern } = parsePattern(leftPat);
+  const { group: rightGroup, pattern: rightPattern } = parsePattern(rightPat);
 
   // The hub picked from the database, if any (cleared once a hub value is edited
   // by hand, so the trigger no longer claims a specific hub). Defaults to a
@@ -281,35 +319,69 @@ export function WheelBuilding() {
       setHub(null);
     };
 
-  const left = useMemo(
-    () =>
+  // Spoke lengths per side, as (count × length) rows. The length formula is
+  // unchanged; crow's foot just calls it twice — cross-length for the two crossed
+  // spokes of each foot, 0-cross length for the radial one.
+  const sideSpecs = (
+    cross: number,
+    pattern: LacingPattern,
+    flangeDiameterMm: number,
+    flangeOffsetMm: number,
+  ): SpokeSpec[] => {
+    const half = spokes / 2;
+    const len = (k: number) =>
       spokeLength({
         erdMm: erd,
         spokeCount: spokes,
-        cross: leftCross,
+        cross: k,
         spokeHoleDiameterMm: holeDia,
-        side: { flangeDiameterMm: leftFlange, flangeOffsetMm: leftOffset },
-      }),
-    [erd, spokes, leftCross, holeDia, leftFlange, leftOffset],
+        side: { flangeDiameterMm, flangeOffsetMm },
+      });
+    if (pattern === "crowsfoot") {
+      const radial = half / 3; // one radial per three-spoke foot
+      return [
+        { count: half - radial, lengthMm: len(cross), kind: "crossed" },
+        { count: radial, lengthMm: len(0), kind: "radial" },
+      ];
+    }
+    return [{ count: half, lengthMm: len(cross), kind: "all" }];
+  };
+
+  const leftSpecs = useMemo(
+    () => sideSpecs(leftCross, leftPattern, leftFlange, leftOffset),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [erd, spokes, leftCross, leftPattern, holeDia, leftFlange, leftOffset],
   );
-  const right = useMemo(
-    () =>
-      spokeLength({
-        erdMm: erd,
-        spokeCount: spokes,
-        cross: rightCross,
-        spokeHoleDiameterMm: holeDia,
-        side: { flangeDiameterMm: rightFlange, flangeOffsetMm: rightOffset },
-      }),
-    [erd, spokes, rightCross, holeDia, rightFlange, rightOffset],
+  const rightSpecs = useMemo(
+    () => sideSpecs(rightCross, rightPattern, rightFlange, rightOffset),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [erd, spokes, rightCross, rightPattern, holeDia, rightFlange, rightOffset],
   );
 
   // Lacing feasibility
-  const lacing = checkWheelLacing(spokes, leftCross, rightCross, leftGroup, rightGroup);
+  const lacing = checkWheelLacing(
+    spokes,
+    leftCross,
+    rightCross,
+    leftGroup,
+    rightGroup,
+    leftPattern,
+    rightPattern,
+  );
   const kmax = maxCross(spokes);
   const countOk = spokes >= 8 && spokes % 2 === 0;
-  const leftOk = countOk && leftCross >= 0 && leftCross <= kmax;
-  const rightOk = countOk && rightCross >= 0 && rightCross <= kmax;
+  // Whether a side's lengths are meaningful to show. Grouping doesn't change the
+  // length, so standard lacing only needs a valid cross; crow's foot needs its
+  // own feasibility (÷6, crossed count clears the radial) for the row counts to
+  // come out whole.
+  const sideOk = (cross: number, pattern: LacingPattern) => {
+    if (!countOk) return false;
+    if (pattern === "crowsfoot")
+      return spokes % 6 === 0 && cross >= 2 && cross % 3 !== 1 && cross <= Math.floor(spokes / 8);
+    return cross >= 0 && cross <= kmax;
+  };
+  const leftOk = sideOk(leftCross, leftPattern);
+  const rightOk = sideOk(rightCross, rightPattern);
 
   // Tension converter. Tool and spoke type are picked separately. Default to a
   // common 2.0 mm steel round spoke on the Park Tool TM-1 if present.
@@ -412,8 +484,8 @@ export function WheelBuilding() {
             <Field label="Lacing">
               <Select value={leftCross} onChange={setLeftCross} options={crossOptions} />
             </Field>
-            <Field label="Grouping">
-              <Select value={leftGroup} onChange={setLeftGroup} options={groupOptions} />
+            <Field label="Pattern">
+              <Select value={leftPat} onChange={setLeftPat} options={PATTERN_OPTIONS} />
             </Field>
           </div>
           <div className="wb-side wb-side-right">
@@ -427,8 +499,8 @@ export function WheelBuilding() {
             <Field label="Lacing">
               <Select value={rightCross} onChange={setRightCross} options={crossOptions} />
             </Field>
-            <Field label="Grouping">
-              <Select value={rightGroup} onChange={setRightGroup} options={groupOptions} />
+            <Field label="Pattern">
+              <Select value={rightPat} onChange={setRightPat} options={PATTERN_OPTIONS} />
             </Field>
           </div>
         </div>
@@ -454,14 +526,14 @@ export function WheelBuilding() {
         <div className="results" style={{ marginBottom: 16 }}>
           <Result
             label="Left / non-drive"
-            value={leftOk ? `${left.toFixed(1)} mm` : "—"}
-            big
+            value={leftOk ? <SpokeSpecs specs={leftSpecs} /> : "—"}
+            big={leftOk && leftSpecs.length === 1}
             accent="left"
           />
           <Result
             label="Right / drive"
-            value={rightOk ? `${right.toFixed(1)} mm` : "—"}
-            big
+            value={rightOk ? <SpokeSpecs specs={rightSpecs} /> : "—"}
+            big={rightOk && rightSpecs.length === 1}
             accent="right"
           />
         </div>
@@ -477,6 +549,8 @@ export function WheelBuilding() {
             rightCross={rightCross}
             leftGroup={leftGroup}
             rightGroup={rightGroup}
+            leftPattern={leftPattern}
+            rightPattern={rightPattern}
             rimHoleOffsetMm={rimHoleOffset}
             hubType={hubStyle?.type}
             hubWidthMm={hubStyle?.widthMm}

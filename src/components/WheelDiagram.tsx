@@ -5,7 +5,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Wheel3D } from "./Wheel3D";
-import { spokeLead, type HubType } from "../lib/spokes";
+import { spokePlan, type HubType, type LacingPattern } from "../lib/spokes";
 
 const DRIVE = "#c0392b"; // right / drive side
 const NDS = "#0b6bcb"; // left / non-drive side
@@ -36,6 +36,9 @@ export interface WheelDiagramProps {
   /** Grouped-lacing run length per side: 1 = standard 1L1T, 2 = 2L2T, 3 = 3L3T… */
   leftGroup?: number;
   rightGroup?: number;
+  /** Lacing pattern per side: 'standard' (incl. grouped) or 'crowsfoot'. */
+  leftPattern?: LacingPattern;
+  rightPattern?: LacingPattern;
   /** Alternating rim drilling: each hole nudged this many mm toward its flange. */
   rimHoleOffsetMm?: number;
   /** Selected hub's type / over-locknut width, when a hub is chosen — drives the
@@ -45,16 +48,27 @@ export interface WheelDiagramProps {
 }
 
 export function WheelDiagram(props: WheelDiagramProps) {
-  const { erdMm, spokeCount, leftGroup = 1, rightGroup = 1 } = props;
+  const {
+    erdMm,
+    spokeCount,
+    leftGroup = 1,
+    rightGroup = 1,
+    leftPattern = "standard",
+    rightPattern = "standard",
+  } = props;
   const valid = !!erdMm && !!spokeCount && spokeCount >= 4 && spokeCount % 2 === 0;
   const n = valid ? spokeCount : 0;
 
-  // A spoke's build group: heads-out (leading) sets first, then crossing (trailing)
-  // sets, drive side before non-drive within each — 0..3 matching GROUP_LABELS.
+  // A spoke's build group: heads-out (leading) and radial spokes first, then the
+  // crossing (trailing) sets, drive side before non-drive — 0..3 per GROUP_LABELS.
   const buildGroup = (i: number) => {
     const isDrive = i % 2 === 0;
-    const leading = spokeLead(Math.floor(i / 2), isDrive ? rightGroup : leftGroup) === 1;
-    return (leading ? 0 : 2) + (isDrive ? 0 : 1);
+    const plan = spokePlan(Math.floor(i / 2), {
+      cross: isDrive ? props.rightCross : props.leftCross,
+      group: isDrive ? rightGroup : leftGroup,
+      pattern: isDrive ? rightPattern : leftPattern,
+    });
+    return (plan.lead === -1 ? 2 : 0) + (isDrive ? 0 : 1);
   };
 
   // Build order: sequence[step] = rim index of the spoke placed at that step.
@@ -66,7 +80,7 @@ export function WheelDiagram(props: WheelDiagramProps) {
       return ga !== gb ? ga - gb : a - b;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [n, leftGroup, rightGroup]);
+  }, [n, leftGroup, rightGroup, leftPattern, rightPattern, props.leftCross, props.rightCross]);
 
   // How many spokes are currently laced. Defaults to a fully built wheel; reset
   // when the spoke count changes (the classic "derive state from props" pattern).
@@ -95,15 +109,18 @@ export function WheelDiagram(props: WheelDiagramProps) {
   }
 
   // Build-guide caption for the current step.
-  const sideLabel = (cross: number, group: number) =>
-    `${cross}×${group > 1 ? ` ${group}L${group}T` : ""}`;
+  const sideLabel = (cross: number, group: number, pattern: LacingPattern) =>
+    pattern === "crowsfoot"
+      ? `${cross}× crow's foot`
+      : `${cross}×${group > 1 ? ` ${group}L${group}T` : ""}`;
   let buildCaption: string;
   if (step <= 0) {
     buildCaption = "Bare rim & hub — drag to lace, starting by the valve";
   } else if (step >= n) {
     buildCaption =
       `Fully laced · ${n}h · ` +
-      `${sideLabel(props.leftCross, leftGroup)} / ${sideLabel(props.rightCross, rightGroup)}`;
+      `${sideLabel(props.leftCross, leftGroup, leftPattern)} / ` +
+      `${sideLabel(props.rightCross, rightGroup, rightPattern)}`;
   } else {
     const group = buildGroup(sequence[step - 1]);
     buildCaption = `Spoke ${step} of ${n} · ${GROUP_LABELS[group]}`;
@@ -122,6 +139,8 @@ export function WheelDiagram(props: WheelDiagramProps) {
         rightCross={props.rightCross}
         leftGroup={leftGroup}
         rightGroup={rightGroup}
+        leftPattern={leftPattern}
+        rightPattern={rightPattern}
         rimHoleOffsetMm={props.rimHoleOffsetMm}
         hubType={props.hubType}
         hubWidthMm={props.hubWidthMm}

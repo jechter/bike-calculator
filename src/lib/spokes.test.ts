@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   spokeLength,
   spokeLead,
+  spokePlan,
   readingToKgf,
   maxCross,
   checkWheelLacing,
@@ -153,6 +154,64 @@ describe('grouped-lacing feasibility', () => {
   it('leaves the standard 1L1T build unaffected', () => {
     expect(checkWheelLacing(32, 3, 3, 1, 1).ok).toBe(true);
     expect(checkWheelLacing(32, 3, 3).ok).toBe(true); // group defaults to 1
+  });
+});
+
+describe("spokePlan (crow's foot)", () => {
+  const cf = (j: number) => spokePlan(j, { cross: 2, group: 1, pattern: 'crowsfoot' });
+
+  it('cycles leading-crossed / radial / trailing-crossed every three spokes', () => {
+    expect([0, 1, 2, 3, 4, 5].map((j) => cf(j).offset)).toEqual([2, 0, -2, 2, 0, -2]);
+    expect([0, 1, 2, 3, 4, 5].map((j) => cf(j).lead)).toEqual([1, 0, -1, 1, 0, -1]);
+  });
+
+  it('standard pattern still maps to lead·cross', () => {
+    expect(spokePlan(0, { cross: 3, group: 1, pattern: 'standard' })).toEqual({ offset: 3, lead: 1 });
+    expect(spokePlan(1, { cross: 3, group: 1, pattern: 'standard' })).toEqual({ offset: -3, lead: -1 });
+  });
+});
+
+describe("crow's foot feasibility", () => {
+  // The renderer's flange-hole map (flange hole = j + offset, mod m) must stay a
+  // bijection — no crossed spoke landing in the radial's hole.
+  const cfBijection = (spokeCount: number, cross: number) => {
+    const m = spokeCount / 2;
+    const holes = new Set<number>();
+    for (let j = 0; j < m; j++) {
+      const o = spokePlan(j, { cross, group: 1, pattern: 'crowsfoot' }).offset;
+      holes.add(((j + o) % m + m) % m);
+    }
+    return holes.size === m;
+  };
+
+  it('accepts 36h 2-cross crow’s foot', () => {
+    expect(checkWheelLacing(36, 2, 2, 1, 1, 'crowsfoot', 'crowsfoot').ok).toBe(true);
+    expect(cfBijection(36, 2)).toBe(true);
+  });
+
+  it('accepts 24h 3-cross crow’s foot', () => {
+    expect(checkWheelLacing(24, 3, 3, 1, 1, 'crowsfoot', 'crowsfoot').ok).toBe(true);
+    expect(cfBijection(24, 3)).toBe(true);
+  });
+
+  it('rejects 32h — not divisible by 6', () => {
+    const r = checkWheelLacing(32, 2, 2, 1, 1, 'crowsfoot', 'crowsfoot');
+    expect(r.ok).toBe(false);
+    expect(r.errors.join(' ')).toMatch(/divisible by 6/);
+  });
+
+  it('rejects 4-cross — a crossed spoke collides with the radial', () => {
+    expect(checkWheelLacing(36, 4, 4, 1, 1, 'crowsfoot', 'crowsfoot').ok).toBe(false);
+    expect(cfBijection(36, 4)).toBe(false); // the collision the message guards
+  });
+
+  it('rejects radial / 1-cross — no foot to form', () => {
+    expect(checkWheelLacing(36, 1, 1, 1, 1, 'crowsfoot', 'crowsfoot').ok).toBe(false);
+    expect(checkWheelLacing(36, 0, 0, 1, 1, 'crowsfoot', 'crowsfoot').ok).toBe(false);
+  });
+
+  it('mixes crow’s foot on one side with standard on the other', () => {
+    expect(checkWheelLacing(36, 3, 2, 1, 1, 'standard', 'crowsfoot').ok).toBe(true);
   });
 });
 

@@ -197,6 +197,10 @@ input[type="number"], input[type="text"], select {
 .result-value { font-size: 18px; font-weight: 600; }
 .result-big .result-value { font-size: 26px; }
 .result-sub { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+/* Spoke-length rows (count × length); crow's foot shows two per side. */
+.spoke-spec-line { display: block; }
+.spoke-spec-line + .spoke-spec-line { margin-top: 3px; }
+.spoke-spec-kind { font-size: 12px; font-weight: 500; color: var(--muted); }
 .result-accent-left { border-top: 3px solid #0b6bcb; }
 .result-accent-right { border-top: 3px solid #c0392b; }
 

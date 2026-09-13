@@ -77,6 +77,15 @@ const RATIO_OPTIONS: Array<{ value: HubRatio; label: string }> = [
   { value: "2:1", label: "2:1 (drive-doubled)" },
 ];
 
+// Rim hole grouping: some rims drill the holes in clusters (paired, in threes…)
+// with a wider gap between clusters. 1 = plain even drilling.
+const RIM_GROUP_OPTIONS = [
+  { value: 1, label: "Even (no groups)" },
+  { value: 2, label: "Groups of 2" },
+  { value: 3, label: "Groups of 3" },
+  { value: 4, label: "Groups of 4" },
+];
+
 // Spoke lengths a side needs, as (count × length) rows. Standard lacing is one
 // row (every spoke equal); crow's foot splits into crossed + radial lengths.
 interface SpokeSpec {
@@ -297,9 +306,13 @@ const DEFAULT_HUB = HUBS.find((h) => h.manufacturer === "Chris King" && h.model 
 export function WheelBuilding() {
   const [erd, setErd] = useState(602);
   const [rimHoleOffset, setRimHoleOffset] = useState(0);
+  const [rimHoleGroup, setRimHoleGroup] = useState(1); // holes per group (1 = even)
+  const [rimHoleGap, setRimHoleGap] = useState(1.8); // between-group gap (× in-group)
   const [spokes, setSpokes] = useState(32);
   const [holeDia, setHoleDia] = useState(DEFAULT_HUB?.spokeHoleMm ?? 2.6);
   const [ratio, setRatio] = useState<HubRatio>("1:1");
+  const [ndsCentre, setNdsCentre] = useState(false); // 2:1: non-drive in triplet centre
+  const [crossPhase, setCrossPhase] = useState(false); // cross the neighbouring group (G3)
 
   const [leftFlange, setLeftFlange] = useState(DEFAULT_HUB?.leftFlangeDiaMm ?? 45);
   const [leftOffset, setLeftOffset] = useState(DEFAULT_HUB?.leftOffsetMm ?? 34);
@@ -499,6 +512,42 @@ export function WheelBuilding() {
               suffix="mm"
             />
           </Field>
+          <Field
+            label="Hole grouping"
+            hint={
+              rimHoleGroup >= 2 && spokes % rimHoleGroup !== 0
+                ? `needs a spoke count divisible by ${rimHoleGroup} — ${spokes} stays evenly drilled`
+                : "drill the holes in clusters with a gap between"
+            }
+          >
+            <Select
+              value={rimHoleGroup}
+              onChange={setRimHoleGroup}
+              options={RIM_GROUP_OPTIONS}
+            />
+          </Field>
+          <Field
+            label="Group gap"
+            hint={
+              rimHoleGroup < 2
+                ? "pick a grouping to enable"
+                : `between-group gap is ${rimHoleGap.toFixed(1)}× the in-group spacing`
+            }
+          >
+            <div className="wb-slider">
+              <input
+                type="range"
+                min={1}
+                max={6}
+                step={0.1}
+                value={rimHoleGap}
+                disabled={rimHoleGroup < 2}
+                aria-label="Between-group gap"
+                onChange={(e) => setRimHoleGap(Number(e.target.value))}
+              />
+              <span className="wb-slider-val">{rimHoleGap.toFixed(1)}×</span>
+            </div>
+          </Field>
         </div>
       </Section>
 
@@ -535,6 +584,34 @@ export function WheelBuilding() {
             }
           >
             <Select value={ratio} onChange={changeRatio} options={RATIO_OPTIONS} />
+          </Field>
+          {ratio === "2:1" && (
+            <Field
+              label="Non-drive position"
+              hint="where the single non-drive spoke sits in each drive-drive triplet"
+            >
+              <Select
+                value={ndsCentre ? "centre" : "edge"}
+                onChange={(v) => setNdsCentre(v === "centre")}
+                options={[
+                  { value: "edge", label: "Edge (D-D-N)" },
+                  { value: "centre", label: "Centre (D-N-D)" },
+                ]}
+              />
+            </Field>
+          )}
+          <Field
+            label="Group crossing"
+            hint="only visible on a clustered wheel (2:1 or grouped drilling)"
+          >
+            <Select
+              value={crossPhase ? "between" : "within"}
+              onChange={(v) => setCrossPhase(v === "between")}
+              options={[
+                { value: "within", label: "Within group" },
+                { value: "between", label: "Between groups (G3-style)" },
+              ]}
+            />
           </Field>
         </div>
 
@@ -612,6 +689,10 @@ export function WheelBuilding() {
             leftPattern={leftPattern}
             rightPattern={rightPattern}
             ratio={ratio}
+            ndsCentre={ndsCentre}
+            crossPhase={crossPhase}
+            rimHoleGroup={rimHoleGroup}
+            rimHoleGap={rimHoleGap}
             rimHoleOffsetMm={rimHoleOffset}
             hubType={hubStyle?.type}
             hubWidthMm={hubStyle?.widthMm}

@@ -5,6 +5,7 @@ import {
   spokePlan,
   flangeSpokeCounts,
   wheelLayout,
+  rimHoleAngle,
   readingToKgf,
   maxCross,
   checkWheelLacing,
@@ -237,6 +238,12 @@ describe('2:1 hubs', () => {
     expect(layout.every((h) => h.flangeSpokes === (h.isDrive ? 16 : 8))).toBe(true);
   });
 
+  it('can centre the non-drive hole in each triplet (D-N-D)', () => {
+    const layout = wheelLayout(24, '2:1', true);
+    expect(layout.slice(0, 3).map((h) => h.isDrive)).toEqual([true, false, true]);
+    expect(layout.filter((h) => !h.isDrive)).toHaveLength(8); // still 8 non-drive
+  });
+
   it('uses the flange spoke count for the crossing angle (fewer spokes → longer)', () => {
     const common = {
       erdMm: 602,
@@ -275,6 +282,43 @@ describe('2:1 hubs', () => {
     expect(r.errors.join(' ')).not.toMatch(/must be even/);
     // But a 7-spoke non-drive flange still can't be cross-laced.
     expect(checkWheelLacing(21, 2, 2, 1, 1, 'standard', 'standard', '2:1').ok).toBe(false);
+  });
+});
+
+describe('rimHoleAngle (grouped drilling)', () => {
+  const deg = (r: number) => (r * 180) / Math.PI;
+
+  it('is plain even spacing without grouping (or with gap ≤ 1)', () => {
+    for (let i = 0; i < 8; i++) {
+      expect(rimHoleAngle(i, 8, 1, 2)).toBeCloseTo((2 * Math.PI * i) / 8);
+      expect(rimHoleAngle(i, 8, 2, 1)).toBeCloseTo((2 * Math.PI * i) / 8);
+    }
+  });
+
+  it('falls back to even when the count is not divisible by the group', () => {
+    expect(rimHoleAngle(3, 10, 3, 2)).toBeCloseTo((2 * Math.PI * 3) / 10);
+  });
+
+  it('clusters holes so in-group spacing is tighter than between-group', () => {
+    // 8h in pairs, gap 2×: holes cluster, wide gap between pairs.
+    const A = Array.from({ length: 8 }, (_, i) => rimHoleAngle(i, 8, 2, 2));
+    const inGroup = deg(A[1] - A[0]); // within a pair
+    const betweenGroup = deg(A[2] - A[1]); // pair-to-pair
+    expect(betweenGroup).toBeCloseTo(2 * inGroup); // gap = 2× the in-group spacing
+    expect(inGroup).toBeCloseTo(30);
+    expect(betweenGroup).toBeCloseTo(60);
+    // still a full, monotonic circle (last-pair-to-first wrap gap is also 60°)
+    for (let i = 1; i < 8; i++) expect(A[i]).toBeGreaterThan(A[i - 1]);
+    expect(deg(2 * Math.PI - A[7] + A[0])).toBeCloseTo(60);
+  });
+
+  it('keeps the middle hole of an odd group on its even position', () => {
+    // 24h in threes: hole 1 (centre of the first group) stays at its even angle,
+    // so a radial spoke there stays truly radial regardless of the gap.
+    for (const gap of [1.5, 2, 3]) {
+      expect(rimHoleAngle(1, 24, 3, gap)).toBeCloseTo((2 * Math.PI * 1) / 24);
+      expect(rimHoleAngle(4, 24, 3, gap)).toBeCloseTo((2 * Math.PI * 4) / 24);
+    }
   });
 });
 

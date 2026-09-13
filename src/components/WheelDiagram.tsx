@@ -45,6 +45,14 @@ export interface WheelDiagramProps {
   rightPattern?: LacingPattern;
   /** Flange spoke split: '1:1' (even) or '2:1' (drive-doubled). */
   ratio?: HubRatio;
+  /** 2:1 only: non-drive hole in the centre of each triplet (D-N-D). */
+  ndsCentre?: boolean;
+  /** Flip lead phase so clustered pairs cross the neighbouring group (G3-style). */
+  crossPhase?: boolean;
+  /** Rim drilled in groups of this many holes (1 = evenly drilled), and the
+   *  between-group gap as a multiple of the in-group spacing. */
+  rimHoleGroup?: number;
+  rimHoleGap?: number;
   /** Alternating rim drilling: each hole nudged this many mm toward its flange. */
   rimHoleOffsetMm?: number;
   /** Selected hub's type / over-locknut width, when a hub is chosen — drives the
@@ -62,6 +70,8 @@ export function WheelDiagram(props: WheelDiagramProps) {
     leftPattern = "standard",
     rightPattern = "standard",
     ratio = "1:1",
+    ndsCentre = false,
+    crossPhase = false,
   } = props;
   const valid =
     !!erdMm &&
@@ -69,7 +79,7 @@ export function WheelDiagram(props: WheelDiagramProps) {
     spokeCount >= 4 &&
     (ratio === "2:1" ? spokeCount % 3 === 0 : spokeCount % 2 === 0);
   const n = valid ? spokeCount : 0;
-  const holes = wheelLayout(n, ratio);
+  const holes = wheelLayout(n, ratio, ndsCentre);
 
   // A spoke's build group: heads-out (leading) and radial spokes first, then the
   // crossing (trailing) sets, drive side before non-drive — 0..3 per GROUP_LABELS.
@@ -79,6 +89,7 @@ export function WheelDiagram(props: WheelDiagramProps) {
       cross: isDrive ? props.rightCross : props.leftCross,
       group: isDrive ? rightGroup : leftGroup,
       pattern: isDrive ? rightPattern : leftPattern,
+      phase: crossPhase ? 1 : 0,
     });
     return (plan.lead === -1 ? 2 : 0) + (isDrive ? 0 : 1);
   };
@@ -92,7 +103,7 @@ export function WheelDiagram(props: WheelDiagramProps) {
       return ga !== gb ? ga - gb : a - b;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [n, leftGroup, rightGroup, leftPattern, rightPattern, props.leftCross, props.rightCross, ratio]);
+  }, [n, leftGroup, rightGroup, leftPattern, rightPattern, props.leftCross, props.rightCross, ratio, ndsCentre, crossPhase]);
 
   // How many spokes are currently laced. Defaults to a fully built wheel; reset
   // when the spoke count changes (the classic "derive state from props" pattern).
@@ -167,6 +178,10 @@ export function WheelDiagram(props: WheelDiagramProps) {
         leftPattern={leftPattern}
         rightPattern={rightPattern}
         ratio={ratio}
+        ndsCentre={ndsCentre}
+        crossPhase={crossPhase}
+        rimHoleGroup={props.rimHoleGroup}
+        rimHoleGap={props.rimHoleGap}
         rimHoleOffsetMm={props.rimHoleOffsetMm}
         hubType={props.hubType}
         hubWidthMm={props.hubWidthMm}

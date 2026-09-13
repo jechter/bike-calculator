@@ -201,6 +201,11 @@ input[type="number"], input[type="text"], select {
 .spoke-spec-line { display: block; }
 .spoke-spec-line + .spoke-spec-line { margin-top: 3px; }
 .spoke-spec-kind { font-size: 12px; font-weight: 500; color: var(--muted); }
+/* Inline slider (label value beside a range) for rim hole grouping gap */
+.wb-slider { display: flex; align-items: center; gap: 10px; }
+.wb-slider input[type="range"] { flex: 1 1 auto; min-width: 0; accent-color: var(--accent); cursor: pointer; }
+.wb-slider input[type="range"]:disabled { cursor: not-allowed; opacity: 0.5; }
+.wb-slider-val { flex: none; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
 .result-accent-left { border-top: 3px solid #0b6bcb; }
 .result-accent-right { border-top: 3px solid #c0392b; }
 

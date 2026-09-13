@@ -53,15 +53,23 @@ export interface SpokeHole {
 /**
  * Which flange each rim hole feeds, and its per-flange index. Rim holes stay
  * evenly spaced; only the flange assignment changes. 1:1 alternates drive/non-
- * drive; 2:1 repeats drive-drive-non-drive so the drive flange gets two thirds.
+ * drive; 2:1 repeats a drive-drive-non-drive triplet so the drive flange gets two
+ * thirds. `ndsCentre` puts the single non-drive hole in the middle of each triplet
+ * (drive-non-drive-drive) instead of at the edge — so with rim holes grouped in
+ * threes, the non-drive spoke lands in the centre of each cluster.
  */
-export function wheelLayout(spokeCount: number, ratio: HubRatio): SpokeHole[] {
+export function wheelLayout(
+  spokeCount: number,
+  ratio: HubRatio,
+  ndsCentre: boolean = false,
+): SpokeHole[] {
   const { drive, nds } = flangeSpokeCounts(spokeCount, ratio);
+  const ndsPos = ndsCentre ? 1 : 2; // position of the non-drive hole in the triplet
   const out: SpokeHole[] = [];
   let jd = 0;
   let jn = 0;
   for (let i = 0; i < spokeCount; i++) {
-    const isDrive = ratio === '2:1' ? i % 3 !== 2 : i % 2 === 0;
+    const isDrive = ratio === '2:1' ? i % 3 !== ndsPos : i % 2 === 0;
     out.push(
       isDrive
         ? { isDrive: true, flangeIndex: jd++, flangeSpokes: drive }
@@ -79,6 +87,29 @@ export function wheelLayout(spokeCount: number, ratio: HubRatio): SpokeHole[] {
  *   d3 = flange offset
  *   L  = sqrt(d1^2 + d2^2 + d3^2) - holeDia/2
  */
+/**
+ * Angular position (radians) of rim hole `i` for a rim drilled in groups. Holes
+ * within a group sit `a` apart, groups are separated by a wider `b = gap·a`; with
+ * `groupSize` 1 (or `gap` ≤ 1, or a count not divisible by the group) it falls back
+ * to plain even spacing (2π·i/n). `gap` is the between-group spacing as a multiple
+ * of the in-group spacing. Only the rim-hole position moves — the flange stays
+ * evenly drilled — so a grouped rim just fans the spokes toward the clusters.
+ */
+export function rimHoleAngle(i: number, n: number, groupSize: number, gap: number): number {
+  const g = Math.floor(groupSize);
+  if (g < 2 || n % g !== 0 || !(gap > 1)) return (2 * Math.PI * i) / n;
+  const groups = n / g;
+  // Each group is centred on the even position it would occupy ungrouped, so the
+  // holes spread symmetrically around that centre. For an odd group the middle
+  // hole therefore stays exactly on its even position (a centred radial spoke
+  // stays radial). In-group spacing `a` shrinks as the gap grows, conserving 2π.
+  const a = (2 * Math.PI) / groups / (g - 1 + gap);
+  const q = Math.floor(i / g); // group index
+  const p = i % g; // position within the group
+  const centre = ((2 * Math.PI) / n) * (q * g + (g - 1) / 2);
+  return centre + (p - (g - 1) / 2) * a;
+}
+
 export function spokeLength(input: SpokeInput): number {
   const { erdMm, spokeCount, cross, side } = input;
   const holeDia = input.spokeHoleDiameterMm ?? 2.6;
@@ -123,7 +154,7 @@ export interface SpokePlan {
  */
 export function spokePlan(
   flangeIndex: number,
-  opts: { cross: number; group: number; pattern: LacingPattern },
+  opts: { cross: number; group: number; pattern: LacingPattern; phase?: number },
 ): SpokePlan {
   if (opts.pattern === 'crowsfoot') {
     const r = ((flangeIndex % 3) + 3) % 3;
@@ -134,7 +165,11 @@ export function spokePlan(
   // A 0-cross spoke sits radially and never crosses another, so it has no
   // leading/trailing role — treat it as radial (lead 0) like a crow's foot centre.
   if (opts.cross === 0) return { offset: 0, lead: 0 };
-  const lead = spokeLead(flangeIndex, opts.group);
+  // `phase` shifts the leading/trailing alternation by whole spokes. It's invisible
+  // on an evenly-spaced flange (just rotates the pattern), but on a clustered one it
+  // flips whether a cluster's crossed pair converges (crosses inside the cluster) or
+  // splays out to cross the neighbouring clusters — the latter gives G3-style lacing.
+  const lead = spokeLead(flangeIndex + (opts.phase ?? 0), opts.group);
   return { offset: lead * opts.cross, lead };
 }
 

@@ -515,9 +515,14 @@ export function WheelBuilding() {
           <Field
             label="Hole grouping"
             hint={
-              rimHoleGroup >= 2 && spokes % rimHoleGroup !== 0
-                ? `needs a spoke count divisible by ${rimHoleGroup} — ${spokes} stays evenly drilled`
-                : "drill the holes in clusters with a gap between"
+              rimHoleGroup >= 2 && spokes % rimHoleGroup !== 0 ? (
+                <span className="field-hint-warn">
+                  ⚠ {spokes} spokes isn't divisible by {rimHoleGroup} — grouping is
+                  ignored. Use a count that divides by {rimHoleGroup}.
+                </span>
+              ) : (
+                "drill the holes in clusters with a gap between"
+              )
             }
           >
             <Select

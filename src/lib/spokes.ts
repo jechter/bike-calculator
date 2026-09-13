@@ -21,6 +21,54 @@ export interface SpokeInput {
   cross: number; // number of crosses per spoke (0 = radial)
   spokeHoleDiameterMm?: number; // flange hole diameter, default 2.6
   side: SpokeSideInput;
+  /** Spokes on THIS flange. Defaults to spokeCount/2 (symmetric); for a 2:1 hub
+   *  it's 2·n/3 on the drive side and n/3 on the non-drive side. */
+  flangeSpokeCount?: number;
+}
+
+// How the total spoke count is split between the two flanges.
+//  "1:1" — the usual even split (n/2 each).
+//  "2:1" — twice as many on the drive side (2n/3 drive, n/3 non-drive), a
+//          tension-balancing layout for heavily dished rear wheels.
+export type HubRatio = '1:1' | '2:1';
+
+export interface FlangeCounts {
+  drive: number;
+  nds: number;
+}
+
+export function flangeSpokeCounts(spokeCount: number, ratio: HubRatio): FlangeCounts {
+  if (ratio === '2:1') return { nds: spokeCount / 3, drive: (2 * spokeCount) / 3 };
+  return { nds: spokeCount / 2, drive: spokeCount / 2 };
+}
+
+export interface SpokeHole {
+  isDrive: boolean;
+  /** This spoke's index within its own flange (0-based, around the wheel). */
+  flangeIndex: number;
+  /** Total spokes on this flange (for the crossing angle + flange pitch). */
+  flangeSpokes: number;
+}
+
+/**
+ * Which flange each rim hole feeds, and its per-flange index. Rim holes stay
+ * evenly spaced; only the flange assignment changes. 1:1 alternates drive/non-
+ * drive; 2:1 repeats drive-drive-non-drive so the drive flange gets two thirds.
+ */
+export function wheelLayout(spokeCount: number, ratio: HubRatio): SpokeHole[] {
+  const { drive, nds } = flangeSpokeCounts(spokeCount, ratio);
+  const out: SpokeHole[] = [];
+  let jd = 0;
+  let jn = 0;
+  for (let i = 0; i < spokeCount; i++) {
+    const isDrive = ratio === '2:1' ? i % 3 !== 2 : i % 2 === 0;
+    out.push(
+      isDrive
+        ? { isDrive: true, flangeIndex: jd++, flangeSpokes: drive }
+        : { isDrive: false, flangeIndex: jn++, flangeSpokes: nds },
+    );
+  }
+  return out;
 }
 
 /**
@@ -35,7 +83,8 @@ export function spokeLength(input: SpokeInput): number {
   const { erdMm, spokeCount, cross, side } = input;
   const holeDia = input.spokeHoleDiameterMm ?? 2.6;
   const R = side.flangeDiameterMm / 2;
-  const thetaRad = (2 * Math.PI * cross) / (spokeCount / 2);
+  const perFlange = input.flangeSpokeCount ?? spokeCount / 2;
+  const thetaRad = (2 * Math.PI * cross) / perFlange;
   const d1 = R * Math.sin(thetaRad);
   const d2 = erdMm / 2 - R * Math.cos(thetaRad);
   const d3 = side.flangeOffsetMm;
@@ -124,29 +173,40 @@ export function checkWheelLacing(
   rightGroup: number = 1,
   leftPattern: LacingPattern = 'standard',
   rightPattern: LacingPattern = 'standard',
+  ratio: HubRatio = '1:1',
 ): LacingCheck {
   const errors: string[] = [];
+  // The count rule depends on the layout: 1:1 splits in half (needs an even total),
+  // 2:1 splits two-to-one (needs a multiple of 3 — odd totals like 21 are fine).
+  let countError: string | null = null;
   if (!Number.isFinite(spokeCount) || spokeCount < 8) {
-    errors.push("Spoke count should be at least 8.");
+    countError = "Spoke count should be at least 8.";
+  } else if (ratio === '2:1') {
+    if (spokeCount % 3 !== 0)
+      countError =
+        "A 2:1 hub splits the spokes two-to-one between the flanges, so the count " +
+        "must be divisible by 3 (e.g. 21, 24, 27, 30 or 36).";
   } else if (spokeCount % 2 !== 0) {
-    errors.push("Spoke count must be even — each side takes half the spokes.");
+    countError = "Spoke count must be even — each side takes half the spokes.";
+  }
+  if (countError) {
+    errors.push(countError);
   } else {
-    const kmax = maxCross(spokeCount);
-    const maxLabel = kmax === 0 ? "radial (0-cross)" : `${kmax}-cross`;
-    const notDivisibleBy4 = spokeCount % 4 !== 0;
-    const sideCheck = (label: string, k: number, g: number, pattern: LacingPattern) => {
-      // Crow's foot: three spokes per foot (two crossed flanking one radial). Needs
-      // a count divisible by 6, and a crossed count that clears the radial hole —
-      // 2k mod 3 lands a crossed spoke in the radial's hole iff k ≡ 1 (mod 3).
+    // Each flange is checked against its own spoke count: max cross is fSide/4
+    // (a k-cross spoke subtends 360°·k/fSide, capped at 90°), cross lacing needs
+    // an even fSide, grouping needs fSide divisible by 2·g, crow's foot by 3.
+    const { drive, nds } = flangeSpokeCounts(spokeCount, ratio);
+    const sideCheck = (label: string, k: number, g: number, pattern: LacingPattern, fSide: number) => {
+      const kmax = Math.floor(fSide / 4);
+      const maxLabel = kmax === 0 ? 'radial (0-cross)' : `${kmax}-cross`;
       if (pattern === 'crowsfoot') {
-        if (spokeCount % 6 !== 0) {
+        if (fSide % 3 !== 0) {
           errors.push(
-            `${label}: crow's foot laces three spokes per foot, so it needs a spoke ` +
-              `count divisible by 6 — ${spokeCount} won't (try 24, 36 or 48).`,
+            `${label}: crow's foot laces three spokes per foot, so this flange's ` +
+              `${fSide} spokes must be divisible by 3.`,
           );
           return;
         }
-        const kmaxCf = Math.floor(spokeCount / 8);
         if (!Number.isInteger(k) || k < 2) {
           errors.push(
             `${label}: crow's foot needs at least a 2-cross for each foot's two outer ` +
@@ -157,10 +217,10 @@ export function checkWheelLacing(
             `${label}: ${k}-cross can't lace crow's foot — a crossed spoke would land ` +
               `in the radial spoke's hole. Use 2- or 3-cross.`,
           );
-        } else if (k > kmaxCf) {
+        } else if (k > kmax) {
           errors.push(
-            `${label}: ${k}-cross crossed spokes would exceed 90° on ${spokeCount}h — ` +
-              `max is ${kmaxCf}-cross.`,
+            `${label}: ${k}-cross crossed spokes would exceed 90° on this ${fSide}-spoke ` +
+              `flange — max is ${maxLabel}.`,
           );
         }
         return;
@@ -169,15 +229,16 @@ export function checkWheelLacing(
       if (!Number.isInteger(k) || k < 0) {
         errors.push(`${label}: cross count must be 0 or a positive whole number.`);
         crossOk = false;
-      } else if (notDivisibleBy4 && k > 0) {
+      } else if (fSide % 2 !== 0 && k > 0) {
         errors.push(
-          `${label}: cross lacing needs a spoke count divisible by 4 — ` +
-            `${spokeCount} spokes (${spokeCount / 2} per side) can only be laced radially (0-cross).`,
+          `${label}: cross lacing splits a flange into equal leading/trailing halves, ` +
+            `so it needs an even spoke count per flange — this flange's ${fSide} can only ` +
+            `be laced radially (0-cross).`,
         );
         crossOk = false;
       } else if (k > kmax) {
         errors.push(
-          `${label}: ${k}-cross isn't buildable with ${spokeCount} spokes ` +
+          `${label}: ${k}-cross isn't buildable on this ${fSide}-spoke flange ` +
             `(the spoke angle would exceed 90°). Max is ${maxLabel}.`,
         );
         crossOk = false;
@@ -190,10 +251,10 @@ export function checkWheelLacing(
               `have no leading/trailing to group.`,
           );
         } else {
-          if (spokeCount % (4 * g) !== 0) {
+          if (fSide % (2 * g) !== 0) {
             errors.push(
-              `${label}: ${g}L${g}T needs a spoke count divisible by ${4 * g} to split ` +
-                `into balanced groups — ${spokeCount} spokes won't.`,
+              `${label}: ${g}L${g}T needs this flange's spokes divisible by ${2 * g} to ` +
+                `split into balanced groups — ${fSide} won't.`,
             );
           }
           if (k % g !== 0) {
@@ -206,8 +267,8 @@ export function checkWheelLacing(
         }
       }
     };
-    sideCheck("Left / non-drive", leftCross, leftGroup, leftPattern);
-    sideCheck("Right / drive", rightCross, rightGroup, rightPattern);
+    sideCheck('Left / non-drive', leftCross, leftGroup, leftPattern, nds);
+    sideCheck('Right / drive', rightCross, rightGroup, rightPattern, drive);
   }
   return { ok: errors.length === 0, errors };
 }

@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   spokeLength,
-  maxCross,
   checkWheelLacing,
   TENSION_CURVES,
   RIM_PRESETS,
   HUBS,
   HUB_TYPE_LABELS,
+  flangeSpokeCounts,
   type Hub,
   type HubType,
+  type HubRatio,
   type LacingPattern,
 } from "../lib/spokes";
 import { Field, NumberInput, Select, PresetMenu, Result, Note, Section } from "./ui";
@@ -68,6 +69,13 @@ const LACING_OPTIONS = [
 // The drive side can just mirror the non-drive side (the common case, so it leads
 // and is the default).
 const RIGHT_LACING_OPTIONS = [{ value: "same", label: "Same as left side" }, ...LACING_OPTIONS];
+
+// Flange spoke split. 2:1 puts twice as many spokes on the drive side to even out
+// the wildly different drive/non-drive tensions of a dished rear wheel.
+const RATIO_OPTIONS: Array<{ value: HubRatio; label: string }> = [
+  { value: "1:1", label: "Standard (1:1)" },
+  { value: "2:1", label: "2:1 (drive-doubled)" },
+];
 
 // Spoke lengths a side needs, as (count × length) rows. Standard lacing is one
 // row (every spoke equal); crow's foot splits into crossed + radial lengths.
@@ -291,6 +299,7 @@ export function WheelBuilding() {
   const [rimHoleOffset, setRimHoleOffset] = useState(0);
   const [spokes, setSpokes] = useState(32);
   const [holeDia, setHoleDia] = useState(DEFAULT_HUB?.spokeHoleMm ?? 2.6);
+  const [ratio, setRatio] = useState<HubRatio>("1:1");
 
   const [leftFlange, setLeftFlange] = useState(DEFAULT_HUB?.leftFlangeDiaMm ?? 45);
   const [leftOffset, setLeftOffset] = useState(DEFAULT_HUB?.leftOffsetMm ?? 34);
@@ -340,6 +349,14 @@ export function WheelBuilding() {
     setHubStyle({ type: h.type, widthMm: h.widthMm });
   };
 
+  // Switching layout snaps the count to the nearest value that side-splits cleanly
+  // (÷3 for 2:1, even for 1:1) so it doesn't land on an immediate error.
+  const changeRatio = (r: HubRatio) => {
+    setRatio(r);
+    const step = r === "2:1" ? 3 : 2;
+    if (spokes % step !== 0) setSpokes(Math.max(step * 3, Math.round(spokes / step) * step));
+  };
+
   // Editing any hub-geometry value clears the selected hub.
   const edited =
     <T,>(setter: (v: T) => void) =>
@@ -348,16 +365,20 @@ export function WheelBuilding() {
       setHub(null);
     };
 
-  // Spoke lengths per side, as (count × length) rows. The length formula is
-  // unchanged; crow's foot just calls it twice — cross-length for the two crossed
-  // spokes of each foot, 0-cross length for the radial one.
+  // How the spokes split between the flanges (2:1 doubles the drive side).
+  const counts = flangeSpokeCounts(spokes, ratio);
+
+  // Spoke lengths per side, as (count × length) rows. The length formula uses this
+  // flange's own spoke count (so a 2:1 side gets the right crossing angle); crow's
+  // foot calls it twice — cross-length for each foot's two crossed spokes, 0-cross
+  // for its radial one.
   const sideSpecs = (
     cross: number,
     pattern: LacingPattern,
     flangeDiameterMm: number,
     flangeOffsetMm: number,
+    flangeSpokes: number,
   ): SpokeSpec[] => {
-    const half = spokes / 2;
     const len = (k: number) =>
       spokeLength({
         erdMm: erd,
@@ -365,26 +386,27 @@ export function WheelBuilding() {
         cross: k,
         spokeHoleDiameterMm: holeDia,
         side: { flangeDiameterMm, flangeOffsetMm },
+        flangeSpokeCount: flangeSpokes,
       });
     if (pattern === "crowsfoot") {
-      const radial = half / 3; // one radial per three-spoke foot
+      const radial = flangeSpokes / 3; // one radial per three-spoke foot
       return [
-        { count: half - radial, lengthMm: len(cross), kind: "crossed" },
+        { count: flangeSpokes - radial, lengthMm: len(cross), kind: "crossed" },
         { count: radial, lengthMm: len(0), kind: "radial" },
       ];
     }
-    return [{ count: half, lengthMm: len(cross), kind: "all" }];
+    return [{ count: flangeSpokes, lengthMm: len(cross), kind: "all" }];
   };
 
   const leftSpecs = useMemo(
-    () => sideSpecs(leftCross, leftPattern, leftFlange, leftOffset),
+    () => sideSpecs(leftCross, leftPattern, leftFlange, leftOffset, counts.nds),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [erd, spokes, leftCross, leftPattern, holeDia, leftFlange, leftOffset],
+    [erd, spokes, leftCross, leftPattern, holeDia, leftFlange, leftOffset, counts.nds],
   );
   const rightSpecs = useMemo(
-    () => sideSpecs(rightCross, rightPattern, rightFlange, rightOffset),
+    () => sideSpecs(rightCross, rightPattern, rightFlange, rightOffset, counts.drive),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [erd, spokes, rightCross, rightPattern, holeDia, rightFlange, rightOffset],
+    [erd, spokes, rightCross, rightPattern, holeDia, rightFlange, rightOffset, counts.drive],
   );
 
   // Lacing feasibility
@@ -396,21 +418,21 @@ export function WheelBuilding() {
     rightGroup,
     leftPattern,
     rightPattern,
+    ratio,
   );
-  const kmax = maxCross(spokes);
-  const countOk = spokes >= 8 && spokes % 2 === 0;
-  // Whether a side's lengths are meaningful to show. Grouping doesn't change the
-  // length, so standard lacing only needs a valid cross; crow's foot needs its
-  // own feasibility (÷6, crossed count clears the radial) for the row counts to
-  // come out whole.
-  const sideOk = (cross: number, pattern: LacingPattern) => {
+  const countOk = spokes >= 8 && (ratio === "2:1" ? spokes % 3 === 0 : spokes % 2 === 0);
+  // Whether a side's lengths are meaningful to show, using this flange's own
+  // spoke count: max cross is fSide/4, cross lacing needs an even flange, crow's
+  // foot needs the flange divisible by 3 and a crossed count clearing the radial.
+  const sideOk = (cross: number, pattern: LacingPattern, flangeSpokes: number) => {
     if (!countOk) return false;
+    const kmaxSide = Math.floor(flangeSpokes / 4);
     if (pattern === "crowsfoot")
-      return spokes % 6 === 0 && cross >= 2 && cross % 3 !== 1 && cross <= Math.floor(spokes / 8);
-    return cross >= 0 && cross <= kmax;
+      return flangeSpokes % 3 === 0 && cross >= 2 && cross % 3 !== 1 && cross <= kmaxSide;
+    return cross >= 0 && cross <= kmaxSide && (cross === 0 || flangeSpokes % 2 === 0);
   };
-  const leftOk = sideOk(leftCross, leftPattern);
-  const rightOk = sideOk(rightCross, rightPattern);
+  const leftOk = sideOk(leftCross, leftPattern, counts.nds);
+  const rightOk = sideOk(rightCross, rightPattern, counts.drive);
 
   // Tension converter. Tool and spoke type are picked separately. Default to a
   // common 2.0 mm steel round spoke on the Park Tool TM-1 if present.
@@ -494,10 +516,25 @@ export function WheelBuilding() {
       >
         <div className="grid">
           <Field label="Spoke count (total)">
-            <NumberInput value={spokes} onChange={setSpokes} min={8} step={2} />
+            <NumberInput
+              value={spokes}
+              onChange={setSpokes}
+              min={ratio === "2:1" ? 9 : 8}
+              step={ratio === "2:1" ? 3 : 2}
+            />
           </Field>
           <Field label="Flange hole diameter">
             <NumberInput value={holeDia} onChange={edited(setHoleDia)} suffix="mm" step={0.1} />
+          </Field>
+          <Field
+            label="Hub layout"
+            hint={
+              ratio === "2:1"
+                ? `${counts.drive} drive / ${counts.nds} non-drive`
+                : "even split between flanges"
+            }
+          >
+            <Select value={ratio} onChange={changeRatio} options={RATIO_OPTIONS} />
           </Field>
         </div>
 
@@ -574,6 +611,7 @@ export function WheelBuilding() {
             rightGroup={rightGroup}
             leftPattern={leftPattern}
             rightPattern={rightPattern}
+            ratio={ratio}
             rimHoleOffsetMm={rimHoleOffset}
             hubType={hubStyle?.type}
             hubWidthMm={hubStyle?.widthMm}

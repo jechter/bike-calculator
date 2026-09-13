@@ -28,6 +28,17 @@ always overridable, and clearly flagged as starting points to measure against.
 
 - **Spoke count** `n` (e.g. 32, 36, 28, 24) and **spoke hole diameter** on the
   flange (usually 2.6 mm).
+- **Hub layout** — how the spokes split between the flanges:
+  - **Standard (1:1)** — the usual even split, `n/2` per flange (needs an even
+    count).
+  - **2:1 (drive-doubled)** — twice as many spokes on the drive side (`2n/3`
+    drive, `n/3` non-drive), which evens out the very different drive/non-drive
+    tensions of a heavily dished rear wheel. Needs a count divisible by 3 (odd
+    totals like 21 or 27 are fine). Each flange is then laced and length-checked
+    against **its own** spoke count, so the two sides can differ (e.g. a 7-spoke
+    non-drive flange can only go radial while its 14-spoke drive flange crosses).
+    The crossing angle uses the flange's own count (`θ = 360°·k / f_side`), so the
+    fewer-spoked side comes out longer for the same cross.
 - Per side (left/non-drive and right/drive):
   - **Flange diameter** — the diameter of the circle through the spoke holes on
     the flange (mm), a.k.a. PCD. Use radius `R = flange_diameter / 2`.

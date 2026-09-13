@@ -9,7 +9,7 @@
 // dish and cross pattern read as real 3D.
 
 import { useEffect, useRef, useState } from "react";
-import { spokePlan, type HubType, type LacingPattern } from "../lib/spokes";
+import { spokePlan, wheelLayout, type HubType, type HubRatio, type LacingPattern } from "../lib/spokes";
 
 // Three shades per side, by weave role: light = leading, medium = radial (crow's
 // foot's centre spokes), dark = trailing. Kept in step with the 2D legend colours
@@ -55,6 +55,8 @@ export interface Wheel3DProps {
   /** Lacing pattern per side: 'standard' (incl. grouped) or 'crowsfoot'. */
   leftPattern: LacingPattern;
   rightPattern: LacingPattern;
+  /** Flange spoke split: '1:1' (even) or '2:1' (drive-doubled). */
+  ratio: HubRatio;
   /** Alternating rim drilling: each hole nudged this many mm toward the flange it
    *  serves (0 = centred / single-drilled). Purely the rim-bed hole position. */
   rimHoleOffsetMm?: number;
@@ -437,6 +439,7 @@ export function Wheel3D(props: Wheel3DProps) {
     rightGroup,
     leftPattern,
     rightPattern,
+    ratio,
     rimHoleOffsetMm,
     hubType,
     hubWidthMm,
@@ -597,17 +600,20 @@ export function Wheel3D(props: Wheel3DProps) {
     // its whole width. Place it just past the floor at its outermost z edge.
     const zEdge = Math.min(Math.abs(stagger) + outerHoleR, halfW);
     const outerR = 1 + depth * (0.4 + (0.6 * zEdge) / halfW) + 0.0015;
+    // Which flange each rim hole feeds (1:1 alternates, 2:1 is drive-doubled),
+    // plus its per-flange index and that flange's spoke count.
+    const holes = wheelLayout(spokeCount, ratio);
     for (let i = 0; i < spokeCount; i++) {
-      const isDrive = i % 2 === 0;
+      const { isDrive, flangeIndex, flangeSpokes } = holes[i];
       const fR = isDrive ? rfR : lfR;
       const zF = isDrive ? zR : zL;
-      const plan = spokePlan(Math.floor(i / 2), {
+      const plan = spokePlan(flangeIndex, {
         cross: isDrive ? rightCross : leftCross,
         group: isDrive ? rightGroup : leftGroup,
         pattern: isDrive ? rightPattern : leftPattern,
       });
       const rimA = (2 * Math.PI * i) / spokeCount;
-      const flA = rimA + plan.offset * ((4 * Math.PI) / spokeCount);
+      const flA = rimA + plan.offset * ((2 * Math.PI) / flangeSpokes);
       // flange hole: a dark disc set through the flange thickness
       addButton(mesh, fR * Math.cos(flA), fR * Math.sin(flA), zF, holeR, flHalf + 0.001, SPOKE_SEG, HOLE);
       const ca = Math.cos(rimA), sa = Math.sin(rimA);
@@ -632,15 +638,15 @@ export function Wheel3D(props: Wheel3DProps) {
     // Every spoke's flange hole and rim hole in the wheel plane (radius 1 = ERD),
     // plus its lead/flange, so we can find where leading and trailing spokes cross.
     const chords = Array.from({ length: n }, (_, i) => {
-      const isDrive = i % 2 === 0;
+      const { isDrive, flangeIndex, flangeSpokes } = holes[i];
       const fR = isDrive ? rfR : lfR;
-      const plan = spokePlan(Math.floor(i / 2), {
+      const plan = spokePlan(flangeIndex, {
         cross: isDrive ? rightCross : leftCross,
         group: isDrive ? rightGroup : leftGroup,
         pattern: isDrive ? rightPattern : leftPattern,
       });
       const rimA = (2 * Math.PI * i) / n;
-      const flA = rimA + plan.offset * ((4 * Math.PI) / n);
+      const flA = rimA + plan.offset * ((2 * Math.PI) / flangeSpokes);
       return {
         isDrive,
         lead: plan.lead,
@@ -669,10 +675,10 @@ export function Wheel3D(props: Wheel3DProps) {
 
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
     for (const i of sequence) {
-      const isDrive = i % 2 === 0;
+      const { isDrive, flangeIndex, flangeSpokes } = holes[i];
       const fR = isDrive ? rfR : lfR;
       const zF = isDrive ? zR : zL;
-      const plan = spokePlan(Math.floor(i / 2), {
+      const plan = spokePlan(flangeIndex, {
         cross: isDrive ? rightCross : leftCross,
         group: isDrive ? rightGroup : leftGroup,
         pattern: isDrive ? rightPattern : leftPattern,
@@ -683,7 +689,7 @@ export function Wheel3D(props: Wheel3DProps) {
       const shade = lead === 1 ? 0 : lead === 0 ? 1 : 2;
       const col = (isDrive ? [DRIVE_OUT, DRIVE_MID, DRIVE_IN] : [NDS_OUT, NDS_MID, NDS_IN])[shade];
       const rimA = (2 * Math.PI * i) / n;
-      const flA = rimA + plan.offset * ((4 * Math.PI) / n);
+      const flA = rimA + plan.offset * ((2 * Math.PI) / flangeSpokes);
       const zRim = isDrive ? stagger : -stagger;
       const hx = fR * Math.cos(flA);
       const hy = fR * Math.sin(flA);
@@ -750,6 +756,7 @@ export function Wheel3D(props: Wheel3DProps) {
     rightGroup,
     leftPattern,
     rightPattern,
+    ratio,
     rimHoleOffsetMm,
     hubType,
     hubWidthMm,

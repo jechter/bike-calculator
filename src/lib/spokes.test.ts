@@ -3,6 +3,8 @@ import {
   spokeLength,
   spokeLead,
   spokePlan,
+  flangeSpokeCounts,
+  wheelLayout,
   readingToKgf,
   maxCross,
   checkWheelLacing,
@@ -64,13 +66,13 @@ describe('maxCross / checkWheelLacing', () => {
   it('rejects 22 spokes with 2-cross (the reported case)', () => {
     const r = checkWheelLacing(22, 2, 2);
     expect(r.ok).toBe(false);
-    expect(r.errors.join(" ")).toMatch(/divisible by 4/);
+    expect(r.errors.join(" ")).toMatch(/even spoke count per flange/);
   });
 
-  it('rejects 10 spokes with 3-cross (not divisible by 4)', () => {
+  it('rejects 10 spokes with 3-cross (odd count per flange)', () => {
     const r = checkWheelLacing(10, 3, 3);
     expect(r.ok).toBe(false);
-    expect(r.errors.join(" ")).toMatch(/divisible by 4/);
+    expect(r.errors.join(" ")).toMatch(/even spoke count per flange/);
   });
 
   it('rejects an odd spoke count', () => {
@@ -139,10 +141,10 @@ describe('grouped-lacing feasibility', () => {
     expect(isBijection(32, 3, 2)).toBe(false); // the rule the message guards
   });
 
-  it('rejects 2L2T on a count not divisible by 8 (28h)', () => {
+  it('rejects 2L2T on a count whose flange (14) is not divisible by 4 (28h)', () => {
     const r = checkWheelLacing(28, 2, 2, 2, 2);
     expect(r.ok).toBe(false);
-    expect(r.errors.join(' ')).toMatch(/divisible by 8/);
+    expect(r.errors.join(' ')).toMatch(/divisible by 4/);
   });
 
   it('rejects grouping on a radial (no leading/trailing to group)', () => {
@@ -199,10 +201,10 @@ describe("crow's foot feasibility", () => {
     expect(cfBijection(24, 3)).toBe(true);
   });
 
-  it('rejects 32h — not divisible by 6', () => {
+  it('rejects 32h — flange (16) not divisible by 3', () => {
     const r = checkWheelLacing(32, 2, 2, 1, 1, 'crowsfoot', 'crowsfoot');
     expect(r.ok).toBe(false);
-    expect(r.errors.join(' ')).toMatch(/divisible by 6/);
+    expect(r.errors.join(' ')).toMatch(/divisible by 3/);
   });
 
   it('rejects 4-cross — a crossed spoke collides with the radial', () => {
@@ -217,6 +219,62 @@ describe("crow's foot feasibility", () => {
 
   it('mixes crow’s foot on one side with standard on the other', () => {
     expect(checkWheelLacing(36, 3, 2, 1, 1, 'standard', 'crowsfoot').ok).toBe(true);
+  });
+});
+
+describe('2:1 hubs', () => {
+  it('splits the count two-to-one toward the drive side', () => {
+    expect(flangeSpokeCounts(24, '2:1')).toEqual({ drive: 16, nds: 8 });
+    expect(flangeSpokeCounts(36, '2:1')).toEqual({ drive: 24, nds: 12 });
+    expect(flangeSpokeCounts(24, '1:1')).toEqual({ drive: 12, nds: 12 });
+  });
+
+  it('lays rim holes out drive-drive-non-drive with per-flange indices', () => {
+    const layout = wheelLayout(24, '2:1');
+    expect(layout.filter((h) => h.isDrive)).toHaveLength(16);
+    expect(layout.filter((h) => !h.isDrive)).toHaveLength(8);
+    expect(layout.slice(0, 3).map((h) => h.isDrive)).toEqual([true, true, false]);
+    expect(layout.every((h) => h.flangeSpokes === (h.isDrive ? 16 : 8))).toBe(true);
+  });
+
+  it('uses the flange spoke count for the crossing angle (fewer spokes → longer)', () => {
+    const common = {
+      erdMm: 602,
+      spokeCount: 24,
+      cross: 2,
+      spokeHoleDiameterMm: 2.6,
+      side: { flangeDiameterMm: 45, flangeOffsetMm: 20 },
+    };
+    const eightSpoke = spokeLength({ ...common, flangeSpokeCount: 8 });
+    const sixteenSpoke = spokeLength({ ...common, flangeSpokeCount: 16 });
+    // Same cross count, but 8 spokes subtend a bigger angle → a longer spoke.
+    expect(eightSpoke).toBeGreaterThan(sixteenSpoke);
+  });
+
+  it('accepts a buildable 2:1 wheel and validates each flange by its own count', () => {
+    // 24h 2:1: DS = 16 (max 4-cross), NDS = 8 (max 2-cross).
+    expect(checkWheelLacing(24, 2, 2, 1, 1, 'standard', 'standard', '2:1').ok).toBe(true);
+    // NDS 3-cross is too many for 8 spokes.
+    const tooMany = checkWheelLacing(24, 3, 2, 1, 1, 'standard', 'standard', '2:1');
+    expect(tooMany.ok).toBe(false);
+    expect(tooMany.errors.join(' ')).toMatch(/Left/);
+  });
+
+  it('rejects a 2:1 count not divisible by 3', () => {
+    const r = checkWheelLacing(32, 2, 2, 1, 1, 'standard', 'standard', '2:1');
+    expect(r.ok).toBe(false);
+    expect(r.errors.join(' ')).toMatch(/divisible by 3/);
+  });
+
+  it('allows an odd multiple of 3 (21h): radial non-drive, crossed drive', () => {
+    // 21h 2:1 → 7 non-drive (radial only), 14 drive (crossable). Odd total is fine.
+    expect(flangeSpokeCounts(21, '2:1')).toEqual({ drive: 14, nds: 7 });
+    expect(checkWheelLacing(21, 0, 2, 1, 1, 'standard', 'standard', '2:1').ok).toBe(true);
+    // The old "must be even" rule must not fire for 2:1.
+    const r = checkWheelLacing(21, 0, 2, 1, 1, 'standard', 'standard', '2:1');
+    expect(r.errors.join(' ')).not.toMatch(/must be even/);
+    // But a 7-spoke non-drive flange still can't be cross-laced.
+    expect(checkWheelLacing(21, 2, 2, 1, 1, 'standard', 'standard', '2:1').ok).toBe(false);
   });
 });
 

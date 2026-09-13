@@ -5,7 +5,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Wheel3D } from "./Wheel3D";
-import { spokePlan, type HubType, type LacingPattern } from "../lib/spokes";
+import { spokePlan, wheelLayout, type HubType, type HubRatio, type LacingPattern } from "../lib/spokes";
 
 // Legend shades, matching the 3D spoke colours: light = leading, medium = radial
 // (crow's foot centre spokes), dark = trailing.
@@ -43,6 +43,8 @@ export interface WheelDiagramProps {
   /** Lacing pattern per side: 'standard' (incl. grouped) or 'crowsfoot'. */
   leftPattern?: LacingPattern;
   rightPattern?: LacingPattern;
+  /** Flange spoke split: '1:1' (even) or '2:1' (drive-doubled). */
+  ratio?: HubRatio;
   /** Alternating rim drilling: each hole nudged this many mm toward its flange. */
   rimHoleOffsetMm?: number;
   /** Selected hub's type / over-locknut width, when a hub is chosen — drives the
@@ -59,15 +61,21 @@ export function WheelDiagram(props: WheelDiagramProps) {
     rightGroup = 1,
     leftPattern = "standard",
     rightPattern = "standard",
+    ratio = "1:1",
   } = props;
-  const valid = !!erdMm && !!spokeCount && spokeCount >= 4 && spokeCount % 2 === 0;
+  const valid =
+    !!erdMm &&
+    !!spokeCount &&
+    spokeCount >= 4 &&
+    (ratio === "2:1" ? spokeCount % 3 === 0 : spokeCount % 2 === 0);
   const n = valid ? spokeCount : 0;
+  const holes = wheelLayout(n, ratio);
 
   // A spoke's build group: heads-out (leading) and radial spokes first, then the
   // crossing (trailing) sets, drive side before non-drive — 0..3 per GROUP_LABELS.
   const buildGroup = (i: number) => {
-    const isDrive = i % 2 === 0;
-    const plan = spokePlan(Math.floor(i / 2), {
+    const { isDrive, flangeIndex } = holes[i];
+    const plan = spokePlan(flangeIndex, {
       cross: isDrive ? props.rightCross : props.leftCross,
       group: isDrive ? rightGroup : leftGroup,
       pattern: isDrive ? rightPattern : leftPattern,
@@ -84,7 +92,7 @@ export function WheelDiagram(props: WheelDiagramProps) {
       return ga !== gb ? ga - gb : a - b;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [n, leftGroup, rightGroup, leftPattern, rightPattern, props.leftCross, props.rightCross]);
+  }, [n, leftGroup, rightGroup, leftPattern, rightPattern, props.leftCross, props.rightCross, ratio]);
 
   // How many spokes are currently laced. Defaults to a fully built wheel; reset
   // when the spoke count changes (the classic "derive state from props" pattern).
@@ -109,7 +117,7 @@ export function WheelDiagram(props: WheelDiagramProps) {
   }, [playing, step, n]);
 
   if (!valid) {
-    return <p className="field-hint">Enter an even spoke count and rim ERD to see the wheel.</p>;
+    return <p className="field-hint">Enter a valid spoke count and rim ERD to see the wheel.</p>;
   }
 
   // Build-guide caption for the current step.
@@ -135,7 +143,7 @@ export function WheelDiagram(props: WheelDiagramProps) {
     buildCaption = "Bare rim & hub — drag to lace, starting by the valve";
   } else if (step >= n) {
     buildCaption =
-      `Fully laced · ${n}h · ` +
+      `Fully laced · ${n}h${ratio === "2:1" ? " · 2:1" : ""} · ` +
       `${sideLabel(props.leftCross, leftGroup, leftPattern)} / ` +
       `${sideLabel(props.rightCross, rightGroup, rightPattern)}`;
   } else {
@@ -158,6 +166,7 @@ export function WheelDiagram(props: WheelDiagramProps) {
         rightGroup={rightGroup}
         leftPattern={leftPattern}
         rightPattern={rightPattern}
+        ratio={ratio}
         rimHoleOffsetMm={props.rimHoleOffsetMm}
         hubType={props.hubType}
         hubWidthMm={props.hubWidthMm}

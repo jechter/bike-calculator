@@ -11,6 +11,7 @@ import { spokePlan, wheelLayout, type HubType, type HubRatio, type LacingPattern
 // (crow's foot centre spokes), dark = trailing.
 type Role = "lead" | "radial" | "trail";
 const ROLE_LABEL: Record<Role, string> = { lead: "Leading", radial: "Radial", trail: "Trailing" };
+const ROLE_LEAD: Record<Role, number> = { lead: 1, radial: 0, trail: -1 };
 const NDS_SHADES: Record<Role, string> = { lead: "#75b8ff", radial: "#3380e6", trail: "#1a57b3" };
 const DRIVE_SHADES: Record<Role, string> = { lead: "#f78066", radial: "#d94530", trail: "#9e241a" };
 
@@ -110,6 +111,8 @@ export function WheelDiagram(props: WheelDiagramProps) {
   const [step, setStep] = useState(n);
   const [prevN, setPrevN] = useState(n);
   const [playing, setPlaying] = useState(false);
+  // Legend hover: isolate one side and/or weave role in the 3D view.
+  const [hover, setHover] = useState<{ isDrive?: boolean; lead?: number } | null>(null);
   if (prevN !== n) {
     setPrevN(n);
     setStep(n);
@@ -183,6 +186,7 @@ export function WheelDiagram(props: WheelDiagramProps) {
         rimHoleGroup={props.rimHoleGroup}
         rimHoleGap={props.rimHoleGap}
         rimHoleOffsetMm={props.rimHoleOffsetMm}
+        highlight={hover}
         hubType={props.hubType}
         hubWidthMm={props.hubWidthMm}
         step={step}
@@ -223,17 +227,44 @@ export function WheelDiagram(props: WheelDiagramProps) {
         <div className="wd-caption">{buildCaption}</div>
       </div>
 
-      <div className="wd-legend">
+      <div className="wd-legend" onMouseLeave={() => setHover(null)}>
         <div className="wd-legend-grid">
           <span />
-          <span className="wd-legend-col">Non-drive</span>
-          <span className="wd-legend-col">Drive</span>
+          <button
+            type="button"
+            className="wd-legend-col wd-legend-hit"
+            onMouseEnter={() => setHover({ isDrive: false })}
+          >
+            Non-drive
+          </button>
+          <button
+            type="button"
+            className="wd-legend-col wd-legend-hit"
+            onMouseEnter={() => setHover({ isDrive: true })}
+          >
+            Drive
+          </button>
           {roleRows.flatMap((r) => [
-            <span key={r + "-l"} className="wd-legend-role">
+            <button
+              key={r + "-l"}
+              type="button"
+              className="wd-legend-role wd-legend-hit"
+              onMouseEnter={() => setHover({ lead: ROLE_LEAD[r] })}
+            >
               {ROLE_LABEL[r]}
-            </span>,
-            <i key={r + "-n"} style={{ background: NDS_SHADES[r] }} />,
-            <i key={r + "-d"} style={{ background: DRIVE_SHADES[r] }} />,
+            </button>,
+            <i
+              key={r + "-n"}
+              className="wd-legend-hit"
+              style={{ background: NDS_SHADES[r] }}
+              onMouseEnter={() => setHover({ isDrive: false, lead: ROLE_LEAD[r] })}
+            />,
+            <i
+              key={r + "-d"}
+              className="wd-legend-hit"
+              style={{ background: DRIVE_SHADES[r] }}
+              onMouseEnter={() => setHover({ isDrive: true, lead: ROLE_LEAD[r] })}
+            />,
           ])}
         </div>
       </div>

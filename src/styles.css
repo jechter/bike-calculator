@@ -847,8 +847,16 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .wd-legend-grid { display: grid; grid-template-columns: auto auto auto; gap: 5px 10px; align-items: center; }
 .wd-legend-col { font-size: 11px; text-align: center; }
-.wd-legend-role { font-size: 12px; }
+.wd-legend-role { font-size: 12px; text-align: left; }
 .wd-legend i { width: 16px; height: 4px; border-radius: 2px; display: inline-block; justify-self: center; }
+/* Hover a legend cell to isolate those spokes in the 3D view */
+.wd-legend-hit { cursor: pointer; }
+.wd-legend button.wd-legend-hit {
+  -webkit-appearance: none; appearance: none; background: none; border: 0;
+  padding: 0; margin: 0; color: inherit; font-family: inherit; line-height: inherit;
+}
+.wd-legend-hit:hover { opacity: 0.6; }
+.wd-legend i.wd-legend-hit { height: 6px; } /* a touch taller so it's easier to hit */
 .lacing-errors { margin: 6px 0 0; padding-left: 18px; }
 .lacing-errors li { margin: 2px 0; }
 

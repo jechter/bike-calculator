@@ -69,6 +69,9 @@ export interface Wheel3DProps {
   /** Flip the leading/trailing phase so clustered pairs cross the neighbouring
    *  group instead of each other (G3-style). No effect on an evenly-spaced flange. */
   crossPhase?: boolean;
+  /** When set, draw only spokes matching this side and/or weave role (a legend
+   *  hover). Either field may be omitted to match all of that axis. */
+  highlight?: { isDrive?: boolean; lead?: number } | null;
   /** Rim drilled in groups of this many holes (1 = evenly drilled). */
   rimHoleGroup?: number;
   /** Between-group gap as a multiple of the in-group hole spacing. */
@@ -397,6 +400,9 @@ export function Wheel3D(props: Wheel3DProps) {
   const [, force] = useState(0); // bump to redraw (e.g. on resize)
   const drag = useRef<{ x: number; y: number } | null>(null);
   const raf = useRef(0);
+  // Per-spoke (isDrive, lead) in draw/build order, so a legend hover can draw just
+  // the matching spokes.
+  const spokeMeta = useRef<{ isDrive: boolean; lead: number }[]>([]);
 
   // Redraw when the canvas (which fills the panel) is resized.
   useEffect(() => {
@@ -465,6 +471,7 @@ export function Wheel3D(props: Wheel3DProps) {
     hubWidthMm,
     step,
     sequence,
+    highlight,
   } = props;
   const phase = crossPhase ? 1 : 0;
 
@@ -700,6 +707,7 @@ export function Wheel3D(props: Wheel3DProps) {
     };
 
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+    const meta: { isDrive: boolean; lead: number }[] = [];
     for (const i of sequence) {
       const { isDrive, flangeIndex, flangeSpokes } = holes[i];
       const fR = isDrive ? rfR : lfR;
@@ -711,6 +719,7 @@ export function Wheel3D(props: Wheel3DProps) {
         phase,
       });
       const lead = plan.lead;
+      meta.push({ isDrive, lead });
       const leading = lead === 1; // the group laced last, woven under at the last cross
       // Shade by role: 0 = leading (light), 1 = radial (mid), 2 = trailing (dark).
       const shade = lead === 1 ? 0 : lead === 0 ? 1 : 2;
@@ -769,6 +778,7 @@ export function Wheel3D(props: Wheel3DProps) {
       addTube(tube, bed, nipHead, 0.009, SPOKE_SEG, col); // nipple seated in the rim
       addCap(tube, nipHead, [ca, sa, 0], 0.009, SPOKE_SEG, col); // closed nipple end
     }
+    spokeMeta.current = meta;
     gl.bindBuffer(gl.ARRAY_BUFFER, s.spokes);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tube), gl.STATIC_DRAW);
   }, [
@@ -839,7 +849,27 @@ export function Wheel3D(props: Wheel3DProps) {
     bind(s.mesh);
     gl.drawArrays(gl.TRIANGLES, 0, s.meshVerts);
     bind(s.spokes);
-    gl.drawArrays(gl.TRIANGLES, 0, Math.max(0, step) * VERTS_PER_SPOKE);
+    const drawn = Math.max(0, step);
+    if (highlight) {
+      // Legend hover: draw only the laced spokes matching this side + weave role.
+      const meta = spokeMeta.current;
+      let run = 0; // batch contiguous matching spokes into one draw call
+      for (let k = 0; k <= drawn; k++) {
+        const m = k < drawn ? meta[k] : undefined;
+        const match =
+          !!m &&
+          (highlight.isDrive === undefined || m.isDrive === highlight.isDrive) &&
+          (highlight.lead === undefined || m.lead === highlight.lead);
+        if (match) {
+          run++;
+        } else if (run > 0) {
+          gl.drawArrays(gl.TRIANGLES, (k - run) * VERTS_PER_SPOKE, run * VERTS_PER_SPOKE);
+          run = 0;
+        }
+      }
+    } else {
+      gl.drawArrays(gl.TRIANGLES, 0, drawn * VERTS_PER_SPOKE);
+    }
   });
 
   const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {

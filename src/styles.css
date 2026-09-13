@@ -840,8 +840,10 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   background: color-mix(in srgb, var(--panel-2) 78%, transparent);
   backdrop-filter: blur(2px); border-radius: 8px; padding: 8px 10px;
 }
-.wd-legend span { display: flex; align-items: center; gap: 8px; }
-.wd-legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+.wd-legend-grid { display: grid; grid-template-columns: auto auto auto; gap: 5px 10px; align-items: center; }
+.wd-legend-col { font-size: 11px; text-align: center; }
+.wd-legend-role { font-size: 12px; }
+.wd-legend i { width: 16px; height: 4px; border-radius: 2px; display: inline-block; justify-self: center; }
 .lacing-errors { margin: 6px 0 0; padding-left: 18px; }
 .lacing-errors li { margin: 2px 0; }
 

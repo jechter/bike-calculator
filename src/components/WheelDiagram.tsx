@@ -7,8 +7,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Wheel3D } from "./Wheel3D";
 import { spokePlan, type HubType, type LacingPattern } from "../lib/spokes";
 
-const DRIVE = "#c0392b"; // right / drive side
-const NDS = "#0b6bcb"; // left / non-drive side
+// Legend shades, matching the 3D spoke colours: light = leading, medium = radial
+// (crow's foot centre spokes), dark = trailing.
+type Role = "lead" | "radial" | "trail";
+const ROLE_LABEL: Record<Role, string> = { lead: "Leading", radial: "Radial", trail: "Trailing" };
+const NDS_SHADES: Record<Role, string> = { lead: "#4794ed", radial: "#246bbf", trail: "#054294" };
+const DRIVE_SHADES: Record<Role, string> = { lead: "#de523d", radial: "#ad3629", trail: "#801c14" };
 
 // A spoke's build order is its group (0–3) then its position around the wheel.
 // The four groups follow Sheldon Brown's method: drive-side first set, then the
@@ -109,6 +113,11 @@ export function WheelDiagram(props: WheelDiagramProps) {
   }
 
   // Build-guide caption for the current step.
+  // Radial spokes only exist in a crow's-foot flange, so the legend drops that
+  // shade otherwise.
+  const showRadial = leftPattern === "crowsfoot" || rightPattern === "crowsfoot";
+  const roleRows: Role[] = showRadial ? ["lead", "radial", "trail"] : ["lead", "trail"];
+
   const sideLabel = (cross: number, group: number, pattern: LacingPattern) =>
     pattern === "crowsfoot"
       ? `${cross}× crow's foot`
@@ -183,12 +192,18 @@ export function WheelDiagram(props: WheelDiagramProps) {
       </div>
 
       <div className="wd-legend">
-        <span>
-          <i style={{ background: NDS }} /> Left / non-drive
-        </span>
-        <span>
-          <i style={{ background: DRIVE }} /> Right / drive
-        </span>
+        <div className="wd-legend-grid">
+          <span />
+          <span className="wd-legend-col">Non-drive</span>
+          <span className="wd-legend-col">Drive</span>
+          {roleRows.flatMap((r) => [
+            <span key={r + "-l"} className="wd-legend-role">
+              {ROLE_LABEL[r]}
+            </span>,
+            <i key={r + "-n"} style={{ background: NDS_SHADES[r] }} />,
+            <i key={r + "-d"} style={{ background: DRIVE_SHADES[r] }} />,
+          ])}
+        </div>
       </div>
     </div>
   );

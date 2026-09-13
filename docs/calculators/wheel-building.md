@@ -33,19 +33,21 @@ always overridable, and clearly flagged as starting points to measure against.
     the flange (mm), a.k.a. PCD. Use radius `R = flange_diameter / 2`.
   - **Flange offset / centre-to-flange** (`W`, mm) — distance from the wheel
     centreline to the flange. Drive and non-drive differ on a dished wheel.
-  - **Cross pattern** `k` (e.g. 3-cross, 2-cross, radial = 0). Under crow's foot
-    this is the *crossed* count for each foot's two outer spokes.
-  - **Pattern** — how the spokes are arranged around the flange:
-    - **Standard (1L1T)** alternates leading/trailing spoke-by-spoke.
-    - **2L2T / 3L3T / 4L4T** (grouped) run two/three/four leading spokes together,
-      then the same number trailing, giving the paired "clustered" look. Grouping
-      only re-pairs which flange hole each spoke uses — **spoke length is
-      unchanged** — but it has feasibility limits (see below).
-    - **Crow's foot** laces the flange in repeating groups of three: two crossed
-      spokes flanking one radial spoke, so each group forms a bird's-foot / trident.
-      Unlike the grouped patterns it produces **two spoke lengths per side** — the
-      crossed spokes at the `k`-cross length and the radial ones at the (shorter)
-      0-cross length.
+  - **Lacing** — a single menu that combines the cross count with the pattern, so
+    only buildable combinations are offered. It's grouped into:
+    - **Radial** (0-cross).
+    - **Crossed** — 1- to 4-cross, the usual alternating (1L1T) builds.
+    - **Grouped & crow's foot** — the decorative patterns:
+      - **2L2T / 3L3T / 4L4T** run two/three/four leading spokes together, then the
+        same number trailing, giving the paired "clustered" look. Grouping only
+        re-pairs which flange hole each spoke uses — **spoke length is unchanged**.
+      - **Crow's foot** laces the flange in repeating groups of three: two crossed
+        spokes flanking one radial spoke, so each group forms a bird's-foot /
+        trident. Unlike the grouped patterns it produces **two spoke lengths per
+        side** — the crossed spokes at the cross-length and the radial ones at the
+        (shorter) 0-cross length.
+    - The drive side's menu starts with **Same as left side** (the default), so a
+      symmetric build needs only one choice; pick a specific entry to differ.
 - The **hub preset** fills flange diameters, offsets and hole size for common
   hub types (road/MTB, front/rear, QR/Boost) — approximate; measure to confirm.
 
@@ -54,9 +56,11 @@ always overridable, and clearly flagged as starting points to measure against.
 The page renders the wheel as a **rotatable 3D view** — a WebGL rendering (a
 box-section rim with a concave tyre channel and nipples seated in the bed, hub
 barrel + flanges, and spokes with button heads on the flange faces) so you can
-see how the inputs affect the spokes. Spokes are coloured by side, with a
-lighter shade for outer-laced (heads-out) and a darker shade for inner-laced
-(heads-in) spokes; nipples match their spoke's colour.
+see how the inputs affect the spokes. Spokes are coloured by side (blue = left /
+non-drive, red = right / drive) and shaded by weave role: light = leading,
+medium = radial (a crow's foot's centre spokes), dark = trailing; nipples match
+their spoke's colour. The legend spells out the shades, dropping the radial one
+unless a crow's foot pattern is in use.
 
 - **Drag** with the mouse to turn the wheel, and use the **zoom** slider to
   inspect the lacing at the hub.

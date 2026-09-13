@@ -11,11 +11,14 @@
 import { useEffect, useRef, useState } from "react";
 import { spokePlan, type HubType, type LacingPattern } from "../lib/spokes";
 
-// Two shades per side so outer-laced (heads-out) and inner-laced (heads-in)
-// spokes are visually distinct: the lighter shade is outer, the darker is inner.
+// Three shades per side, by weave role: light = leading, medium = radial (crow's
+// foot's centre spokes), dark = trailing. Kept in step with the 2D legend colours
+// in WheelDiagram.
 const DRIVE_OUT: [number, number, number] = [0.87, 0.32, 0.24];
+const DRIVE_MID: [number, number, number] = [0.68, 0.21, 0.16];
 const DRIVE_IN: [number, number, number] = [0.5, 0.11, 0.08];
 const NDS_OUT: [number, number, number] = [0.28, 0.58, 0.93];
+const NDS_MID: [number, number, number] = [0.14, 0.42, 0.75];
 const NDS_IN: [number, number, number] = [0.02, 0.26, 0.58];
 const METAL: [number, number, number] = [0.62, 0.66, 0.71];
 const VALVE: [number, number, number] = [0.78, 0.62, 0.22]; // brass valve marker
@@ -676,7 +679,9 @@ export function Wheel3D(props: Wheel3DProps) {
       });
       const lead = plan.lead;
       const leading = lead === 1; // the group laced last, woven under at the last cross
-      const col = isDrive ? (leading ? DRIVE_OUT : DRIVE_IN) : leading ? NDS_OUT : NDS_IN;
+      // Shade by role: 0 = leading (light), 1 = radial (mid), 2 = trailing (dark).
+      const shade = lead === 1 ? 0 : lead === 0 ? 1 : 2;
+      const col = (isDrive ? [DRIVE_OUT, DRIVE_MID, DRIVE_IN] : [NDS_OUT, NDS_MID, NDS_IN])[shade];
       const rimA = (2 * Math.PI * i) / n;
       const flA = rimA + plan.offset * ((4 * Math.PI) / n);
       const zRim = isDrive ? stagger : -stagger;

@@ -17,30 +17,57 @@ import { TensionCurveChart } from "./TensionCurveChart";
 
 const RIM_OPTIONS = RIM_PRESETS.map((p) => ({ value: String(p.erdMm), label: p.label }));
 
-const crossOptions = [0, 1, 2, 3, 4].map((k) => ({
-  value: k,
-  label: k === 0 ? "Radial (0×)" : `${k}-cross`,
-}));
-
-// Lacing pattern picker, merging the grouped variants and crow's foot into one
-// control. "1"–"4" are the standard alternating / grouped builds (1L1T … 4L4T);
-// "crowsfoot" is the three-per-foot decorative pattern. Feasibility (divisibility,
-// cross constraints) is enforced in checkWheelLacing; invalid picks show a warning.
-const PATTERN_OPTIONS = [
-  { value: "1", label: "Standard (1L1T)" },
-  { value: "2", label: "2L2T" },
-  { value: "3", label: "3L3T" },
-  { value: "4", label: "4L4T" },
-  { value: "crowsfoot", label: "Crow's foot" },
-];
-
-// A pattern-picker value splits into the run-length group + lacing pattern the
-// geometry uses. Crow's foot ignores grouping (its own three-spoke repeat).
-function parsePattern(sel: string): { group: number; pattern: LacingPattern } {
-  return sel === "crowsfoot"
-    ? { group: 1, pattern: "crowsfoot" }
-    : { group: Number(sel), pattern: "standard" };
+// A single lacing menu combining cross count, grouping, and crow's foot — only
+// the combinations that actually build are offered. Each choice carries the
+// cross / group / pattern the geometry needs; feasibility against the spoke count
+// is still checked in checkWheelLacing (which shows a warning for, e.g., 2L2T on a
+// count not divisible by 8).
+interface LacingChoice {
+  value: string;
+  label: string;
+  cross: number;
+  group: number;
+  pattern: LacingPattern;
 }
+
+const LACING_CHOICES: LacingChoice[] = [
+  { value: "radial", label: "Radial", cross: 0, group: 1, pattern: "standard" },
+  { value: "1x", label: "1-cross", cross: 1, group: 1, pattern: "standard" },
+  { value: "2x", label: "2-cross", cross: 2, group: 1, pattern: "standard" },
+  { value: "3x", label: "3-cross", cross: 3, group: 1, pattern: "standard" },
+  { value: "4x", label: "4-cross", cross: 4, group: 1, pattern: "standard" },
+  { value: "2l2t-2x", label: "2L2T 2-cross", cross: 2, group: 2, pattern: "standard" },
+  { value: "2l2t-4x", label: "2L2T 4-cross", cross: 4, group: 2, pattern: "standard" },
+  { value: "3l3t-3x", label: "3L3T 3-cross", cross: 3, group: 3, pattern: "standard" },
+  { value: "4l4t-4x", label: "4L4T 4-cross", cross: 4, group: 4, pattern: "standard" },
+  { value: "cf-2x", label: "Crow's foot 2-cross", cross: 2, group: 1, pattern: "crowsfoot" },
+  { value: "cf-3x", label: "Crow's foot 3-cross", cross: 3, group: 1, pattern: "crowsfoot" },
+];
+const LACING_BY_VALUE: Record<string, LacingChoice> = Object.fromEntries(
+  LACING_CHOICES.map((c) => [c.value, c]),
+);
+const opt = (value: string) => ({ value, label: LACING_BY_VALUE[value].label });
+
+// Menu structure: radial on top, then the plain crosses, then the decorative
+// grouped / crow's-foot builds, each an <optgroup> so the sections read clearly.
+const LACING_OPTIONS = [
+  opt("radial"),
+  { label: "Crossed", options: [opt("1x"), opt("2x"), opt("3x"), opt("4x")] },
+  {
+    label: "Grouped & crow's foot",
+    options: [
+      opt("2l2t-2x"),
+      opt("2l2t-4x"),
+      opt("3l3t-3x"),
+      opt("4l4t-4x"),
+      opt("cf-2x"),
+      opt("cf-3x"),
+    ],
+  },
+];
+// The drive side can just mirror the non-drive side (the common case, so it leads
+// and is the default).
+const RIGHT_LACING_OPTIONS = [{ value: "same", label: "Same as left side" }, ...LACING_OPTIONS];
 
 // Spoke lengths a side needs, as (count × length) rows. Standard lacing is one
 // row (every spoke equal); crow's foot splits into crossed + radial lengths.
@@ -267,16 +294,18 @@ export function WheelBuilding() {
 
   const [leftFlange, setLeftFlange] = useState(DEFAULT_HUB?.leftFlangeDiaMm ?? 45);
   const [leftOffset, setLeftOffset] = useState(DEFAULT_HUB?.leftOffsetMm ?? 34);
-  const [leftCross, setLeftCross] = useState(3);
-  const [leftPat, setLeftPat] = useState("1");
+  const [leftLace, setLeftLace] = useState("3x");
 
   const [rightFlange, setRightFlange] = useState(DEFAULT_HUB?.rightFlangeDiaMm ?? 45);
   const [rightOffset, setRightOffset] = useState(DEFAULT_HUB?.rightOffsetMm ?? 17.5);
-  const [rightCross, setRightCross] = useState(3);
-  const [rightPat, setRightPat] = useState("1");
+  const [rightLace, setRightLace] = useState("same"); // mirror the left side by default
 
-  const { group: leftGroup, pattern: leftPattern } = parsePattern(leftPat);
-  const { group: rightGroup, pattern: rightPattern } = parsePattern(rightPat);
+  // Resolve each side's menu choice into the cross / group / pattern the geometry
+  // uses; the drive side falls back to the non-drive choice when set to "same".
+  const leftChoice = LACING_BY_VALUE[leftLace] ?? LACING_BY_VALUE["3x"];
+  const rightChoice = rightLace === "same" ? leftChoice : LACING_BY_VALUE[rightLace] ?? leftChoice;
+  const { cross: leftCross, group: leftGroup, pattern: leftPattern } = leftChoice;
+  const { cross: rightCross, group: rightGroup, pattern: rightPattern } = rightChoice;
 
   // The hub picked from the database, if any (cleared once a hub value is edited
   // by hand, so the trigger no longer claims a specific hub). Defaults to a
@@ -482,10 +511,7 @@ export function WheelBuilding() {
               <NumberInput value={leftOffset} onChange={edited(setLeftOffset)} suffix="mm" />
             </Field>
             <Field label="Lacing">
-              <Select value={leftCross} onChange={setLeftCross} options={crossOptions} />
-            </Field>
-            <Field label="Pattern">
-              <Select value={leftPat} onChange={setLeftPat} options={PATTERN_OPTIONS} />
+              <Select value={leftLace} onChange={setLeftLace} options={LACING_OPTIONS} />
             </Field>
           </div>
           <div className="wb-side wb-side-right">
@@ -497,10 +523,7 @@ export function WheelBuilding() {
               <NumberInput value={rightOffset} onChange={edited(setRightOffset)} suffix="mm" />
             </Field>
             <Field label="Lacing">
-              <Select value={rightCross} onChange={setRightCross} options={crossOptions} />
-            </Field>
-            <Field label="Pattern">
-              <Select value={rightPat} onChange={setRightPat} options={PATTERN_OPTIONS} />
+              <Select value={rightLace} onChange={setRightLace} options={RIGHT_LACING_OPTIONS} />
             </Field>
           </div>
         </div>

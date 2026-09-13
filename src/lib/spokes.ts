@@ -82,6 +82,9 @@ export function spokePlan(
     if (r === 1) return { offset: 0, lead: 0 };
     return { offset: -opts.cross, lead: -1 };
   }
+  // A 0-cross spoke sits radially and never crosses another, so it has no
+  // leading/trailing role — treat it as radial (lead 0) like a crow's foot centre.
+  if (opts.cross === 0) return { offset: 0, lead: 0 };
   const lead = spokeLead(flangeIndex, opts.group);
   return { offset: lead * opts.cross, lead };
 }

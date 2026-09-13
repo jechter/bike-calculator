@@ -14,12 +14,12 @@ import { spokePlan, type HubType, type LacingPattern } from "../lib/spokes";
 // Three shades per side, by weave role: light = leading, medium = radial (crow's
 // foot's centre spokes), dark = trailing. Kept in step with the 2D legend colours
 // in WheelDiagram.
-const DRIVE_OUT: [number, number, number] = [0.87, 0.32, 0.24];
-const DRIVE_MID: [number, number, number] = [0.68, 0.21, 0.16];
-const DRIVE_IN: [number, number, number] = [0.5, 0.11, 0.08];
-const NDS_OUT: [number, number, number] = [0.28, 0.58, 0.93];
-const NDS_MID: [number, number, number] = [0.14, 0.42, 0.75];
-const NDS_IN: [number, number, number] = [0.02, 0.26, 0.58];
+const DRIVE_OUT: [number, number, number] = [0.96, 0.44, 0.34];
+const DRIVE_MID: [number, number, number] = [0.68, 0.2, 0.15];
+const DRIVE_IN: [number, number, number] = [0.34, 0.04, 0.02];
+const NDS_OUT: [number, number, number] = [0.4, 0.68, 0.99];
+const NDS_MID: [number, number, number] = [0.13, 0.4, 0.75];
+const NDS_IN: [number, number, number] = [0.01, 0.14, 0.38];
 const METAL: [number, number, number] = [0.62, 0.66, 0.71];
 const VALVE: [number, number, number] = [0.78, 0.62, 0.22]; // brass valve marker
 const HOLE: [number, number, number] = [0.1, 0.11, 0.13]; // empty spoke hole

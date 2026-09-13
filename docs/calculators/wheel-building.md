@@ -37,7 +37,7 @@ always overridable, and clearly flagged as starting points to measure against.
     only buildable combinations are offered. It's grouped into:
     - **Radial** (0-cross).
     - **Crossed** — 1- to 4-cross, the usual alternating (1L1T) builds.
-    - **Grouped & crow's foot** — the decorative patterns:
+    - **Unconventional lacing patterns** — the decorative patterns:
       - **2L2T / 3L3T / 4L4T** run two/three/four leading spokes together, then the
         same number trailing, giving the paired "clustered" look. Grouping only
         re-pairs which flange hole each spoke uses — **spoke length is unchanged**.
@@ -58,9 +58,10 @@ box-section rim with a concave tyre channel and nipples seated in the bed, hub
 barrel + flanges, and spokes with button heads on the flange faces) so you can
 see how the inputs affect the spokes. Spokes are coloured by side (blue = left /
 non-drive, red = right / drive) and shaded by weave role: light = leading,
-medium = radial (a crow's foot's centre spokes), dark = trailing; nipples match
-their spoke's colour. The legend spells out the shades, dropping the radial one
-unless a crow's foot pattern is in use.
+medium = radial, dark = trailing; nipples match their spoke's colour. Radial
+spokes — a crow's foot's centre spokes, or every spoke on a plain radial wheel —
+use the medium shade and aren't split into leading/trailing. The legend spells
+out only the shades actually on the wheel.
 
 - **Drag** with the mouse to turn the wheel, and use the **zoom** slider to
   inspect the lacing at the hub.

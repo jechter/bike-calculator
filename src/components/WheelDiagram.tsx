@@ -11,8 +11,8 @@ import { spokePlan, type HubType, type LacingPattern } from "../lib/spokes";
 // (crow's foot centre spokes), dark = trailing.
 type Role = "lead" | "radial" | "trail";
 const ROLE_LABEL: Record<Role, string> = { lead: "Leading", radial: "Radial", trail: "Trailing" };
-const NDS_SHADES: Record<Role, string> = { lead: "#4794ed", radial: "#246bbf", trail: "#054294" };
-const DRIVE_SHADES: Record<Role, string> = { lead: "#de523d", radial: "#ad3629", trail: "#801c14" };
+const NDS_SHADES: Record<Role, string> = { lead: "#66adfc", radial: "#2166bf", trail: "#032461" };
+const DRIVE_SHADES: Record<Role, string> = { lead: "#f57057", radial: "#ad3326", trail: "#570a05" };
 
 // A spoke's build order is its group (0–3) then its position around the wheel.
 // The four groups follow Sheldon Brown's method: drive-side first set, then the
@@ -113,10 +113,18 @@ export function WheelDiagram(props: WheelDiagramProps) {
   }
 
   // Build-guide caption for the current step.
-  // Radial spokes only exist in a crow's-foot flange, so the legend drops that
-  // shade otherwise.
-  const showRadial = leftPattern === "crowsfoot" || rightPattern === "crowsfoot";
-  const roleRows: Role[] = showRadial ? ["lead", "radial", "trail"] : ["lead", "trail"];
+  // Legend rows follow the roles actually on the wheel: a crossed side has
+  // leading + trailing, a crow's foot side adds radial, and a plain radial side
+  // (0-cross) has only radial spokes.
+  const roles = new Set<Role>();
+  const addRoles = (cross: number, pattern: LacingPattern) => {
+    if (pattern === "crowsfoot") ["lead", "radial", "trail"].forEach((r) => roles.add(r as Role));
+    else if (cross === 0) roles.add("radial");
+    else roles.add("lead"), roles.add("trail");
+  };
+  addRoles(props.leftCross, leftPattern);
+  addRoles(props.rightCross, rightPattern);
+  const roleRows: Role[] = (["lead", "radial", "trail"] as Role[]).filter((r) => roles.has(r));
 
   const sideLabel = (cross: number, group: number, pattern: LacingPattern) =>
     pattern === "crowsfoot"

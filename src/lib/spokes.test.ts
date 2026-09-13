@@ -169,6 +169,11 @@ describe("spokePlan (crow's foot)", () => {
     expect(spokePlan(0, { cross: 3, group: 1, pattern: 'standard' })).toEqual({ offset: 3, lead: 1 });
     expect(spokePlan(1, { cross: 3, group: 1, pattern: 'standard' })).toEqual({ offset: -3, lead: -1 });
   });
+
+  it('treats 0-cross (radial) lacing as radial, not leading/trailing', () => {
+    expect(spokePlan(0, { cross: 0, group: 1, pattern: 'standard' })).toEqual({ offset: 0, lead: 0 });
+    expect(spokePlan(1, { cross: 0, group: 1, pattern: 'standard' })).toEqual({ offset: 0, lead: 0 });
+  });
 });
 
 describe("crow's foot feasibility", () => {

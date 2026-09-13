@@ -54,7 +54,7 @@ const LACING_OPTIONS = [
   opt("radial"),
   { label: "Crossed", options: [opt("1x"), opt("2x"), opt("3x"), opt("4x")] },
   {
-    label: "Grouped & crow's foot",
+    label: "Unconventional lacing patterns",
     options: [
       opt("2l2t-2x"),
       opt("2l2t-4x"),

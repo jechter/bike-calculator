@@ -419,6 +419,16 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* Section header right-side action (e.g. preset picker) */
 .section-action { margin-left: auto; }
+
+/* "Load an example" picker at the top of the Wheel Building page. */
+.wb-toolbar { display: flex; margin-bottom: 14px; }
+.wb-examples .preset-list { left: 0; right: auto; min-width: 240px; max-height: 70vh; overflow: auto; }
+/* Group heading inside a preset popover (non-clickable). */
+.preset-group {
+  padding: 8px 10px 4px; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+}
+.preset-group:not(:first-child) { border-top: 1px solid var(--border); margin-top: 4px; }
 .preset-list {
   position: absolute;
   z-index: 20;

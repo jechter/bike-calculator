@@ -1,12 +1,16 @@
 import { CALCULATORS } from "./registry";
-import { useHashRoute } from "./useHashRoute";
+import { useHashRoute, useHashConfigKey } from "./useHashRoute";
 import { UnitsProvider } from "./units-context";
 import { UnitSwitcher } from "./components/UnitSwitcher";
+import { CopyLinkButton } from "./components/CopyLinkButton";
 
 export function App() {
   const [route, navigate] = useHashRoute(CALCULATORS[0].id);
   const active = CALCULATORS.find((c) => c.id === route) ?? CALCULATORS[0];
   const Active = active.Component;
+  // Shareable pages remount when a new link arrives (see useHashConfigKey) so they
+  // re-read their config from the URL even without a full page reload.
+  const hashKey = useHashConfigKey();
 
   return (
     <UnitsProvider>
@@ -17,7 +21,9 @@ export function App() {
               <button
                 key={c.id}
                 className={c.id === active.id ? "active" : ""}
-                onClick={() => navigate(c.id)}
+                // Clicking the active tab is a no-op — otherwise it would strip the
+                // config query from the hash and reset a shareable page.
+                onClick={() => c.id !== active.id && navigate(c.id)}
               >
                 <span className="icon">{c.icon}</span>
                 <span>{c.title}</span>
@@ -48,9 +54,14 @@ export function App() {
         </aside>
 
         <main className="main">
-          <h1>{active.title}</h1>
-          <p className="subtitle">{active.subtitle}</p>
-          <Active />
+          <div className="main-head">
+            <div>
+              <h1>{active.title}</h1>
+              <p className="subtitle">{active.subtitle}</p>
+            </div>
+            {active.shareable && <CopyLinkButton />}
+          </div>
+          <Active key={active.shareable ? hashKey : active.id} />
         </main>
       </div>
     </UnitsProvider>

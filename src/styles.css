@@ -100,6 +100,25 @@ body {
 .main { padding: 28px 32px 60px; max-width: 900px; }
 .main h1 { margin: 0 0 4px; font-size: 24px; }
 .main .subtitle { color: var(--muted); margin: 0 0 24px; }
+.main-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+
+/* "Copy link" button in the page header — copies a URL encoding the config. */
+.copy-link { flex: none; margin-top: 4px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.copy-link-btn {
+  border: 1px solid var(--border); border-radius: 999px;
+  background: var(--panel); color: var(--text);
+  padding: 6px 13px; font: inherit; font-size: 13px; cursor: pointer;
+  white-space: nowrap;
+}
+.copy-link-btn:hover { border-color: var(--accent); color: var(--accent); }
+.copy-link-btn.copied { border-color: var(--accent); color: var(--accent); }
+/* Manual-copy fallback shown when the clipboard is blocked (e.g. an iframe host
+   that doesn't grant clipboard-write). */
+.copy-link-manual {
+  width: min(320px, 60vw); font: inherit; font-size: 12px;
+  padding: 5px 8px; border: 1px solid var(--accent); border-radius: 6px;
+  background: var(--panel); color: var(--text);
+}
 
 /* Each section is a card so the fields under one heading read as a group. */
 .section {

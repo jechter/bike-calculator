@@ -24,6 +24,9 @@ export interface CalculatorDef {
   Component: React.ComponentType;
   /** Hidden from the sidebar nav, but still reachable directly by hash route. */
   hidden?: boolean;
+  /** Encodes its config in the URL hash — show a "Copy link" button (see
+   *  useUrlConfigSync in the page component). */
+  shareable?: boolean;
 }
 
 export const CALCULATORS: CalculatorDef[] = [
@@ -34,6 +37,7 @@ export const CALCULATORS: CalculatorDef[] = [
       "Gear ratios, speed at cadence, chain length and chain wear — cassette, single speed or geared hub.",
     icon: <DrivetrainIcon />,
     Component: Drivetrain,
+    shareable: true,
   },
   {
     id: "wheel-building",
@@ -41,6 +45,7 @@ export const CALCULATORS: CalculatorDef[] = [
     subtitle: "Spoke lengths for a hub + rim + lacing, plus a spoke-tension converter.",
     icon: <WheelIcon />,
     Component: WheelBuilding,
+    shareable: true,
   },
   {
     id: "frame-size",

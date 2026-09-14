@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { App } from "./App";
+import { initEmbedBridge } from "./embed";
 import "./styles.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -29,4 +30,8 @@ if (window.parent !== window) {
     if (e.data?.type === "bikecalc:request-height") postHeight();
   });
   postHeight();
+
+  // Config sharing: learn the host page URL and mirror our config hash to it, so
+  // the "Copy link" button can share a link that opens the embedded page.
+  initEmbedBridge();
 }

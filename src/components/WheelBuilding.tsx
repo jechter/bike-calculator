@@ -15,6 +15,7 @@ import {
 import { Field, NumberInput, Select, PresetMenu, Result, Note, Section } from "./ui";
 import { WheelDiagram } from "./WheelDiagram";
 import { TensionCurveChart } from "./TensionCurveChart";
+import { getHashQuery, useUrlConfigSync } from "../useHashRoute";
 
 const RIM_OPTIONS = RIM_PRESETS.map((p) => ({ value: String(p.erdMm), label: p.label }));
 
@@ -303,24 +304,72 @@ function HubPicker({
 // The page opens on a common, well-documented hub so the rendering isn't blank.
 const DEFAULT_HUB = HUBS.find((h) => h.manufacturer === "Chris King" && h.model === "R45 Rear");
 
+// --- URL config (link sharing) ---------------------------------------------
+// Every setting is mirrored into the URL hash so the header's "Copy link" button
+// shares exactly what's on screen. Only values that differ from these defaults
+// are written (and reads fall back to the same defaults), so the round-trip is
+// lossless and an untouched page keeps a clean URL. Defaults track DEFAULT_HUB,
+// matching the useState seeds below.
+const DEF = {
+  erd: 602,
+  rimHoleOffset: 0,
+  rimHoleGroup: 1,
+  rimHoleGap: 1.8,
+  spokes: 32,
+  holeDia: DEFAULT_HUB?.spokeHoleMm ?? 2.6,
+  ratio: "1:1" as HubRatio,
+  ndsCentre: false,
+  crossPhase: false,
+  leftFlange: DEFAULT_HUB?.leftFlangeDiaMm ?? 45,
+  leftOffset: DEFAULT_HUB?.leftOffsetMm ?? 34,
+  leftLace: "3x",
+  rightFlange: DEFAULT_HUB?.rightFlangeDiaMm ?? 45,
+  rightOffset: DEFAULT_HUB?.rightOffsetMm ?? 17.5,
+  rightLace: "same",
+};
+
+function wbNum(v: string | null, dflt: number): number {
+  if (v == null) return dflt;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : dflt;
+}
+
+/** Stable id for a hub in the URL. Manufacturer never contains "~". */
+function hubKey(h: Hub): string {
+  return `${h.manufacturer}~${h.model}`;
+}
+function hubFromKey(key: string): Hub | null {
+  const i = key.indexOf("~");
+  if (i < 0) return null;
+  const manu = key.slice(0, i);
+  const model = key.slice(i + 1);
+  return HUBS.find((h) => h.manufacturer === manu && h.model === model) ?? null;
+}
+function isHubType(v: string | null): v is HubType {
+  return v != null && v in HUB_TYPE_LABELS;
+}
+
 export function WheelBuilding() {
-  const [erd, setErd] = useState(602);
-  const [rimHoleOffset, setRimHoleOffset] = useState(0);
-  const [rimHoleGroup, setRimHoleGroup] = useState(1); // holes per group (1 = even)
-  const [rimHoleGap, setRimHoleGap] = useState(1.8); // between-group gap (× in-group)
-  const [spokes, setSpokes] = useState(32);
-  const [holeDia, setHoleDia] = useState(DEFAULT_HUB?.spokeHoleMm ?? 2.6);
-  const [ratio, setRatio] = useState<HubRatio>("1:1");
-  const [ndsCentre, setNdsCentre] = useState(false); // 2:1: non-drive in triplet centre
-  const [crossPhase, setCrossPhase] = useState(false); // cross the neighbouring group (G3)
+  // Seed from the URL once (a shared link); the state initializers below only run
+  // on mount, so later renders ignore this snapshot.
+  const q = useMemo(() => getHashQuery(), []);
+  const [erd, setErd] = useState(() => wbNum(q.get("erd"), DEF.erd));
+  const [rimHoleOffset, setRimHoleOffset] = useState(() => wbNum(q.get("rho"), DEF.rimHoleOffset));
+  const [rimHoleGroup, setRimHoleGroup] = useState(() => wbNum(q.get("rhg"), DEF.rimHoleGroup)); // holes per group (1 = even)
+  const [rimHoleGap, setRimHoleGap] = useState(() => wbNum(q.get("rgap"), DEF.rimHoleGap)); // between-group gap (× in-group)
+  const [spokes, setSpokes] = useState(() => wbNum(q.get("n"), DEF.spokes));
+  const [holeDia, setHoleDia] = useState(() => wbNum(q.get("hd"), DEF.holeDia));
+  const [ratio, setRatio] = useState<HubRatio>(() => (q.get("ratio") === "2:1" ? "2:1" : "1:1"));
+  const [ndsCentre, setNdsCentre] = useState(() => q.get("ndsc") === "1"); // 2:1: non-drive in triplet centre
+  const [crossPhase, setCrossPhase] = useState(() => q.get("xph") === "1"); // cross the neighbouring group (G3)
 
-  const [leftFlange, setLeftFlange] = useState(DEFAULT_HUB?.leftFlangeDiaMm ?? 45);
-  const [leftOffset, setLeftOffset] = useState(DEFAULT_HUB?.leftOffsetMm ?? 34);
-  const [leftLace, setLeftLace] = useState("3x");
+  const [leftFlange, setLeftFlange] = useState(() => wbNum(q.get("lf"), DEF.leftFlange));
+  const [leftOffset, setLeftOffset] = useState(() => wbNum(q.get("lo"), DEF.leftOffset));
+  const [leftLace, setLeftLace] = useState(() => q.get("ll") ?? DEF.leftLace);
 
-  const [rightFlange, setRightFlange] = useState(DEFAULT_HUB?.rightFlangeDiaMm ?? 45);
-  const [rightOffset, setRightOffset] = useState(DEFAULT_HUB?.rightOffsetMm ?? 17.5);
-  const [rightLace, setRightLace] = useState("same"); // mirror the left side by default
+  const [rightFlange, setRightFlange] = useState(() => wbNum(q.get("rf"), DEF.rightFlange));
+  const [rightOffset, setRightOffset] = useState(() => wbNum(q.get("ro"), DEF.rightOffset));
+  const [rightLace, setRightLace] = useState(() => q.get("rl") ?? DEF.rightLace); // mirror the left side by default
 
   // Resolve each side's menu choice into the cross / group / pattern the geometry
   // uses; the drive side falls back to the non-drive choice when set to "same".
@@ -332,13 +381,23 @@ export function WheelBuilding() {
   // The hub picked from the database, if any (cleared once a hub value is edited
   // by hand, so the trigger no longer claims a specific hub). Defaults to a
   // common hub so the page opens on a real, fully-specified wheel.
-  const [hub, setHub] = useState<Hub | null>(DEFAULT_HUB ?? null);
+  const [hub, setHub] = useState<Hub | null>(() => {
+    // "none" is the sentinel for a hand-edited (custom) wheel; an absent param
+    // keeps the default hub, and a key resolves to its database entry.
+    const key = q.get("hub");
+    if (key === "none") return null;
+    if (key != null) return hubFromKey(key); // null if the hub is no longer in the DB
+    return DEFAULT_HUB ?? null;
+  });
   // The hub type + width driving the 3D rendering. Kept separate from `hub` so it
   // survives hand-edits — you keep the dynamo/gear/freehub look and axle length
   // even after tweaking a flange or offset.
-  const [hubStyle, setHubStyle] = useState<{ type: HubType; widthMm: number } | null>(
-    DEFAULT_HUB ? { type: DEFAULT_HUB.type, widthMm: DEFAULT_HUB.widthMm } : null,
-  );
+  const [hubStyle, setHubStyle] = useState<{ type: HubType; widthMm: number } | null>(() => {
+    const t = q.get("hst");
+    const w = q.get("hsw");
+    if (isHubType(t) && w != null) return { type: t, widthMm: wbNum(w, 100) };
+    return DEFAULT_HUB ? { type: DEFAULT_HUB.type, widthMm: DEFAULT_HUB.widthMm } : null;
+  });
 
   const applyHub = (h: Hub, count: number | null) => {
     setLeftFlange(h.leftFlangeDiaMm);
@@ -456,8 +515,8 @@ export function WheelBuilding() {
   }, []);
   const defaultCurve =
     TENSION_CURVES.find((c) => c.spokeType === "steel round 2.0 mm") ?? TENSION_CURVES[0];
-  const [tool, setTool] = useState(defaultCurve.tool);
-  const [spokeType, setSpokeType] = useState(defaultCurve.spokeType);
+  const [tool, setTool] = useState(() => q.get("tool") ?? defaultCurve.tool);
+  const [spokeType, setSpokeType] = useState(() => q.get("stype") ?? defaultCurve.spokeType);
 
   const spokeOptions = useMemo(() => TENSION_CURVES.filter((c) => c.tool === tool), [tool]);
   const curve = spokeOptions.find((c) => c.spokeType === spokeType) ?? spokeOptions[0];
@@ -469,6 +528,37 @@ export function WheelBuilding() {
     const opts = TENSION_CURVES.filter((c) => c.tool === next);
     if (!opts.some((c) => c.spokeType === spokeType)) setSpokeType(opts[0].spokeType);
   }
+
+  // Mirror the whole config into the URL hash so the header's "Copy link" button
+  // shares exactly what's on screen (see useUrlConfigSync). hubStyle is written as
+  // a pair so a change to either field round-trips.
+  const defaultHubKey = DEFAULT_HUB ? hubKey(DEFAULT_HUB) : null;
+  const styleChanged =
+    !!hubStyle &&
+    !!DEFAULT_HUB &&
+    (hubStyle.type !== DEFAULT_HUB.type || hubStyle.widthMm !== DEFAULT_HUB.widthMm);
+  useUrlConfigSync("wheel-building", {
+    erd: erd !== DEF.erd ? erd : null,
+    rho: rimHoleOffset !== DEF.rimHoleOffset ? rimHoleOffset : null,
+    rhg: rimHoleGroup !== DEF.rimHoleGroup ? rimHoleGroup : null,
+    rgap: rimHoleGap !== DEF.rimHoleGap ? rimHoleGap : null,
+    n: spokes !== DEF.spokes ? spokes : null,
+    hd: holeDia !== DEF.holeDia ? holeDia : null,
+    ratio: ratio !== DEF.ratio ? ratio : null,
+    ndsc: ndsCentre ? 1 : null,
+    xph: crossPhase ? 1 : null,
+    lf: leftFlange !== DEF.leftFlange ? leftFlange : null,
+    lo: leftOffset !== DEF.leftOffset ? leftOffset : null,
+    ll: leftLace !== DEF.leftLace ? leftLace : null,
+    rf: rightFlange !== DEF.rightFlange ? rightFlange : null,
+    ro: rightOffset !== DEF.rightOffset ? rightOffset : null,
+    rl: rightLace !== DEF.rightLace ? rightLace : null,
+    hub: hub ? (hubKey(hub) !== defaultHubKey ? hubKey(hub) : null) : DEFAULT_HUB ? "none" : null,
+    hst: styleChanged ? hubStyle!.type : null,
+    hsw: styleChanged ? hubStyle!.widthMm : null,
+    tool: tool !== defaultCurve.tool ? tool : null,
+    stype: spokeType !== defaultCurve.spokeType ? spokeType : null,
+  });
 
   return (
     <>

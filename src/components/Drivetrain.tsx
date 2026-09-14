@@ -37,6 +37,7 @@ import { useUnits, speedUnitLabel } from "../units-context";
 import { Field, NumberInput, TextInput, Select, PresetMenu, Result, Note, Section } from "./ui";
 import { GearChart, type GearSeries } from "./GearChart";
 import { DrivetrainDiagram } from "./DrivetrainDiagram";
+import { getHashQuery, useUrlConfigSync } from "../useHashRoute";
 
 type Mode = "cassette" | "single" | "hub";
 type Metric = "speed" | "gearInches" | "development" | "ratio";
@@ -1285,51 +1286,140 @@ function CircumferenceField({ cfg }: { cfg: DrivetrainConfig }) {
   );
 }
 
+// The config each drivetrain opens on. Also the reference the URL codec diffs
+// against, so a shared link only carries what the user actually changed.
+const DEFAULT_A: ConfigInit = {
+  mode: "cassette",
+  chainringStr: "50, 34",
+  cogStr: "11, 12, 13, 14, 15, 17, 19, 21, 24, 28",
+  cassetteIdx: cassetteModelIdx([11, 12, 13, 14, 15, 17, 19, 21, 24, 28], "Shimano"),
+  singleRing: 42,
+  singleCog: 18,
+  hubIdx: DEFAULT_HUB_IDX,
+  derailleurId: "",
+  shifter: null,
+  circ: 2111,
+  tireSize: "25-622",
+};
+const DEFAULT_B: ConfigInit = {
+  mode: "cassette",
+  chainringStr: "46, 30",
+  cogStr: "11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42",
+  cassetteIdx: cassetteModelIdx([11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42], "Shimano"),
+  singleRing: 42,
+  singleCog: 18,
+  hubIdx: DEFAULT_HUB_IDX,
+  derailleurId: "",
+  shifter: null,
+  circ: 2111,
+  tireSize: "25-622",
+};
+
+const DEFAULT_CADENCE = 90;
+const DEFAULT_CHAINSTAY = 410;
+
+// --- URL config (link sharing) ---------------------------------------------
+// Each config is encoded under a prefix ("" for A, "b" for B); shared axis
+// settings use their own keys. Only values differing from the defaults above are
+// written, and configFromParams falls back to those same defaults — so the
+// round-trip is lossless and a fresh page keeps a clean URL.
+
+function paramNum(v: string | null, dflt: number): number {
+  if (v == null) return dflt;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : dflt;
+}
+
+function isMode(v: string | null): v is Mode {
+  return v === "cassette" || v === "single" || v === "hub";
+}
+function isMetric(v: string | null): v is Metric {
+  return v === "speed" || v === "gearInches" || v === "development" || v === "ratio";
+}
+
+function configFromParams(q: URLSearchParams, p: string, d: ConfigInit): ConfigInit {
+  const shfRaw = q.get(p + "shf");
+  let shifter = d.shifter;
+  if (shfRaw != null) {
+    const i = shfRaw.lastIndexOf("~");
+    shifter =
+      i >= 0
+        ? { family: shfRaw.slice(0, i), speeds: paramNum(shfRaw.slice(i + 1), 0) }
+        : { family: shfRaw, speeds: 0 };
+  }
+  const mode = q.get(p + "mode");
+  return {
+    mode: isMode(mode) ? mode : d.mode,
+    chainringStr: q.get(p + "cr") ?? d.chainringStr,
+    cogStr: q.get(p + "cog") ?? d.cogStr,
+    cassetteIdx: paramNum(q.get(p + "cix"), d.cassetteIdx),
+    singleRing: paramNum(q.get(p + "sr"), d.singleRing),
+    singleCog: paramNum(q.get(p + "sc"), d.singleCog),
+    hubIdx: paramNum(q.get(p + "hub"), d.hubIdx),
+    derailleurId: q.get(p + "der") ?? d.derailleurId,
+    shifter,
+    circ: paramNum(q.get(p + "circ"), d.circ),
+    tireSize: q.get(p + "tire") ?? d.tireSize,
+  };
+}
+
+function configToParams(c: DrivetrainConfig, d: ConfigInit, p: string): Record<string, unknown> {
+  return {
+    [p + "mode"]: c.mode !== d.mode ? c.mode : null,
+    [p + "cr"]: c.chainringStr !== d.chainringStr ? c.chainringStr : null,
+    [p + "cog"]: c.cogStr !== d.cogStr ? c.cogStr : null,
+    [p + "cix"]: c.cassetteIdx !== d.cassetteIdx ? c.cassetteIdx : null,
+    [p + "sr"]: c.singleRing !== d.singleRing ? c.singleRing : null,
+    [p + "sc"]: c.singleCog !== d.singleCog ? c.singleCog : null,
+    [p + "hub"]: c.hubIdx !== d.hubIdx ? c.hubIdx : null,
+    [p + "der"]: c.derailleurId !== d.derailleurId ? c.derailleurId : null,
+    [p + "shf"]: c.shifter ? `${c.shifter.family}~${c.shifter.speeds}` : null,
+    [p + "circ"]: c.circ !== d.circ ? c.circ : null,
+    [p + "tire"]: c.tireSize !== d.tireSize ? c.tireSize : null,
+  };
+}
+
 export function Drivetrain() {
   const units = useUnits();
 
-  const configA = useDrivetrainConfig({
-    mode: "cassette",
-    chainringStr: "50, 34",
-    cogStr: "11, 12, 13, 14, 15, 17, 19, 21, 24, 28",
-    cassetteIdx: cassetteModelIdx([11, 12, 13, 14, 15, 17, 19, 21, 24, 28], "Shimano"),
-    singleRing: 42,
-    singleCog: 18,
-    hubIdx: DEFAULT_HUB_IDX,
-    derailleurId: "",
-    shifter: null,
-    circ: 2111,
-    tireSize: "25-622",
-  });
-  const configB = useDrivetrainConfig({
-    mode: "cassette",
-    chainringStr: "46, 30",
-    cogStr: "11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42",
-    cassetteIdx: cassetteModelIdx([11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42], "Shimano"),
-    singleRing: 42,
-    singleCog: 18,
-    hubIdx: DEFAULT_HUB_IDX,
-    derailleurId: "",
-    shifter: null,
-    circ: 2111,
-    tireSize: "25-622",
-  });
+  // Seed from the URL once (a shared link); later renders ignore these since the
+  // state initializers only run on mount.
+  const q = useMemo(() => getHashQuery(), []);
+
+  const configA = useDrivetrainConfig(configFromParams(q, "", DEFAULT_A));
+  const configB = useDrivetrainConfig(configFromParams(q, "b", DEFAULT_B));
 
   // Shared across both configs — cadence is just the speed-axis parameter.
-  const [cadence, setCadence] = useState(90);
-  const [chainstay, setChainstay] = useState(410);
-  const [metric, setMetric] = useState<Metric>("speed");
+  const [cadence, setCadence] = useState(() => paramNum(q.get("cad"), DEFAULT_CADENCE));
+  const [chainstay, setChainstay] = useState(() => paramNum(q.get("cs"), DEFAULT_CHAINSTAY));
+  const [metric, setMetric] = useState<Metric>(() => {
+    const m = q.get("metric");
+    return isMetric(m) ? m : "speed";
+  });
 
-  const [comparing, setComparing] = useState(false);
+  const [comparing, setComparing] = useState(() => q.get("cmp") === "1");
   // Which config the per-drivetrain detail sections (diagram, chain length,
   // derailleur fit, chain wear) describe. Only meaningful while comparing.
-  const [focus, setFocus] = useState<"A" | "B">("A");
+  const [focus, setFocus] = useState<"A" | "B">(() => (q.get("foc") === "B" ? "B" : "A"));
   const [activeGear, setActiveGear] = useState<{
     chainring: number;
     cog: number;
     hubName?: string;
     hubRatio?: number;
   } | null>(null);
+
+  // Mirror the whole config into the URL hash so the "Copy link" button (in the
+  // page header) shares exactly what's on screen. Config B is only encoded while
+  // comparing — it isn't part of the current view otherwise.
+  useUrlConfigSync("drivetrain", {
+    ...configToParams(configA, DEFAULT_A, ""),
+    cad: cadence !== DEFAULT_CADENCE ? cadence : null,
+    cs: chainstay !== DEFAULT_CHAINSTAY ? chainstay : null,
+    metric: metric !== "speed" ? metric : null,
+    cmp: comparing ? 1 : null,
+    foc: comparing && focus === "B" ? "B" : null,
+    ...(comparing ? configToParams(configB, DEFAULT_B, "b") : {}),
+  });
 
   const derivedA = useDerived(configA, cadence);
   const derivedB = useDerived(configB, cadence);

@@ -320,6 +320,21 @@ describe('rimHoleAngle (grouped drilling)', () => {
       expect(rimHoleAngle(4, 24, 3, gap)).toBeCloseTo((2 * Math.PI * 4) / 24);
     }
   });
+
+  it('offset-pair drilling puts both holes of a pair on one angle', () => {
+    // paired = true: holes 2p and 2p+1 share the even midpoint of the pair, and
+    // pairs sit a doubled gap apart. Angular grouping/gap are ignored.
+    for (let p = 0; p < 4; p++) {
+      const a0 = rimHoleAngle(2 * p, 8, 1, 1, true);
+      const a1 = rimHoleAngle(2 * p + 1, 8, 1, 1, true);
+      expect(a1).toBeCloseTo(a0); // same rim angle
+      expect(a0).toBeCloseTo(((2 * Math.PI) / 8) * (2 * p + 0.5)); // even midpoint
+    }
+    // consecutive pairs are one even-pair-spacing (2 · 2π/n) apart
+    expect(rimHoleAngle(2, 8, 1, 1, true) - rimHoleAngle(0, 8, 1, 1, true)).toBeCloseTo(
+      (2 * (2 * Math.PI)) / 8,
+    );
+  });
 });
 
 describe('readingToKgf', () => {

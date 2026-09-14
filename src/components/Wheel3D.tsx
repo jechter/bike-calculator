@@ -79,6 +79,9 @@ export interface Wheel3DProps {
   /** Alternating rim drilling: each hole nudged this many mm toward the flange it
    *  serves (0 = centred / single-drilled). Purely the rim-bed hole position. */
   rimHoleOffsetMm?: number;
+  /** Offset-pair drilling (WH-7700): both holes of a pair share one rim angle and
+   *  are split only by the axial offset above. Overrides angular hole grouping. */
+  rimHolePaired?: boolean;
   /** Interlace the spokes at the last cross (true, default) or run every spoke
    *  dead straight so the trailing group sits outside at every crossing (false). */
   interlaced?: boolean;
@@ -470,6 +473,7 @@ export function Wheel3D(props: Wheel3DProps) {
     rimHoleGroup = 1,
     rimHoleGap = 1,
     rimHoleOffsetMm,
+    rimHolePaired = false,
     interlaced = true,
     hubType,
     hubWidthMm,
@@ -551,7 +555,10 @@ export function Wheel3D(props: Wheel3DProps) {
     // Axial offset of each rim hole toward the flange it serves. 0 = centred
     // (single-drilled); a positive value models alternating (staggered) drilling.
     // Clamped to the rim's half-width so the hole always lands on the spoke bed.
-    const stagger = Math.max(0, Math.min((rimHoleOffsetMm ?? 0) * scale, 0.04));
+    // Offset-pair drilling needs a non-zero split (both holes share an angle), so
+    // fall back to a sensible default when the user hasn't dialled one in.
+    const staggerMm = rimHolePaired ? Math.max(rimHoleOffsetMm ?? 0, 3) : rimHoleOffsetMm ?? 0;
+    const stagger = Math.max(0, Math.min(staggerMm * scale, 0.04));
 
     const flHalf = 0.008; // flange half-thickness
     // The flange diameter is the spoke-hole circle (PCD); the flange disc extends
@@ -648,7 +655,7 @@ export function Wheel3D(props: Wheel3DProps) {
       // The flange stays evenly drilled (even angle); only the rim hole clusters.
       const evenA = (2 * Math.PI * i) / spokeCount;
       const flA = evenA + plan.offset * ((2 * Math.PI) / flangeSpokes);
-      const rimA = rimHoleAngle(i, spokeCount, rimHoleGroup, rimHoleGap);
+      const rimA = rimHoleAngle(i, spokeCount, rimHoleGroup, rimHoleGap, rimHolePaired);
       // flange hole: a dark disc set through the flange thickness
       addButton(mesh, fR * Math.cos(flA), fR * Math.sin(flA), zF, holeR, flHalf + 0.001, SPOKE_SEG, HOLE);
       const ca = Math.cos(rimA), sa = Math.sin(rimA);
@@ -683,7 +690,7 @@ export function Wheel3D(props: Wheel3DProps) {
       });
       const evenA = (2 * Math.PI * i) / n;
       const flA = evenA + plan.offset * ((2 * Math.PI) / flangeSpokes);
-      const rimA = rimHoleAngle(i, n, rimHoleGroup, rimHoleGap);
+      const rimA = rimHoleAngle(i, n, rimHoleGroup, rimHoleGap, rimHolePaired);
       return {
         isDrive,
         lead: plan.lead,
@@ -730,7 +737,7 @@ export function Wheel3D(props: Wheel3DProps) {
       const col = (isDrive ? [DRIVE_OUT, DRIVE_MID, DRIVE_IN] : [NDS_OUT, NDS_MID, NDS_IN])[shade];
       const evenA = (2 * Math.PI * i) / n;
       const flA = evenA + plan.offset * ((2 * Math.PI) / flangeSpokes);
-      const rimA = rimHoleAngle(i, n, rimHoleGroup, rimHoleGap);
+      const rimA = rimHoleAngle(i, n, rimHoleGroup, rimHoleGap, rimHolePaired);
       const zRim = isDrive ? stagger : -stagger;
       const hx = fR * Math.cos(flA);
       const hy = fR * Math.sin(flA);
@@ -812,6 +819,7 @@ export function Wheel3D(props: Wheel3DProps) {
     rimHoleGroup,
     rimHoleGap,
     rimHoleOffsetMm,
+    rimHolePaired,
     interlaced,
     hubType,
     hubWidthMm,

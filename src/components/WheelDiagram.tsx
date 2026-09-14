@@ -56,6 +56,8 @@ export interface WheelDiagramProps {
   rimHoleGap?: number;
   /** Alternating rim drilling: each hole nudged this many mm toward its flange. */
   rimHoleOffsetMm?: number;
+  /** Offset-pair drilling (WH-7700): pair holes share an angle, split axially. */
+  rimHolePaired?: boolean;
   /** Interlace at the last cross (default) or run every spoke dead straight. */
   interlaced?: boolean;
   /** Selected hub's type / over-locknut width, when a hub is chosen — drives the
@@ -186,6 +188,7 @@ export function WheelDiagram(props: WheelDiagramProps) {
         ndsCentre={ndsCentre}
         crossPhase={crossPhase}
         interlaced={props.interlaced}
+        rimHolePaired={props.rimHolePaired}
         rimHoleGroup={props.rimHoleGroup}
         rimHoleGap={props.rimHoleGap}
         rimHoleOffsetMm={props.rimHoleOffsetMm}

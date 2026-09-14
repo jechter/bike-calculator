@@ -81,10 +81,11 @@ const RATIO_OPTIONS: Array<{ value: HubRatio; label: string }> = [
 // Rim hole grouping: some rims drill the holes in clusters (paired, in threes…)
 // with a wider gap between clusters. 1 = plain even drilling.
 const RIM_GROUP_OPTIONS = [
-  { value: 1, label: "Even (no groups)" },
-  { value: 2, label: "Groups of 2" },
-  { value: 3, label: "Groups of 3" },
-  { value: 4, label: "Groups of 4" },
+  { value: "1", label: "Even (no groups)" },
+  { value: "2", label: "Groups of 2" },
+  { value: "3", label: "Groups of 3" },
+  { value: "4", label: "Groups of 4" },
+  { value: "pair", label: "Offset pairs — same angle (WH-7700)" },
 ];
 
 // Spoke lengths a side needs, as (count × length) rows. Standard lacing is one
@@ -315,6 +316,7 @@ const DEF = {
   rimHoleOffset: 0,
   rimHoleGroup: 1,
   rimHoleGap: 1.8,
+  rimHolePaired: false,
   spokes: 32,
   holeDia: DEFAULT_HUB?.spokeHoleMm ?? 2.6,
   ratio: "1:1" as HubRatio,
@@ -358,6 +360,7 @@ export function WheelBuilding() {
   const [rimHoleOffset, setRimHoleOffset] = useState(() => wbNum(q.get("rho"), DEF.rimHoleOffset));
   const [rimHoleGroup, setRimHoleGroup] = useState(() => wbNum(q.get("rhg"), DEF.rimHoleGroup)); // holes per group (1 = even)
   const [rimHoleGap, setRimHoleGap] = useState(() => wbNum(q.get("rgap"), DEF.rimHoleGap)); // between-group gap (× in-group)
+  const [rimHolePaired, setRimHolePaired] = useState(() => q.get("rhp") === "1"); // WH-7700 same-angle pairs
   const [spokes, setSpokes] = useState(() => wbNum(q.get("n"), DEF.spokes));
   const [holeDia, setHoleDia] = useState(() => wbNum(q.get("hd"), DEF.holeDia));
   const [ratio, setRatio] = useState<HubRatio>(() => (q.get("ratio") === "2:1" ? "2:1" : "1:1"));
@@ -544,6 +547,7 @@ export function WheelBuilding() {
     rho: rimHoleOffset !== DEF.rimHoleOffset ? rimHoleOffset : null,
     rhg: rimHoleGroup !== DEF.rimHoleGroup ? rimHoleGroup : null,
     rgap: rimHoleGap !== DEF.rimHoleGap ? rimHoleGap : null,
+    rhp: rimHolePaired ? 1 : null,
     n: spokes !== DEF.spokes ? spokes : null,
     hd: holeDia !== DEF.holeDia ? holeDia : null,
     ratio: ratio !== DEF.ratio ? ratio : null,
@@ -608,28 +612,39 @@ export function WheelBuilding() {
           <Field
             label="Hole grouping"
             hint={
-              rimHoleGroup >= 2 && spokes % rimHoleGroup !== 0 ? (
+              rimHolePaired ? (
+                "each pair shares one rim angle; the spoke-hole offset above splits them side-to-side"
+              ) : rimHoleGroup >= 2 && spokes % rimHoleGroup !== 0 ? (
                 <span className="field-hint-warn">
                   ⚠ {spokes} spokes isn't divisible by {rimHoleGroup} — grouping is
                   ignored. Use a count that divides by {rimHoleGroup}.
                 </span>
               ) : (
-                "drill the holes in clusters with a gap between"
+                "cluster holes at nearby angles, or offset-pair them at the same angle"
               )
             }
           >
             <Select
-              value={rimHoleGroup}
-              onChange={setRimHoleGroup}
+              value={rimHolePaired ? "pair" : String(rimHoleGroup)}
+              onChange={(v) => {
+                if (v === "pair") {
+                  setRimHolePaired(true);
+                } else {
+                  setRimHolePaired(false);
+                  setRimHoleGroup(Number(v));
+                }
+              }}
               options={RIM_GROUP_OPTIONS}
             />
           </Field>
           <Field
             label="Group gap"
             hint={
-              rimHoleGroup < 2
-                ? "pick a grouping to enable"
-                : `between-group gap is ${rimHoleGap.toFixed(1)}× the in-group spacing`
+              rimHolePaired
+                ? "not used for offset pairs"
+                : rimHoleGroup < 2
+                  ? "pick a grouping to enable"
+                  : `between-group gap is ${rimHoleGap.toFixed(1)}× the in-group spacing`
             }
           >
             <div className="wb-slider">
@@ -639,7 +654,7 @@ export function WheelBuilding() {
                 max={6}
                 step={0.1}
                 value={rimHoleGap}
-                disabled={rimHoleGroup < 2}
+                disabled={rimHolePaired || rimHoleGroup < 2}
                 aria-label="Between-group gap"
                 onChange={(e) => setRimHoleGap(Number(e.target.value))}
               />
@@ -805,6 +820,7 @@ export function WheelBuilding() {
             rimHoleGroup={rimHoleGroup}
             rimHoleGap={rimHoleGap}
             rimHoleOffsetMm={rimHoleOffset}
+            rimHolePaired={rimHolePaired}
             interlaced={interlaced}
             hubType={hubStyle?.type}
             hubWidthMm={hubStyle?.widthMm}

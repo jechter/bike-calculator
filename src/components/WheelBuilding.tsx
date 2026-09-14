@@ -320,6 +320,7 @@ const DEF = {
   ratio: "1:1" as HubRatio,
   ndsCentre: false,
   crossPhase: false,
+  interlaced: true,
   leftFlange: DEFAULT_HUB?.leftFlangeDiaMm ?? 45,
   leftOffset: DEFAULT_HUB?.leftOffsetMm ?? 34,
   leftLace: "3x",
@@ -362,6 +363,7 @@ export function WheelBuilding() {
   const [ratio, setRatio] = useState<HubRatio>(() => (q.get("ratio") === "2:1" ? "2:1" : "1:1"));
   const [ndsCentre, setNdsCentre] = useState(() => q.get("ndsc") === "1"); // 2:1: non-drive in triplet centre
   const [crossPhase, setCrossPhase] = useState(() => q.get("xph") === "1"); // cross the neighbouring group (G3)
+  const [interlaced, setInterlaced] = useState(() => q.get("il") !== "0"); // spokes woven at the last cross
 
   const [leftFlange, setLeftFlange] = useState(() => wbNum(q.get("lf"), DEF.leftFlange));
   const [leftOffset, setLeftOffset] = useState(() => wbNum(q.get("lo"), DEF.leftOffset));
@@ -547,6 +549,7 @@ export function WheelBuilding() {
     ratio: ratio !== DEF.ratio ? ratio : null,
     ndsc: ndsCentre ? 1 : null,
     xph: crossPhase ? 1 : null,
+    il: interlaced ? null : 0,
     lf: leftFlange !== DEF.leftFlange ? leftFlange : null,
     lo: leftOffset !== DEF.leftOffset ? leftOffset : null,
     ll: leftLace !== DEF.leftLace ? leftLace : null,
@@ -708,6 +711,19 @@ export function WheelBuilding() {
               ]}
             />
           </Field>
+          <Field
+            label="Interlacing"
+            hint="woven laces the last cross under; straight leaves the trailing spokes outside at every cross"
+          >
+            <Select
+              value={interlaced ? "woven" : "straight"}
+              onChange={(v) => setInterlaced(v === "woven")}
+              options={[
+                { value: "woven", label: "Interlaced (woven)" },
+                { value: "straight", label: "Straight (not interlaced)" },
+              ]}
+            />
+          </Field>
         </div>
 
         <div className="wb-sides">
@@ -789,6 +805,7 @@ export function WheelBuilding() {
             rimHoleGroup={rimHoleGroup}
             rimHoleGap={rimHoleGap}
             rimHoleOffsetMm={rimHoleOffset}
+            interlaced={interlaced}
             hubType={hubStyle?.type}
             hubWidthMm={hubStyle?.widthMm}
           />

@@ -56,6 +56,8 @@ export interface WheelDiagramProps {
   rimHoleGap?: number;
   /** Alternating rim drilling: each hole nudged this many mm toward its flange. */
   rimHoleOffsetMm?: number;
+  /** Interlace at the last cross (default) or run every spoke dead straight. */
+  interlaced?: boolean;
   /** Selected hub's type / over-locknut width, when a hub is chosen — drives the
    *  axle length and the hub-shell shape in the 3D view. */
   hubType?: HubType;
@@ -183,6 +185,7 @@ export function WheelDiagram(props: WheelDiagramProps) {
         ratio={ratio}
         ndsCentre={ndsCentre}
         crossPhase={crossPhase}
+        interlaced={props.interlaced}
         rimHoleGroup={props.rimHoleGroup}
         rimHoleGap={props.rimHoleGap}
         rimHoleOffsetMm={props.rimHoleOffsetMm}

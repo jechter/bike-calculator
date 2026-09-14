@@ -79,6 +79,9 @@ export interface Wheel3DProps {
   /** Alternating rim drilling: each hole nudged this many mm toward the flange it
    *  serves (0 = centred / single-drilled). Purely the rim-bed hole position. */
   rimHoleOffsetMm?: number;
+  /** Interlace the spokes at the last cross (true, default) or run every spoke
+   *  dead straight so the trailing group sits outside at every crossing (false). */
+  interlaced?: boolean;
   /** Selected hub's type / over-locknut width (mm), when a hub is chosen. */
   hubType?: HubType;
   hubWidthMm?: number;
@@ -467,6 +470,7 @@ export function Wheel3D(props: Wheel3DProps) {
     rimHoleGroup = 1,
     rimHoleGap = 1,
     rimHoleOffsetMm,
+    interlaced = true,
     hubType,
     hubWidthMm,
     step,
@@ -745,19 +749,25 @@ export function Wheel3D(props: Wheel3DProps) {
         lerp(hy, sa, t),
         lerp(zF, zRim, t) + dz,
       ];
+      // Leading dips inboard, trailing lifts outboard, radial stays centred. This
+      // hub offset is what keeps the trailing group sitting outside the leading.
+      const s = lead === 1 ? -1 : lead === 0 ? 0 : 1;
+      const hubGap = 0.01; // half the axial separation at the flange (0 = centred)
+      const flangeZ = zF + outSign * hubGap * s;
+
       // A crossing pair each bend once, near their shared outermost crossing: the
       // leading spoke kinks a hair inboard (so it passes behind), the trailing spoke
       // a hair outboard (in front). Each then runs dead straight to its nipple. The
       // small axial gap at the crossing is what makes which-is-in-front readable.
-      const cross = outermostCross(i);
+      // When interlacing is off (or the spoke is radial) it runs dead straight from
+      // the offset flange point to the nipple, so trailing stays outside throughout.
+      const cross = interlaced ? outermostCross(i) : null;
       let pts: number[][];
       if (cross) {
         const tc = cross.t;
         const gap = 0.005; // half the axial separation at the crossing (~5 mm)
-        const s = leading ? -1 : 1; // leading dips inboard, trailing lifts outboard
         const bend = at(tc, -outSign * gap * s);
-        const hubGap = 0.01; // half the axial separation at the flange (try 0.006–0.012); 0 = both start centred
-        const flange = [hx, hy, zF + outSign * hubGap * s];
+        const flange = [hx, hy, flangeZ];
         const mid = (p: number[], q: number[]) => [
           (p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (p[2] + q[2]) / 2,
         ];
@@ -765,8 +775,10 @@ export function Wheel3D(props: Wheel3DProps) {
         // vertex count fixed; the only kink is at the crossing.
         pts = [flange, mid(flange, bend), bend, mid(bend, bed), bed];
       } else {
-        // Radial / uncrossed: straight (collinear points keep the vertex count fixed).
-        pts = [at(0, 0), at(0.25, 0), at(0.5, 0), at(0.75, 0), bed];
+        // Straight from the offset flange point to the nipple (collinear points
+        // keep the vertex count fixed). Covers radial and non-interlaced lacing.
+        const sat = (t: number) => [lerp(hx, ca, t), lerp(hy, sa, t), lerp(flangeZ, zRim, t)];
+        pts = [sat(0), sat(0.25), sat(0.5), sat(0.75), bed];
       }
       addPolyTube(tube, pts, rad, SPOKE_SEG, col); // bent body
 
@@ -800,6 +812,7 @@ export function Wheel3D(props: Wheel3DProps) {
     rimHoleGroup,
     rimHoleGap,
     rimHoleOffsetMm,
+    interlaced,
     hubType,
     hubWidthMm,
     sequence,

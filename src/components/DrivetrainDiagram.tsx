@@ -85,6 +85,27 @@ function capsule(p0: V, p1: V, r: number): string {
   return `M ${pt(a)} L ${pt(b)} A ${r} ${r} 0 0 0 ${pt(c)} L ${pt(d)} A ${r} ${r} 0 0 0 ${pt(a)} Z`;
 }
 
+// Playback-control icons (inherit currentColor). Pause = two bars, Play = a
+// triangle, Slow motion = a play triangle beside a little clock (play + time).
+const PAUSE_ICON = (
+  <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+    <rect x="4" y="3.5" width="3" height="9" rx="1" fill="currentColor" />
+    <rect x="9" y="3.5" width="3" height="9" rx="1" fill="currentColor" />
+  </svg>
+);
+const PLAY_ICON = (
+  <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+    <path d="M5 3.5 L12.5 8 L5 12.5 Z" fill="currentColor" />
+  </svg>
+);
+const SLOW_ICON = (
+  <svg viewBox="0 0 20 16" width="17" height="14" aria-hidden="true">
+    <path d="M2 3 L9 8 L2 13 Z" fill="currentColor" />
+    <circle cx="14" cy="8" r="4.2" fill="none" stroke="currentColor" strokeWidth="1.4" />
+    <path d="M14 8 V5 M14 8 L16 9.2" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+  </svg>
+);
+
 export interface DrivetrainDiagramProps {
   chainrings: number[];
   cogs: number[];
@@ -236,11 +257,12 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   // Effective ratio includes the hub ratio (1 for cassette/single-speed), so the
   // rear wheel spins at the right speed for the selected hub gear.
   const ratio = (props.activeChainring / props.activeCog) * (props.hubRatio ?? 1);
-  // Slo-mo stretches every period by the same factor, so the wheel/crank slow
-  // down together (relative speeds preserved) enough to actually watch them turn
-  // instead of strobing — a fast gear can otherwise reach ~10 rev/s.
-  const [slowMo, setSlowMo] = useState(false);
-  const slow = slowMo ? 10 : 1;
+  // Playback mode: paused, slow-mo (default), or real-time play. Slo-mo stretches
+  // every period by the same factor, so the wheel/crank slow down together
+  // (relative speeds preserved) enough to actually watch them turn instead of
+  // strobing — a fast gear can otherwise reach ~10 rev/s.
+  const [playMode, setPlayMode] = useState<"paused" | "slow" | "play">("slow");
+  const slow = playMode === "slow" ? 10 : 1;
   const period = (60 / rpm) * slow;
   const cogPeriod = Math.max(0.1, 60 / (rpm * ratio)) * slow;
   // The crank always turns at the pedalling cadence. The chainring turns with it,
@@ -299,13 +321,14 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   // Refresh velocities/pivots each render (CCW = negative). Angles are left
   // untouched so speed changes never restart the spin.
   const [w, s, c] = spin.current;
-  w.vel = reduceMotion ? 0 : -360 / cogPeriod;
+  const stopped = reduceMotion || playMode === "paused";
+  w.vel = stopped ? 0 : -360 / cogPeriod;
   w.cx = R.x;
   w.cy = R.y;
-  s.vel = reduceMotion ? 0 : -360 / chainringPeriod;
+  s.vel = stopped ? 0 : -360 / chainringPeriod;
   s.cx = F.x;
   s.cy = F.y;
-  c.vel = reduceMotion ? 0 : -360 / crankPeriod;
+  c.vel = stopped ? 0 : -360 / crankPeriod;
   c.cx = F.x;
   c.cy = F.y;
   useEffect(() => {
@@ -331,17 +354,36 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
 
   return (
     <div className="dt-diagram">
-      {!reduceMotion && (
-        <button
-          type="button"
-          className={"dt-slomo" + (slowMo ? " active" : "")}
-          onClick={() => setSlowMo((s) => !s)}
-          aria-pressed={slowMo}
-          title="Slow the animation 10× to watch the wheel turn"
-        >
-          10× slo-mo
-        </button>
-      )}
+      {!reduceMotion &&
+        (() => {
+          const modes = [
+            ["paused", "Paused", PAUSE_ICON],
+            ["slow", "10x Slo-Mo", SLOW_ICON],
+            ["play", "Realtime", PLAY_ICON],
+          ] as const;
+          const activeLabel = modes.find(([val]) => val === playMode)?.[1];
+          return (
+            <div className="dt-playmode">
+              <div className="dt-playmode-label">{activeLabel}</div>
+              <div className="dt-playmode-group" role="radiogroup" aria-label="Animation playback">
+                {modes.map(([val, label, icon]) => (
+                  <button
+                    key={val}
+                    type="button"
+                    role="radio"
+                    aria-checked={playMode === val}
+                    aria-label={label}
+                    title={label}
+                    className={"dt-playmode-btn" + (playMode === val ? " active" : "")}
+                    onClick={() => setPlayMode(val)}
+                  >
+                    {icon}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       <svg viewBox={`${minX} ${minY} ${W} ${H}`} width="100%" role="img" aria-label="Drivetrain view">
         {/* rear wheel to scale (rolling circumference), spinning at wheel speed */}
         {wheelR > 0 && (

@@ -229,14 +229,32 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* Drivetrain (crankset + cassette) diagram */
 .dt-diagram { position: relative; margin-top: 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
-.dt-slomo {
-  position: absolute; top: 10px; right: 10px; z-index: 1;
-  padding: 4px 10px; font-size: 12px; cursor: pointer;
-  color: var(--muted); background: var(--panel); border: 1px solid var(--border);
-  border-radius: 999px;
+/* Sits bottom-left; the buttons line up on the same row as the ‹ / › shift
+   buttons (which sit 4px up inside their padded bar), with the current-mode
+   label floating just above them. */
+.dt-playmode {
+  position: absolute; left: 10px; bottom: 14px; z-index: 1;
+  display: inline-flex; flex-direction: column; align-items: stretch; gap: 3px;
 }
-.dt-slomo:hover { border-color: var(--accent); color: var(--accent); }
-.dt-slomo.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+.dt-playmode-label {
+  align-self: center; font-size: 11px; color: var(--muted); white-space: nowrap;
+  padding: 1px 6px; border-radius: 999px;
+  background: color-mix(in srgb, var(--panel-2) 78%, transparent);
+  backdrop-filter: blur(2px);
+}
+.dt-playmode-group { display: inline-flex; }
+.dt-playmode-btn {
+  flex: 0 0 auto; width: 30px; height: 30px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--text); background: var(--panel); border: 1px solid var(--border);
+  border-radius: 0;
+}
+.dt-playmode-btn + .dt-playmode-btn { margin-left: -1px; }
+.dt-playmode-btn:first-child { border-top-left-radius: var(--radius); border-bottom-left-radius: var(--radius); }
+.dt-playmode-btn:last-child { border-top-right-radius: var(--radius); border-bottom-right-radius: var(--radius); }
+.dt-playmode-btn:hover { border-color: var(--accent); color: var(--accent); z-index: 1; }
+.dt-playmode-btn.active { color: #fff; background: var(--accent); border-color: var(--accent); z-index: 1; }
 .dt-diagram svg { width: 100%; max-width: 760px; display: block; margin: 0 auto; }
 .dt-gear { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 2 2.5; }
 .dt-gear-active { fill: none; stroke: var(--accent); stroke-width: 3; }

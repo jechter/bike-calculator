@@ -553,12 +553,10 @@ export function Wheel3D(props: Wheel3DProps) {
     const zL = -leftOffsetMm * scale;
     const zR = rightOffsetMm * scale;
     // Axial offset of each rim hole toward the flange it serves. 0 = centred
-    // (single-drilled); a positive value models alternating (staggered) drilling.
-    // Clamped to the rim's half-width so the hole always lands on the spoke bed.
-    // Offset-pair drilling needs a non-zero split (both holes share an angle), so
-    // fall back to a sensible default when the user hasn't dialled one in.
-    const staggerMm = rimHolePaired ? Math.max(rimHoleOffsetMm ?? 0, 3) : rimHoleOffsetMm ?? 0;
-    const stagger = Math.max(0, Math.min(staggerMm * scale, 0.04));
+    // (single-drilled); positive nudges each hole toward its own flange, negative
+    // crosses it to the far side (drive spoke to the non-drive hole and vice versa,
+    // as on a WH-7700). Signed, clamped to the rim's half-width either way.
+    const stagger = Math.max(-0.04, Math.min((rimHoleOffsetMm ?? 0) * scale, 0.04));
 
     const flHalf = 0.008; // flange half-thickness
     // The flange diameter is the spoke-hole circle (PCD); the flange disc extends

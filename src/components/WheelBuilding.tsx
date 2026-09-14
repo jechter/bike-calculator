@@ -85,7 +85,7 @@ const RIM_GROUP_OPTIONS = [
   { value: "2", label: "Groups of 2" },
   { value: "3", label: "Groups of 3" },
   { value: "4", label: "Groups of 4" },
-  { value: "pair", label: "Offset pairs — same angle (WH-7700)" },
+  { value: "pair", label: "Offset pairs" },
 ];
 
 // Spoke lengths a side needs, as (count × length) rows. Standard lacing is one
@@ -578,7 +578,8 @@ export function WheelBuilding() {
             rough starting points that vary a lot by rim depth.{" "}
             <strong>Spoke-hole offset</strong> models a rim drilled with
             alternating left/right holes (each leaning toward the flange it feeds);
-            leave it 0 for a plain centre-drilled rim.
+            leave it 0 for a plain centre-drilled rim, or go negative to cross each
+            hole to the far side (as on a WH-7700).
           </>
         }
       >
@@ -598,12 +599,12 @@ export function WheelBuilding() {
           </Field>
           <Field
             label="Spoke-hole offset (alternating drilling)"
-            hint="each hole nudged toward the flange it serves · 0 = centred"
+            hint="each hole nudged toward its flange · negative crosses it to the far side · 0 = centred"
           >
             <NumberInput
               value={rimHoleOffset}
               onChange={setRimHoleOffset}
-              min={0}
+              min={-5}
               max={5}
               step={0.5}
               suffix="mm"
@@ -613,7 +614,7 @@ export function WheelBuilding() {
             label="Hole grouping"
             hint={
               rimHolePaired ? (
-                "each pair shares one rim angle; the spoke-hole offset above splits them side-to-side"
+                "each pair shares one rim angle; the spoke-hole offset above splits them side-to-side (negative crosses left/right)"
               ) : rimHoleGroup >= 2 && spokes % rimHoleGroup !== 0 ? (
                 <span className="field-hint-warn">
                   ⚠ {spokes} spokes isn't divisible by {rimHoleGroup} — grouping is
@@ -629,6 +630,10 @@ export function WheelBuilding() {
               onChange={(v) => {
                 if (v === "pair") {
                   setRimHolePaired(true);
+                  // A pair shares one angle, so it needs an axial split to be
+                  // visible — seed a sensible default the user can then tune
+                  // (negative to cross the pair to opposite sides).
+                  if (rimHoleOffset === 0) setRimHoleOffset(3);
                 } else {
                   setRimHolePaired(false);
                   setRimHoleGroup(Number(v));

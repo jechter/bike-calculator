@@ -874,11 +874,14 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
    results + wheel diagram pinned in a sticky rail so they stay in view while you
    tune the controls. Below the breakpoint it collapses to a single stacked
    column (results + viz last). */
-/* Wheel-building page: keep the title + header actions ("Load an example",
-   "Copy link") pinned to the top while the controls scroll beneath. The negative
-   margins bleed the bar over .main's padding so it spans edge-to-edge. */
-.main--wheel-building { --wb-header-h: 62px; }
-.main--wheel-building .main-head {
+/* Workbench pages (wheel building, drivetrain): keep the title + header actions
+   ("Load an example", "Copy link") pinned to the top while the controls scroll
+   beneath. The negative margins bleed the bar over .main's padding so it spans
+   edge-to-edge. */
+.main--wheel-building,
+.main--drivetrain { --wb-header-h: 62px; }
+.main--wheel-building .main-head,
+.main--drivetrain .main-head {
   position: sticky;
   top: 0;
   z-index: 30;
@@ -887,9 +890,10 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   padding: 16px 32px 12px;
   border-bottom: 1px solid var(--border);
 }
-/* This page's subtitle is redundant with the controls, so drop it to keep the
-   pinned header compact. */
-.main--wheel-building .main-head .subtitle { display: none; }
+/* The subtitle is redundant with the controls, so drop it to keep the pinned
+   header compact. */
+.main--wheel-building .main-head .subtitle,
+.main--drivetrain .main-head .subtitle { display: none; }
 
 @media (min-width: 1200px) {
   /* Use the full width on this page; the controls take a fixed reading width and
@@ -916,6 +920,82 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   .wb-viz .section { flex: none; }
   .wb-viz-diagram { flex: 1 1 auto; min-height: 340px; }
   .wb-viz .wheel-diagram { height: 100%; }
+}
+
+/* Drivetrain workbench: the setup + detail sections scroll in a fixed-width left
+   column while the gear chart and drivetrain diagram sit in a sticky right rail
+   that stays in view as you tune the controls. Unlike the wheel diagram (a
+   fill-the-panel canvas) the chart and diagram are aspect-sized SVGs, so the rail
+   takes its natural height rather than filling the viewport. Below the breakpoint
+   it collapses to a single stacked column (viz last). */
+@media (min-width: 1200px) {
+  /* Pin the page to the viewport height and let the controls column and the
+     visualization rail each scroll on their own, so a tall rail (gear chart +
+     diagram + derailleur fit) never forces the whole page to scroll. */
+  .main--drivetrain {
+    max-width: none;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 0;                    /* the header + columns supply their own padding */
+  }
+  /* The fixed-height main doesn't scroll, so the header is just the first flex
+     item at the top — drop the sticky + negative-margin bleed (it misfires in a
+     flex column: a gap opened above the title and the boxes slid under the bar).
+     With main padding:0 the bar is edge-to-edge without the negative margins. */
+  .main--drivetrain .main-head {
+    position: static;
+    margin: 0;
+  }
+  .dt-workbench {
+    flex: 1 1 auto;
+    min-height: 0;                 /* let the columns own the scrolling */
+    display: flex;
+    gap: 24px;
+    padding: 20px 32px 0;          /* the side/top padding .main used to provide */
+  }
+  /* Two independent scroll panes. min-height:0 lets each shrink below its content
+     so it scrolls internally instead of stretching the page. */
+  .dt-controls-col,
+  .dt-viz {
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 16px;          /* breathing room past the last card */
+  }
+  .dt-controls-col { flex: 0 0 clamp(360px, 40%, 520px); }
+  /* Clamp the rail so the chart and diagram grow only up to a sensible size —
+     past ~900px the diagram starts to look stretched. Extra width stays empty. */
+  .dt-viz { flex: 0 1 900px; }
+  /* The left column is narrow, so stack its setup + fit field groups one per row
+     (as the trio already does inside the Compare cards) rather than squeezing
+     them two-up. */
+  .dt-controls-col .grid,
+  .dt-controls-col .dt-setup-trio,
+  .dt-controls-col .results { grid-template-columns: 1fr; }
+  /* Let the diagram grow to fill the (now clamped) rail rather than its default
+     760px cap, so it tracks the gear chart's width. */
+  .dt-viz .dt-diagram svg { max-width: none; }
+
+  /* Fill leftover vertical space: the rail is a flex column, the Gears section
+     grows into any spare height, and the diagram grows within it. The diagram's
+     viewBox then stretches vertically (see DrivetrainDiagram) to reveal more of
+     the wheel and crank rather than scaling up or letterboxing. When content
+     doesn't fit, the sections keep their size and the rail scrolls. */
+  .dt-viz { display: flex; flex-direction: column; }
+  .dt-viz > .section { flex: none; }
+  .dt-viz > .section:first-child {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .dt-viz > .section:first-child > * { flex: none; }
+  /* flex-basis 0 (not auto) so the item's size comes from the flex layout, not
+     the SVG's intrinsic height — otherwise the grown viewBox's tall intrinsic
+     height ratchets the container up and it never shrinks back. The inline
+     min-height still floors it at the natural, width-driven size. */
+  .dt-viz > .section:first-child > .dt-diagram { flex: 1 1 0; }
+  .dt-viz .dt-diagram > svg { height: 100%; }
 }
 
 /* Wheel building: per-side input groups, boxed and colour-accented */

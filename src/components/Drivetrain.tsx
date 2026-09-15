@@ -1865,7 +1865,8 @@ export function Drivetrain() {
   }, []);
 
   return (
-    <>
+    <div className="dt-workbench">
+      <div className="dt-controls-col">
       <Section
         title="Setup"
         action={
@@ -1903,358 +1904,6 @@ export function Drivetrain() {
           </>
         )}
       </Section>
-
-      <Section
-        title="Gears"
-        info={
-          <>
-            {comboActive(focusCfg) ? (
-              <>
-                One line per <strong>hub gear</strong>; each dot is a cassette cog
-                (labelled with its tooth count) — the hub steps act like extra front
-                gears multiplied through the cassette. Hover a dot for its exact
-                values.{" "}
-              </>
-            ) : (
-              <>
-                One line per chainring; each dot is a{" "}
-                {focusCfg.mode === "hub" ? "hub gear" : "cog"} (labelled with its{" "}
-                {focusCfg.mode === "hub" ? "gear" : "tooth count"}) — hover a dot for its
-                exact values.{" "}
-              </>
-            )}
-            {comparing && (
-              <>
-                <strong>Drivetrain B</strong> is drawn with hollow dots on a dashed line, sharing
-                the same axis so you can compare range, gaps and overlap directly.{" "}
-              </>
-            )}
-            {focusCfg.mode === "cassette" && chainrings.length > 1 && (
-              <>
-                <strong>Greyed dots</strong> are cross-chained combinations (big-big /
-                small-small) to avoid shifting into.{" "}
-              </>
-            )}
-            <strong>Gear inches</strong> = the drive-wheel diameter (in) of an
-            equivalent direct-drive high-wheeler — a wheel-size-independent way to
-            compare gears; bigger = taller/harder. <strong>Development</strong> is
-            metres travelled per pedal revolution.
-          </>
-        }
-      >
-        <div className="chart-controls">
-          {comparing ? (
-            <>
-              <Result
-                label="A: gears / range"
-                value={`${isCvt(configA) ? "∞" : derivedA.gears.length} · ${rangeA.toFixed(2)}× (${Math.round((rangeA - 1) * 100)}%)`}
-              />
-              <Result
-                label="B: gears / range"
-                value={`${isCvt(configB) ? "∞" : derivedB.gears.length} · ${rangeB.toFixed(2)}× (${Math.round((rangeB - 1) * 100)}%)`}
-              />
-            </>
-          ) : (
-            <>
-              <Result label="Gears" value={isCvt(configA) ? "∞" : derivedA.gears.length} />
-              <Result
-                label="Range"
-                value={`${rangeA.toFixed(2)}× (${Math.round((rangeA - 1) * 100)}%)`}
-              />
-            </>
-          )}
-          {hasDerailleur(focusCfg) && derailleur && fitBadge && (
-            <Result
-              label="Derailleur fit"
-              value={
-                <>
-                  {derailleur.model}{" "}
-                  <span className={"badge " + fitBadge.cls}>{fitBadge.text}</span>
-                </>
-              }
-            />
-          )}
-        </div>
-
-        <GearChart
-          series={series}
-          metric={metric}
-          options={metricOptions}
-          onMetricChange={(v) => setMetric(v as Metric)}
-          value={activeMetric.value}
-          format={activeMetric.format}
-          pointLabel={pointLabel}
-          cadenceRpm={rpm}
-          isActive={isActiveGear}
-          activeRatio={activeRatio}
-          activeSeriesId={focusId}
-          onHover={(g, seriesId) => {
-            // Hovering a gear selects it in the diagram; if it belongs to the
-            // other drivetrain, switch the diagram (and detail sections) to it.
-            if (comparing && (seriesId === "A" || seriesId === "B")) setFocus(seriesId);
-            setActiveGear({
-              chainring: g.chainring,
-              cog: g.cog,
-              hubName: g.hubGear?.name,
-              hubRatio: g.hubGear?.ratio,
-            });
-          }}
-          extra={
-            metric === "speed" ? (
-              <div className="gc-cadence">
-                <label htmlFor="cadence">Cadence</label>
-                <input
-                  id="cadence"
-                  type="range"
-                  min={60}
-                  max={120}
-                  step={1}
-                  value={sliderCadence}
-                  onChange={(e) => setCadence(parseInt(e.target.value))}
-                />
-                <input
-                  type="number"
-                  className="gc-cadence-num"
-                  value={Number.isFinite(cadence) ? cadence : ""}
-                  min={20}
-                  max={200}
-                  onChange={(e) => setCadence(parseInt(e.target.value))}
-                />
-                <span className="gc-cadence-unit">rpm</span>
-              </div>
-            ) : undefined
-          }
-        />
-
-        {comparing && (
-          <div className="dt-focus">
-            <span>Diagram &amp; details below for drivetrain</span>
-            <div className="dt-focus-seg">
-              <button
-                type="button"
-                className={focus === "A" ? "active" : ""}
-                onClick={() => setFocus("A")}
-              >
-                A
-              </button>
-              <button
-                type="button"
-                className={focus === "B" ? "active" : ""}
-                onClick={() => setFocus("B")}
-              >
-                B
-              </button>
-            </div>
-          </div>
-        )}
-
-        <DrivetrainDiagram
-          chainrings={chainrings}
-          cogs={cogs}
-          activeChainring={activeChainring}
-          activeCog={activeCog}
-          chainstayMm={chainstay}
-          wheelCircMm={focusCfg.circ}
-          hasDerailleur={hasDerailleur(focusCfg)}
-          isBelt={belt}
-          cadenceRpm={rpm}
-          speed={toSpeed(activeSpeedKmh)}
-          speedUnit={unitLabel}
-          hubRatio={activeHubRatio}
-          hubLabel={activeHubGear?.name}
-          isGearbox={isGearbox}
-          onShiftStart={(dir) => startShift(dir)}
-          onShiftStop={stopShift}
-          canShiftDown={canShiftDown}
-          canShiftUp={canShiftUp}
-        />
-
-        <p className="dt-hint">
-          Want to know if this gearing will get you up a mountain? The{" "}
-          <a className="inline-link" href="#/power">
-            cycling power calculator
-          </a>{" "}
-          turns a speed and gradient into the watts you'd need — pair it with your
-          lowest gear's speed at a comfortable cadence to see if the climb is
-          realistic.
-        </p>
-      </Section>
-
-      {hasDerailleur(focusCfg) && derailleur && (
-        <Section
-          title={comparing ? `Rear derailleur fit · ${focusLabel}` : "Rear derailleur fit"}
-          info={
-            <>
-              Checks the derailleur you chose in <strong>Setup</strong> against this
-              cassette/crankset. Needs capacity ≥ (big ring − small ring) + (big cog
-              − small cog), and its max sprocket ≥ your largest cog. Specs are
-              approximate — see the{" "}
-              <a className="inline-link" href="#/derailleur">
-                derailleur database
-              </a>
-              .
-            </>
-          }
-        >
-          <>
-            <div className="results">
-              <Result
-                label="Derailleur"
-                value={`${derailleur.brand} ${derailleur.model}${derailleur.cage ? ` · ${derailleur.cage}` : ""}`}
-              />
-              {fit && (
-                  <Result
-                    label="Largest cog"
-                    value={
-                      <>
-                        {largestCog}T{" "}
-                        <span
-                          className={
-                            "badge " +
-                            (cogStatus === "ok" ? "ok" : cogStatus === "caution" ? "warn" : "danger")
-                          }
-                        >
-                          {cogStatus === "ok"
-                            ? "OK"
-                            : cogStatus === "caution"
-                              ? `+${cogOver}T over`
-                              : `over ${maxSprocket}T`}
-                        </span>
-                      </>
-                    }
-                  />
-                )}
-                {fit && (
-                  <Result
-                    label="Capacity needed"
-                    value={
-                      <>
-                        {requiredCapacity}T{" "}
-                        <span
-                          className={
-                            "badge " +
-                            (capStatus === "ok" ? "ok" : capStatus === "caution" ? "warn" : "danger")
-                          }
-                        >
-                          {capStatus === "ok"
-                            ? "OK"
-                            : capStatus === "caution"
-                              ? `+${capOver}T over`
-                              : `over ${totalCapacity}T`}
-                        </span>
-                      </>
-                    }
-                  />
-                )}
-                <Result
-                  label="Shifter"
-                  value={
-                    <>
-                      {shifter ? shifterLabel(shifter) : `${derailleur.speeds}-speed`}{" "}
-                      <span className={"badge " + shifterBadge.cls}>{shifterBadge.text}</span>
-                    </>
-                  }
-                />
-                <Result label="Actuation" value={derailleur.actuation ?? "unknown"} />
-                <Result label="Pull ratio" value={pullRatioFor(derailleur)} />
-                {fitRes?.cassetteSpacing && (
-                  <Result
-                    label="Cassette spacing"
-                    value={
-                      <>
-                        {CASSETTE_SPACING_LABELS[fitRes.cassetteSpacing]}{" "}
-                        <span className={"badge " + spacingBadge.cls}>{spacingBadge.text}</span>
-                      </>
-                    }
-                  />
-                )}
-              </div>
-              {fit && <Note tone={fitTone}>{fitMessage}</Note>}
-              {fitDataMissing && (
-                <Note tone="info">
-                  No rated capacity / max-cog figures for{" "}
-                  <strong>
-                    {derailleur.brand} {derailleur.model}
-                  </strong>{" "}
-                  in the database yet, so the fit check is skipped — the speed and
-                  actuation guide above still applies.
-                </Note>
-              )}
-              {spacingDim === "over" && fitRes?.cassetteSpacing && fitRes?.expectedSpacing && (
-                <Note tone="warn">
-                  This is a{" "}
-                  <strong>{CASSETTE_SPACING_LABELS[fitRes.cassetteSpacing]}</strong>{" "}
-                  cassette, but {derailleur.brand} {derailleur.model}
-                  {shifter && shifter.family ? " and its shifter" : ""} index to{" "}
-                  <strong>{CASSETTE_SPACING_LABELS[fitRes.expectedSpacing]}</strong>{" "}
-                  cog spacing. Even with the same {cogs.length} cogs, the sprocket pitch
-                  differs, so the indexed clicks won’t line up cog-to-cog — it{" "}
-                  <strong>won’t shift correctly</strong>. Use a{" "}
-                  {CASSETTE_SPACING_LABELS[fitRes.expectedSpacing]} cassette, or a{" "}
-                  <strong>friction shifter</strong> (which doesn’t index and works with any
-                  spacing).
-                </Note>
-              )}
-              {shifterStatus === "electronic-count" && shifter && (
-                <Note tone="warn">
-                  {derailleur.brand} {derailleur.model} is <strong>electronic</strong>,
-                  driven by its matching <strong>{shifter.speeds}-speed</strong> control in
-                  fixed, pre-programmed steps — but your cassette has{" "}
-                  <strong>{cogs.length} cogs</strong>. Electronic groups can’t be re-indexed
-                  for a different cog count, and there’s no friction fallback — so this{" "}
-                  <strong>won’t work</strong> with a {cogs.length}-speed cassette.
-                </Note>
-              )}
-              {shifterStatus === "friction-electronic" && (
-                <Note tone="warn">
-                  {derailleur.brand} {derailleur.model} is <strong>electronic</strong> — a
-                  friction (or any cable) shifter can’t drive it. It needs its matching
-                  electronic control, so a friction shifter <strong>won’t work</strong>.
-                </Note>
-              )}
-              {shifterStatus === "wrong-count" && shifter && (
-                <Note tone="warn">
-                  The shifter indexes <strong>{shifter.speeds} speeds</strong> but your
-                  cassette has <strong>{cogs.length} cogs</strong> — the indexed click
-                  spacing won’t line up cog-to-cog. Set the shifter to {cogs.length}-speed,
-                  or use a <strong>friction shifter</strong>, which doesn’t index at all and
-                  lets you position each gear by feel.
-                </Note>
-              )}
-              {shifterStatus === "wrong-family" && shifter && (
-                <Note tone="warn">
-                  The shifter’s actuation family (<strong>{shifter.family || "unspecified"}</strong>)
-                  differs from the derailleur’s (<strong>{derailleur.actuation ?? "unknown"}</strong>)
-                  — each click won’t pull the derailleur the right distance, so it won’t index.
-                  Use a shifter in the derailleur’s family, or a{" "}
-                  <strong>friction shifter</strong>.
-                </Note>
-              )}
-              {shifterStatus === "unknown-family" && shifter && (
-                <Note tone="info">
-                  The <strong>{shifter.speeds}-speed</strong> count matches your cassette, but{" "}
-                  {derailleur.brand} {derailleur.model}’s actuation family isn’t known, so we
-                  can’t confirm the shifter’s pull ratio matches — verify before relying on it.
-                  A <strong>friction shifter</strong> would sidestep the question entirely.
-                </Note>
-              )}
-              {shifterStatus === "friction" && (
-                <Note tone="info">
-                  A <strong>friction shifter</strong> doesn’t index — you position each gear by
-                  feel — so it drives {derailleur.brand} {derailleur.model} with any cog count.
-                  The cog-clearance and chain-wrap checks above still apply.
-                </Note>
-              )}
-              {shifterStatus === "unspecified" && (
-                <Note tone="info">
-                  The shifter’s actuation family is unspecified, so shifting compatibility{" "}
-                  <strong>can’t be checked</strong> — pick the shifter’s family (or Friction) to
-                  verify it indexes. The cog-clearance and chain-wrap checks above still apply.
-                </Note>
-              )}
-          </>
-        </Section>
-      )}
 
       <Section
         title={(belt ? "Belt" : "Chain") + (comparing ? ` · ${focusLabel}` : "")}
@@ -2459,6 +2108,359 @@ export function Drivetrain() {
           </div>
         )}
       </Section>
-    </>
+      </div>
+      <div className="dt-viz">
+      <Section
+        title="Gears"
+        info={
+          <>
+            {comboActive(focusCfg) ? (
+              <>
+                One line per <strong>hub gear</strong>; each dot is a cassette cog
+                (labelled with its tooth count) — the hub steps act like extra front
+                gears multiplied through the cassette. Hover a dot for its exact
+                values.{" "}
+              </>
+            ) : (
+              <>
+                One line per chainring; each dot is a{" "}
+                {focusCfg.mode === "hub" ? "hub gear" : "cog"} (labelled with its{" "}
+                {focusCfg.mode === "hub" ? "gear" : "tooth count"}) — hover a dot for its
+                exact values.{" "}
+              </>
+            )}
+            {comparing && (
+              <>
+                <strong>Drivetrain B</strong> is drawn with hollow dots on a dashed line, sharing
+                the same axis so you can compare range, gaps and overlap directly.{" "}
+              </>
+            )}
+            {focusCfg.mode === "cassette" && chainrings.length > 1 && (
+              <>
+                <strong>Greyed dots</strong> are cross-chained combinations (big-big /
+                small-small) to avoid shifting into.{" "}
+              </>
+            )}
+            <strong>Gear inches</strong> = the drive-wheel diameter (in) of an
+            equivalent direct-drive high-wheeler — a wheel-size-independent way to
+            compare gears; bigger = taller/harder. <strong>Development</strong> is
+            metres travelled per pedal revolution.
+          </>
+        }
+      >
+        <div className="chart-controls">
+          {comparing ? (
+            <>
+              <Result
+                label="A: gears / range"
+                value={`${isCvt(configA) ? "∞" : derivedA.gears.length} · ${rangeA.toFixed(2)}× (${Math.round((rangeA - 1) * 100)}%)`}
+              />
+              <Result
+                label="B: gears / range"
+                value={`${isCvt(configB) ? "∞" : derivedB.gears.length} · ${rangeB.toFixed(2)}× (${Math.round((rangeB - 1) * 100)}%)`}
+              />
+            </>
+          ) : (
+            <>
+              <Result label="Gears" value={isCvt(configA) ? "∞" : derivedA.gears.length} />
+              <Result
+                label="Range"
+                value={`${rangeA.toFixed(2)}× (${Math.round((rangeA - 1) * 100)}%)`}
+              />
+            </>
+          )}
+          {hasDerailleur(focusCfg) && derailleur && fitBadge && (
+            <Result
+              label="Derailleur fit"
+              value={
+                <>
+                  {derailleur.model}{" "}
+                  <span className={"badge " + fitBadge.cls}>{fitBadge.text}</span>
+                </>
+              }
+            />
+          )}
+        </div>
+
+        <GearChart
+          series={series}
+          metric={metric}
+          options={metricOptions}
+          onMetricChange={(v) => setMetric(v as Metric)}
+          value={activeMetric.value}
+          format={activeMetric.format}
+          pointLabel={pointLabel}
+          cadenceRpm={rpm}
+          isActive={isActiveGear}
+          activeRatio={activeRatio}
+          activeSeriesId={focusId}
+          onHover={(g, seriesId) => {
+            // Hovering a gear selects it in the diagram; if it belongs to the
+            // other drivetrain, switch the diagram (and detail sections) to it.
+            if (comparing && (seriesId === "A" || seriesId === "B")) setFocus(seriesId);
+            setActiveGear({
+              chainring: g.chainring,
+              cog: g.cog,
+              hubName: g.hubGear?.name,
+              hubRatio: g.hubGear?.ratio,
+            });
+          }}
+          extra={
+            metric === "speed" ? (
+              <div className="gc-cadence">
+                <label htmlFor="cadence">Cadence</label>
+                <input
+                  id="cadence"
+                  type="range"
+                  min={60}
+                  max={120}
+                  step={1}
+                  value={sliderCadence}
+                  onChange={(e) => setCadence(parseInt(e.target.value))}
+                />
+                <input
+                  type="number"
+                  className="gc-cadence-num"
+                  value={Number.isFinite(cadence) ? cadence : ""}
+                  min={20}
+                  max={200}
+                  onChange={(e) => setCadence(parseInt(e.target.value))}
+                />
+                <span className="gc-cadence-unit">rpm</span>
+              </div>
+            ) : undefined
+          }
+        />
+
+        {comparing && (
+          <div className="dt-focus">
+            <span>Diagram &amp; details below for drivetrain</span>
+            <div className="dt-focus-seg">
+              <button
+                type="button"
+                className={focus === "A" ? "active" : ""}
+                onClick={() => setFocus("A")}
+              >
+                A
+              </button>
+              <button
+                type="button"
+                className={focus === "B" ? "active" : ""}
+                onClick={() => setFocus("B")}
+              >
+                B
+              </button>
+            </div>
+          </div>
+        )}
+
+        <DrivetrainDiagram
+          chainrings={chainrings}
+          cogs={cogs}
+          activeChainring={activeChainring}
+          activeCog={activeCog}
+          chainstayMm={chainstay}
+          wheelCircMm={focusCfg.circ}
+          hasDerailleur={hasDerailleur(focusCfg)}
+          isBelt={belt}
+          cadenceRpm={rpm}
+          speed={toSpeed(activeSpeedKmh)}
+          speedUnit={unitLabel}
+          hubRatio={activeHubRatio}
+          hubLabel={activeHubGear?.name}
+          isGearbox={isGearbox}
+          onShiftStart={(dir) => startShift(dir)}
+          onShiftStop={stopShift}
+          canShiftDown={canShiftDown}
+          canShiftUp={canShiftUp}
+        />
+
+        <p className="dt-hint">
+          Want to know if this gearing will get you up a mountain? The{" "}
+          <a className="inline-link" href="#/power">
+            cycling power calculator
+          </a>{" "}
+          turns a speed and gradient into the watts you'd need — pair it with your
+          lowest gear's speed at a comfortable cadence to see if the climb is
+          realistic.
+        </p>
+      </Section>
+      {hasDerailleur(focusCfg) && derailleur && (
+        <Section
+          title={comparing ? `Rear derailleur fit · ${focusLabel}` : "Rear derailleur fit"}
+          info={
+            <>
+              Checks the derailleur you chose in <strong>Setup</strong> against this
+              cassette/crankset. Needs capacity ≥ (big ring − small ring) + (big cog
+              − small cog), and its max sprocket ≥ your largest cog. Specs are
+              approximate — see the{" "}
+              <a className="inline-link" href="#/derailleur">
+                derailleur database
+              </a>
+              .
+            </>
+          }
+        >
+          <>
+            <div className="results">
+              <Result
+                label="Derailleur"
+                value={`${derailleur.brand} ${derailleur.model}${derailleur.cage ? ` · ${derailleur.cage}` : ""}`}
+              />
+              {fit && (
+                  <Result
+                    label="Largest cog"
+                    value={
+                      <>
+                        {largestCog}T{" "}
+                        <span
+                          className={
+                            "badge " +
+                            (cogStatus === "ok" ? "ok" : cogStatus === "caution" ? "warn" : "danger")
+                          }
+                        >
+                          {cogStatus === "ok"
+                            ? "OK"
+                            : cogStatus === "caution"
+                              ? `+${cogOver}T over`
+                              : `over ${maxSprocket}T`}
+                        </span>
+                      </>
+                    }
+                  />
+                )}
+                {fit && (
+                  <Result
+                    label="Capacity needed"
+                    value={
+                      <>
+                        {requiredCapacity}T{" "}
+                        <span
+                          className={
+                            "badge " +
+                            (capStatus === "ok" ? "ok" : capStatus === "caution" ? "warn" : "danger")
+                          }
+                        >
+                          {capStatus === "ok"
+                            ? "OK"
+                            : capStatus === "caution"
+                              ? `+${capOver}T over`
+                              : `over ${totalCapacity}T`}
+                        </span>
+                      </>
+                    }
+                  />
+                )}
+                <Result
+                  label="Shifter"
+                  value={
+                    <>
+                      {shifter ? shifterLabel(shifter) : `${derailleur.speeds}-speed`}{" "}
+                      <span className={"badge " + shifterBadge.cls}>{shifterBadge.text}</span>
+                    </>
+                  }
+                />
+                <Result label="Actuation" value={derailleur.actuation ?? "unknown"} />
+                <Result label="Pull ratio" value={pullRatioFor(derailleur)} />
+                {fitRes?.cassetteSpacing && (
+                  <Result
+                    label="Cassette spacing"
+                    value={
+                      <>
+                        {CASSETTE_SPACING_LABELS[fitRes.cassetteSpacing]}{" "}
+                        <span className={"badge " + spacingBadge.cls}>{spacingBadge.text}</span>
+                      </>
+                    }
+                  />
+                )}
+              </div>
+              {fit && <Note tone={fitTone}>{fitMessage}</Note>}
+              {fitDataMissing && (
+                <Note tone="info">
+                  No rated capacity / max-cog figures for{" "}
+                  <strong>
+                    {derailleur.brand} {derailleur.model}
+                  </strong>{" "}
+                  in the database yet, so the fit check is skipped — the speed and
+                  actuation guide above still applies.
+                </Note>
+              )}
+              {spacingDim === "over" && fitRes?.cassetteSpacing && fitRes?.expectedSpacing && (
+                <Note tone="warn">
+                  This is a{" "}
+                  <strong>{CASSETTE_SPACING_LABELS[fitRes.cassetteSpacing]}</strong>{" "}
+                  cassette, but {derailleur.brand} {derailleur.model}
+                  {shifter && shifter.family ? " and its shifter" : ""} index to{" "}
+                  <strong>{CASSETTE_SPACING_LABELS[fitRes.expectedSpacing]}</strong>{" "}
+                  cog spacing. Even with the same {cogs.length} cogs, the sprocket pitch
+                  differs, so the indexed clicks won’t line up cog-to-cog — it{" "}
+                  <strong>won’t shift correctly</strong>. Use a{" "}
+                  {CASSETTE_SPACING_LABELS[fitRes.expectedSpacing]} cassette, or a{" "}
+                  <strong>friction shifter</strong> (which doesn’t index and works with any
+                  spacing).
+                </Note>
+              )}
+              {shifterStatus === "electronic-count" && shifter && (
+                <Note tone="warn">
+                  {derailleur.brand} {derailleur.model} is <strong>electronic</strong>,
+                  driven by its matching <strong>{shifter.speeds}-speed</strong> control in
+                  fixed, pre-programmed steps — but your cassette has{" "}
+                  <strong>{cogs.length} cogs</strong>. Electronic groups can’t be re-indexed
+                  for a different cog count, and there’s no friction fallback — so this{" "}
+                  <strong>won’t work</strong> with a {cogs.length}-speed cassette.
+                </Note>
+              )}
+              {shifterStatus === "friction-electronic" && (
+                <Note tone="warn">
+                  {derailleur.brand} {derailleur.model} is <strong>electronic</strong> — a
+                  friction (or any cable) shifter can’t drive it. It needs its matching
+                  electronic control, so a friction shifter <strong>won’t work</strong>.
+                </Note>
+              )}
+              {shifterStatus === "wrong-count" && shifter && (
+                <Note tone="warn">
+                  The shifter indexes <strong>{shifter.speeds} speeds</strong> but your
+                  cassette has <strong>{cogs.length} cogs</strong> — the indexed click
+                  spacing won’t line up cog-to-cog. Set the shifter to {cogs.length}-speed,
+                  or use a <strong>friction shifter</strong>, which doesn’t index at all and
+                  lets you position each gear by feel.
+                </Note>
+              )}
+              {shifterStatus === "wrong-family" && shifter && (
+                <Note tone="warn">
+                  The shifter’s actuation family (<strong>{shifter.family || "unspecified"}</strong>)
+                  differs from the derailleur’s (<strong>{derailleur.actuation ?? "unknown"}</strong>)
+                  — each click won’t pull the derailleur the right distance, so it won’t index.
+                  Use a shifter in the derailleur’s family, or a{" "}
+                  <strong>friction shifter</strong>.
+                </Note>
+              )}
+              {shifterStatus === "unknown-family" && shifter && (
+                <Note tone="info">
+                  The <strong>{shifter.speeds}-speed</strong> count matches your cassette, but{" "}
+                  {derailleur.brand} {derailleur.model}’s actuation family isn’t known, so we
+                  can’t confirm the shifter’s pull ratio matches — verify before relying on it.
+                  A <strong>friction shifter</strong> would sidestep the question entirely.
+                </Note>
+              )}
+              {shifterStatus === "friction" && (
+                <Note tone="info">
+                  A <strong>friction shifter</strong> doesn’t index — you position each gear by
+                  feel — so it drives {derailleur.brand} {derailleur.model} with any cog count.
+                  The cog-clearance and chain-wrap checks above still apply.
+                </Note>
+              )}
+              {shifterStatus === "unspecified" && (
+                <Note tone="info">
+                  The shifter’s actuation family is unspecified, so shifting compatibility{" "}
+                  <strong>can’t be checked</strong> — pick the shifter’s family (or Friction) to
+                  verify it indexes. The cog-clearance and chain-wrap checks above still apply.
+                </Note>
+              )}
+          </>
+        </Section>
+      )}
+      </div>
+    </div>
   );
 }

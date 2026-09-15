@@ -44,7 +44,9 @@ function pickHub(container: HTMLElement, search: string, rowMatch: (text: string
 describe("Drivetrain page", () => {
   it("has a cadence slider (60–120) plus a free number field", () => {
     const { container } = render(<Drivetrain />);
-    const slider = container.querySelector('input[type="range"]') as HTMLInputElement;
+    const slider = container.querySelector(
+      '.gc-cadence input[type="range"]',
+    ) as HTMLInputElement;
     expect(slider).toBeTruthy();
     expect(slider.min).toBe("60");
     expect(slider.max).toBe("120");
@@ -104,7 +106,11 @@ describe("Drivetrain page", () => {
     const { container, getByText, queryByText } = render(<Drivetrain />);
     // Gears explanation is hidden until its info tip is opened
     expect(queryByText(/wheel-size-independent/)).toBeNull();
-    const infoBtn = container.querySelector(".section-head .infotip-btn") as HTMLButtonElement;
+    // The Gears section lives in the visualization rail; target its info tip
+    // directly (section order no longer puts it first in the DOM).
+    const infoBtn = container.querySelector(
+      ".dt-viz .section-head .infotip-btn",
+    ) as HTMLButtonElement;
     expect(infoBtn).toBeTruthy();
     fireEvent.click(infoBtn);
     expect(getByText(/wheel-size-independent/)).toBeTruthy();

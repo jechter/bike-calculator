@@ -148,6 +148,22 @@ export interface DrivetrainDiagramProps {
 
 export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   const { chainstayMm, hasDerailleur } = props;
+
+  // Measure the rendered box so the viewBox can grow vertically to fill a tall
+  // container (e.g. the drivetrain workbench rail) instead of letterboxing —
+  // revealing more of the wheel and crank, which are drawn but normally culled.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver((entries) => {
+      const cr = entries[0].contentRect;
+      setBox({ w: cr.width, h: cr.height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   // Belts run at an 11 mm pitch (vs a chain's 12.7 mm), so their sprockets are
   // smaller for the same tooth count. Shadow the module-level `pr` so every
   // sprocket radius below reflects the actual transmission. (A belt never has a
@@ -273,6 +289,24 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   const W = maxX - minX;
   const H = maxY - minY;
 
+  // If the container is taller than the drivetrain's natural aspect, stretch the
+  // viewBox vertically (centred) to match — the wheel/crank fill the extra space
+  // instead of the diagram letterboxing. `minHeight` keeps it at least its
+  // natural, width-driven size when there's no spare height (it shrinks-to-fit
+  // rather than scrolling only when even that doesn't fit). VPAD = 2 × card pad.
+  const VPAD = 24;
+  let vbMinY = minY;
+  let vbH = H;
+  let naturalMinHeight: number | undefined;
+  if (box && box.w > 0 && box.h > 0) {
+    naturalMinHeight = (box.w * H) / W + VPAD;
+    const target = (box.h / box.w) * W;
+    if (target > H) {
+      vbMinY = minY - (target - H) / 2;
+      vbH = target;
+    }
+  }
+
   // Subtle spokes spin at the cadence (chainring) and cadence × ratio (rear),
   // showing how much faster the wheel turns in the current gear. Counter-clockwise.
   const rpm = Math.max(20, Math.min(220, props.cadenceRpm || 90));
@@ -375,7 +409,11 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   const activeColor = PALETTE[Math.max(0, rings.indexOf(props.activeChainring)) % PALETTE.length];
 
   return (
-    <div className="dt-diagram">
+    <div
+      className="dt-diagram"
+      ref={containerRef}
+      style={naturalMinHeight ? { minHeight: naturalMinHeight } : undefined}
+    >
       {!reduceMotion &&
         (() => {
           const modes = [
@@ -406,7 +444,13 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
             </div>
           );
         })()}
-      <svg viewBox={`${minX} ${minY} ${W} ${H}`} width="100%" role="img" aria-label="Drivetrain view">
+      <svg
+        viewBox={`${minX} ${vbMinY} ${W} ${vbH}`}
+        width="100%"
+        preserveAspectRatio="xMidYMid meet"
+        role="img"
+        aria-label="Drivetrain view"
+      >
         {/* rear wheel to scale (rolling circumference), spinning at wheel speed */}
         {wheelR > 0 && (
           <g ref={wheelRef}>

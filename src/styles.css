@@ -1108,3 +1108,30 @@ html.embedded .sidebar {
    last block's own margin) to a small, symmetric inset above the host's border. */
 html.embedded .main { padding-bottom: 24px; }
 html.embedded .main > :last-child { margin-bottom: 0; }
+
+/* The wide-screen workbench layouts pin themselves to the viewport height (100vh)
+   and give their columns their own scroll panes. In an auto-resizing iframe that
+   viewport *is* the height we just reported, so those rules misfire: the drivetrain
+   locks to its seed height and never grows, and the wheel-building rail feeds back
+   and grows without bound. When embedded, unpin them — size to content and let the
+   host page do the scrolling. */
+@media (min-width: 1200px) {
+  /* Drivetrain: drop the fixed viewport height and the per-column scroll panes so
+     the page takes its natural height. */
+  html.embedded .main--drivetrain { height: auto; overflow: visible; }
+  html.embedded .dt-controls-col,
+  html.embedded .dt-viz { overflow-y: visible; }
+  /* The rail's "fill the leftover height" flex rules need a bounded parent; with a
+     natural height there's no spare space, so the basis-0 diagram would collapse to
+     nothing. Restore natural, aspect-driven sizing. */
+  html.embedded .dt-viz > .section:first-child { flex: none; display: block; }
+  html.embedded .dt-viz > .section:first-child > .dt-diagram { flex: none; }
+  html.embedded .dt-viz .dt-diagram > svg { height: auto; }
+
+  /* Wheel building: unstick the rail and let it take its natural height instead of
+     100vh (the source of the runaway growth). The diagram gets an explicit height
+     again since there's no fixed rail height to fill. */
+  html.embedded .wb-viz { position: static; height: auto; }
+  html.embedded .wb-viz-diagram { flex: none; }
+  html.embedded .wb-viz .wheel-diagram { height: min(520px, 86vw); }
+}

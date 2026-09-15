@@ -282,6 +282,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .dt-gear-active { fill: none; stroke: var(--accent); stroke-width: 3; }
 .dt-hub { fill: var(--muted); }
 .dt-chain { fill: none; stroke: var(--text); stroke-width: 3; stroke-linejoin: round; }
+/* A carbon belt reads as a wider, smooth band rather than a chain's links. */
+.dt-belt { fill: none; stroke: var(--text); stroke-width: 5; stroke-linejoin: round; }
 .dt-pulley { fill: var(--panel); stroke: var(--muted); stroke-width: 1.5; }
 .dt-cage { stroke: var(--muted); stroke-width: 4; stroke-linecap: round; }
 .dt-spoke { fill: none; stroke: var(--muted); stroke-width: 1.2; opacity: 0.45; }
@@ -698,6 +700,18 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   margin: 10px auto 0; max-width: 60ch; text-align: center;
   font-size: 12px; color: var(--muted); line-height: 1.5;
 }
+/* Chainstay slider + number, sitting inside a Field in the Chain/Belt section.
+   The number keeps a fixed width (overriding the global width:100% input rule,
+   which would otherwise swallow the flex:1 slider). */
+.dt-chainstay { display: flex; align-items: center; gap: 10px; }
+.dt-chainstay input[type="range"] { flex: 1; min-width: 80px; accent-color: var(--accent); }
+.dt-chainstay input[type="number"] { flex: 0 0 auto; width: 72px; }
+/* Space the available-belt list off the summary results above it. */
+.dt-belt-table { margin-top: 14px; }
+/* A titled block within a section (e.g. the chain-wear table under Chain). */
+.dt-subsection { margin-top: 20px; }
+.dt-subhead { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+.dt-subnote { margin: 0 0 12px; font-size: 12px; color: var(--muted); line-height: 1.5; }
 
 /* Compare a second drivetrain */
 .dt-compare-toggle {

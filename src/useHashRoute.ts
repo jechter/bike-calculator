@@ -34,6 +34,11 @@ export function buildHash(routeId: string, params: Record<string, unknown>): str
  * (no history spam, and no hashchange event, so the router isn't disturbed).
  * Only writes while we're actually on `routeId`, to avoid clobbering an
  * in-flight navigation to another page.
+ *
+ * The write is debounced: dragging a slider changes the config every few ms, and
+ * browsers cap replaceState (Safari throws after 100 calls / 10 s). Coalescing a
+ * burst into one write after the value settles keeps the URL fresh without
+ * tripping that limit.
  */
 export function useUrlConfigSync(routeId: string, params: Record<string, unknown>): void {
   const hash = buildHash(routeId, params);
@@ -41,14 +46,20 @@ export function useUrlConfigSync(routeId: string, params: Record<string, unknown
     // An empty hash means the app is showing its default route (which is the page
     // mounting this hook), so writing is safe. A non-empty, non-matching hash
     // means we're mid-navigation to another page — don't clobber it.
-    const current = window.location.hash.replace(/^#\/?/, "").split("?")[0];
-    if (current !== "" && current !== routeId) return;
-    if (window.location.hash !== hash) {
+    const onRoute = () => {
+      const current = window.location.hash.replace(/^#\/?/, "").split("?")[0];
+      return current === "" || current === routeId;
+    };
+    if (!onRoute() || window.location.hash === hash) return;
+    const id = window.setTimeout(() => {
+      // Re-check at write time — a navigation may have started during the delay.
+      if (!onRoute() || window.location.hash === hash) return;
       history.replaceState(null, "", hash);
       // replaceState doesn't fire hashchange; let the embed bridge (if any) mirror
       // the new config up to a host page.
       notifyConfigChanged();
-    }
+    }, 200);
+    return () => window.clearTimeout(id);
   }, [hash, routeId]);
 }
 

@@ -54,8 +54,9 @@ const EXAMPLE_PRESETS: ExampleGroup[] = [
         params: { mode: "hub", sr: "46", sc: "22", hub: "2", circ: "2249", tire: "47-622" },
       },
       {
+        // Pinion gearboxes are almost always run with a Gates carbon belt.
         label: "Pinion trekking",
-        params: { mode: "hub", sr: "39", sc: "28", hub: "5", circ: "2205", tire: "40-622" },
+        params: { mode: "hub", tx: "belt", sr: "39", sc: "28", hub: "5", circ: "2205", tire: "40-622" },
       },
     ],
   },

@@ -38,7 +38,7 @@ export const CALCULATORS: CalculatorDef[] = [
     id: "drivetrain",
     title: "Drivetrain",
     subtitle:
-      "Gear ratios, speed at cadence, chain length and chain wear — cassette, single speed or geared hub.",
+      "Gear ratios, speed at cadence, chain/belt length and chain wear — cassette, single speed or geared hub.",
     icon: <DrivetrainIcon />,
     Component: Drivetrain,
     shareable: true,

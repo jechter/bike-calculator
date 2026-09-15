@@ -263,6 +263,83 @@ describe("Drivetrain page", () => {
     expect(rowLabels.every((l) => !/T$/.test(l ?? ""))).toBe(true);
   });
 
+  it("swaps chain length for belt sizing (and drops chain wear) in belt mode", () => {
+    const { container, getByText, queryByText } = render(<Drivetrain />);
+    fireEvent.change(container.querySelector("select") as HTMLSelectElement, {
+      target: { value: "single" },
+    });
+    // Chain mode: the wrap note and the chain-wear ("when to replace") table.
+    expect(getByText(/dropout \/ tensioner/)).toBeTruthy();
+    expect(getByText(/When to replace/)).toBeTruthy();
+    // Switch the transmission select (the one offering a belt) to Gates belt.
+    const beltSelect = Array.from(container.querySelectorAll("select")).find((s) =>
+      Array.from(s.options).some((o) => o.textContent === "Gates carbon belt"),
+    ) as HTMLSelectElement;
+    expect(beltSelect).toBeTruthy();
+    fireEvent.change(beltSelect, { target: { value: "belt" } });
+    // Now it's a belt: belt sizing shown, no chain-wear table, no wrap note.
+    expect(getByText(/Ideal belt/)).toBeTruthy();
+    expect(queryByText(/When to replace/)).toBeNull();
+    expect(queryByText(/dropout \/ tensioner/)).toBeNull();
+    // The nearby-belt table lists catalogued sizes with centre distances.
+    expect(getByText("Centre distance")).toBeTruthy();
+    expect(container.textContent).toMatch(/\bT ✓/);
+  });
+
+  it("warns when no stock belt fits the chainstay (too short/long for any size)", () => {
+    const { container, getByText, queryByText } = render(<Drivetrain />);
+    fireEvent.change(container.querySelector("select") as HTMLSelectElement, {
+      target: { value: "single" },
+    });
+    const beltSelect = Array.from(container.querySelectorAll("select")).find((s) =>
+      Array.from(s.options).some((o) => o.textContent === "Gates carbon belt"),
+    ) as HTMLSelectElement;
+    fireEvent.change(beltSelect, { target: { value: "belt" } });
+    // Default 42/18 at 410 mm: the nearest belt is ~17 mm off — within a frame's
+    // adjustment, so no warning.
+    expect(queryByText(/No stock Gates belt fits/)).toBeNull();
+    // Drop to a very short chainstay: even the smallest belt now needs a centre
+    // distance far beyond what any dropout/EBB could take up.
+    const cs = container.querySelector(
+      'input[aria-label="Chainstay length"]',
+    ) as HTMLInputElement;
+    fireEvent.change(cs, { target: { value: "350" } });
+    expect(getByText(/No stock Gates belt fits/)).toBeTruthy();
+    // The option table is still shown (so you can see how far off each size is).
+    expect(getByText("Centre distance")).toBeTruthy();
+  });
+
+  it("draws belt sprockets ~13% smaller than chain sprockets (11 vs 12.7 mm pitch)", () => {
+    const { container } = render(<Drivetrain />);
+    fireEvent.change(container.querySelector("select") as HTMLSelectElement, {
+      target: { value: "single" },
+    });
+    const activeRadii = () =>
+      Array.from(container.querySelectorAll(".dt-gear-active")).map((c) =>
+        parseFloat(c.getAttribute("r") || "0"),
+      );
+    const chainRadii = activeRadii();
+    expect(chainRadii.length).toBe(2); // ring + cog
+    const beltSelect = Array.from(container.querySelectorAll("select")).find((s) =>
+      Array.from(s.options).some((o) => o.textContent === "Gates carbon belt"),
+    ) as HTMLSelectElement;
+    fireEvent.change(beltSelect, { target: { value: "belt" } });
+    const beltRadii = activeRadii();
+    for (let i = 0; i < chainRadii.length; i++) {
+      expect(beltRadii[i]).toBeCloseTo(chainRadii[i] * (11 / 12.7), 3);
+    }
+  });
+
+  it("shows a minimum single-speed chain length in chain mode", () => {
+    const { container, getByText } = render(<Drivetrain />);
+    fireEvent.change(container.querySelector("select") as HTMLSelectElement, {
+      target: { value: "single" },
+    });
+    // Alongside the wrap note, chain mode now reports the shortest chain that fits.
+    expect(getByText("Minimum links")).toBeTruthy();
+    expect(getByText(/extra-long chain/)).toBeTruthy();
+  });
+
   it("applies the derailleur chain-length formula to a hub+cassette combo", () => {
     const { container, getByText, queryByText } = render(<Drivetrain />);
     fireEvent.change(container.querySelector("select") as HTMLSelectElement, {

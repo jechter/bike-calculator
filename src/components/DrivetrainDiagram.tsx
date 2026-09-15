@@ -7,8 +7,13 @@
 import { useEffect, useRef, useState } from "react";
 import { PALETTE } from "./GearChart";
 
-const PITCH = 12.7; // chain pitch, mm
-const pr = (teeth: number) => (teeth * PITCH) / (2 * Math.PI); // pitch radius, mm
+const PITCH = 12.7; // chain pitch, mm (½")
+const BELT_PITCH = 11; // Gates Carbon Drive pitch, mm
+// Pitch radius, mm. Both a chain sprocket and a belt pulley follow N·pitch/π; a
+// belt's smaller pitch makes its sprockets ~13% smaller than a chain's for the
+// same tooth count — see the belt-aware `pr` inside the component.
+const prAt = (teeth: number, pitch: number) => (teeth * pitch) / (2 * Math.PI);
+const pr = (teeth: number) => prAt(teeth, PITCH); // chain radius (module scope)
 const PULLEY = pr(9); // 9T jockey wheels
 const CAGE = 70; // guide->tension pulley spacing, mm
 
@@ -113,6 +118,10 @@ export interface DrivetrainDiagramProps {
   activeCog: number;
   chainstayMm: number;
   hasDerailleur: boolean;
+  /** A Gates carbon belt rather than a chain: smaller (11 mm) pitch, so the
+   *  sprockets are drawn ~13% smaller for the same tooth count, and the loop is
+   *  rendered as a belt. Only meaningful without a derailleur. */
+  isBelt?: boolean;
   cadenceRpm: number;
   speed: number; // active gear's speed in the display unit
   speedUnit: string;
@@ -139,6 +148,12 @@ export interface DrivetrainDiagramProps {
 
 export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   const { chainstayMm, hasDerailleur } = props;
+  // Belts run at an 11 mm pitch (vs a chain's 12.7 mm), so their sprockets are
+  // smaller for the same tooth count. Shadow the module-level `pr` so every
+  // sprocket radius below reflects the actual transmission. (A belt never has a
+  // derailleur, so the chain-pitch PULLEY constant stays fine.)
+  const isBelt = !!props.isBelt && !hasDerailleur;
+  const pr = (teeth: number) => prAt(teeth, isBelt ? BELT_PITCH : PITCH);
   const rings = [...new Set(props.chainrings)].filter((n) => n > 0).sort((a, b) => b - a);
   const cs = [...new Set(props.cogs)].filter((n) => n > 0).sort((a, b) => b - a);
   if (rings.length === 0 || cs.length === 0) return null;
@@ -239,7 +254,14 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   const crankReachX = crankLen + crankHalfW; // horizontal extent of the crank
   const m = 10;
   const minX = Math.min(-rfMax, -crankReachX) - m;
-  const maxX = Math.max(R.x + rrMax + PULLEY, crankReachX) + m;
+  // Size the horizontal extent for the LONGEST chainstay the slider allows
+  // (500 mm), not the current one, so the viewBox — and therefore the diagram's
+  // rendered height — stays put as you drag the chainstay. The rear wheel is
+  // still drawn at the actual chainstay, so it simply slides within a fixed
+  // frame (which is what changing the chainstay physically does).
+  const LAYOUT_CHAINSTAY = 500;
+  const layoutRx = Math.max(LAYOUT_CHAINSTAY, chainstayMm);
+  const maxX = Math.max(layoutRx + rrMax + PULLEY, crankReachX) + m;
   const minY = -topExtent - m - 10; // room for labels
   // Bottom must clear the lowest of: chainring, cog, and (if present) the
   // derailleur's downward reach — otherwise a big chainring gets culled in
@@ -450,9 +472,9 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
             ))}
           </>
         )}
-        {/* chain */}
+        {/* chain (or belt) */}
         {paths.map((d, i) => (
-          <path key={i} d={d} className="dt-chain" />
+          <path key={i} d={d} className={isBelt ? "dt-belt" : "dt-chain"} />
         ))}
         {/* crankset: a single outlined crank arm out to the pedal, drawn in
             front of the chainrings and turning at the pedalling cadence — on a

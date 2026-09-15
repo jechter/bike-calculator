@@ -682,14 +682,6 @@ export function WheelBuilding() {
         action={<HubPicker selected={hub} onPick={applyHub} />}
       >
         <div className="grid">
-          <Field label="Spoke count (total)">
-            <NumberInput
-              value={spokes}
-              onChange={setSpokes}
-              min={ratio === "2:1" ? 9 : 8}
-              step={ratio === "2:1" ? 3 : 2}
-            />
-          </Field>
           <Field label="Flange hole diameter">
             <NumberInput value={holeDia} onChange={edited(setHoleDia)} suffix="mm" step={0.1} />
           </Field>
@@ -702,6 +694,57 @@ export function WheelBuilding() {
             }
           >
             <Select value={ratio} onChange={changeRatio} options={RATIO_OPTIONS} />
+          </Field>
+        </div>
+
+        <div className="wb-sides">
+          <div className="wb-side wb-side-left">
+            <h4 className="wb-side-title">Left / non-drive</h4>
+            <Field label="Flange diameter">
+              <NumberInput value={leftFlange} onChange={edited(setLeftFlange)} suffix="mm" />
+            </Field>
+            <Field label="Centre-to-flange offset">
+              <NumberInput value={leftOffset} onChange={edited(setLeftOffset)} suffix="mm" />
+            </Field>
+          </div>
+          <div className="wb-side wb-side-right">
+            <h4 className="wb-side-title">Right / drive</h4>
+            <Field label="Flange diameter">
+              <NumberInput value={rightFlange} onChange={edited(setRightFlange)} suffix="mm" />
+            </Field>
+            <Field label="Centre-to-flange offset">
+              <NumberInput value={rightOffset} onChange={edited(setRightOffset)} suffix="mm" />
+            </Field>
+          </div>
+        </div>
+
+        {hub && (
+          <p className="field-hint wb-hub-source">
+            Flange geometry from <HubSourceLink hub={hub} />. Measured values vary between
+            production runs — confirm against your hub.
+          </p>
+        )}
+      </Section>
+
+      <Section
+        title="Spokes"
+        info={
+          <>
+            The total spoke count splits between the two flanges (a 2:1 hub doubles
+            the drive side). Lacing is set per side — the drive side can mirror the
+            non-drive side or take its own cross count, grouping, or crow's-foot
+            pattern.
+          </>
+        }
+      >
+        <div className="grid">
+          <Field label="Spoke count (total)">
+            <NumberInput
+              value={spokes}
+              onChange={setSpokes}
+              min={ratio === "2:1" ? 9 : 8}
+              step={ratio === "2:1" ? 3 : 2}
+            />
           </Field>
           {ratio === "2:1" && (
             <Field
@@ -749,36 +792,17 @@ export function WheelBuilding() {
         <div className="wb-sides">
           <div className="wb-side wb-side-left">
             <h4 className="wb-side-title">Left / non-drive</h4>
-            <Field label="Flange diameter">
-              <NumberInput value={leftFlange} onChange={edited(setLeftFlange)} suffix="mm" />
-            </Field>
-            <Field label="Centre-to-flange offset">
-              <NumberInput value={leftOffset} onChange={edited(setLeftOffset)} suffix="mm" />
-            </Field>
             <Field label="Lacing">
               <Select value={leftLace} onChange={setLeftLace} options={LACING_OPTIONS} />
             </Field>
           </div>
           <div className="wb-side wb-side-right">
             <h4 className="wb-side-title">Right / drive</h4>
-            <Field label="Flange diameter">
-              <NumberInput value={rightFlange} onChange={edited(setRightFlange)} suffix="mm" />
-            </Field>
-            <Field label="Centre-to-flange offset">
-              <NumberInput value={rightOffset} onChange={edited(setRightOffset)} suffix="mm" />
-            </Field>
             <Field label="Lacing">
               <Select value={rightLace} onChange={setRightLace} options={RIGHT_LACING_OPTIONS} />
             </Field>
           </div>
         </div>
-
-        {hub && (
-          <p className="field-hint wb-hub-source">
-            Flange geometry from <HubSourceLink hub={hub} />. Measured values vary between
-            production runs — confirm against your hub.
-          </p>
-        )}
       </Section>
 
       <Section

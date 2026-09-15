@@ -101,9 +101,11 @@ body {
 .main h1 { margin: 0 0 4px; font-size: 24px; }
 .main .subtitle { color: var(--muted); margin: 0 0 24px; }
 .main-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+/* Header actions (e.g. "Load an example" + "Copy link"), aligned as a row. */
+.main-actions { display: flex; align-items: flex-start; gap: 8px; margin-top: 4px; flex: none; }
 
 /* "Copy link" button in the page header — copies a URL encoding the config. */
-.copy-link { flex: none; margin-top: 4px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.copy-link { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .copy-link-btn {
   border: 1px solid var(--border); border-radius: 999px;
   background: var(--panel); color: var(--text);
@@ -420,9 +422,11 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 /* Section header right-side action (e.g. preset picker) */
 .section-action { margin-left: auto; }
 
-/* "Load an example" picker at the top of the Wheel Building page. */
-.wb-toolbar { display: flex; margin-bottom: 14px; }
-.wb-examples .preset-list { left: 0; right: auto; min-width: 240px; max-height: 70vh; overflow: auto; }
+/* "Load an example" picker — a header button (styled like Copy link) with a
+   grouped popover, right-aligned so it doesn't overflow the header edge. */
+.wb-examples .preset-list { left: auto; right: 0; min-width: 240px; max-height: 70vh; overflow: auto; }
+.wb-examples .copy-link-btn .caret { color: var(--muted); transition: transform 0.15s ease; }
+.wb-examples .copy-link-btn.open .caret { transform: rotate(180deg); }
 /* Group heading inside a preset popover (non-clickable). */
 .preset-group {
   padding: 8px 10px 4px; font-size: 11px; font-weight: 600;

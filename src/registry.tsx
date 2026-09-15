@@ -1,6 +1,7 @@
 import React from "react";
 import { Drivetrain } from "./components/Drivetrain";
 import { WheelBuilding } from "./components/WheelBuilding";
+import { WheelExamplesMenu } from "./components/WheelExamplesMenu";
 import { FrameSize } from "./components/FrameSize";
 import { Tire } from "./components/Tire";
 import { Derailleur } from "./components/Derailleur";
@@ -27,6 +28,8 @@ export interface CalculatorDef {
   /** Encodes its config in the URL hash — show a "Copy link" button (see
    *  useUrlConfigSync in the page component). */
   shareable?: boolean;
+  /** Optional extra control(s) rendered in the page header, left of "Copy link". */
+  HeaderActions?: React.ComponentType;
 }
 
 export const CALCULATORS: CalculatorDef[] = [
@@ -46,6 +49,7 @@ export const CALCULATORS: CalculatorDef[] = [
     icon: <WheelIcon />,
     Component: WheelBuilding,
     shareable: true,
+    HeaderActions: WheelExamplesMenu,
   },
   {
     id: "frame-size",

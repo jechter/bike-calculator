@@ -19,7 +19,7 @@ const nums = () => page.evaluate(() => [...document.querySelectorAll("input[type
 await load("#/wheel-building");
 
 // The menu button exists.
-const btn = await page.$(".wb-examples .preset-labelbtn");
+const btn = await page.$(".wb-examples .copy-link-btn");
 ok("examples menu button present", !!btn);
 
 // Open it and count the presets + group headers.
@@ -55,7 +55,7 @@ ok("ERD applied (502)", after.includes("502"), JSON.stringify(after));
 
 // Pick the standard 36-spoke preset next; confirm it re-seeds without reload.
 await page.evaluate(() => {
-  document.querySelector(".wb-examples .preset-labelbtn").click();
+  document.querySelector(".wb-examples .copy-link-btn").click();
 });
 await new Promise((r) => setTimeout(r, 120));
 await page.evaluate(() => {

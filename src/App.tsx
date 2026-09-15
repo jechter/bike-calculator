@@ -59,7 +59,12 @@ export function App() {
               <h1>{active.title}</h1>
               <p className="subtitle">{active.subtitle}</p>
             </div>
-            {active.shareable && <CopyLinkButton />}
+            {(active.HeaderActions || active.shareable) && (
+              <div className="main-actions">
+                {active.HeaderActions && <active.HeaderActions />}
+                {active.shareable && <CopyLinkButton />}
+              </div>
+            )}
           </div>
           <Active key={active.shareable ? hashKey : active.id} />
         </main>

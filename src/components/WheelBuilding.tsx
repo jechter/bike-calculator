@@ -567,8 +567,45 @@ export function WheelBuilding() {
     stype: spokeType !== defaultCurve.spokeType ? spokeType : null,
   });
 
+  const diagram = lacing.ok ? (
+    <WheelDiagram
+      erdMm={erd}
+      spokeCount={spokes}
+      leftFlangeDiaMm={leftFlange}
+      rightFlangeDiaMm={rightFlange}
+      leftOffsetMm={leftOffset}
+      rightOffsetMm={rightOffset}
+      leftCross={leftCross}
+      rightCross={rightCross}
+      leftGroup={leftGroup}
+      rightGroup={rightGroup}
+      leftPattern={leftPattern}
+      rightPattern={rightPattern}
+      ratio={ratio}
+      ndsCentre={ndsCentre}
+      crossPhase={crossPhase}
+      rimHoleGroup={rimHoleGroup}
+      rimHoleGap={rimHoleGap}
+      rimHoleOffsetMm={rimHoleOffset}
+      rimHolePaired={rimHolePaired}
+      interlaced={interlaced}
+      hubType={hubStyle?.type}
+      hubWidthMm={hubStyle?.widthMm}
+    />
+  ) : (
+    <Note tone="warn">
+      <strong>This lacing can't be built:</strong>
+      <ul className="lacing-errors">
+        {lacing.errors.map((e, i) => (
+          <li key={i}>{e}</li>
+        ))}
+      </ul>
+    </Note>
+  );
+
   return (
-    <>
+    <div className="wb-workbench">
+      <div className="wb-controls">
       <Section
         title="Rim"
         info={
@@ -806,67 +843,6 @@ export function WheelBuilding() {
       </Section>
 
       <Section
-        title="Spoke lengths"
-        info={
-          <>
-            Front and rear (and the two sides of a dished wheel) usually differ.
-            When between sizes most builders prefer ~1 mm short over long. A 1–2 mm
-            ERD error is the usual cause of wrong spokes.
-          </>
-        }
-      >
-        <div className="results" style={{ marginBottom: 16 }}>
-          <Result
-            label="Left / non-drive"
-            value={leftOk ? <SpokeSpecs specs={leftSpecs} /> : "—"}
-            big={leftOk && leftSpecs.length === 1}
-            accent="left"
-          />
-          <Result
-            label="Right / drive"
-            value={rightOk ? <SpokeSpecs specs={rightSpecs} /> : "—"}
-            big={rightOk && rightSpecs.length === 1}
-            accent="right"
-          />
-        </div>
-        {lacing.ok ? (
-          <WheelDiagram
-            erdMm={erd}
-            spokeCount={spokes}
-            leftFlangeDiaMm={leftFlange}
-            rightFlangeDiaMm={rightFlange}
-            leftOffsetMm={leftOffset}
-            rightOffsetMm={rightOffset}
-            leftCross={leftCross}
-            rightCross={rightCross}
-            leftGroup={leftGroup}
-            rightGroup={rightGroup}
-            leftPattern={leftPattern}
-            rightPattern={rightPattern}
-            ratio={ratio}
-            ndsCentre={ndsCentre}
-            crossPhase={crossPhase}
-            rimHoleGroup={rimHoleGroup}
-            rimHoleGap={rimHoleGap}
-            rimHoleOffsetMm={rimHoleOffset}
-            rimHolePaired={rimHolePaired}
-            interlaced={interlaced}
-            hubType={hubStyle?.type}
-            hubWidthMm={hubStyle?.widthMm}
-          />
-        ) : (
-          <Note tone="warn">
-            <strong>This lacing can't be built:</strong>
-            <ul className="lacing-errors">
-              {lacing.errors.map((e, i) => (
-                <li key={i}>{e}</li>
-              ))}
-            </ul>
-          </Note>
-        )}
-      </Section>
-
-      <Section
         title="Spoke tension converter"
         info={
           <>
@@ -902,6 +878,35 @@ export function WheelBuilding() {
           your build tension inside it.
         </p>
       </Section>
-    </>
+      </div>
+      <div className="wb-viz">
+        <Section
+          title="Spoke lengths"
+          info={
+            <>
+              Front and rear (and the two sides of a dished wheel) usually differ.
+              When between sizes most builders prefer ~1 mm short over long. A 1–2 mm
+              ERD error is the usual cause of wrong spokes.
+            </>
+          }
+        >
+          <div className="results">
+            <Result
+              label="Left / non-drive"
+              value={leftOk ? <SpokeSpecs specs={leftSpecs} /> : "—"}
+              big={leftOk && leftSpecs.length === 1}
+              accent="left"
+            />
+            <Result
+              label="Right / drive"
+              value={rightOk ? <SpokeSpecs specs={rightSpecs} /> : "—"}
+              big={rightOk && rightSpecs.length === 1}
+              accent="right"
+            />
+          </div>
+        </Section>
+        <div className="wb-viz-diagram">{diagram}</div>
+      </div>
+    </div>
   );
 }

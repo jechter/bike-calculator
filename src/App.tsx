@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { CALCULATORS } from "./registry";
 import { useHashRoute, useHashConfigKey } from "./useHashRoute";
 import { UnitsProvider } from "./units-context";
@@ -12,15 +13,38 @@ export function App() {
   // re-read their config from the URL even without a full page reload.
   const hashKey = useHashConfigKey();
 
+  // The sidebar can collapse to an icon rail to free up horizontal space for
+  // the wider pages (e.g. wheel building's controls + visualization split).
+  const [navCollapsed, setNavCollapsed] = useState(
+    () => localStorage.getItem("nav-collapsed") === "1",
+  );
+  const toggleNav = () =>
+    setNavCollapsed((c) => {
+      localStorage.setItem("nav-collapsed", c ? "0" : "1");
+      return !c;
+    });
+
   return (
     <UnitsProvider>
-      <div className="app">
+      <div className={"app" + (navCollapsed ? " app--nav-collapsed" : "")}>
         <aside className="sidebar">
+          <button
+            type="button"
+            className="nav-collapse"
+            onClick={toggleNav}
+            title={navCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={navCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="currentColor">
+              <path d="M2 2h1.5v12H2V2zm4.72 2.22 1.06 1.06L5.56 7.5H14v1H5.56l2.22 2.22-1.06 1.06L2.69 8l4.03-3.78z" />
+            </svg>
+          </button>
           <nav className="nav">
             {CALCULATORS.filter((c) => !c.hidden).map((c) => (
               <button
                 key={c.id}
                 className={c.id === active.id ? "active" : ""}
+                title={c.title}
                 // Clicking the active tab is a no-op — otherwise it would strip the
                 // config query from the hash and reset a shareable page.
                 onClick={() => c.id !== active.id && navigate(c.id)}
@@ -53,7 +77,7 @@ export function App() {
           </div>
         </aside>
 
-        <main className="main">
+        <main className={`main main--${active.id}`}>
           <div className="main-head">
             <div>
               <h1>{active.title}</h1>

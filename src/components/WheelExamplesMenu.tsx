@@ -1,19 +1,7 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { ExamplesMenu, type ExampleGroup } from "./ExamplesMenu";
 
-// Ready-made wheel builds for the "Load an example" header menu. Each is just the
-// set of URL params it differs from the defaults by (the same encoding the "Copy
-// link" button produces), so picking one navigates to that config and the Wheel
-// Building page re-seeds itself from the URL. Values are plain (un-encoded);
-// URLSearchParams handles escaping.
-interface ExamplePreset {
-  label: string;
-  params: Record<string, string>;
-}
-interface ExampleGroup {
-  label: string;
-  presets: ExamplePreset[];
-}
-
+// Ready-made wheel builds for the "Load an example" header menu. Each is the set
+// of URL params it differs from the defaults by; see ExamplesMenu.
 const EXAMPLE_PRESETS: ExampleGroup[] = [
   {
     label: "Common lacings",
@@ -77,56 +65,6 @@ const EXAMPLE_PRESETS: ExampleGroup[] = [
   },
 ];
 
-/**
- * A header button (styled like "Copy link") that opens a grouped popover of the
- * example builds above. Loading one navigates to its config; the Wheel Building
- * page re-seeds from the URL (App remounts it on the hash change — see
- * useHashConfigKey).
- */
 export function WheelExamplesMenu() {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, [open]);
-
-  const applyExample = (p: ExamplePreset) => {
-    const query = new URLSearchParams(p.params).toString();
-    window.location.hash = query ? `/wheel-building?${query}` : "/wheel-building";
-    setOpen(false);
-  };
-
-  return (
-    <div className="preset-menu preset-menu-labelled wb-examples" ref={ref}>
-      <button
-        type="button"
-        className={"copy-link-btn" + (open ? " open" : "")}
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-      >
-        Load an example <span className="caret">▾</span>
-      </button>
-      {open && (
-        <ul className="preset-list wb-examples-list">
-          {EXAMPLE_PRESETS.map((g) => (
-            <Fragment key={g.label}>
-              <li className="preset-group">{g.label}</li>
-              {g.presets.map((p) => (
-                <li key={p.label}>
-                  <button type="button" onClick={() => applyExample(p)}>
-                    {p.label}
-                  </button>
-                </li>
-              ))}
-            </Fragment>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
+  return <ExamplesMenu route="wheel-building" groups={EXAMPLE_PRESETS} />;
 }

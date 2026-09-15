@@ -425,9 +425,9 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* "Load an example" picker — a header button (styled like Copy link) with a
    grouped popover, right-aligned so it doesn't overflow the header edge. */
-.wb-examples .preset-list { left: auto; right: 0; min-width: 240px; max-height: 70vh; overflow: auto; }
-.wb-examples .copy-link-btn .caret { color: var(--muted); transition: transform 0.15s ease; }
-.wb-examples .copy-link-btn.open .caret { transform: rotate(180deg); }
+.examples-menu .preset-list { left: auto; right: 0; min-width: 240px; max-height: 70vh; overflow: auto; }
+.examples-menu .copy-link-btn .caret { color: var(--muted); transition: transform 0.15s ease; }
+.examples-menu .copy-link-btn.open .caret { transform: rotate(180deg); }
 /* Group heading inside a preset popover (non-clickable). */
 .preset-group {
   padding: 8px 10px 4px; font-size: 11px; font-weight: 600;

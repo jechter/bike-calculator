@@ -2,6 +2,7 @@ import React from "react";
 import { Drivetrain } from "./components/Drivetrain";
 import { WheelBuilding } from "./components/WheelBuilding";
 import { WheelExamplesMenu } from "./components/WheelExamplesMenu";
+import { DrivetrainExamplesMenu } from "./components/DrivetrainExamplesMenu";
 import { FrameSize } from "./components/FrameSize";
 import { Tire } from "./components/Tire";
 import { Derailleur } from "./components/Derailleur";
@@ -41,6 +42,7 @@ export const CALCULATORS: CalculatorDef[] = [
     icon: <DrivetrainIcon />,
     Component: Drivetrain,
     shareable: true,
+    HeaderActions: DrivetrainExamplesMenu,
   },
   {
     id: "wheel-building",

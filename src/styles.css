@@ -107,9 +107,10 @@ body {
 /* "Copy link" button in the page header — copies a URL encoding the config. */
 .copy-link { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .copy-link-btn {
-  border: 1px solid var(--border); border-radius: 999px;
-  background: var(--panel); color: var(--text);
-  padding: 6px 13px; font: inherit; font-size: 13px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--panel-2); color: var(--text);
+  padding: 6px 10px; font: inherit; font-size: 13px; cursor: pointer;
   white-space: nowrap;
 }
 .copy-link-btn:hover { border-color: var(--accent); color: var(--accent); }

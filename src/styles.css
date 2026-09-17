@@ -66,26 +66,31 @@ body {
 /* Collapse toggle — shrinks the sidebar to an icon rail to free horizontal
    space for the wider pages (e.g. wheel building's controls + viz split). */
 .nav-collapse {
-  align-self: flex-end;
   display: inline-flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px; margin-bottom: 6px; flex: none;
+  width: 28px; height: 28px; flex: none;
   border: 1px solid var(--border); border-radius: 8px;
   background: var(--panel); color: var(--muted); cursor: pointer;
 }
 .nav-collapse:hover { border-color: var(--accent); color: var(--accent); }
 
+/* Header row: Rückenwind brand on the left, collapse toggle on the right. */
+.sidebar-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 16px;
+}
 /* Rückenwind brand: the wide wordmark when expanded, the round "r" mark when the
    rail is collapsed. Links back to the main site (target=_top escapes the embed). */
-.brand { display: block; margin: 2px 4px 16px; }
+.brand { display: block; flex: 0 1 auto; min-width: 0; line-height: 0; }
 .brand-logo { display: block; height: auto; }
-.brand-logo--full { width: 100%; max-width: 180px; }
+.brand-logo--full { width: 100%; max-width: 160px; }
 .brand-logo--mark { display: none; }
 
 .app--nav-collapsed { --sidebar-w: 64px; }
 .app--nav-collapsed .sidebar { padding: 16px 8px; align-items: center; }
 .app--nav-collapsed .nav-collapse { align-self: center; }
 .app--nav-collapsed .nav-collapse svg { transform: scaleX(-1); } /* point right to expand */
-.app--nav-collapsed .brand { margin: 2px 0 14px; }
+/* No room for a row on the narrow rail — stack the mark over the toggle. */
+.app--nav-collapsed .sidebar-head { flex-direction: column; gap: 10px; }
 .app--nav-collapsed .brand-logo--full { display: none; }
 .app--nav-collapsed .brand-logo--mark { display: block; width: 40px; }
 .app--nav-collapsed .nav { width: 100%; }

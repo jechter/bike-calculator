@@ -30,35 +30,37 @@ export function App() {
     <UnitsProvider>
       <div className={"app" + (navCollapsed ? " app--nav-collapsed" : "")}>
         <aside className="sidebar">
-          <button
-            type="button"
-            className="nav-collapse"
-            onClick={toggleNav}
-            title={navCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            aria-label={navCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="currentColor">
-              <path d="M2 2h1.5v12H2V2zm4.72 2.22 1.06 1.06L5.56 7.5H14v1H5.56l2.22 2.22-1.06 1.06L2.69 8l4.03-3.78z" />
-            </svg>
-          </button>
-          <a
-            className="brand"
-            href="https://rueckenwind.berlin"
-            target="_top"
-            rel="noopener noreferrer"
-            title="Rückenwind Berlin"
-          >
-            <img
-              className="brand-logo brand-logo--full"
-              src={rueckenwindLogo}
-              alt="Rückenwind Berlin"
-            />
-            <img
-              className="brand-logo brand-logo--mark"
-              src={rueckenwindMark}
-              alt="Rückenwind"
-            />
-          </a>
+          <div className="sidebar-head">
+            <a
+              className="brand"
+              href="https://rueckenwind.berlin"
+              target="_top"
+              rel="noopener noreferrer"
+              title="Rückenwind Berlin"
+            >
+              <img
+                className="brand-logo brand-logo--full"
+                src={rueckenwindLogo}
+                alt="Rückenwind Berlin"
+              />
+              <img
+                className="brand-logo brand-logo--mark"
+                src={rueckenwindMark}
+                alt="Rückenwind"
+              />
+            </a>
+            <button
+              type="button"
+              className="nav-collapse"
+              onClick={toggleNav}
+              title={navCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={navCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="currentColor">
+                <path d="M2 2h1.5v12H2V2zm4.72 2.22 1.06 1.06L5.56 7.5H14v1H5.56l2.22 2.22-1.06 1.06L2.69 8l4.03-3.78z" />
+              </svg>
+            </button>
+          </div>
           <nav className="nav">
             {CALCULATORS.filter((c) => !c.hidden).map((c) => (
               <button

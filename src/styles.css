@@ -10,6 +10,10 @@
   --ok: #157347;
   --warn: #b7791f;
   --danger: #c0392b;
+  /* Frame-size diagram legend: rider height (blue), inseam (green), frame height (red) */
+  --diag-blue: #2f83c4;
+  --diag-green: #3faa5a;
+  --diag-red: #e13b34;
   --radius: 10px;
   --sidebar-w: 240px;
 }
@@ -27,6 +31,9 @@
     --ok: #46c07a;
     --warn: #e0a44a;
     --danger: #e8695b;
+    --diag-blue: #5aa9e6;
+    --diag-green: #5cc178;
+    --diag-red: #f26a63;
   }
 }
 
@@ -206,6 +213,7 @@ body {
 /* Fields */
 .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 4px; }
 .field-label { font-weight: 600; font-size: 13px; }
+.field-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: baseline; }
 .field-hint { font-size: 12px; color: var(--muted); }
 .field-hint-warn { color: var(--warn); font-weight: 500; }
 /* Accent the input itself to mark the value you set in a two-way solve
@@ -287,6 +295,91 @@ tr.highlight td { background: var(--accent-soft); }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .dr-note { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* Method picker: custom select whose folded control carries the active colour as
+   a left accent, and whose open list prefixes each option with a colour square. */
+.swatch-select { position: relative; }
+.swatch-select-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--swatch-accent, var(--border));
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+.swatch-select-btn:hover { border-color: var(--accent); }
+.swatch-select-value { flex: 1; }
+.swatch-select-btn .caret { color: var(--muted); flex: none; transition: transform 0.15s ease; }
+.swatch-select-btn.open .caret { transform: rotate(180deg); }
+
+.swatch-select-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  min-width: 220px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.swatch-select-list ul { margin: 0; padding: 0; list-style: none; }
+.swatch-select-group + .swatch-select-group { margin-top: 4px; }
+.swatch-select-grouplabel {
+  display: block;
+  padding: 6px 10px 2px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.swatch-select-list button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  padding: 7px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.swatch-select-list button:hover { background: var(--accent-soft); color: var(--accent); }
+.swatch-select-list button.active { font-weight: 600; }
+.swatch-dot {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  background: transparent;
+}
+
+/* Frame-size explainer figure */
+.fs-diagram {
+  margin: 14px 0 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+.fs-diagram img { width: 100%; max-width: 560px; display: block; margin: 0 auto; }
 
 /* Drivetrain (crankset + cassette) diagram */
 .dt-diagram { position: relative; margin-top: 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }

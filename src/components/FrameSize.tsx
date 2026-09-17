@@ -7,7 +7,8 @@ import {
   LEG_PROPORTIONS,
   type FrameStyle,
 } from "../lib/frameSize";
-import { Field, NumberInput, Select, Result, Section } from "./ui";
+import { Field, NumberInput, Select, SwatchSelect, Result, Section } from "./ui";
+import frameSizeDiagram from "../assets/frame-size-diagram.png";
 
 const STYLE_OPTIONS: Array<{ value: FrameStyle; label: string }> = [
   { value: "road", label: "Road / Endurance" },
@@ -19,19 +20,31 @@ const STYLE_OPTIONS: Array<{ value: FrameStyle; label: string }> = [
 
 type Method = "inseam" | "height" | "frameSize";
 
+// Tie each measurement back to the explainer diagram at the bottom of the page:
+// rider height is blue, inseam green, frame height red.
+const METHOD_COLOR: Record<Method, string> = {
+  inseam: "var(--diag-green)",
+  height: "var(--diag-blue)",
+  frameSize: "var(--diag-red)",
+};
+
 // One entry point for both directions: the first group sizes a bike for a rider,
 // the second runs it backwards to find who an existing frame fits.
+// A colour square prefixes each option in the open list (SwatchSelect); the
+// folded control shows just the label, tinted by the accent border instead.
 const METHOD_OPTIONS = [
   {
     label: "Find a frame for a rider",
     options: [
-      { value: "inseam", label: "Inseam (best)" },
-      { value: "height", label: "Body height" },
+      { value: "inseam", label: "Inseam (best)", color: METHOD_COLOR.inseam },
+      { value: "height", label: "Body height", color: METHOD_COLOR.height },
     ],
   },
   {
     label: "Find a rider for a frame",
-    options: [{ value: "frameSize", label: "Frame size (seat tube c–t)" }],
+    options: [
+      { value: "frameSize", label: "Frame size (seat tube c–t)", color: METHOD_COLOR.frameSize },
+    ],
   },
 ];
 
@@ -85,22 +98,27 @@ export function FrameSize() {
       >
         <div className="grid">
           <Field label="Method">
-            <Select
+            <SwatchSelect
               value={method}
               onChange={(v) => setMethod(v as Method)}
               options={METHOD_OPTIONS}
+              accentColor={METHOD_COLOR[method]}
             />
           </Field>
 
           {method === "inseam" && (
-            <Field label="Cycling inseam" hint="barefoot, crotch to floor, book pulled up firm">
+            <Field
+              label="Cycling inseam"
+              hint="barefoot, crotch to floor, book pulled up firm"
+              dotColor={METHOD_COLOR.inseam}
+            >
               <NumberInput value={inseam} onChange={setInseam} suffix="cm" min={50} max={110} />
             </Field>
           )}
 
           {method === "height" && (
             <>
-              <Field label="Body height">
+              <Field label="Body height" dotColor={METHOD_COLOR.height}>
                 <NumberInput value={height} onChange={setHeight} suffix="cm" min={140} max={210} />
               </Field>
               <Field label="Leg proportion" hint="varies by build / on average by sex">
@@ -110,7 +128,11 @@ export function FrameSize() {
                   options={LEG_PROPORTIONS.map((p) => ({ value: String(p.value), label: p.label }))}
                 />
               </Field>
-              <Field label="Est. inseam" hint={`≈ ${Math.round(legProp * 100)}% of height`}>
+              <Field
+                label="Est. inseam"
+                hint={`≈ ${Math.round(legProp * 100)}% of height`}
+                dotColor={METHOD_COLOR.inseam}
+              >
                 <div className="static-value">≈ {effectiveInseam.toFixed(0)} cm</div>
               </Field>
             </>
@@ -118,7 +140,7 @@ export function FrameSize() {
 
           {method === "frameSize" && (
             <>
-              <Field label="Frame size" hint="seat tube, centre-to-top">
+              <Field label="Frame size" hint="seat tube, centre-to-top" dotColor={METHOD_COLOR.frameSize}>
                 <NumberInput
                   value={frameSize}
                   onChange={setFrameSize}
@@ -173,6 +195,7 @@ export function FrameSize() {
           <div className="results">
             <Result
               label="Rider height"
+              dotColor="var(--diag-blue)"
               value={
                 <>
                   {fit.heightRangeCm[0].toFixed(0)}–{fit.heightRangeCm[1].toFixed(0)} cm
@@ -183,6 +206,7 @@ export function FrameSize() {
             />
             <Result
               label="Cycling inseam"
+              dotColor="var(--diag-green)"
               value={`${fit.inseamRangeCm[0].toFixed(0)}–${fit.inseamRangeCm[1].toFixed(0)} cm`}
             />
             <Result label="Nominal" value={fit.nominalSize} />
@@ -211,6 +235,7 @@ export function FrameSize() {
             <div className="results">
               <Result
                 label="Frame size (seat tube c–t)"
+                dotColor="var(--diag-red)"
                 value={
                   <>
                     {result.frameCm.toFixed(0)} cm
@@ -223,6 +248,7 @@ export function FrameSize() {
               />
               <Result
                 label="Range"
+                dotColor="var(--diag-red)"
                 value={
                   <>
                     {result.frameCmRange[0].toFixed(0)}–{result.frameCmRange[1].toFixed(0)} cm
@@ -263,6 +289,14 @@ export function FrameSize() {
           </Section>
         </>
       )}
+
+      {/* Explainer: how frame height (red), rider height (blue) and inseam (green) relate */}
+      <figure className="fs-diagram">
+        <img
+          src={frameSizeDiagram}
+          alt="Diagram showing frame height (seat tube centre-to-top), rider height and inseam height"
+        />
+      </figure>
     </>
   );
 }

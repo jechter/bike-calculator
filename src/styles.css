@@ -1109,6 +1109,12 @@ html.embedded .sidebar {
 html.embedded .main { padding-bottom: 24px; }
 html.embedded .main > :last-child { margin-bottom: 0; }
 
+/* Fill-mode embed (fixed full-window overlay, see main.tsx): keep scroll momentum
+   contained so hitting the top/bottom doesn't chain out to the host page and
+   rubber-band the whole iframe, briefly exposing the page behind it. */
+html.embed-fill,
+html.embed-fill body { overscroll-behavior: none; }
+
 /* The wide-screen workbench layouts pin themselves to the viewport height (100vh)
    and give their columns their own scroll panes. In an auto-resizing iframe that
    viewport *is* the height we just reported, so those rules misfire: the drivetrain

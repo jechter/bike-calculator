@@ -24,7 +24,12 @@ if (window.parent !== window) {
   const fillViewport =
     new URLSearchParams(window.location.search).get("embed") === "fill";
 
-  if (!fillViewport) {
+  if (fillViewport) {
+    // The host mounts us as a fixed full-window overlay. Stop scroll momentum at
+    // our edges (see html.embed-fill in styles.css) so an overscroll bounce
+    // doesn't chain out to the host page and rubber-band the iframe.
+    document.documentElement.classList.add("embed-fill");
+  } else {
     // Size to content instead of the viewport so the iframe can shrink as well as
     // grow (see html.embedded rules in styles.css).
     document.documentElement.classList.add("embedded");

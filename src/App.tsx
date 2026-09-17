@@ -4,6 +4,8 @@ import { useHashRoute, useHashConfigKey } from "./useHashRoute";
 import { UnitsProvider } from "./units-context";
 import { UnitSwitcher } from "./components/UnitSwitcher";
 import { CopyLinkButton } from "./components/CopyLinkButton";
+import rueckenwindLogo from "./assets/rueckenwind-logo.png";
+import rueckenwindMark from "./assets/rueckenwind-mark.png";
 
 export function App() {
   const [route, navigate] = useHashRoute(CALCULATORS[0].id);
@@ -39,6 +41,24 @@ export function App() {
               <path d="M2 2h1.5v12H2V2zm4.72 2.22 1.06 1.06L5.56 7.5H14v1H5.56l2.22 2.22-1.06 1.06L2.69 8l4.03-3.78z" />
             </svg>
           </button>
+          <a
+            className="brand"
+            href="https://rueckenwind.berlin"
+            target="_top"
+            rel="noopener noreferrer"
+            title="Rückenwind Berlin"
+          >
+            <img
+              className="brand-logo brand-logo--full"
+              src={rueckenwindLogo}
+              alt="Rückenwind Berlin"
+            />
+            <img
+              className="brand-logo brand-logo--mark"
+              src={rueckenwindMark}
+              alt="Rückenwind"
+            />
+          </a>
           <nav className="nav">
             {CALCULATORS.filter((c) => !c.hidden).map((c) => (
               <button

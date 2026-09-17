@@ -43,7 +43,12 @@ const METHOD_OPTIONS = [
   {
     label: "Find a rider for a frame",
     options: [
-      { value: "frameSize", label: "Frame size (seat tube c–t)", color: METHOD_COLOR.frameSize },
+      {
+        value: "frameSize",
+        label: "Frame size (seat tube c–t)",
+        shortLabel: "Frame size",
+        color: METHOD_COLOR.frameSize,
+      },
     ],
   },
 ];
@@ -70,7 +75,8 @@ export function FrameSize() {
   const fit = fitFromFrameSize({ frameCm, style, legProportion: legProp });
 
   return (
-    <>
+    <div className="fs-workbench">
+      <div className="fs-controls">
       <Section
         title="Input"
         info={
@@ -144,19 +150,19 @@ export function FrameSize() {
                 <NumberInput
                   value={frameSize}
                   onChange={setFrameSize}
-                  suffix={sizeUnit}
                   min={sizeUnit === "in" ? 12 : 30}
                   max={sizeUnit === "in" ? 25 : 65}
-                />
-              </Field>
-              <Field label="Size unit">
-                <Select
-                  value={sizeUnit}
-                  onChange={(v) => setSizeUnit(v as "cm" | "in")}
-                  options={[
-                    { value: "cm", label: "cm" },
-                    { value: "in", label: "inches" },
-                  ]}
+                  suffix={
+                    <select
+                      className="unit-suffix"
+                      value={sizeUnit}
+                      onChange={(e) => setSizeUnit(e.target.value as "cm" | "in")}
+                      aria-label="Size unit"
+                    >
+                      <option value="cm">cm</option>
+                      <option value="in">in</option>
+                    </select>
+                  }
                 />
               </Field>
               <Field label="Leg proportion" hint="shifts the height band only">
@@ -289,14 +295,17 @@ export function FrameSize() {
           </Section>
         </>
       )}
+      </div>
 
-      {/* Explainer: how frame height (red), rider height (blue) and inseam (green) relate */}
-      <figure className="fs-diagram">
+      {/* Explainer: how frame height (red), rider height (blue) and inseam (green)
+          relate. Sits in a right-hand rail on wide screens (like the drivetrain /
+          wheel-building workbench), and drops below the controls when narrow. */}
+      <figure className="fs-diagram fs-viz">
         <img
           src={frameSizeDiagram}
           alt="Diagram showing frame height (seat tube centre-to-top), rider height and inseam height"
         />
       </figure>
-    </>
+    </div>
   );
 }

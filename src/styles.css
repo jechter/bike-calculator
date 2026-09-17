@@ -250,6 +250,20 @@ input[type="number"], input[type="text"], select {
 .number-input { display: flex; align-items: center; gap: 6px; }
 .number-input input { flex: 1; }
 .number-input .suffix { color: var(--muted); font-size: 13px; }
+/* A compact unit picker that attaches to a number field in place of a plain
+   suffix — auto-width, muted, minimal chrome so it reads as a unit, not a field. */
+.unit-suffix {
+  width: auto;
+  padding: 2px 4px;
+  font-size: 13px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.unit-suffix:hover { border-color: var(--border); color: var(--text); }
+.unit-suffix:focus { outline: none; border-color: var(--accent); color: var(--text); }
 
 /* Results */
 .results { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
@@ -379,7 +393,40 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   border-radius: var(--radius);
   padding: 12px;
 }
-.fs-diagram img { width: 100%; max-width: 560px; display: block; margin: 0 auto; }
+.fs-diagram img { display: block; margin: 0 auto; }
+/* Stacked (narrow): grow the diagram to fill the available vertical space rather
+   than a fixed width cap, so it isn't small under the controls; the box hugs the
+   image so it doesn't leave a wide empty frame. */
+@media (max-width: 1119px) {
+  .fs-viz { width: fit-content; max-width: 100%; }
+  .fs-viz img { width: auto; height: auto; max-width: 100%; max-height: 70vh; }
+}
+
+/* Wide screens: controls take a fixed reading width on the left, the explainer
+   fills the remaining space in a sticky right rail (mirrors the drivetrain /
+   wheel-building workbench). The breakpoint is set high enough that the rail
+   always has room for a decently-sized diagram; below it the layout stacks. */
+@media (min-width: 1120px) {
+  /* Use the full viewport width like the workbench pages so the diagram fills all
+     the horizontal space. Controls stay at their reading width; the rest is diagram. */
+  .main--frame-size { max-width: none; }
+  .fs-workbench {
+    display: grid;
+    grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+  .fs-viz {
+    position: sticky;
+    top: 16px;
+    margin-top: 0;
+    /* Cap the whole figure (not just the image) so the box hugs the diagram
+       instead of stretching the full column, and keep it left-bound in the rail. */
+    max-width: 924px; /* 900px image + 2×12px padding */
+    justify-self: start;
+  }
+  .fs-viz img { width: 100%; max-width: 900px; height: auto; max-height: none; }
+}
 
 /* Drivetrain (crankset + cassette) diagram */
 .dt-diagram { position: relative; margin-top: 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }

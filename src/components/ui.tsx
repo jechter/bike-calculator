@@ -91,7 +91,8 @@ export function NumberInput(props: {
   min?: number;
   max?: number;
   step?: number;
-  suffix?: string;
+  /** A trailing unit label, or any control (e.g. a compact unit picker). */
+  suffix?: React.ReactNode;
 }) {
   return (
     <span className="number-input">
@@ -173,6 +174,8 @@ export function Select<T extends string | number>(props: {
 interface SwatchOption<T> {
   value: T;
   label: string;
+  /** A shorter label for the folded control; falls back to `label`. */
+  shortLabel?: string;
   /** Colour square shown before the label in the open list. */
   color?: string;
 }
@@ -239,7 +242,7 @@ export function SwatchSelect<T extends string | number>(props: {
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
-        <span className="swatch-select-value">{current?.label}</span>
+        <span className="swatch-select-value">{current?.shortLabel ?? current?.label}</span>
         <span className="caret">▾</span>
       </button>
       {open && (

@@ -9,6 +9,10 @@ import {
   computeGears,
   gearRange,
   chainLength,
+  singleSpeedChainLength,
+  nearbyBeltOptions,
+  idealBeltTeeth,
+  BELT_ADJUST_TOLERANCE_MM,
   type GearResult,
   type HubGear,
   type HubPreset,
@@ -37,8 +41,13 @@ import { useUnits, speedUnitLabel } from "../units-context";
 import { Field, NumberInput, TextInput, Select, PresetMenu, Result, Note, Section } from "./ui";
 import { GearChart, type GearSeries } from "./GearChart";
 import { DrivetrainDiagram } from "./DrivetrainDiagram";
+import { getHashQuery, useUrlConfigSync } from "../useHashRoute";
 
 type Mode = "cassette" | "single" | "hub";
+// Single-speed / plain-hub drives can run either a chain or a Gates carbon belt;
+// belts change how "length" works (see the Chain/Belt length section) and have no
+// chain-wear table. Only meaningful when there's no derailleur.
+type Transmission = "chain" | "belt";
 type Metric = "speed" | "gearInches" | "development" | "ratio";
 
 function parseList(s: string): number[] {
@@ -646,6 +655,13 @@ function hasDerailleur(cfg: { mode: Mode; hubIdx: number }): boolean {
   return cfg.mode === "cassette" || comboActive(cfg);
 }
 
+// Whether this config is a belt drive. The transmission choice only applies to
+// chain-position drives (single-speed / plain hub) — a derailleur always runs a
+// chain, so belt is ignored there.
+function isBelt(cfg: { mode: Mode; hubIdx: number; transmission: Transmission }): boolean {
+  return cfg.transmission === "belt" && !hasDerailleur(cfg);
+}
+
 // Link (labelled with the hub's name) to where its ratios came from.
 function HubSourceLink({ hub }: { hub: HubPreset }) {
   const src = hub.source;
@@ -671,6 +687,8 @@ function HubSourceLink({ hub }: { hub: HubPreset }) {
 
 interface ConfigInit {
   mode: Mode;
+  /** Chain vs Gates belt — only used by single-speed / plain-hub drives. */
+  transmission: Transmission;
   chainringStr: string;
   cogStr: string;
   /** Selected cassette model (index into CASSETTE_PRESETS), or -1 for custom. */
@@ -690,6 +708,7 @@ interface ConfigInit {
 
 interface DrivetrainConfig extends ConfigInit {
   setMode: (m: Mode) => void;
+  setTransmission: (t: Transmission) => void;
   setChainringStr: (s: string) => void;
   setCogStr: (s: string) => void;
   setCassetteIdx: (n: number) => void;
@@ -704,6 +723,7 @@ interface DrivetrainConfig extends ConfigInit {
 
 function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
   const [mode, setMode] = useState<Mode>(init.mode);
+  const [transmission, setTransmission] = useState<Transmission>(init.transmission);
   const [chainringStr, setChainringStr] = useState(init.chainringStr);
   const [cogStr, setCogStr] = useState(init.cogStr);
   const [cassetteIdx, setCassetteIdx] = useState(init.cassetteIdx);
@@ -716,6 +736,7 @@ function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
   const [tireSize, setTireSize] = useState(init.tireSize);
   return {
     mode,
+    transmission,
     chainringStr,
     cogStr,
     cassetteIdx,
@@ -727,6 +748,7 @@ function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
     circ,
     tireSize,
     setMode,
+    setTransmission,
     setChainringStr,
     setCogStr,
     setCassetteIdx,
@@ -744,6 +766,7 @@ function useDrivetrainConfig(init: ConfigInit): DrivetrainConfig {
 // comparison drivetrain from the first, so a single change can be isolated).
 function copyConfig(from: DrivetrainConfig, to: DrivetrainConfig) {
   to.setMode(from.mode);
+  to.setTransmission(from.transmission);
   to.setChainringStr(from.chainringStr);
   to.setCogStr(from.cogStr);
   to.setCassetteIdx(from.cassetteIdx);
@@ -1285,51 +1308,148 @@ function CircumferenceField({ cfg }: { cfg: DrivetrainConfig }) {
   );
 }
 
+// The config each drivetrain opens on. Also the reference the URL codec diffs
+// against, so a shared link only carries what the user actually changed.
+const DEFAULT_A: ConfigInit = {
+  mode: "cassette",
+  transmission: "chain",
+  chainringStr: "50, 34",
+  cogStr: "11, 12, 13, 14, 15, 17, 19, 21, 24, 28",
+  cassetteIdx: cassetteModelIdx([11, 12, 13, 14, 15, 17, 19, 21, 24, 28], "Shimano"),
+  singleRing: 42,
+  singleCog: 18,
+  hubIdx: DEFAULT_HUB_IDX,
+  derailleurId: "",
+  shifter: null,
+  circ: 2111,
+  tireSize: "25-622",
+};
+const DEFAULT_B: ConfigInit = {
+  mode: "cassette",
+  transmission: "chain",
+  chainringStr: "46, 30",
+  cogStr: "11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42",
+  cassetteIdx: cassetteModelIdx([11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42], "Shimano"),
+  singleRing: 42,
+  singleCog: 18,
+  hubIdx: DEFAULT_HUB_IDX,
+  derailleurId: "",
+  shifter: null,
+  circ: 2111,
+  tireSize: "25-622",
+};
+
+const DEFAULT_CADENCE = 90;
+const DEFAULT_CHAINSTAY = 410;
+
+// --- URL config (link sharing) ---------------------------------------------
+// Each config is encoded under a prefix ("" for A, "b" for B); shared axis
+// settings use their own keys. Only values differing from the defaults above are
+// written, and configFromParams falls back to those same defaults — so the
+// round-trip is lossless and a fresh page keeps a clean URL.
+
+function paramNum(v: string | null, dflt: number): number {
+  if (v == null) return dflt;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : dflt;
+}
+
+function isMode(v: string | null): v is Mode {
+  return v === "cassette" || v === "single" || v === "hub";
+}
+function isTransmission(v: string | null): v is Transmission {
+  return v === "chain" || v === "belt";
+}
+function isMetric(v: string | null): v is Metric {
+  return v === "speed" || v === "gearInches" || v === "development" || v === "ratio";
+}
+
+function configFromParams(q: URLSearchParams, p: string, d: ConfigInit): ConfigInit {
+  const shfRaw = q.get(p + "shf");
+  let shifter = d.shifter;
+  if (shfRaw != null) {
+    const i = shfRaw.lastIndexOf("~");
+    shifter =
+      i >= 0
+        ? { family: shfRaw.slice(0, i), speeds: paramNum(shfRaw.slice(i + 1), 0) }
+        : { family: shfRaw, speeds: 0 };
+  }
+  const mode = q.get(p + "mode");
+  const transmission = q.get(p + "tx");
+  return {
+    mode: isMode(mode) ? mode : d.mode,
+    transmission: isTransmission(transmission) ? transmission : d.transmission,
+    chainringStr: q.get(p + "cr") ?? d.chainringStr,
+    cogStr: q.get(p + "cog") ?? d.cogStr,
+    cassetteIdx: paramNum(q.get(p + "cix"), d.cassetteIdx),
+    singleRing: paramNum(q.get(p + "sr"), d.singleRing),
+    singleCog: paramNum(q.get(p + "sc"), d.singleCog),
+    hubIdx: paramNum(q.get(p + "hub"), d.hubIdx),
+    derailleurId: q.get(p + "der") ?? d.derailleurId,
+    shifter,
+    circ: paramNum(q.get(p + "circ"), d.circ),
+    tireSize: q.get(p + "tire") ?? d.tireSize,
+  };
+}
+
+function configToParams(c: DrivetrainConfig, d: ConfigInit, p: string): Record<string, unknown> {
+  return {
+    [p + "mode"]: c.mode !== d.mode ? c.mode : null,
+    [p + "tx"]: c.transmission !== d.transmission ? c.transmission : null,
+    [p + "cr"]: c.chainringStr !== d.chainringStr ? c.chainringStr : null,
+    [p + "cog"]: c.cogStr !== d.cogStr ? c.cogStr : null,
+    [p + "cix"]: c.cassetteIdx !== d.cassetteIdx ? c.cassetteIdx : null,
+    [p + "sr"]: c.singleRing !== d.singleRing ? c.singleRing : null,
+    [p + "sc"]: c.singleCog !== d.singleCog ? c.singleCog : null,
+    [p + "hub"]: c.hubIdx !== d.hubIdx ? c.hubIdx : null,
+    [p + "der"]: c.derailleurId !== d.derailleurId ? c.derailleurId : null,
+    [p + "shf"]: c.shifter ? `${c.shifter.family}~${c.shifter.speeds}` : null,
+    [p + "circ"]: c.circ !== d.circ ? c.circ : null,
+    [p + "tire"]: c.tireSize !== d.tireSize ? c.tireSize : null,
+  };
+}
+
 export function Drivetrain() {
   const units = useUnits();
 
-  const configA = useDrivetrainConfig({
-    mode: "cassette",
-    chainringStr: "50, 34",
-    cogStr: "11, 12, 13, 14, 15, 17, 19, 21, 24, 28",
-    cassetteIdx: cassetteModelIdx([11, 12, 13, 14, 15, 17, 19, 21, 24, 28], "Shimano"),
-    singleRing: 42,
-    singleCog: 18,
-    hubIdx: DEFAULT_HUB_IDX,
-    derailleurId: "",
-    shifter: null,
-    circ: 2111,
-    tireSize: "25-622",
-  });
-  const configB = useDrivetrainConfig({
-    mode: "cassette",
-    chainringStr: "46, 30",
-    cogStr: "11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42",
-    cassetteIdx: cassetteModelIdx([11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42], "Shimano"),
-    singleRing: 42,
-    singleCog: 18,
-    hubIdx: DEFAULT_HUB_IDX,
-    derailleurId: "",
-    shifter: null,
-    circ: 2111,
-    tireSize: "25-622",
-  });
+  // Seed from the URL once (a shared link); later renders ignore these since the
+  // state initializers only run on mount.
+  const q = useMemo(() => getHashQuery(), []);
+
+  const configA = useDrivetrainConfig(configFromParams(q, "", DEFAULT_A));
+  const configB = useDrivetrainConfig(configFromParams(q, "b", DEFAULT_B));
 
   // Shared across both configs — cadence is just the speed-axis parameter.
-  const [cadence, setCadence] = useState(90);
-  const [chainstay, setChainstay] = useState(410);
-  const [metric, setMetric] = useState<Metric>("speed");
+  const [cadence, setCadence] = useState(() => paramNum(q.get("cad"), DEFAULT_CADENCE));
+  const [chainstay, setChainstay] = useState(() => paramNum(q.get("cs"), DEFAULT_CHAINSTAY));
+  const [metric, setMetric] = useState<Metric>(() => {
+    const m = q.get("metric");
+    return isMetric(m) ? m : "speed";
+  });
 
-  const [comparing, setComparing] = useState(false);
+  const [comparing, setComparing] = useState(() => q.get("cmp") === "1");
   // Which config the per-drivetrain detail sections (diagram, chain length,
   // derailleur fit, chain wear) describe. Only meaningful while comparing.
-  const [focus, setFocus] = useState<"A" | "B">("A");
+  const [focus, setFocus] = useState<"A" | "B">(() => (q.get("foc") === "B" ? "B" : "A"));
   const [activeGear, setActiveGear] = useState<{
     chainring: number;
     cog: number;
     hubName?: string;
     hubRatio?: number;
   } | null>(null);
+
+  // Mirror the whole config into the URL hash so the "Copy link" button (in the
+  // page header) shares exactly what's on screen. Config B is only encoded while
+  // comparing — it isn't part of the current view otherwise.
+  useUrlConfigSync("drivetrain", {
+    ...configToParams(configA, DEFAULT_A, ""),
+    cad: cadence !== DEFAULT_CADENCE ? cadence : null,
+    cs: chainstay !== DEFAULT_CHAINSTAY ? chainstay : null,
+    metric: metric !== "speed" ? metric : null,
+    cmp: comparing ? 1 : null,
+    foc: comparing && focus === "B" ? "B" : null,
+    ...(comparing ? configToParams(configB, DEFAULT_B, "b") : {}),
+  });
 
   const derivedA = useDerived(configA, cadence);
   const derivedB = useDerived(configB, cadence);
@@ -1345,6 +1465,25 @@ export function Drivetrain() {
   const largestCog = Math.max(...cogs, 0);
   const chain = chainLength({ chainstayMm: chainstay, largestChainring: largestRing, largestCog });
   const wearThresholds = chainWearThresholdsFor(hasDerailleur(focusCfg), cogs.length);
+
+  // Belt / single-speed length. Belts snap to a stock size and move the frame's
+  // centre distance to suit; a single-speed chain instead has a minimum length
+  // (shortest chain that reaches). Both only apply without a derailleur.
+  const belt = isBelt(focusCfg);
+  const beltIdeal = belt ? idealBeltTeeth(chainstay, largestRing, largestCog) : 0;
+  const beltOptions = belt ? nearbyBeltOptions(chainstay, largestRing, largestCog) : [];
+  // The stock belt closest to the target chainstay (smallest centre-distance
+  // delta), and whether that delta is within a frame's typical adjustment — if
+  // not, no belt reasonably fits (chainstay too short/long, or in a size gap).
+  const bestBelt = beltOptions.length
+    ? beltOptions.reduce((a, b) => (Math.abs(b.deltaMm) < Math.abs(a.deltaMm) ? b : a))
+    : null;
+  const bestBeltTeeth = bestBelt?.teeth ?? 0;
+  const beltFits = !!bestBelt && Math.abs(bestBelt.deltaMm) <= BELT_ADJUST_TOLERANCE_MM;
+  const singleChain =
+    !hasDerailleur(focusCfg) && !belt
+      ? singleSpeedChainLength(chainstay, largestRing, largestCog)
+      : null;
 
   // Rear-derailleur fit check (cassette only), for the focused config. The
   // derailleur is now chosen in the Setup section (per config). fitCassette
@@ -1726,7 +1865,8 @@ export function Drivetrain() {
   }, []);
 
   return (
-    <>
+    <div className="dt-workbench">
+      <div className="dt-controls-col">
       <Section
         title="Setup"
         action={
@@ -1765,6 +1905,211 @@ export function Drivetrain() {
         )}
       </Section>
 
+      <Section
+        title={(belt ? "Belt" : "Chain") + (comparing ? ` · ${focusLabel}` : "")}
+        info={
+          hasDerailleur(focusCfg) ? (
+            <>
+              Park Tool formula, rounded up so the link count is even (each link ≈
+              12.7 mm). It includes the +1 inch wrap for the rear derailleur. The
+              big-big wrap method is more reliable for wide 1× and full-suspension.
+            </>
+          ) : belt ? (
+            <>
+              A belt is a closed loop — it can't be cut or shortened. You fit a
+              stock belt (a whole tooth count) and set the frame's{" "}
+              <strong>centre distance</strong> to suit it, via a sliding dropout,
+              eccentric BB or eccentric hub. Gates CDX/CDN run an 11 mm pitch, so
+              belt length = teeth × 11 mm. The centre distances below are the exact
+              chainstay each belt needs.
+            </>
+          ) : (
+            <>
+              Set by the wheel / tensioner position, not a formula. The minimum is
+              the shortest chain that reaches at this chainstay; a longer chain
+              just sits the axle further back.
+            </>
+          )
+        }
+      >
+        {/* Chainstay and the chain/belt choice don't change the gearing, so they
+            live here with the length + wear they drive rather than in Setup. */}
+        <div className="grid">
+          {!hasDerailleur(focusCfg) && (
+            <Field label="Transmission">
+              <Select<Transmission>
+                value={focusCfg.transmission}
+                onChange={focusCfg.setTransmission}
+                options={[
+                  { value: "chain", label: "Chain" },
+                  { value: "belt", label: "Gates carbon belt" },
+                ]}
+              />
+            </Field>
+          )}
+          <Field label="Chainstay (mm)">
+            <div className="dt-chainstay">
+              <input
+                type="range"
+                aria-label="Chainstay length"
+                min={350}
+                max={500}
+                step={5}
+                value={Number.isFinite(chainstay) ? chainstay : 410}
+                onChange={(e) => setChainstay(parseInt(e.target.value))}
+              />
+              <input
+                type="number"
+                value={Number.isFinite(chainstay) ? chainstay : ""}
+                min={350}
+                max={500}
+                onChange={(e) => setChainstay(parseInt(e.target.value))}
+              />
+            </div>
+          </Field>
+        </div>
+
+        {hasDerailleur(focusCfg) ? (
+          <div className="grid">
+            <Result label="Largest ring / cog" value={`${largestRing} / ${largestCog} T`} />
+            <Result label="Length" value={`${chain.mm} mm`} />
+            <Result label="Links" value={chain.links} big />
+          </div>
+        ) : belt ? (
+          <>
+            <div className="grid">
+              <Result label="Front / rear sprocket" value={`${largestRing} / ${largestCog} T`} />
+              <Result label="Ideal belt" value={`${beltIdeal.toFixed(1)} T`} />
+            </div>
+            {beltOptions.length ? (
+              <>
+                {!beltFits && bestBelt && (
+                  <Note tone="warn">
+                    No stock Gates belt fits this chainstay — the closest is{" "}
+                    <strong>{bestBelt.teeth} T</strong>, which needs a centre distance{" "}
+                    {Math.abs(Math.round(bestBelt.deltaMm))} mm{" "}
+                    {bestBelt.deltaMm > 0 ? "longer" : "shorter"} than the {chainstay} mm
+                    chainstay — beyond the ~{BELT_ADJUST_TOLERANCE_MM} mm a sliding
+                    dropout / eccentric BB / hub typically takes up. Change the sprocket
+                    sizes or chainstay to land on a stock belt below.
+                  </Note>
+                )}
+                <div className="table-wrap dt-belt-table">
+                  <table>
+                  <thead>
+                    <tr>
+                      <th>Belt</th>
+                      <th className="num">Length</th>
+                      <th className="num">Centre distance</th>
+                      <th className="num">vs. chainstay</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {beltOptions.map((b) => {
+                      const d = Math.round(b.deltaMm);
+                      const deltaStr = d === 0 ? "0 mm" : `${d > 0 ? "+" : "−"}${Math.abs(d)} mm`;
+                      const best = b.teeth === bestBeltTeeth;
+                      return (
+                        <tr key={b.teeth}>
+                          <td>
+                            {best ? <strong>{b.teeth} T ✓</strong> : `${b.teeth} T`}
+                          </td>
+                          <td className="num">{Math.round(b.lengthMm)} mm</td>
+                          <td className="num">{Math.round(b.centerDistanceMm)} mm</td>
+                          <td className="num">{deltaStr}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  </table>
+                </div>
+              </>
+            ) : (
+              <Note tone="warn">
+                No catalogued Gates belt spans this sprocket combination at this
+                chainstay — try a size closer to the sprockets.
+              </Note>
+            )}
+            {beltOptions.length > 0 && beltFits && (
+              <Note>
+                Pick the belt whose centre distance lands inside your frame's
+                adjustment range — a <strong>sliding dropout</strong>,{" "}
+                <strong>eccentric BB</strong> or <strong>eccentric hub</strong> — with a
+                few mm of travel to spare for tensioning (✓ marks the closest to your
+                chainstay). Drag the chainstay slider above to preview each fit.
+              </Note>
+            )}
+          </>
+        ) : (
+          <>
+            <Note>
+              {focusCfg.mode === "hub" ? "Hub-geared" : "Single-speed"} chains aren't sized
+              by the derailleur formula — there's no derailleur cage to take up
+              slack, so length is set by the <strong>dropout / tensioner
+              position</strong>. Wrap the chain around the ring and cog, pull it
+              snug, and pick the shortest link that lets the wheel sit within its
+              adjustment range with correct tension (about 1 cm of vertical play).
+              A <strong>half-link</strong> can fine-tune the fit on track/horizontal
+              dropouts. Use a chain tensioner if the frame has vertical dropouts.
+            </Note>
+            {singleChain && (
+              <>
+                <div className="grid">
+                  <Result label="Ring / cog" value={`${largestRing} / ${largestCog} T`} />
+                  <Result label="Minimum length" value={`${singleChain.mm} mm`} />
+                  <Result label="Minimum links" value={singleChain.links} big />
+                </div>
+                <Note>
+                  That's the shortest chain that will reach at this chainstay
+                  (rounded up to a whole {singleChain.links}-link even count). A new
+                  chain typically comes as <strong>112 links</strong> (single-speed /
+                  track, ⅛″) or <strong>116</strong> (derailleur-width) — if the
+                  minimum above is longer, you'll need an extra-long chain or to add
+                  links from a second one.
+                </Note>
+              </>
+            )}
+          </>
+        )}
+
+        {/* Chain wear — belts don't elongate (no metal-on-metal wear), so the
+            replacement-threshold table only applies to chains. */}
+        {!belt && (
+          <div className="dt-subsection">
+            <h4 className="dt-subhead">When to replace</h4>
+            <p className="dt-subnote">
+              Measured at the bench with a chain-wear gauge.{" "}
+              {hasDerailleur(focusCfg)
+                ? `Shown for your ${cogs.length}-speed cassette.`
+                : "Single-speed and hub bikes can run a narrow 3/32\" or wide 1/8\" chain — pick the row matching your chain."}{" "}
+              Past the threshold the cassette (and possibly chainrings) may skip with a
+              new chain.
+            </p>
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Chain type</th>
+                    <th className="num">Replace at</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {wearThresholds.map((t) => (
+                    <tr key={t.chainType}>
+                      <td>{t.chainType}</td>
+                      <td className="num">{t.replaceAtPercent.toFixed(2)}%</td>
+                      <td>{t.note}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </Section>
+      </div>
+      <div className="dt-viz">
       <Section
         title="Gears"
         info={
@@ -1917,6 +2262,7 @@ export function Drivetrain() {
           chainstayMm={chainstay}
           wheelCircMm={focusCfg.circ}
           hasDerailleur={hasDerailleur(focusCfg)}
+          isBelt={belt}
           cadenceRpm={rpm}
           speed={toSpeed(activeSpeedKmh)}
           speedUnit={unitLabel}
@@ -1929,28 +2275,6 @@ export function Drivetrain() {
           canShiftUp={canShiftUp}
         />
 
-        <div className="dt-controls">
-          <label htmlFor="chainstay">Chainstay</label>
-          <input
-            id="chainstay"
-            type="range"
-            min={350}
-            max={500}
-            step={5}
-            value={Number.isFinite(chainstay) ? chainstay : 410}
-            onChange={(e) => setChainstay(parseInt(e.target.value))}
-          />
-          <input
-            type="number"
-            className="gc-cadence-num"
-            value={Number.isFinite(chainstay) ? chainstay : ""}
-            min={350}
-            max={500}
-            onChange={(e) => setChainstay(parseInt(e.target.value))}
-          />
-          <span>mm</span>
-        </div>
-
         <p className="dt-hint">
           Want to know if this gearing will get you up a mountain? The{" "}
           <a className="inline-link" href="#/power">
@@ -1961,7 +2285,6 @@ export function Drivetrain() {
           realistic.
         </p>
       </Section>
-
       {hasDerailleur(focusCfg) && derailleur && (
         <Section
           title={comparing ? `Rear derailleur fit · ${focusLabel}` : "Rear derailleur fit"}
@@ -2137,74 +2460,7 @@ export function Drivetrain() {
           </>
         </Section>
       )}
-
-      <Section
-        title={comparing ? `Chain length · ${focusLabel}` : "Chain length"}
-        info={
-          hasDerailleur(focusCfg) ? (
-            <>
-              Park Tool formula, rounded up so the link count is even (each link ≈
-              12.7 mm). It includes the +1 inch wrap for the rear derailleur. The
-              big-big wrap method is more reliable for wide 1× and full-suspension.
-            </>
-          ) : undefined
-        }
-      >
-        {hasDerailleur(focusCfg) ? (
-          <div className="grid">
-            <Result label="Chainstay length" value={`${chainstay} mm`} />
-            <Result label="Largest ring / cog" value={`${largestRing} / ${largestCog} T`} />
-            <Result label="Length" value={`${chain.mm} mm`} />
-            <Result label="Links" value={chain.links} big />
-          </div>
-        ) : (
-          <Note>
-            {focusCfg.mode === "hub" ? "Hub-geared" : "Single-speed"} chains aren't sized
-            by the derailleur formula — there's no derailleur cage to take up
-            slack, so length is set by the <strong>dropout / tensioner
-            position</strong>. Wrap the chain around the ring and cog, pull it
-            snug, and pick the shortest link that lets the wheel sit within its
-            adjustment range with correct tension (about 1 cm of vertical play).
-            A <strong>half-link</strong> can fine-tune the fit on track/horizontal
-            dropouts. Use a chain tensioner if the frame has vertical dropouts.
-          </Note>
-        )}
-      </Section>
-
-      <Section
-        title={comparing ? `Chain wear — when to replace · ${focusLabel}` : "Chain wear — when to replace"}
-        info={
-          <>
-            Measured at the bench with a chain-wear gauge.{" "}
-            {hasDerailleur(focusCfg)
-              ? `Shown for your ${cogs.length}-speed cassette.`
-              : "Single-speed and hub bikes can run a narrow 3/32\" or wide 1/8\" chain — pick the row matching your chain."}{" "}
-            Past the threshold the cassette (and possibly chainrings) may skip with a
-            new chain.
-          </>
-        }
-      >
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Chain type</th>
-                <th className="num">Replace at</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {wearThresholds.map((t) => (
-                <tr key={t.chainType}>
-                  <td>{t.chainType}</td>
-                  <td className="num">{t.replaceAtPercent.toFixed(2)}%</td>
-                  <td>{t.note}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Section>
-    </>
+      </div>
+    </div>
   );
 }

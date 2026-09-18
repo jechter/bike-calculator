@@ -15,6 +15,7 @@ import {
 import { Field, NumberInput, Select, PresetMenu, Result, Note, Section } from "./ui";
 import { WheelDiagram } from "./WheelDiagram";
 import { TensionCurveChart } from "./TensionCurveChart";
+import { getHashQuery, useUrlConfigSync } from "../useHashRoute";
 
 const RIM_OPTIONS = RIM_PRESETS.map((p) => ({ value: String(p.erdMm), label: p.label }));
 
@@ -80,10 +81,11 @@ const RATIO_OPTIONS: Array<{ value: HubRatio; label: string }> = [
 // Rim hole grouping: some rims drill the holes in clusters (paired, in threes…)
 // with a wider gap between clusters. 1 = plain even drilling.
 const RIM_GROUP_OPTIONS = [
-  { value: 1, label: "Even (no groups)" },
-  { value: 2, label: "Groups of 2" },
-  { value: 3, label: "Groups of 3" },
-  { value: 4, label: "Groups of 4" },
+  { value: "1", label: "Even (no groups)" },
+  { value: "2", label: "Groups of 2" },
+  { value: "3", label: "Groups of 3" },
+  { value: "4", label: "Groups of 4" },
+  { value: "pair", label: "Offset pairs" },
 ];
 
 // Spoke lengths a side needs, as (count × length) rows. Standard lacing is one
@@ -303,24 +305,76 @@ function HubPicker({
 // The page opens on a common, well-documented hub so the rendering isn't blank.
 const DEFAULT_HUB = HUBS.find((h) => h.manufacturer === "Chris King" && h.model === "R45 Rear");
 
+// --- URL config (link sharing) ---------------------------------------------
+// Every setting is mirrored into the URL hash so the header's "Copy link" button
+// shares exactly what's on screen. Only values that differ from these defaults
+// are written (and reads fall back to the same defaults), so the round-trip is
+// lossless and an untouched page keeps a clean URL. Defaults track DEFAULT_HUB,
+// matching the useState seeds below.
+const DEF = {
+  erd: 602,
+  rimHoleOffset: 0,
+  rimHoleGroup: 1,
+  rimHoleGap: 1.8,
+  rimHolePaired: false,
+  spokes: 32,
+  holeDia: DEFAULT_HUB?.spokeHoleMm ?? 2.6,
+  ratio: "1:1" as HubRatio,
+  ndsCentre: false,
+  crossPhase: false,
+  interlaced: true,
+  leftFlange: DEFAULT_HUB?.leftFlangeDiaMm ?? 45,
+  leftOffset: DEFAULT_HUB?.leftOffsetMm ?? 34,
+  leftLace: "3x",
+  rightFlange: DEFAULT_HUB?.rightFlangeDiaMm ?? 45,
+  rightOffset: DEFAULT_HUB?.rightOffsetMm ?? 17.5,
+  rightLace: "same",
+};
+
+function wbNum(v: string | null, dflt: number): number {
+  if (v == null) return dflt;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : dflt;
+}
+
+/** Stable id for a hub in the URL. Manufacturer never contains "~". */
+function hubKey(h: Hub): string {
+  return `${h.manufacturer}~${h.model}`;
+}
+function hubFromKey(key: string): Hub | null {
+  const i = key.indexOf("~");
+  if (i < 0) return null;
+  const manu = key.slice(0, i);
+  const model = key.slice(i + 1);
+  return HUBS.find((h) => h.manufacturer === manu && h.model === model) ?? null;
+}
+function isHubType(v: string | null): v is HubType {
+  return v != null && v in HUB_TYPE_LABELS;
+}
+
 export function WheelBuilding() {
-  const [erd, setErd] = useState(602);
-  const [rimHoleOffset, setRimHoleOffset] = useState(0);
-  const [rimHoleGroup, setRimHoleGroup] = useState(1); // holes per group (1 = even)
-  const [rimHoleGap, setRimHoleGap] = useState(1.8); // between-group gap (× in-group)
-  const [spokes, setSpokes] = useState(32);
-  const [holeDia, setHoleDia] = useState(DEFAULT_HUB?.spokeHoleMm ?? 2.6);
-  const [ratio, setRatio] = useState<HubRatio>("1:1");
-  const [ndsCentre, setNdsCentre] = useState(false); // 2:1: non-drive in triplet centre
-  const [crossPhase, setCrossPhase] = useState(false); // cross the neighbouring group (G3)
+  // Seed from the URL once (a shared link); the state initializers below only run
+  // on mount, so later renders ignore this snapshot.
+  const q = useMemo(() => getHashQuery(), []);
+  const [erd, setErd] = useState(() => wbNum(q.get("erd"), DEF.erd));
+  const [rimHoleOffset, setRimHoleOffset] = useState(() => wbNum(q.get("rho"), DEF.rimHoleOffset));
+  const [rimHoleGroup, setRimHoleGroup] = useState(() => wbNum(q.get("rhg"), DEF.rimHoleGroup)); // holes per group (1 = even)
+  const [rimHoleGap, setRimHoleGap] = useState(() => wbNum(q.get("rgap"), DEF.rimHoleGap)); // between-group gap (× in-group)
+  const [rimHolePaired, setRimHolePaired] = useState(() => q.get("rhp") === "1"); // WH-7700 same-angle pairs
+  const [spokes, setSpokes] = useState(() => wbNum(q.get("n"), DEF.spokes));
+  const [holeDia, setHoleDia] = useState(() => wbNum(q.get("hd"), DEF.holeDia));
+  const [ratio, setRatio] = useState<HubRatio>(() => (q.get("ratio") === "2:1" ? "2:1" : "1:1"));
+  const [ndsCentre, setNdsCentre] = useState(() => q.get("ndsc") === "1"); // 2:1: non-drive in triplet centre
+  const [crossPhase, setCrossPhase] = useState(() => q.get("xph") === "1"); // cross the neighbouring group (G3)
+  const [interlaced, setInterlaced] = useState(() => q.get("il") !== "0"); // spokes woven at the last cross
 
-  const [leftFlange, setLeftFlange] = useState(DEFAULT_HUB?.leftFlangeDiaMm ?? 45);
-  const [leftOffset, setLeftOffset] = useState(DEFAULT_HUB?.leftOffsetMm ?? 34);
-  const [leftLace, setLeftLace] = useState("3x");
+  const [leftFlange, setLeftFlange] = useState(() => wbNum(q.get("lf"), DEF.leftFlange));
+  const [leftOffset, setLeftOffset] = useState(() => wbNum(q.get("lo"), DEF.leftOffset));
+  const [leftLace, setLeftLace] = useState(() => q.get("ll") ?? DEF.leftLace);
 
-  const [rightFlange, setRightFlange] = useState(DEFAULT_HUB?.rightFlangeDiaMm ?? 45);
-  const [rightOffset, setRightOffset] = useState(DEFAULT_HUB?.rightOffsetMm ?? 17.5);
-  const [rightLace, setRightLace] = useState("same"); // mirror the left side by default
+  const [rightFlange, setRightFlange] = useState(() => wbNum(q.get("rf"), DEF.rightFlange));
+  const [rightOffset, setRightOffset] = useState(() => wbNum(q.get("ro"), DEF.rightOffset));
+  const [rightLace, setRightLace] = useState(() => q.get("rl") ?? DEF.rightLace); // mirror the left side by default
 
   // Resolve each side's menu choice into the cross / group / pattern the geometry
   // uses; the drive side falls back to the non-drive choice when set to "same".
@@ -332,13 +386,23 @@ export function WheelBuilding() {
   // The hub picked from the database, if any (cleared once a hub value is edited
   // by hand, so the trigger no longer claims a specific hub). Defaults to a
   // common hub so the page opens on a real, fully-specified wheel.
-  const [hub, setHub] = useState<Hub | null>(DEFAULT_HUB ?? null);
+  const [hub, setHub] = useState<Hub | null>(() => {
+    // "none" is the sentinel for a hand-edited (custom) wheel; an absent param
+    // keeps the default hub, and a key resolves to its database entry.
+    const key = q.get("hub");
+    if (key === "none") return null;
+    if (key != null) return hubFromKey(key); // null if the hub is no longer in the DB
+    return DEFAULT_HUB ?? null;
+  });
   // The hub type + width driving the 3D rendering. Kept separate from `hub` so it
   // survives hand-edits — you keep the dynamo/gear/freehub look and axle length
   // even after tweaking a flange or offset.
-  const [hubStyle, setHubStyle] = useState<{ type: HubType; widthMm: number } | null>(
-    DEFAULT_HUB ? { type: DEFAULT_HUB.type, widthMm: DEFAULT_HUB.widthMm } : null,
-  );
+  const [hubStyle, setHubStyle] = useState<{ type: HubType; widthMm: number } | null>(() => {
+    const t = q.get("hst");
+    const w = q.get("hsw");
+    if (isHubType(t) && w != null) return { type: t, widthMm: wbNum(w, 100) };
+    return DEFAULT_HUB ? { type: DEFAULT_HUB.type, widthMm: DEFAULT_HUB.widthMm } : null;
+  });
 
   const applyHub = (h: Hub, count: number | null) => {
     setLeftFlange(h.leftFlangeDiaMm);
@@ -456,8 +520,8 @@ export function WheelBuilding() {
   }, []);
   const defaultCurve =
     TENSION_CURVES.find((c) => c.spokeType === "steel round 2.0 mm") ?? TENSION_CURVES[0];
-  const [tool, setTool] = useState(defaultCurve.tool);
-  const [spokeType, setSpokeType] = useState(defaultCurve.spokeType);
+  const [tool, setTool] = useState(() => q.get("tool") ?? defaultCurve.tool);
+  const [spokeType, setSpokeType] = useState(() => q.get("stype") ?? defaultCurve.spokeType);
 
   const spokeOptions = useMemo(() => TENSION_CURVES.filter((c) => c.tool === tool), [tool]);
   const curve = spokeOptions.find((c) => c.spokeType === spokeType) ?? spokeOptions[0];
@@ -470,8 +534,78 @@ export function WheelBuilding() {
     if (!opts.some((c) => c.spokeType === spokeType)) setSpokeType(opts[0].spokeType);
   }
 
+  // Mirror the whole config into the URL hash so the header's "Copy link" button
+  // shares exactly what's on screen (see useUrlConfigSync). hubStyle is written as
+  // a pair so a change to either field round-trips.
+  const defaultHubKey = DEFAULT_HUB ? hubKey(DEFAULT_HUB) : null;
+  const styleChanged =
+    !!hubStyle &&
+    !!DEFAULT_HUB &&
+    (hubStyle.type !== DEFAULT_HUB.type || hubStyle.widthMm !== DEFAULT_HUB.widthMm);
+  useUrlConfigSync("wheel-building", {
+    erd: erd !== DEF.erd ? erd : null,
+    rho: rimHoleOffset !== DEF.rimHoleOffset ? rimHoleOffset : null,
+    rhg: rimHoleGroup !== DEF.rimHoleGroup ? rimHoleGroup : null,
+    rgap: rimHoleGap !== DEF.rimHoleGap ? rimHoleGap : null,
+    rhp: rimHolePaired ? 1 : null,
+    n: spokes !== DEF.spokes ? spokes : null,
+    hd: holeDia !== DEF.holeDia ? holeDia : null,
+    ratio: ratio !== DEF.ratio ? ratio : null,
+    ndsc: ndsCentre ? 1 : null,
+    xph: crossPhase ? 1 : null,
+    il: interlaced ? null : 0,
+    lf: leftFlange !== DEF.leftFlange ? leftFlange : null,
+    lo: leftOffset !== DEF.leftOffset ? leftOffset : null,
+    ll: leftLace !== DEF.leftLace ? leftLace : null,
+    rf: rightFlange !== DEF.rightFlange ? rightFlange : null,
+    ro: rightOffset !== DEF.rightOffset ? rightOffset : null,
+    rl: rightLace !== DEF.rightLace ? rightLace : null,
+    hub: hub ? (hubKey(hub) !== defaultHubKey ? hubKey(hub) : null) : DEFAULT_HUB ? "none" : null,
+    hst: styleChanged ? hubStyle!.type : null,
+    hsw: styleChanged ? hubStyle!.widthMm : null,
+    tool: tool !== defaultCurve.tool ? tool : null,
+    stype: spokeType !== defaultCurve.spokeType ? spokeType : null,
+  });
+
+  const diagram = lacing.ok ? (
+    <WheelDiagram
+      erdMm={erd}
+      spokeCount={spokes}
+      leftFlangeDiaMm={leftFlange}
+      rightFlangeDiaMm={rightFlange}
+      leftOffsetMm={leftOffset}
+      rightOffsetMm={rightOffset}
+      leftCross={leftCross}
+      rightCross={rightCross}
+      leftGroup={leftGroup}
+      rightGroup={rightGroup}
+      leftPattern={leftPattern}
+      rightPattern={rightPattern}
+      ratio={ratio}
+      ndsCentre={ndsCentre}
+      crossPhase={crossPhase}
+      rimHoleGroup={rimHoleGroup}
+      rimHoleGap={rimHoleGap}
+      rimHoleOffsetMm={rimHoleOffset}
+      rimHolePaired={rimHolePaired}
+      interlaced={interlaced}
+      hubType={hubStyle?.type}
+      hubWidthMm={hubStyle?.widthMm}
+    />
+  ) : (
+    <Note tone="warn">
+      <strong>This lacing can't be built:</strong>
+      <ul className="lacing-errors">
+        {lacing.errors.map((e, i) => (
+          <li key={i}>{e}</li>
+        ))}
+      </ul>
+    </Note>
+  );
+
   return (
-    <>
+    <div className="wb-workbench">
+      <div className="wb-controls">
       <Section
         title="Rim"
         info={
@@ -481,7 +615,8 @@ export function WheelBuilding() {
             rough starting points that vary a lot by rim depth.{" "}
             <strong>Spoke-hole offset</strong> models a rim drilled with
             alternating left/right holes (each leaning toward the flange it feeds);
-            leave it 0 for a plain centre-drilled rim.
+            leave it 0 for a plain centre-drilled rim, or go negative to cross each
+            hole to the far side (as on a WH-7700).
           </>
         }
       >
@@ -501,12 +636,12 @@ export function WheelBuilding() {
           </Field>
           <Field
             label="Spoke-hole offset (alternating drilling)"
-            hint="each hole nudged toward the flange it serves · 0 = centred"
+            hint="each hole nudged toward its flange · negative crosses it to the far side · 0 = centred"
           >
             <NumberInput
               value={rimHoleOffset}
               onChange={setRimHoleOffset}
-              min={0}
+              min={-5}
               max={5}
               step={0.5}
               suffix="mm"
@@ -515,28 +650,43 @@ export function WheelBuilding() {
           <Field
             label="Hole grouping"
             hint={
-              rimHoleGroup >= 2 && spokes % rimHoleGroup !== 0 ? (
+              rimHolePaired ? (
+                "each pair shares one rim angle; the spoke-hole offset above splits them side-to-side (negative crosses left/right)"
+              ) : rimHoleGroup >= 2 && spokes % rimHoleGroup !== 0 ? (
                 <span className="field-hint-warn">
                   ⚠ {spokes} spokes isn't divisible by {rimHoleGroup} — grouping is
                   ignored. Use a count that divides by {rimHoleGroup}.
                 </span>
               ) : (
-                "drill the holes in clusters with a gap between"
+                "cluster holes at nearby angles, or offset-pair them at the same angle"
               )
             }
           >
             <Select
-              value={rimHoleGroup}
-              onChange={setRimHoleGroup}
+              value={rimHolePaired ? "pair" : String(rimHoleGroup)}
+              onChange={(v) => {
+                if (v === "pair") {
+                  setRimHolePaired(true);
+                  // A pair shares one angle, so it needs an axial split to be
+                  // visible — seed a sensible default the user can then tune
+                  // (negative to cross the pair to opposite sides).
+                  if (rimHoleOffset === 0) setRimHoleOffset(3);
+                } else {
+                  setRimHolePaired(false);
+                  setRimHoleGroup(Number(v));
+                }
+              }}
               options={RIM_GROUP_OPTIONS}
             />
           </Field>
           <Field
             label="Group gap"
             hint={
-              rimHoleGroup < 2
-                ? "pick a grouping to enable"
-                : `between-group gap is ${rimHoleGap.toFixed(1)}× the in-group spacing`
+              rimHolePaired
+                ? "not used for offset pairs"
+                : rimHoleGroup < 2
+                  ? "pick a grouping to enable"
+                  : `between-group gap is ${rimHoleGap.toFixed(1)}× the in-group spacing`
             }
           >
             <div className="wb-slider">
@@ -546,7 +696,7 @@ export function WheelBuilding() {
                 max={6}
                 step={0.1}
                 value={rimHoleGap}
-                disabled={rimHoleGroup < 2}
+                disabled={rimHolePaired || rimHoleGroup < 2}
                 aria-label="Between-group gap"
                 onChange={(e) => setRimHoleGap(Number(e.target.value))}
               />
@@ -569,14 +719,6 @@ export function WheelBuilding() {
         action={<HubPicker selected={hub} onPick={applyHub} />}
       >
         <div className="grid">
-          <Field label="Spoke count (total)">
-            <NumberInput
-              value={spokes}
-              onChange={setSpokes}
-              min={ratio === "2:1" ? 9 : 8}
-              step={ratio === "2:1" ? 3 : 2}
-            />
-          </Field>
           <Field label="Flange hole diameter">
             <NumberInput value={holeDia} onChange={edited(setHoleDia)} suffix="mm" step={0.1} />
           </Field>
@@ -589,6 +731,57 @@ export function WheelBuilding() {
             }
           >
             <Select value={ratio} onChange={changeRatio} options={RATIO_OPTIONS} />
+          </Field>
+        </div>
+
+        <div className="wb-sides">
+          <div className="wb-side wb-side-left">
+            <h4 className="wb-side-title">Left / non-drive</h4>
+            <Field label="Flange diameter">
+              <NumberInput value={leftFlange} onChange={edited(setLeftFlange)} suffix="mm" />
+            </Field>
+            <Field label="Centre-to-flange offset">
+              <NumberInput value={leftOffset} onChange={edited(setLeftOffset)} suffix="mm" />
+            </Field>
+          </div>
+          <div className="wb-side wb-side-right">
+            <h4 className="wb-side-title">Right / drive</h4>
+            <Field label="Flange diameter">
+              <NumberInput value={rightFlange} onChange={edited(setRightFlange)} suffix="mm" />
+            </Field>
+            <Field label="Centre-to-flange offset">
+              <NumberInput value={rightOffset} onChange={edited(setRightOffset)} suffix="mm" />
+            </Field>
+          </div>
+        </div>
+
+        {hub && (
+          <p className="field-hint wb-hub-source">
+            Flange geometry from <HubSourceLink hub={hub} />. Measured values vary between
+            production runs — confirm against your hub.
+          </p>
+        )}
+      </Section>
+
+      <Section
+        title="Spokes"
+        info={
+          <>
+            The total spoke count splits between the two flanges (a 2:1 hub doubles
+            the drive side). Lacing is set per side — the drive side can mirror the
+            non-drive side or take its own cross count, grouping, or crow's-foot
+            pattern.
+          </>
+        }
+      >
+        <div className="grid">
+          <Field label="Spoke count (total)">
+            <NumberInput
+              value={spokes}
+              onChange={setSpokes}
+              min={ratio === "2:1" ? 9 : 8}
+              step={ratio === "2:1" ? 3 : 2}
+            />
           </Field>
           {ratio === "2:1" && (
             <Field
@@ -618,100 +811,35 @@ export function WheelBuilding() {
               ]}
             />
           </Field>
+          <Field
+            label="Interlacing"
+            hint="woven laces the last cross under; straight leaves the trailing spokes outside at every cross"
+          >
+            <Select
+              value={interlaced ? "woven" : "straight"}
+              onChange={(v) => setInterlaced(v === "woven")}
+              options={[
+                { value: "woven", label: "Interlaced (woven)" },
+                { value: "straight", label: "Straight (not interlaced)" },
+              ]}
+            />
+          </Field>
         </div>
 
         <div className="wb-sides">
           <div className="wb-side wb-side-left">
             <h4 className="wb-side-title">Left / non-drive</h4>
-            <Field label="Flange diameter">
-              <NumberInput value={leftFlange} onChange={edited(setLeftFlange)} suffix="mm" />
-            </Field>
-            <Field label="Centre-to-flange offset">
-              <NumberInput value={leftOffset} onChange={edited(setLeftOffset)} suffix="mm" />
-            </Field>
             <Field label="Lacing">
               <Select value={leftLace} onChange={setLeftLace} options={LACING_OPTIONS} />
             </Field>
           </div>
           <div className="wb-side wb-side-right">
             <h4 className="wb-side-title">Right / drive</h4>
-            <Field label="Flange diameter">
-              <NumberInput value={rightFlange} onChange={edited(setRightFlange)} suffix="mm" />
-            </Field>
-            <Field label="Centre-to-flange offset">
-              <NumberInput value={rightOffset} onChange={edited(setRightOffset)} suffix="mm" />
-            </Field>
             <Field label="Lacing">
               <Select value={rightLace} onChange={setRightLace} options={RIGHT_LACING_OPTIONS} />
             </Field>
           </div>
         </div>
-
-        {hub && (
-          <p className="field-hint wb-hub-source">
-            Flange geometry from <HubSourceLink hub={hub} />. Measured values vary between
-            production runs — confirm against your hub.
-          </p>
-        )}
-      </Section>
-
-      <Section
-        title="Spoke lengths"
-        info={
-          <>
-            Front and rear (and the two sides of a dished wheel) usually differ.
-            When between sizes most builders prefer ~1 mm short over long. A 1–2 mm
-            ERD error is the usual cause of wrong spokes.
-          </>
-        }
-      >
-        <div className="results" style={{ marginBottom: 16 }}>
-          <Result
-            label="Left / non-drive"
-            value={leftOk ? <SpokeSpecs specs={leftSpecs} /> : "—"}
-            big={leftOk && leftSpecs.length === 1}
-            accent="left"
-          />
-          <Result
-            label="Right / drive"
-            value={rightOk ? <SpokeSpecs specs={rightSpecs} /> : "—"}
-            big={rightOk && rightSpecs.length === 1}
-            accent="right"
-          />
-        </div>
-        {lacing.ok ? (
-          <WheelDiagram
-            erdMm={erd}
-            spokeCount={spokes}
-            leftFlangeDiaMm={leftFlange}
-            rightFlangeDiaMm={rightFlange}
-            leftOffsetMm={leftOffset}
-            rightOffsetMm={rightOffset}
-            leftCross={leftCross}
-            rightCross={rightCross}
-            leftGroup={leftGroup}
-            rightGroup={rightGroup}
-            leftPattern={leftPattern}
-            rightPattern={rightPattern}
-            ratio={ratio}
-            ndsCentre={ndsCentre}
-            crossPhase={crossPhase}
-            rimHoleGroup={rimHoleGroup}
-            rimHoleGap={rimHoleGap}
-            rimHoleOffsetMm={rimHoleOffset}
-            hubType={hubStyle?.type}
-            hubWidthMm={hubStyle?.widthMm}
-          />
-        ) : (
-          <Note tone="warn">
-            <strong>This lacing can't be built:</strong>
-            <ul className="lacing-errors">
-              {lacing.errors.map((e, i) => (
-                <li key={i}>{e}</li>
-              ))}
-            </ul>
-          </Note>
-        )}
       </Section>
 
       <Section
@@ -750,6 +878,35 @@ export function WheelBuilding() {
           your build tension inside it.
         </p>
       </Section>
-    </>
+      </div>
+      <div className="wb-viz">
+        <Section
+          title="Spoke lengths"
+          info={
+            <>
+              Front and rear (and the two sides of a dished wheel) usually differ.
+              When between sizes most builders prefer ~1 mm short over long. A 1–2 mm
+              ERD error is the usual cause of wrong spokes.
+            </>
+          }
+        >
+          <div className="results">
+            <Result
+              label="Left / non-drive"
+              value={leftOk ? <SpokeSpecs specs={leftSpecs} /> : "—"}
+              big={leftOk && leftSpecs.length === 1}
+              accent="left"
+            />
+            <Result
+              label="Right / drive"
+              value={rightOk ? <SpokeSpecs specs={rightSpecs} /> : "—"}
+              big={rightOk && rightSpecs.length === 1}
+              accent="right"
+            />
+          </div>
+        </Section>
+        <div className="wb-viz-diagram">{diagram}</div>
+      </div>
+    </div>
   );
 }

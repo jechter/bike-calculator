@@ -1,23 +1,75 @@
+import { useState } from "react";
 import { CALCULATORS } from "./registry";
-import { useHashRoute } from "./useHashRoute";
+import { useHashRoute, useHashConfigKey } from "./useHashRoute";
 import { UnitsProvider } from "./units-context";
 import { UnitSwitcher } from "./components/UnitSwitcher";
+import { CopyLinkButton } from "./components/CopyLinkButton";
+import rueckenwindLogo from "./assets/rueckenwind-logo.png";
+import rueckenwindMark from "./assets/rueckenwind-mark.png";
 
 export function App() {
   const [route, navigate] = useHashRoute(CALCULATORS[0].id);
   const active = CALCULATORS.find((c) => c.id === route) ?? CALCULATORS[0];
   const Active = active.Component;
+  // Shareable pages remount when a new link arrives (see useHashConfigKey) so they
+  // re-read their config from the URL even without a full page reload.
+  const hashKey = useHashConfigKey();
+
+  // The sidebar can collapse to an icon rail to free up horizontal space for
+  // the wider pages (e.g. wheel building's controls + visualization split).
+  const [navCollapsed, setNavCollapsed] = useState(
+    () => localStorage.getItem("nav-collapsed") === "1",
+  );
+  const toggleNav = () =>
+    setNavCollapsed((c) => {
+      localStorage.setItem("nav-collapsed", c ? "0" : "1");
+      return !c;
+    });
 
   return (
     <UnitsProvider>
-      <div className="app">
+      <div className={"app" + (navCollapsed ? " app--nav-collapsed" : "")}>
         <aside className="sidebar">
+          <div className="sidebar-head">
+            <a
+              className="brand"
+              href="https://rueckenwind.berlin"
+              target="_top"
+              rel="noopener noreferrer"
+              title="Rückenwind Berlin"
+            >
+              <img
+                className="brand-logo brand-logo--full"
+                src={rueckenwindLogo}
+                alt="Rückenwind Berlin"
+              />
+              <img
+                className="brand-logo brand-logo--mark"
+                src={rueckenwindMark}
+                alt="Rückenwind"
+              />
+            </a>
+            <button
+              type="button"
+              className="nav-collapse"
+              onClick={toggleNav}
+              title={navCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={navCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="currentColor">
+                <path d="M2 2h1.5v12H2V2zm4.72 2.22 1.06 1.06L5.56 7.5H14v1H5.56l2.22 2.22-1.06 1.06L2.69 8l4.03-3.78z" />
+              </svg>
+            </button>
+          </div>
           <nav className="nav">
             {CALCULATORS.filter((c) => !c.hidden).map((c) => (
               <button
                 key={c.id}
                 className={c.id === active.id ? "active" : ""}
-                onClick={() => navigate(c.id)}
+                title={c.title}
+                // Clicking the active tab is a no-op — otherwise it would strip the
+                // config query from the hash and reset a shareable page.
+                onClick={() => c.id !== active.id && navigate(c.id)}
               >
                 <span className="icon">{c.icon}</span>
                 <span>{c.title}</span>
@@ -47,10 +99,20 @@ export function App() {
           </div>
         </aside>
 
-        <main className="main">
-          <h1>{active.title}</h1>
-          <p className="subtitle">{active.subtitle}</p>
-          <Active />
+        <main className={`main main--${active.id}`}>
+          <div className="main-head">
+            <div>
+              <h1>{active.title}</h1>
+              <p className="subtitle">{active.subtitle}</p>
+            </div>
+            {(active.HeaderActions || active.shareable) && (
+              <div className="main-actions">
+                {active.HeaderActions && <active.HeaderActions />}
+                {active.shareable && <CopyLinkButton />}
+              </div>
+            )}
+          </div>
+          <Active key={active.shareable ? hashKey : active.id} />
         </main>
       </div>
     </UnitsProvider>

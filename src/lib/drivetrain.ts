@@ -107,6 +107,154 @@ export function chainLength(input: ChainLengthInput): ChainLengthResult {
   return { rawInches: raw, inches, links: inches * 2, mm: Math.round(inches * MM_PER_INCH) };
 }
 
+// --- Single-speed / belt wrap geometry --------------------------------------
+// A single-speed chain or a belt has no derailleur cage to take up slack, so its
+// length is set by the two-pulley wrap around the front ring and rear cog at a
+// given centre distance (≈ chainstay). Both share the exact synchronous-drive
+// geometry below; a chain then rounds to whole links, while a belt can only be a
+// stock tooth count and the FRAME's centre distance moves to suit it instead.
+
+/** Chain pitch — a roller every ½ inch, so each "link" (in the common count) is
+ *  12.7 mm and a chain joins on an even count. */
+export const CHAIN_PITCH_MM = MM_PER_INCH / 2;
+
+/**
+ * Fractional pitch count (belt teeth, or ½" chain links) that runs taut around
+ * two sprockets at centre distance `cdMm`. Standard two-pulley synchronous-belt
+ * wrap:  N = 2C/p + (T1+T2)/2 + p·(T1−T2)²/(4π²·C).
+ */
+function wrapPitchCount(cdMm: number, t1: number, t2: number, pitchMm: number): number {
+  return (
+    (2 * cdMm) / pitchMm +
+    (t1 + t2) / 2 +
+    (pitchMm * (t1 - t2) ** 2) / (4 * Math.PI ** 2 * cdMm)
+  );
+}
+
+export interface SingleChainLengthResult {
+  /** Exact ½" links that run taut at this chainstay (before rounding). */
+  exactLinks: number;
+  /** Rounded UP to a whole even link count — the shortest chain that reaches. */
+  links: number;
+  /** Length of that link count in mm. */
+  mm: number;
+}
+
+/**
+ * Minimum chain length for a single-speed / hub chain (no derailleur to absorb
+ * slack) at a fixed centre distance. Uses the wrap geometry above at the chain's
+ * ½" pitch, then rounds UP to a whole even link count — chains join on a full
+ * link (a half-link fine-tunes between). This is the shortest chain that reaches
+ * at this chainstay; the wheel's fore/aft range sets the exact fit from there.
+ */
+export function singleSpeedChainLength(
+  chainstayMm: number,
+  frontTeeth: number,
+  rearTeeth: number,
+): SingleChainLengthResult {
+  const exactLinks = wrapPitchCount(chainstayMm, frontTeeth, rearTeeth, CHAIN_PITCH_MM);
+  const links = 2 * Math.ceil(exactLinks / 2);
+  return { exactLinks, links, mm: Math.round(links * CHAIN_PITCH_MM) };
+}
+
+// --- Belt drive (Gates Carbon Drive) ----------------------------------------
+// A belt is a closed loop that only comes in whole stock tooth counts — it can't
+// be cut or shortened. So instead of sizing the belt to the frame, you pick a
+// stock belt and the frame's adjustable centre distance (sliding dropout,
+// eccentric BB, or eccentric hub) moves to the exact distance that belt needs.
+// Gates CDX/CDN run an 11 mm pitch; a belt's pitch-line length is teeth × 11 mm.
+
+export const BELT_PITCH_MM = 11;
+
+// A frame takes up the gap between a stock belt's required centre distance and
+// its nominal chainstay with an adjustable dropout / eccentric BB / eccentric
+// hub — typically ~20 mm of travel at most. If the nearest stock belt sits
+// further than this from the target chainstay, no belt reasonably fits (the
+// chainstay is too short or too long, or falls in a gap between catalogued
+// sizes).
+export const BELT_ADJUST_TOLERANCE_MM = 20;
+
+// Catalogued Gates CDX/CDN CenterTrack belt tooth counts, smallest first. The
+// everyday range steps ~2–3 T; the large sizes are cargo/tandem. Sourced from
+// Gates dealer listings (see memory: gates-belt-sizes-source).
+export const GATES_BELT_TEETH: number[] = [
+  108, 111, 113, 115, 118, 120, 122, 125, 128, 132, 143, 150, 168, 174, 250,
+];
+
+/**
+ * Exact centre distance (mm) at which a belt of `beltTeeth` runs taut around the
+ * front/rear sprockets — the inverse of the wrap geometry:
+ *   C = (p/4)·[ m + √(m² − 2·(F−R)²/π²) ],  m = B − (F+R)/2.
+ * Returns null when the belt is too short to span both sprockets (negative
+ * discriminant) — no real centre distance exists.
+ */
+export function beltCenterDistanceMm(
+  beltTeeth: number,
+  frontTeeth: number,
+  rearTeeth: number,
+  pitchMm = BELT_PITCH_MM,
+): number | null {
+  const m = beltTeeth - (frontTeeth + rearTeeth) / 2;
+  const disc = m * m - (2 * (frontTeeth - rearTeeth) ** 2) / Math.PI ** 2;
+  if (disc < 0) return null;
+  return (pitchMm / 4) * (m + Math.sqrt(disc));
+}
+
+/**
+ * Fractional belt tooth count that would run taut at centre distance `cdMm` — the
+ * ideal, before snapping to a stock size (see nearbyBeltOptions).
+ */
+export function idealBeltTeeth(
+  cdMm: number,
+  frontTeeth: number,
+  rearTeeth: number,
+  pitchMm = BELT_PITCH_MM,
+): number {
+  return wrapPitchCount(cdMm, frontTeeth, rearTeeth, pitchMm);
+}
+
+export interface BeltOption {
+  teeth: number;
+  /** mm — pitch-line length (teeth × pitch). */
+  lengthMm: number;
+  /** Exact centre distance this belt needs. */
+  centerDistanceMm: number;
+  /** centerDistanceMm − targetChainstayMm: how far the axle / EBB must move. */
+  deltaMm: number;
+}
+
+/**
+ * The catalogued belt sizes nearest to what the target centre distance
+ * (chainstay) wants, each with the exact centre distance it needs and how far
+ * that sits from the target. `count` sizes closest to the ideal are returned,
+ * ordered by tooth count. Sizes too short to span the sprockets are skipped.
+ */
+export function nearbyBeltOptions(
+  targetCdMm: number,
+  frontTeeth: number,
+  rearTeeth: number,
+  count = 5,
+  teeth: number[] = GATES_BELT_TEETH,
+  pitchMm = BELT_PITCH_MM,
+): BeltOption[] {
+  const ideal = idealBeltTeeth(targetCdMm, frontTeeth, rearTeeth, pitchMm);
+  return teeth
+    .map((t) => {
+      const cd = beltCenterDistanceMm(t, frontTeeth, rearTeeth, pitchMm);
+      return cd == null ? null : { teeth: t, cd };
+    })
+    .filter((x): x is { teeth: number; cd: number } => x != null)
+    .sort((a, b) => Math.abs(a.teeth - ideal) - Math.abs(b.teeth - ideal))
+    .slice(0, count)
+    .sort((a, b) => a.teeth - b.teeth)
+    .map(({ teeth: t, cd }) => ({
+      teeth: t,
+      lengthMm: t * pitchMm,
+      centerDistanceMm: cd,
+      deltaMm: cd - targetCdMm,
+    }));
+}
+
 // --- Chain wear replacement thresholds --------------------------------------
 // We don't calculate wear (a chain-wear gauge does that at the bench). This is
 // just the reference for the %-elongation at which to replace, which depends on

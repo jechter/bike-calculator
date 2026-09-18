@@ -95,7 +95,20 @@ export function wheelLayout(
  * of the in-group spacing. Only the rim-hole position moves — the flange stays
  * evenly drilled — so a grouped rim just fans the spokes toward the clusters.
  */
-export function rimHoleAngle(i: number, n: number, groupSize: number, gap: number): number {
+export function rimHoleAngle(
+  i: number,
+  n: number,
+  groupSize: number,
+  gap: number,
+  paired = false,
+): number {
+  // Offset-pair drilling (e.g. Shimano WH-7700): both holes of a pair share the
+  // same rim angle — the even midpoint of the two holes they replace — and are
+  // told apart only by an axial (side-to-side) offset. Overrides angular grouping.
+  if (paired && n % 2 === 0) {
+    const p = Math.floor(i / 2);
+    return ((2 * Math.PI) / n) * (2 * p + 0.5);
+  }
   const g = Math.floor(groupSize);
   if (g < 2 || n % g !== 0 || !(gap > 1)) return (2 * Math.PI * i) / n;
   const groups = n / g;

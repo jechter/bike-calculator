@@ -79,6 +79,12 @@ export interface Wheel3DProps {
   /** Alternating rim drilling: each hole nudged this many mm toward the flange it
    *  serves (0 = centred / single-drilled). Purely the rim-bed hole position. */
   rimHoleOffsetMm?: number;
+  /** Offset-pair drilling (WH-7700): both holes of a pair share one rim angle and
+   *  are split only by the axial offset above. Overrides angular hole grouping. */
+  rimHolePaired?: boolean;
+  /** Interlace the spokes at the last cross (true, default) or run every spoke
+   *  dead straight so the trailing group sits outside at every crossing (false). */
+  interlaced?: boolean;
   /** Selected hub's type / over-locknut width (mm), when a hub is chosen. */
   hubType?: HubType;
   hubWidthMm?: number;
@@ -467,6 +473,8 @@ export function Wheel3D(props: Wheel3DProps) {
     rimHoleGroup = 1,
     rimHoleGap = 1,
     rimHoleOffsetMm,
+    rimHolePaired = false,
+    interlaced = true,
     hubType,
     hubWidthMm,
     step,
@@ -545,9 +553,10 @@ export function Wheel3D(props: Wheel3DProps) {
     const zL = -leftOffsetMm * scale;
     const zR = rightOffsetMm * scale;
     // Axial offset of each rim hole toward the flange it serves. 0 = centred
-    // (single-drilled); a positive value models alternating (staggered) drilling.
-    // Clamped to the rim's half-width so the hole always lands on the spoke bed.
-    const stagger = Math.max(0, Math.min((rimHoleOffsetMm ?? 0) * scale, 0.04));
+    // (single-drilled); positive nudges each hole toward its own flange, negative
+    // crosses it to the far side (drive spoke to the non-drive hole and vice versa,
+    // as on a WH-7700). Signed, clamped to the rim's half-width either way.
+    const stagger = Math.max(-0.04, Math.min((rimHoleOffsetMm ?? 0) * scale, 0.04));
 
     const flHalf = 0.008; // flange half-thickness
     // The flange diameter is the spoke-hole circle (PCD); the flange disc extends
@@ -644,7 +653,7 @@ export function Wheel3D(props: Wheel3DProps) {
       // The flange stays evenly drilled (even angle); only the rim hole clusters.
       const evenA = (2 * Math.PI * i) / spokeCount;
       const flA = evenA + plan.offset * ((2 * Math.PI) / flangeSpokes);
-      const rimA = rimHoleAngle(i, spokeCount, rimHoleGroup, rimHoleGap);
+      const rimA = rimHoleAngle(i, spokeCount, rimHoleGroup, rimHoleGap, rimHolePaired);
       // flange hole: a dark disc set through the flange thickness
       addButton(mesh, fR * Math.cos(flA), fR * Math.sin(flA), zF, holeR, flHalf + 0.001, SPOKE_SEG, HOLE);
       const ca = Math.cos(rimA), sa = Math.sin(rimA);
@@ -679,7 +688,7 @@ export function Wheel3D(props: Wheel3DProps) {
       });
       const evenA = (2 * Math.PI * i) / n;
       const flA = evenA + plan.offset * ((2 * Math.PI) / flangeSpokes);
-      const rimA = rimHoleAngle(i, n, rimHoleGroup, rimHoleGap);
+      const rimA = rimHoleAngle(i, n, rimHoleGroup, rimHoleGap, rimHolePaired);
       return {
         isDrive,
         lead: plan.lead,
@@ -726,7 +735,7 @@ export function Wheel3D(props: Wheel3DProps) {
       const col = (isDrive ? [DRIVE_OUT, DRIVE_MID, DRIVE_IN] : [NDS_OUT, NDS_MID, NDS_IN])[shade];
       const evenA = (2 * Math.PI * i) / n;
       const flA = evenA + plan.offset * ((2 * Math.PI) / flangeSpokes);
-      const rimA = rimHoleAngle(i, n, rimHoleGroup, rimHoleGap);
+      const rimA = rimHoleAngle(i, n, rimHoleGroup, rimHoleGap, rimHolePaired);
       const zRim = isDrive ? stagger : -stagger;
       const hx = fR * Math.cos(flA);
       const hy = fR * Math.sin(flA);
@@ -745,19 +754,25 @@ export function Wheel3D(props: Wheel3DProps) {
         lerp(hy, sa, t),
         lerp(zF, zRim, t) + dz,
       ];
+      // Leading dips inboard, trailing lifts outboard, radial stays centred. This
+      // hub offset is what keeps the trailing group sitting outside the leading.
+      const s = lead === 1 ? -1 : lead === 0 ? 0 : 1;
+      const hubGap = 0.01; // half the axial separation at the flange (0 = centred)
+      const flangeZ = zF + outSign * hubGap * s;
+
       // A crossing pair each bend once, near their shared outermost crossing: the
       // leading spoke kinks a hair inboard (so it passes behind), the trailing spoke
       // a hair outboard (in front). Each then runs dead straight to its nipple. The
       // small axial gap at the crossing is what makes which-is-in-front readable.
-      const cross = outermostCross(i);
+      // When interlacing is off (or the spoke is radial) it runs dead straight from
+      // the offset flange point to the nipple, so trailing stays outside throughout.
+      const cross = interlaced ? outermostCross(i) : null;
       let pts: number[][];
       if (cross) {
         const tc = cross.t;
         const gap = 0.005; // half the axial separation at the crossing (~5 mm)
-        const s = leading ? -1 : 1; // leading dips inboard, trailing lifts outboard
         const bend = at(tc, -outSign * gap * s);
-        const hubGap = 0.01; // half the axial separation at the flange (try 0.006–0.012); 0 = both start centred
-        const flange = [hx, hy, zF + outSign * hubGap * s];
+        const flange = [hx, hy, flangeZ];
         const mid = (p: number[], q: number[]) => [
           (p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (p[2] + q[2]) / 2,
         ];
@@ -765,8 +780,10 @@ export function Wheel3D(props: Wheel3DProps) {
         // vertex count fixed; the only kink is at the crossing.
         pts = [flange, mid(flange, bend), bend, mid(bend, bed), bed];
       } else {
-        // Radial / uncrossed: straight (collinear points keep the vertex count fixed).
-        pts = [at(0, 0), at(0.25, 0), at(0.5, 0), at(0.75, 0), bed];
+        // Straight from the offset flange point to the nipple (collinear points
+        // keep the vertex count fixed). Covers radial and non-interlaced lacing.
+        const sat = (t: number) => [lerp(hx, ca, t), lerp(hy, sa, t), lerp(flangeZ, zRim, t)];
+        pts = [sat(0), sat(0.25), sat(0.5), sat(0.75), bed];
       }
       addPolyTube(tube, pts, rad, SPOKE_SEG, col); // bent body
 
@@ -800,6 +817,8 @@ export function Wheel3D(props: Wheel3DProps) {
     rimHoleGroup,
     rimHoleGap,
     rimHoleOffsetMm,
+    rimHolePaired,
+    interlaced,
     hubType,
     hubWidthMm,
     sequence,

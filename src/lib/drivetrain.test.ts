@@ -2,6 +2,12 @@ import { describe, it, expect } from 'vitest';
 import {
   computeGears,
   chainLength,
+  singleSpeedChainLength,
+  beltCenterDistanceMm,
+  idealBeltTeeth,
+  nearbyBeltOptions,
+  BELT_PITCH_MM,
+  GATES_BELT_TEETH,
   gearRange,
   chainWearThresholdsFor,
   HUB_PRESETS,
@@ -124,6 +130,64 @@ describe('deriveCassetteSpacing', () => {
     expect(deriveCassetteSpacing({ ...base, brand: 'Shimano', freehub: 'Micro Spline' })).toBe(
       'shimano-sram',
     );
+  });
+});
+
+describe('singleSpeedChainLength', () => {
+  it('is the wrap length rounded up to a whole even link count', () => {
+    const r = singleSpeedChainLength(410, 50, 28);
+    // ~104 half-inch links (no derailleur +1"), 104 * 12.7 ≈ 1321 mm.
+    expect(r.exactLinks).toBeCloseTo(103.9, 0);
+    expect(r.links).toBe(104);
+    expect(r.links % 2).toBe(0);
+    expect(r.mm).toBe(1321);
+  });
+
+  it('never rounds down below the exact wrap length', () => {
+    for (const cs of [360, 405, 430, 470]) {
+      const r = singleSpeedChainLength(cs, 44, 18);
+      expect(r.links).toBeGreaterThanOrEqual(r.exactLinks);
+      expect(r.links % 2).toBe(0);
+    }
+  });
+});
+
+describe('belt drive', () => {
+  it('belt length is teeth * 11 mm pitch', () => {
+    expect(BELT_PITCH_MM).toBe(11);
+    expect(GATES_BELT_TEETH).toContain(118);
+    // 111T = 1221 mm, 125T = 1375 mm (Gates catalogue).
+    expect(111 * BELT_PITCH_MM).toBe(1221);
+    expect(125 * BELT_PITCH_MM).toBe(1375);
+  });
+
+  it('centre distance for a 118T belt on 50/24 is ~443 mm', () => {
+    expect(beltCenterDistanceMm(118, 50, 24)).toBeCloseTo(443, 0);
+  });
+
+  it('returns null when the belt is too short to span the sprockets', () => {
+    expect(beltCenterDistanceMm(30, 50, 24)).toBeNull();
+  });
+
+  it('idealBeltTeeth inverts beltCenterDistanceMm', () => {
+    for (const B of [113, 118, 125]) {
+      const cd = beltCenterDistanceMm(B, 46, 22)!;
+      expect(idealBeltTeeth(cd, 46, 22)).toBeCloseTo(B, 3);
+    }
+  });
+
+  it('nearbyBeltOptions returns catalogued sizes ordered by tooth count', () => {
+    const opts = nearbyBeltOptions(440, 50, 22, 5);
+    expect(opts).toHaveLength(5);
+    for (const o of opts) {
+      expect(GATES_BELT_TEETH).toContain(o.teeth);
+      expect(o.lengthMm).toBe(o.teeth * BELT_PITCH_MM);
+      // deltaMm is how far the frame's centre distance must move from the target.
+      expect(o.deltaMm).toBeCloseTo(o.centerDistanceMm - 440, 6);
+    }
+    for (let i = 1; i < opts.length; i++) {
+      expect(opts[i].teeth).toBeGreaterThan(opts[i - 1].teeth);
+    }
   });
 });
 

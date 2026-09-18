@@ -16,6 +16,10 @@
   --diag-red: #e13b34;
   --radius: 10px;
   --sidebar-w: 240px;
+  /* Shared height for all field-level controls so native <select>s (which the
+     browser sizes from line-height:normal) line up with text fields and the
+     custom popup buttons (which the browser also renders shorter). */
+  --control-h: 40px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -232,12 +236,31 @@ body {
 }
 input[type="number"], input[type="text"], select {
   font: inherit;
+  min-height: var(--control-h);
   padding: 8px 10px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--panel);
   color: var(--text);
   width: 100%;
+}
+/* Safari renders a native <select> as a real menu control that ignores
+   min-height/padding, so it stayed shorter than the text fields. Opting out of
+   the native appearance makes it a normal styled box (honouring --control-h)
+   across browsers; we then draw our own caret (matching the custom pickers' ▾)
+   as a background SVG. The dark-scheme rule below swaps the caret colour. */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0h10L5 6z' fill='%23616b76'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+@media (prefers-color-scheme: dark) {
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0h10L5 6z' fill='%239aa7b3'/%3E%3C/svg%3E");
+  }
 }
 /* Read-only computed value styled like an input */
 .static-value {
@@ -318,6 +341,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   align-items: center;
   gap: 8px;
   width: 100%;
+  min-height: var(--control-h);
   font: inherit;
   text-align: left;
   padding: 8px 10px;
@@ -554,6 +578,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .combo {
   display: flex;
   align-items: stretch;
+  min-height: var(--control-h);
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--panel);
@@ -565,6 +590,9 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .combo .number-input input {
   border: none;
   background: transparent;
+  /* The .combo wrapper owns the shared height; inner inputs must not add their
+     own min-height on top of it. */
+  min-height: 0;
 }
 .combo > input[type="text"]:focus,
 .combo .number-input input:focus { outline: none; }
@@ -656,6 +684,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   width: 100%;
   justify-content: space-between;
   gap: 8px;
+  min-height: var(--control-h);
   padding: 8px 10px;
   border: 1px solid var(--border);
   border-radius: 8px;

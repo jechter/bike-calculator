@@ -32,13 +32,17 @@ const EXAMPLE_PRESETS: ExampleGroup[] = [
         params: { rhg: "3", rgap: "6", n: "21", ratio: "2:1", ndsc: "1", xph: "1", ll: "radial", rl: "2x" },
       },
       {
+        label: "36-spoke G4 lacing",
+        params: { rhg: "4", rgap: "5", n: "36", xph: "1" },
+      },
+      {
         label: "12-spoke vintage Campagnolo Shamal",
         params: { n: "12", il: "0", lf: "30", ll: "radial", rf: "45", rl: "1x", hub: "none" },
       },
       {
         label: "64-spoke Yamaha XS650 Heritage",
         params: {
-          erd: "502", rho: "5", n: "64", lf: "90", lo: "50", ll: "2l2t-4x", rf: "90", ro: "50",
+          erd: "502", n: "64", lf: "90", lo: "50", ll: "2l2t-4x", rf: "90", ro: "50",
           hub: "none", hst: "front", hsw: "110",
         },
       },

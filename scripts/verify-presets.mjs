@@ -33,7 +33,7 @@ const menu = await page.evaluate(() => {
   };
 });
 ok("two groups shown", menu.groups.length === 2, JSON.stringify(menu.groups));
-ok("all 10 presets shown", menu.presets.length === 10, JSON.stringify(menu.presets));
+ok("all 11 presets shown", menu.presets.length === 11, JSON.stringify(menu.presets));
 
 // Pick "64-spoke Yamaha XS650 Heritage" and confirm the config loads.
 const picked = await page.evaluate(() => {

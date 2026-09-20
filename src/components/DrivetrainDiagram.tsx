@@ -149,6 +149,20 @@ export interface DrivetrainDiagramProps {
 export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   const { chainstayMm, hasDerailleur } = props;
 
+  // Belts run at an 11 mm pitch (vs a chain's 12.7 mm), so their sprockets are
+  // smaller for the same tooth count. Shadow the module-level `pr` so every
+  // sprocket radius below reflects the actual transmission. (A belt never has a
+  // derailleur, so the chain-pitch PULLEY constant stays fine.)
+  const isBelt = !!props.isBelt && !hasDerailleur;
+  const pr = (teeth: number) => prAt(teeth, isBelt ? BELT_PITCH : PITCH);
+  const rings = [...new Set(props.chainrings)].filter((n) => n > 0).sort((a, b) => b - a);
+  const cs = [...new Set(props.cogs)].filter((n) => n > 0).sort((a, b) => b - a);
+  // Bail before any drawing when there's nothing to draw (e.g. the user clears
+  // the chainrings field to retype it). This must sit above every hook below so
+  // the hook count stays constant across renders — an early return between
+  // hooks is what "rendered fewer hooks than expected" means.
+  const empty = rings.length === 0 || cs.length === 0;
+
   // Measure the rendered box so the viewBox can grow vertically to fill a tall
   // container (e.g. the drivetrain workbench rail) instead of letterboxing —
   // revealing more of the wheel and crank, which are drawn but normally culled.
@@ -164,15 +178,6 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  // Belts run at an 11 mm pitch (vs a chain's 12.7 mm), so their sprockets are
-  // smaller for the same tooth count. Shadow the module-level `pr` so every
-  // sprocket radius below reflects the actual transmission. (A belt never has a
-  // derailleur, so the chain-pitch PULLEY constant stays fine.)
-  const isBelt = !!props.isBelt && !hasDerailleur;
-  const pr = (teeth: number) => prAt(teeth, isBelt ? BELT_PITCH : PITCH);
-  const rings = [...new Set(props.chainrings)].filter((n) => n > 0).sort((a, b) => b - a);
-  const cs = [...new Set(props.cogs)].filter((n) => n > 0).sort((a, b) => b - a);
-  if (rings.length === 0 || cs.length === 0) return null;
 
   const F: V = { x: 0, y: 0 };
   const R: V = { x: chainstayMm, y: 0 };
@@ -407,6 +412,10 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
 
   // Selected-gear colour matches the chainring's line in the gear chart.
   const activeColor = PALETTE[Math.max(0, rings.indexOf(props.activeChainring)) % PALETTE.length];
+
+  // Nothing to draw (no valid gears) — keep the measured container so the
+  // ResizeObserver stays attached, but skip the drivetrain itself.
+  if (empty) return <div className="dt-diagram" ref={containerRef} />;
 
   return (
     <div

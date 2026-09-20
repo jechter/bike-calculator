@@ -451,6 +451,13 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
         role="img"
         aria-label="Drivetrain view"
       >
+        {/* Mirror the whole drawing so the rear wheel sits on the left and the
+            crank on the right — how a drivetrain reads when viewed from the
+            front of the bike. This flips positions and spin direction together
+            (like viewing from the other side); the text labels are drawn
+            outside this group so they stay readable, with their x mirrored by
+            hand. */}
+        <g transform={`translate(${minX + maxX} 0) scale(-1 1)`}>
         {/* rear wheel to scale (rolling circumference), spinning at wheel speed */}
         {wheelR > 0 && (
           <g ref={wheelRef}>
@@ -531,11 +538,14 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
         {/* crank spindle + rear axle */}
         <circle cx={F.x} cy={F.y} r={3} className="dt-hub" />
         <circle cx={R.x} cy={R.y} r={3} className="dt-hub" />
-        {/* labels above the largest gear so they clear all the sprocket circles */}
-        <text x={F.x} y={-rfMax - 4} className="dt-label" textAnchor="middle">
+        </g>
+        {/* labels above the largest gear so they clear all the sprocket circles;
+            drawn outside the mirror group with their x mirrored so the text
+            reads normally over each (now flipped) gear */}
+        <text x={minX + maxX - F.x} y={-rfMax - 4} className="dt-label" textAnchor="middle">
           {props.activeChainring}T
         </text>
-        <text x={R.x} y={-rrMax - 4} className="dt-label" textAnchor="middle">
+        <text x={minX + maxX - R.x} y={-rrMax - 4} className="dt-label" textAnchor="middle">
           {props.activeCog}T
         </text>
       </svg>

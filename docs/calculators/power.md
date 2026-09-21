@@ -39,7 +39,7 @@ P_pedal = (F_gravity + F_rolling + F_aero) · v / η
 
 | Symbol | Meaning | Typical |
 |--------|---------|---------|
-| `m` | total mass (rider + bike + kit), kg | e.g. 80 |
+| `m` | total mass = rider + bike & equipment, kg | e.g. 70 + 10 = 80 |
 | `g` | gravity | 9.81 m/s² |
 | `G` | gradient (rise/run) | −0.10 … 0.20 |
 | `Crr` | coefficient of rolling resistance | 0.004 (good road tire) – 0.008 (rough), 0.012+ off-road |
@@ -52,14 +52,21 @@ Each coefficient (CdA, Crr, ρ, drivetrain efficiency) is an **editable field wi
 a preset dropdown** (combobox): pick a common value or type your own. Expose the
 assumptions so the number is interpretable.
 
-### Coupled speed ⇄ power fields
+### Coupled speed ⇄ power ⇄ W/kg fields
 
-Rather than a "solve for" switch, **speed and power are two editable fields that
-stay in sync**: edit one and the other updates via the model. When a *condition*
-(mass, gradient, CdA, …) changes, the field the user **edited last** is held
-fixed and the other is recomputed — the intuitive behaviour. Internally: track
-`last ∈ {speed, power}`; the independent one is stored, the other is derived
-(`powerForSpeed` / `speedForPower`).
+Rather than a "solve for" switch, **speed, power and power-to-weight (W/kg) are
+editable fields that stay in sync**: edit one and the others update via the
+model. When a *condition* (mass, gradient, CdA, …) changes, the field the user
+**edited last** is held fixed and the others are recomputed — the intuitive
+behaviour. Internally: track `last ∈ {speed, power, wkg}`; from it we get the
+independent pedal power (`powerForSpeed(speed)`, the typed watts, or
+`wkg × rider_mass`), then derive the rest (`speedForPower`, `watts / rider_mass`).
+
+**Power-to-weight uses rider mass, not total mass** — the conventional cycling
+metric (climbing/FTP comparisons are per body kg). Total mass (rider + bike &
+equipment) still drives the physics; only the W/kg readout divides by the rider
+alone. Mass is entered as two fields — **rider** and **bike & equipment** — that
+sum to `m`.
 
 ## Power → speed
 

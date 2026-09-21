@@ -15,6 +15,7 @@ export interface BeadStandard {
 // popular name (e.g. "20") can have different ISO diameters and NOT be
 // interchangeable — hence listing names per exact ISO value.
 export const BEAD_STANDARDS: BeadStandard[] = [
+  { iso: 686, names: ['32"'] },
   { iso: 622, names: ['700C', '28"', '29er (29in)'] },
   { iso: 635, names: ['28 x 1 1/2', '700B'] },
   { iso: 630, names: ['27" (old road)'] },

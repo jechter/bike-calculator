@@ -10,8 +10,16 @@
   --ok: #157347;
   --warn: #b7791f;
   --danger: #c0392b;
+  /* Frame-size diagram legend: rider height (blue), inseam (green), frame height (red) */
+  --diag-blue: #2f83c4;
+  --diag-green: #3faa5a;
+  --diag-red: #e13b34;
   --radius: 10px;
   --sidebar-w: 240px;
+  /* Shared height for all field-level controls so native <select>s (which the
+     browser sizes from line-height:normal) line up with text fields and the
+     custom popup buttons (which the browser also renders shorter). */
+  --control-h: 40px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -27,6 +35,9 @@
     --ok: #46c07a;
     --warn: #e0a44a;
     --danger: #e8695b;
+    --diag-blue: #5aa9e6;
+    --diag-green: #5cc178;
+    --diag-red: #f26a63;
   }
 }
 
@@ -62,6 +73,45 @@ body {
   flex-direction: column;
 }
 .sidebar-footer { margin-top: auto; padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+
+/* Collapse toggle — shrinks the sidebar to an icon rail to free horizontal
+   space for the wider pages (e.g. wheel building's controls + viz split). */
+.nav-collapse {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; flex: none;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--panel); color: var(--muted); cursor: pointer;
+}
+.nav-collapse:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Header row: Rückenwind brand on the left, collapse toggle on the right. */
+.sidebar-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 16px;
+}
+/* Rückenwind brand: the wide wordmark when expanded, the round "r" mark when the
+   rail is collapsed. Links back to the main site (target=_top escapes the embed). */
+.brand { display: block; flex: 0 1 auto; min-width: 0; line-height: 0; }
+.brand-logo { display: block; height: auto; }
+.brand-logo--full { width: 100%; max-width: 160px; }
+.brand-logo--mark { display: none; }
+
+.app--nav-collapsed { --sidebar-w: 64px; }
+.app--nav-collapsed .sidebar { padding: 16px 8px; align-items: center; }
+.app--nav-collapsed .nav-collapse { align-self: center; }
+.app--nav-collapsed .nav-collapse svg { transform: scaleX(-1); } /* point right to expand */
+/* No room for a row on the narrow rail — stack the mark over the toggle. */
+.app--nav-collapsed .sidebar-head { flex-direction: column; gap: 10px; }
+.app--nav-collapsed .brand-logo--full { display: none; }
+.app--nav-collapsed .brand-logo--mark { display: block; width: 40px; }
+.app--nav-collapsed .nav { width: 100%; }
+.app--nav-collapsed .nav button { justify-content: center; padding: 9px 0; gap: 0; }
+.app--nav-collapsed .nav button > span:not(.icon) { display: none; }
+/* Keep GitHub reachable (icon centred); the unit switcher's popup would be
+   clipped by the narrow rail, so hide it here — units live in the expanded bar. */
+.app--nav-collapsed .repo-link { justify-content: center; }
+.app--nav-collapsed .repo-link span { display: none; }
+.app--nav-collapsed .unit-switcher { display: none; }
 .repo-link {
   display: flex; align-items: center; gap: 6px;
   color: var(--muted); font-size: 12px; text-decoration: none;
@@ -100,6 +150,28 @@ body {
 .main { padding: 28px 32px 60px; max-width: 900px; }
 .main h1 { margin: 0 0 4px; font-size: 24px; }
 .main .subtitle { color: var(--muted); margin: 0 0 24px; }
+.main-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+/* Header actions (e.g. "Load an example" + "Copy link"), aligned as a row. */
+.main-actions { display: flex; align-items: flex-start; gap: 8px; margin-top: 4px; flex: none; }
+
+/* "Copy link" button in the page header — copies a URL encoding the config. */
+.copy-link { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.copy-link-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--panel-2); color: var(--text);
+  padding: 6px 10px; font: inherit; font-size: 13px; cursor: pointer;
+  white-space: nowrap;
+}
+.copy-link-btn:hover { border-color: var(--accent); color: var(--accent); }
+.copy-link-btn.copied { border-color: var(--accent); color: var(--accent); }
+/* Manual-copy fallback shown when the clipboard is blocked (e.g. an iframe host
+   that doesn't grant clipboard-write). */
+.copy-link-manual {
+  width: min(320px, 60vw); font: inherit; font-size: 12px;
+  padding: 5px 8px; border: 1px solid var(--accent); border-radius: 6px;
+  background: var(--panel); color: var(--text);
+}
 
 /* Each section is a card so the fields under one heading read as a group. */
 .section {
@@ -145,6 +217,7 @@ body {
 /* Fields */
 .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 4px; }
 .field-label { font-weight: 600; font-size: 13px; }
+.field-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: baseline; }
 .field-hint { font-size: 12px; color: var(--muted); }
 .field-hint-warn { color: var(--warn); font-weight: 500; }
 /* Accent the input itself to mark the value you set in a two-way solve
@@ -163,12 +236,31 @@ body {
 }
 input[type="number"], input[type="text"], select {
   font: inherit;
+  min-height: var(--control-h);
   padding: 8px 10px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--panel);
   color: var(--text);
   width: 100%;
+}
+/* Safari renders a native <select> as a real menu control that ignores
+   min-height/padding, so it stayed shorter than the text fields. Opting out of
+   the native appearance makes it a normal styled box (honouring --control-h)
+   across browsers; we then draw our own caret (matching the custom pickers' ▾)
+   as a background SVG. The dark-scheme rule below swaps the caret colour. */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0h10L5 6z' fill='%23616b76'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+@media (prefers-color-scheme: dark) {
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0h10L5 6z' fill='%239aa7b3'/%3E%3C/svg%3E");
+  }
 }
 /* Read-only computed value styled like an input */
 .static-value {
@@ -181,6 +273,20 @@ input[type="number"], input[type="text"], select {
 .number-input { display: flex; align-items: center; gap: 6px; }
 .number-input input { flex: 1; }
 .number-input .suffix { color: var(--muted); font-size: 13px; }
+/* A compact unit picker that attaches to a number field in place of a plain
+   suffix — auto-width, muted, minimal chrome so it reads as a unit, not a field. */
+.unit-suffix {
+  width: auto;
+  padding: 2px 4px;
+  font-size: 13px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.unit-suffix:hover { border-color: var(--border); color: var(--text); }
+.unit-suffix:focus { outline: none; border-color: var(--accent); color: var(--text); }
 
 /* Results */
 .results { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
@@ -227,21 +333,160 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .dr-note { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
+/* Method picker: custom select whose folded control carries the active colour as
+   a left accent, and whose open list prefixes each option with a colour square. */
+.swatch-select { position: relative; }
+.swatch-select-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--control-h);
+  font: inherit;
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--swatch-accent, var(--border));
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+.swatch-select-btn:hover { border-color: var(--accent); }
+.swatch-select-value { flex: 1; }
+.swatch-select-btn .caret { color: var(--muted); flex: none; transition: transform 0.15s ease; }
+.swatch-select-btn.open .caret { transform: rotate(180deg); }
+
+.swatch-select-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  min-width: 220px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.swatch-select-list ul { margin: 0; padding: 0; list-style: none; }
+.swatch-select-group + .swatch-select-group { margin-top: 4px; }
+.swatch-select-grouplabel {
+  display: block;
+  padding: 6px 10px 2px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.swatch-select-list button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  padding: 7px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.swatch-select-list button:hover { background: var(--accent-soft); color: var(--accent); }
+.swatch-select-list button.active { font-weight: 600; }
+.swatch-dot {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  background: transparent;
+}
+
+/* Frame-size explainer figure */
+.fs-diagram {
+  margin: 14px 0 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+.fs-diagram img { display: block; margin: 0 auto; }
+/* Stacked (narrow): grow the diagram to fill the available vertical space rather
+   than a fixed width cap, so it isn't small under the controls; the box hugs the
+   image so it doesn't leave a wide empty frame. */
+@media (max-width: 1119px) {
+  .fs-viz { width: fit-content; max-width: 100%; }
+  .fs-viz img { width: auto; height: auto; max-width: 100%; max-height: 70vh; }
+}
+
+/* Wide screens: controls take a fixed reading width on the left, the explainer
+   fills the remaining space in a sticky right rail (mirrors the drivetrain /
+   wheel-building workbench). The breakpoint is set high enough that the rail
+   always has room for a decently-sized diagram; below it the layout stacks. */
+@media (min-width: 1120px) {
+  /* Use the full viewport width like the workbench pages so the diagram fills all
+     the horizontal space. Controls stay at their reading width; the rest is diagram. */
+  .main--frame-size { max-width: none; }
+  .fs-workbench {
+    display: grid;
+    grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+  .fs-viz {
+    position: sticky;
+    top: 16px;
+    margin-top: 0;
+    /* Cap the whole figure (not just the image) so the box hugs the diagram
+       instead of stretching the full column, and keep it left-bound in the rail. */
+    max-width: 924px; /* 900px image + 2×12px padding */
+    justify-self: start;
+  }
+  .fs-viz img { width: 100%; max-width: 900px; height: auto; max-height: none; }
+}
+
 /* Drivetrain (crankset + cassette) diagram */
 .dt-diagram { position: relative; margin-top: 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
-.dt-slomo {
-  position: absolute; top: 10px; right: 10px; z-index: 1;
-  padding: 4px 10px; font-size: 12px; cursor: pointer;
-  color: var(--muted); background: var(--panel); border: 1px solid var(--border);
-  border-radius: 999px;
+/* Sits bottom-left; the buttons line up on the same row as the ‹ / › shift
+   buttons (which sit 4px up inside their padded bar), with the current-mode
+   label floating just above them. */
+.dt-playmode {
+  position: absolute; left: 10px; bottom: 14px; z-index: 1;
+  display: inline-flex; flex-direction: column; align-items: stretch; gap: 3px;
 }
-.dt-slomo:hover { border-color: var(--accent); color: var(--accent); }
-.dt-slomo.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+.dt-playmode-label {
+  align-self: center; font-size: 11px; color: var(--muted); white-space: nowrap;
+  padding: 1px 6px; border-radius: 999px;
+  background: color-mix(in srgb, var(--panel-2) 78%, transparent);
+  backdrop-filter: blur(2px);
+}
+.dt-playmode-group { display: inline-flex; }
+.dt-playmode-btn {
+  flex: 0 0 auto; width: 30px; height: 30px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--text); background: var(--panel); border: 1px solid var(--border);
+  border-radius: 0;
+}
+.dt-playmode-btn + .dt-playmode-btn { margin-left: -1px; }
+.dt-playmode-btn:first-child { border-top-left-radius: var(--radius); border-bottom-left-radius: var(--radius); }
+.dt-playmode-btn:last-child { border-top-right-radius: var(--radius); border-bottom-right-radius: var(--radius); }
+.dt-playmode-btn:hover { border-color: var(--accent); color: var(--accent); z-index: 1; }
+.dt-playmode-btn.active { color: #fff; background: var(--accent); border-color: var(--accent); z-index: 1; }
 .dt-diagram svg { width: 100%; max-width: 760px; display: block; margin: 0 auto; }
 .dt-gear { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 2 2.5; }
 .dt-gear-active { fill: none; stroke: var(--accent); stroke-width: 3; }
 .dt-hub { fill: var(--muted); }
 .dt-chain { fill: none; stroke: var(--text); stroke-width: 3; stroke-linejoin: round; }
+/* A carbon belt reads as a wider, smooth band rather than a chain's links. */
+.dt-belt { fill: none; stroke: var(--text); stroke-width: 5; stroke-linejoin: round; }
 .dt-pulley { fill: var(--panel); stroke: var(--muted); stroke-width: 1.5; }
 .dt-cage { stroke: var(--muted); stroke-width: 4; stroke-linecap: round; }
 .dt-spoke { fill: none; stroke: var(--muted); stroke-width: 1.2; opacity: 0.45; }
@@ -333,6 +578,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .combo {
   display: flex;
   align-items: stretch;
+  min-height: var(--control-h);
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--panel);
@@ -344,6 +590,9 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .combo .number-input input {
   border: none;
   background: transparent;
+  /* The .combo wrapper owns the shared height; inner inputs must not add their
+     own min-height on top of it. */
+  min-height: 0;
 }
 .combo > input[type="text"]:focus,
 .combo .number-input input:focus { outline: none; }
@@ -382,6 +631,18 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* Section header right-side action (e.g. preset picker) */
 .section-action { margin-left: auto; }
+
+/* "Load an example" picker — a header button (styled like Copy link) with a
+   grouped popover, right-aligned so it doesn't overflow the header edge. */
+.examples-menu .preset-list { left: auto; right: 0; min-width: 240px; max-height: 70vh; overflow: auto; }
+.examples-menu .copy-link-btn .caret { color: var(--muted); transition: transform 0.15s ease; }
+.examples-menu .copy-link-btn.open .caret { transform: rotate(180deg); }
+/* Group heading inside a preset popover (non-clickable). */
+.preset-group {
+  padding: 8px 10px 4px; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+}
+.preset-group:not(:first-child) { border-top: 1px solid var(--border); margin-top: 4px; }
 .preset-list {
   position: absolute;
   z-index: 20;
@@ -423,6 +684,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   width: 100%;
   justify-content: space-between;
   gap: 8px;
+  min-height: var(--control-h);
   padding: 8px 10px;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -646,6 +908,18 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   margin: 10px auto 0; max-width: 60ch; text-align: center;
   font-size: 12px; color: var(--muted); line-height: 1.5;
 }
+/* Chainstay slider + number, sitting inside a Field in the Chain/Belt section.
+   The number keeps a fixed width (overriding the global width:100% input rule,
+   which would otherwise swallow the flex:1 slider). */
+.dt-chainstay { display: flex; align-items: center; gap: 10px; }
+.dt-chainstay input[type="range"] { flex: 1; min-width: 80px; accent-color: var(--accent); }
+.dt-chainstay input[type="number"] { flex: 0 0 auto; width: 72px; }
+/* Space the available-belt list off the summary results above it. */
+.dt-belt-table { margin-top: 14px; }
+/* A titled block within a section (e.g. the chain-wear table under Chain). */
+.dt-subsection { margin-top: 20px; }
+.dt-subhead { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+.dt-subnote { margin: 0 0 12px; font-size: 12px; color: var(--muted); line-height: 1.5; }
 
 /* Compare a second drivetrain */
 .dt-compare-toggle {
@@ -780,6 +1054,134 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .tc-readout-hint { flex-basis: 100%; font-size: 12px; color: var(--muted); }
 .tc-caption { margin-top: 10px; max-width: 70ch; }
 
+/* Wheel-building workbench: controls in a scrolling column, the spoke-length
+   results + wheel diagram pinned in a sticky rail so they stay in view while you
+   tune the controls. Below the breakpoint it collapses to a single stacked
+   column (results + viz last). */
+/* Workbench pages (wheel building, drivetrain): keep the title + header actions
+   ("Load an example", "Copy link") pinned to the top while the controls scroll
+   beneath. The negative margins bleed the bar over .main's padding so it spans
+   edge-to-edge. */
+.main--wheel-building,
+.main--drivetrain { --wb-header-h: 62px; }
+.main--wheel-building .main-head,
+.main--drivetrain .main-head {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--bg);
+  margin: -28px -32px 20px;
+  padding: 16px 32px 12px;
+  border-bottom: 1px solid var(--border);
+}
+/* The subtitle is redundant with the controls, so drop it to keep the pinned
+   header compact. */
+.main--wheel-building .main-head .subtitle,
+.main--drivetrain .main-head .subtitle { display: none; }
+
+@media (min-width: 1200px) {
+  /* Use the full width on this page; the controls take a fixed reading width and
+     the visualization rail expands to fill all the remaining horizontal space.
+     Trim the bottom padding so the page stops scrolling exactly where the
+     controls end — otherwise the extra scroll unsticks the diagram near the
+     bottom and reveals an empty gap beneath it. */
+  .main--wheel-building { max-width: none; padding-bottom: 16px; }
+  .wb-workbench {
+    display: grid;
+    grid-template-columns: minmax(360px, 560px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+  /* The rail sticks below the sticky header and fills the viewport height; the
+     results take their natural height and the diagram fills whatever's left. */
+  .wb-viz {
+    position: sticky;
+    top: calc(var(--wb-header-h) + 16px);
+    height: calc(100vh - var(--wb-header-h) - 32px);
+    display: flex;
+    flex-direction: column;
+  }
+  .wb-viz .section { flex: none; }
+  .wb-viz-diagram { flex: 1 1 auto; min-height: 340px; }
+  .wb-viz .wheel-diagram { height: 100%; }
+}
+
+/* Drivetrain workbench: the setup + detail sections scroll in a fixed-width left
+   column while the gear chart and drivetrain diagram sit in a sticky right rail
+   that stays in view as you tune the controls. Unlike the wheel diagram (a
+   fill-the-panel canvas) the chart and diagram are aspect-sized SVGs, so the rail
+   takes its natural height rather than filling the viewport. Below the breakpoint
+   it collapses to a single stacked column (viz last). */
+@media (min-width: 1200px) {
+  /* Pin the page to the viewport height and let the controls column and the
+     visualization rail each scroll on their own, so a tall rail (gear chart +
+     diagram + derailleur fit) never forces the whole page to scroll. */
+  .main--drivetrain {
+    max-width: none;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 0;                    /* the header + columns supply their own padding */
+  }
+  /* The fixed-height main doesn't scroll, so the header is just the first flex
+     item at the top — drop the sticky + negative-margin bleed (it misfires in a
+     flex column: a gap opened above the title and the boxes slid under the bar).
+     With main padding:0 the bar is edge-to-edge without the negative margins. */
+  .main--drivetrain .main-head {
+    position: static;
+    margin: 0;
+  }
+  .dt-workbench {
+    flex: 1 1 auto;
+    min-height: 0;                 /* let the columns own the scrolling */
+    display: flex;
+    gap: 24px;
+    padding: 20px 32px 0;          /* the side/top padding .main used to provide */
+  }
+  /* Two independent scroll panes. min-height:0 lets each shrink below its content
+     so it scrolls internally instead of stretching the page. */
+  .dt-controls-col,
+  .dt-viz {
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 16px;          /* breathing room past the last card */
+  }
+  .dt-controls-col { flex: 0 0 clamp(360px, 40%, 520px); }
+  /* Clamp the rail so the chart and diagram grow only up to a sensible size —
+     past ~900px the diagram starts to look stretched. Extra width stays empty. */
+  .dt-viz { flex: 0 1 900px; }
+  /* The left column is narrow, so stack its setup + fit field groups one per row
+     (as the trio already does inside the Compare cards) rather than squeezing
+     them two-up. */
+  .dt-controls-col .grid,
+  .dt-controls-col .dt-setup-trio,
+  .dt-controls-col .results { grid-template-columns: 1fr; }
+  /* Let the diagram grow to fill the (now clamped) rail rather than its default
+     760px cap, so it tracks the gear chart's width. */
+  .dt-viz .dt-diagram svg { max-width: none; }
+
+  /* Fill leftover vertical space: the rail is a flex column, the Gears section
+     grows into any spare height, and the diagram grows within it. The diagram's
+     viewBox then stretches vertically (see DrivetrainDiagram) to reveal more of
+     the wheel and crank rather than scaling up or letterboxing. When content
+     doesn't fit, the sections keep their size and the rail scrolls. */
+  .dt-viz { display: flex; flex-direction: column; }
+  .dt-viz > .section { flex: none; }
+  .dt-viz > .section:first-child {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .dt-viz > .section:first-child > * { flex: none; }
+  /* flex-basis 0 (not auto) so the item's size comes from the flex layout, not
+     the SVG's intrinsic height — otherwise the grown viewBox's tall intrinsic
+     height ratchets the container up and it never shrinks back. The inline
+     min-height still floors it at the natural, width-driven size. */
+  .dt-viz > .section:first-child > .dt-diagram { flex: 1 1 0; }
+  .dt-viz .dt-diagram > svg { height: 100%; }
+}
+
 /* Wheel building: per-side input groups, boxed and colour-accented */
 .wb-sides { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 14px; }
 .wb-side {
@@ -890,3 +1292,36 @@ html.embedded .sidebar {
    last block's own margin) to a small, symmetric inset above the host's border. */
 html.embedded .main { padding-bottom: 24px; }
 html.embedded .main > :last-child { margin-bottom: 0; }
+
+/* Fill-mode embed (fixed full-window overlay, see main.tsx): keep scroll momentum
+   contained so hitting the top/bottom doesn't chain out to the host page and
+   rubber-band the whole iframe, briefly exposing the page behind it. */
+html.embed-fill,
+html.embed-fill body { overscroll-behavior: none; }
+
+/* The wide-screen workbench layouts pin themselves to the viewport height (100vh)
+   and give their columns their own scroll panes. In an auto-resizing iframe that
+   viewport *is* the height we just reported, so those rules misfire: the drivetrain
+   locks to its seed height and never grows, and the wheel-building rail feeds back
+   and grows without bound. When embedded, unpin them — size to content and let the
+   host page do the scrolling. */
+@media (min-width: 1200px) {
+  /* Drivetrain: drop the fixed viewport height and the per-column scroll panes so
+     the page takes its natural height. */
+  html.embedded .main--drivetrain { height: auto; overflow: visible; }
+  html.embedded .dt-controls-col,
+  html.embedded .dt-viz { overflow-y: visible; }
+  /* The rail's "fill the leftover height" flex rules need a bounded parent; with a
+     natural height there's no spare space, so the basis-0 diagram would collapse to
+     nothing. Restore natural, aspect-driven sizing. */
+  html.embedded .dt-viz > .section:first-child { flex: none; display: block; }
+  html.embedded .dt-viz > .section:first-child > .dt-diagram { flex: none; }
+  html.embedded .dt-viz .dt-diagram > svg { height: auto; }
+
+  /* Wheel building: unstick the rail and let it take its natural height instead of
+     100vh (the source of the runaway growth). The diagram gets an explicit height
+     again since there's no fixed rail height to fill. */
+  html.embedded .wb-viz { position: static; height: auto; }
+  html.embedded .wb-viz-diagram { flex: none; }
+  html.embedded .wb-viz .wheel-diagram { height: min(520px, 86vw); }
+}

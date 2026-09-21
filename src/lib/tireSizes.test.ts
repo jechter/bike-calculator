@@ -37,6 +37,19 @@ describe("parseTireSize", () => {
     expect(parseTireSize("26x1 3/8")).toEqual({ iso: 590, widthMm: 35 });
   });
 
+  it("knows the newer 32-inch (ISO 686) standard", () => {
+    expect(parseTireSize("50-686")).toEqual({ iso: 686, widthMm: 50 });
+    expect(parseTireSize("686-55")).toEqual({ iso: 686, widthMm: 55 });
+    const d = parseTireSize("32x2.4")!;
+    expect(d.iso).toBe(686);
+    expect(d.widthMm).toBeCloseTo(60.96, 2);
+  });
+
+  it("accepts a comma as the decimal separator", () => {
+    expect(parseTireSize("32 x 2,40")).toEqual(parseTireSize("32x2.4"));
+    expect(parseTireSize("27,5x2,1")).toEqual(parseTireSize("27.5x2.1"));
+  });
+
   it("returns null for gibberish", () => {
     expect(parseTireSize("banana")).toBeNull();
     expect(parseTireSize("")).toBeNull();

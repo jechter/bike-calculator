@@ -77,6 +77,7 @@ pressure. Modern guidance targets a tire "drop" (sag) of ~15%.
 - Recommended **front** and **rear** pressures (bar and psi), typically rear
   higher than front because it carries more load.
 - A sensible **range**, and never exceed the tire's or rim's stated max.
+- When **tubeless** is selected, a recommended **sealant volume** (ml per tire).
 
 ### Method
 No single closed formula is authoritative; we implement a simple, transparent
@@ -96,3 +97,17 @@ chart — worth swapping for cited chart data later.
 - Clamp to the **tire sidewall min/max** and the **rim's max pressure** (esp.
   hooked vs hookless — hookless rims often cap at 72.5 psi / 5 bar). Warn loudly
   near limits.
+
+### Tubeless sealant volume
+When the tube type is **tubeless**, also recommend how much sealant to add per
+tire. There's no universal standard — brands (Stan's, Orange Seal, …) publish
+per-width / per-wheel-size tables — so we estimate transparently: the sealant
+needed to coat and seal the casing scales with its internal surface area, which
+is ≈ tire cross-section × wheel circumference, i.e. **tire width × wheel
+circumference**.
+
+- `sealant_ml ≈ 0.75 × wheel_circumference_m × tire_width_mm`, rounded to 5 ml,
+  with a ±15% range. Calibrated so common setups land near brand guidance:
+  700×28C road ≈ 45 ml, 700×40 gravel ≈ 65 ml, 29×2.3 MTB ≈ 105 ml.
+- Presented as a starting range; use the higher end for porous casings, wider
+  rims or hot/dry conditions, and top up every 2–6 months as it dries out.

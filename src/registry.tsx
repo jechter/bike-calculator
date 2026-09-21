@@ -1,6 +1,8 @@
 import React from "react";
 import { Drivetrain } from "./components/Drivetrain";
 import { WheelBuilding } from "./components/WheelBuilding";
+import { WheelExamplesMenu } from "./components/WheelExamplesMenu";
+import { DrivetrainExamplesMenu } from "./components/DrivetrainExamplesMenu";
 import { FrameSize } from "./components/FrameSize";
 import { Tire } from "./components/Tire";
 import { Derailleur } from "./components/Derailleur";
@@ -24,6 +26,11 @@ export interface CalculatorDef {
   Component: React.ComponentType;
   /** Hidden from the sidebar nav, but still reachable directly by hash route. */
   hidden?: boolean;
+  /** Encodes its config in the URL hash — show a "Copy link" button (see
+   *  useUrlConfigSync in the page component). */
+  shareable?: boolean;
+  /** Optional extra control(s) rendered in the page header, left of "Copy link". */
+  HeaderActions?: React.ComponentType;
 }
 
 export const CALCULATORS: CalculatorDef[] = [
@@ -31,9 +38,11 @@ export const CALCULATORS: CalculatorDef[] = [
     id: "drivetrain",
     title: "Drivetrain",
     subtitle:
-      "Gear ratios, speed at cadence, chain length and chain wear — cassette, single speed or geared hub.",
+      "Gear ratios, speed at cadence, chain/belt length and chain wear — cassette, single speed or geared hub.",
     icon: <DrivetrainIcon />,
     Component: Drivetrain,
+    shareable: true,
+    HeaderActions: DrivetrainExamplesMenu,
   },
   {
     id: "wheel-building",
@@ -41,6 +50,8 @@ export const CALCULATORS: CalculatorDef[] = [
     subtitle: "Spoke lengths for a hub + rim + lacing, plus a spoke-tension converter.",
     icon: <WheelIcon />,
     Component: WheelBuilding,
+    shareable: true,
+    HeaderActions: WheelExamplesMenu,
   },
   {
     id: "frame-size",

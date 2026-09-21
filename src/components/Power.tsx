@@ -73,7 +73,9 @@ export function Power() {
   const toDisplay = (kmh: number) => (units.speed === "mph" ? kmhToMph(kmh) : kmh);
   const fromDisplay = (v: number) => (units.speed === "mph" ? mphToKmh(v) : v);
 
-  const [mass, setMass] = useState(80);
+  const [riderMass, setRiderMass] = useState(70);
+  const [bikeMass, setBikeMass] = useState(10);
+  const mass = riderMass + bikeMass;
   const [gradient, setGradient] = useState(0);
   const [crr, setCrr] = useState(0.005);
   const [rho, setRho] = useState(1.225);
@@ -81,11 +83,13 @@ export function Power() {
   const [wind, setWind] = useState(0);
   const [eff, setEff] = useState(0.97);
 
-  // Speed and power are coupled: whichever was edited last is the independent
-  // one and stays fixed as conditions change; the other is derived.
+  // Speed, power and power-to-weight (W per rider kg) are coupled: whichever was
+  // edited last is the independent one and stays fixed as conditions change; the
+  // others are derived.
   const [speedKmh, setSpeedKmh] = useState(30);
   const [watts, setWatts] = useState(200);
-  const [last, setLast] = useState<"speed" | "power">("speed");
+  const [wkg, setWkg] = useState(200 / 70);
+  const [last, setLast] = useState<"speed" | "power" | "wkg">("speed");
 
   const p: PowerInput = {
     massKg: mass,
@@ -97,10 +101,18 @@ export function Power() {
     drivetrainEfficiency: eff,
   };
 
-  const derivedWatts = powerForSpeed(kmhToMs(speedKmh), p);
-  const derivedSpeedKmh = msToKmh(speedForPower(watts, p));
-  const shownSpeedKmh = last === "power" ? derivedSpeedKmh : speedKmh;
-  const shownWatts = last === "speed" ? derivedWatts : watts;
+  // The independent pedal power, from whichever coupled field was edited last.
+  // W/kg is per *rider* kg (the conventional cycling power-to-weight metric).
+  const independentWatts =
+    last === "speed"
+      ? powerForSpeed(kmhToMs(speedKmh), p)
+      : last === "wkg"
+        ? wkg * riderMass
+        : watts;
+  const shownWatts = independentWatts;
+  const shownSpeedKmh =
+    last === "speed" ? speedKmh : msToKmh(speedForPower(independentWatts, p));
+  const shownWkg = last === "wkg" ? wkg : independentWatts / riderMass;
 
   const parts = splitParts(powerBreakdown(kmhToMs(shownSpeedKmh), p));
   // Percentages are shares of the resisting (positive) power, so an assisting
@@ -110,13 +122,14 @@ export function Power() {
   return (
     <>
       <Section
-        title="Speed ⇄ Power"
+        title="Speed ⇄ Power ⇄ W/kg"
         info={
           <>
-            Edit <strong>either</strong> field — the one you set is
-            <strong> highlighted</strong> and the other updates to match. When you
+            Edit <strong>any</strong> field — the one you set is
+            <strong> highlighted</strong> and the others update to match.
+            Power-to-weight is watts per <strong>rider</strong> kg. When you
             change a condition below, the highlighted (last-edited) value is held
-            fixed and the other is recomputed.
+            fixed and the others are recomputed.
           </>
         }
       >
@@ -141,6 +154,18 @@ export function Power() {
               }}
               suffix="W"
               min={5}
+            />
+          </Field>
+          <Field label="Power-to-weight" hint="per rider kg" highlight={last === "wkg"}>
+            <NumberInput
+              value={Math.round(shownWkg * 100) / 100}
+              onChange={(v) => {
+                setWkg(v);
+                setLast("wkg");
+              }}
+              suffix="W/kg"
+              min={0.5}
+              step={0.1}
             />
           </Field>
         </div>
@@ -193,8 +218,11 @@ export function Power() {
         }
       >
         <div className="grid">
-          <Field label="Total mass" hint="rider + bike + kit">
-            <NumberInput value={mass} onChange={setMass} suffix="kg" min={30} max={200} />
+          <Field label="Rider" hint={`total ${Math.round(mass)} kg`}>
+            <NumberInput value={riderMass} onChange={setRiderMass} suffix="kg" min={30} max={150} />
+          </Field>
+          <Field label="Bike & equipment" hint="frame, wheels, kit">
+            <NumberInput value={bikeMass} onChange={setBikeMass} suffix="kg" min={3} max={40} />
           </Field>
           <Field label="Gradient">
             <NumberInput value={gradient} onChange={setGradient} suffix="%" step={0.5} />

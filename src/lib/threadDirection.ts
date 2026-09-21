@@ -34,6 +34,12 @@ export const THREAD_COMPONENTS: ThreadComponent[] = [
     note: 'The worldwide standard — nearly all modern threaded bikes, and most vintage British, US and Asian frames.',
   },
   {
+    name: 'Bottom bracket — T47 (M47×1.0)',
+    left: { ...RH, note: 'non-drive cup' },
+    right: { thread: 'LH', loosenDirection: 'CW', note: 'drive cup — reverse thread' },
+    note: 'Oversized threaded standard on many modern road, gravel and MTB frames (44/47mm shells). Same thread hands as English/BSA — drive side reverse, non-drive normal.',
+  },
+  {
     name: 'Bottom bracket — Italian (36mm×24T)',
     left: RH,
     right: RH,

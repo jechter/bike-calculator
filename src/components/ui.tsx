@@ -11,10 +11,15 @@ export function Field(props: {
    * two-way solve like Speed ⇄ Power).
    */
   highlight?: boolean;
+  /** Optional colour swatch before the label (ties the field to a diagram legend). */
+  dotColor?: string;
 }) {
   return (
     <div className={"field" + (props.highlight ? " field-highlight" : "")}>
-      <span className="field-label">{props.label}</span>
+      <span className="field-label">
+        {props.dotColor && <span className="field-dot" style={{ background: props.dotColor }} />}
+        {props.label}
+      </span>
       {props.children}
       {props.hint && <span className="field-hint">{props.hint}</span>}
     </div>
@@ -86,7 +91,8 @@ export function NumberInput(props: {
   min?: number;
   max?: number;
   step?: number;
-  suffix?: string;
+  /** A trailing unit label, or any control (e.g. a compact unit picker). */
+  suffix?: React.ReactNode;
 }) {
   return (
     <span className="number-input">
@@ -162,6 +168,98 @@ export function Select<T extends string | number>(props: {
         ),
       )}
     </select>
+  );
+}
+
+interface SwatchOption<T> {
+  value: T;
+  label: string;
+  /** A shorter label for the folded control; falls back to `label`. */
+  shortLabel?: string;
+  /** Colour square shown before the label in the open list. */
+  color?: string;
+}
+interface SwatchGroup<T> {
+  label: string;
+  options: Array<SwatchOption<T>>;
+}
+
+/**
+ * A custom (non-native) select whose open list prefixes each option with a
+ * colour square, while the folded control shows just the label — the current
+ * colour is carried by an accent border (`accentColor`) instead, so the square
+ * isn't repeated redundantly. Used where options map to a colour legend.
+ */
+export function SwatchSelect<T extends string | number>(props: {
+  value: T;
+  options: Array<SwatchOption<T> | SwatchGroup<T>>;
+  onChange: (v: T) => void;
+  /** Left-edge accent on the folded control (typically the current option's colour). */
+  accentColor?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const isGroup = (o: SwatchOption<T> | SwatchGroup<T>): o is SwatchGroup<T> =>
+    "options" in o;
+  const flat = props.options.flatMap((o) => (isGroup(o) ? o.options : [o]));
+  const current = flat.find((o) => o.value === props.value);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  const renderOption = (o: SwatchOption<T>) => (
+    <li key={String(o.value)} role="option" aria-selected={o.value === props.value}>
+      <button
+        type="button"
+        className={o.value === props.value ? "active" : undefined}
+        onClick={() => {
+          props.onChange(o.value);
+          setOpen(false);
+        }}
+      >
+        <span className="swatch-dot" style={{ background: o.color ?? "transparent" }} />
+        {o.label}
+      </button>
+    </li>
+  );
+
+  return (
+    <div
+      className="swatch-select"
+      ref={ref}
+      style={{ ["--swatch-accent" as string]: props.accentColor ?? "var(--border)" }}
+    >
+      <button
+        type="button"
+        className={"swatch-select-btn" + (open ? " open" : "")}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className="swatch-select-value">{current?.shortLabel ?? current?.label}</span>
+        <span className="caret">▾</span>
+      </button>
+      {open && (
+        <ul className="swatch-select-list" role="listbox">
+          {props.options.map((o, i) =>
+            isGroup(o) ? (
+              <li key={`g${i}`} className="swatch-select-group">
+                <span className="swatch-select-grouplabel">{o.label}</span>
+                <ul>{o.options.map(renderOption)}</ul>
+              </li>
+            ) : (
+              renderOption(o)
+            ),
+          )}
+        </ul>
+      )}
+    </div>
   );
 }
 

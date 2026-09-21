@@ -43,6 +43,58 @@ export function frameSizeFromInseam(input: FrameSizeInput): FrameSizeResult {
   };
 }
 
+// --- Reverse: frame size → who it fits --------------------------------------
+
+export interface FitFromFrameInput {
+  /** Frame size as seat-tube length in cm (for mtb, convert inches × 2.54 first). */
+  frameCm: number;
+  style: FrameStyle;
+  /** Leg-length proportion used only for the rider-height estimate (see below). */
+  legProportion?: number;
+}
+
+export interface FitFromFrameResult {
+  /** Central inseam this frame is built around. */
+  inseamCm: number;
+  /** Inseam band that maps onto this frame (the forward ±1.5 cm range, inverted). */
+  inseamRangeCm: [number, number];
+  /** Central rider height at the chosen leg proportion. */
+  heightCm: number;
+  /** Rider-height band (the inseam band ÷ the chosen leg proportion). */
+  heightRangeCm: [number, number];
+  nominalSize: string;
+  /** Starting saddle height for the central inseam. */
+  saddleHeightCm: number;
+}
+
+/**
+ * Inverse of {@link frameSizeFromInseam}: given a frame you already have, work out
+ * the rider it fits — the workshop case of matching a donated bike to a waiting
+ * list. Frame cm ÷ the style multiplier gives the inseam; the forward tool's
+ * ±1.5 cm frame range inverts to an inseam band, which ÷ the leg proportion gives
+ * a rider-height band. Inseam is the reliable match; height depends on the
+ * (adjustable) leg proportion, so it is presented as a band.
+ */
+export function fitFromFrameSize(input: FitFromFrameInput): FitFromFrameResult {
+  const { frameCm, style, legProportion = 0.47 } = input;
+  const mult = FRAME_MULTIPLIER[style];
+  const inseamCm = frameCm / mult;
+  const inseamRangeCm: [number, number] = [(frameCm - 1.5) / mult, (frameCm + 1.5) / mult];
+  const heightCm = inseamCm / legProportion;
+  const heightRangeCm: [number, number] = [
+    inseamRangeCm[0] / legProportion,
+    inseamRangeCm[1] / legProportion,
+  ];
+  return {
+    inseamCm,
+    inseamRangeCm,
+    heightCm,
+    heightRangeCm,
+    nominalSize: nominalSize(inseamCm),
+    saddleHeightCm: inseamCm * 0.883,
+  };
+}
+
 /**
  * Nominal S/M/L size from the rider's inseam (body size), NOT the style-scaled
  * frame cm — a "Medium" rider is Medium on a road bike or an MTB, even though the

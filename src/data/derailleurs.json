@@ -8699,6 +8699,10 @@
       "electronic": "AXS",
       "maxLow": 52,
       "capacity": 42,
+      "chainLengthGuide": {
+        "url": "https://axs.sram.com/guides/fullmount/chain/calculator",
+        "name": "SRAM Full Mount"
+      },
       "source": {
         "url": "https://www.sram.com/en/service/models/rd-s1000-e-a1",
         "sourceType": "primary",
@@ -8716,6 +8720,10 @@
       "electronic": "AXS",
       "maxLow": 46,
       "capacity": 36,
+      "chainLengthGuide": {
+        "url": "https://axs.sram.com/guides/fullmount/chain/calculator",
+        "name": "SRAM Full Mount"
+      },
       "source": {
         "url": "https://www.sram.com/en/service/models/rd-riv1-e-d1",
         "sourceType": "primary",
@@ -8768,6 +8776,10 @@
       "electronic": "AXS",
       "maxLow": 52,
       "capacity": 42,
+      "chainLengthGuide": {
+        "url": "https://axs.sram.com/guides/fullmount/chain/calculator",
+        "name": "SRAM Full Mount"
+      },
       "source": {
         "url": "https://www.sram.com/en/service/models/rd-gx-e-b1",
         "sourceType": "primary",
@@ -8785,6 +8797,10 @@
       "electronic": "AXS",
       "maxLow": 52,
       "capacity": 42,
+      "chainLengthGuide": {
+        "url": "https://axs.sram.com/guides/fullmount/chain/calculator",
+        "name": "SRAM Full Mount"
+      },
       "source": {
         "url": "https://www.sram.com/en/service/models/rd-xx-sle-b1",
         "sourceType": "primary",
@@ -8802,6 +8818,10 @@
       "electronic": "AXS",
       "maxLow": 52,
       "capacity": 42,
+      "chainLengthGuide": {
+        "url": "https://axs.sram.com/guides/fullmount/chain/calculator",
+        "name": "SRAM Full Mount"
+      },
       "source": {
         "url": "https://www.sram.com/en/service/models/rd-x0-e-b1",
         "sourceType": "primary",
@@ -8819,6 +8839,10 @@
       "electronic": "AXS",
       "maxLow": 52,
       "capacity": 42,
+      "chainLengthGuide": {
+        "url": "https://axs.sram.com/guides/fullmount/chain/calculator",
+        "name": "SRAM Full Mount"
+      },
       "source": {
         "url": "https://www.sram.com/en/service/models/rd-xx-e-b1",
         "sourceType": "primary",
@@ -9999,6 +10023,10 @@
       "pullRatio": 1.2,
       "maxLow": 52,
       "capacity": 42,
+      "chainLengthGuide": {
+        "url": "https://axs.sram.com/guides/fullmount/chain/calculator",
+        "name": "SRAM Full Mount"
+      },
       "source": {
         "url": "https://www.sram.com/en/service/models/rd-70-a1",
         "sourceType": "primary",
@@ -10016,6 +10044,10 @@
       "pullRatio": 1.2,
       "maxLow": 52,
       "capacity": 42,
+      "chainLengthGuide": {
+        "url": "https://axs.sram.com/guides/fullmount/chain/calculator",
+        "name": "SRAM Full Mount"
+      },
       "source": {
         "url": "https://www.sram.com/en/service/models/rd-90-a1",
         "sourceType": "primary",

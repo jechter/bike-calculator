@@ -482,6 +482,32 @@ describe('incompatibleReason', () => {
   });
 });
 
+describe('chainLengthGuide', () => {
+  it('marks every SRAM Full Mount derailleur (Eagle Transmission + 13-speed XPLR)', () => {
+    const guided = DERAILLEURS.filter((d) => d.chainLengthGuide);
+    // 7 Eagle Transmission + the 13-speed Red XPLR = 8 Full Mount rows today.
+    expect(guided.length).toBe(8);
+    for (const d of guided) {
+      expect(d.brand).toBe('SRAM');
+      expect(d.chainLengthGuide!.name).toBe('SRAM Full Mount');
+      expect(d.chainLengthGuide!.url).toBe(
+        'https://axs.sram.com/guides/fullmount/chain/calculator',
+      );
+    }
+    // All Transmission-series rows are covered…
+    expect(
+      DERAILLEURS.filter((d) => d.series === 'Transmission').every((d) => d.chainLengthGuide),
+    ).toBe(true);
+    // …and the 13-speed XPLR, but NOT the hanger-mount 12-speed XPLRs.
+    const xplr12 = DERAILLEURS.find((d) => d.model === 'AXS XPLR' && d.speeds === 12);
+    expect(xplr12?.chainLengthGuide).toBeUndefined();
+  });
+
+  it('leaves ordinary hanger-mount derailleurs without a guide', () => {
+    expect(derailleurByKey('shimano-rd-r7000-ss-11s')!.chainLengthGuide).toBeUndefined();
+  });
+});
+
 describe('pullRatioFor', () => {
   it('prefers the sourced numeric ratio, "electronic" for electronic groups', () => {
     expect(pullRatioFor(derailleurByKey('shimano-rd-r7000-ss-11s')!)).toBe('1.4:1');

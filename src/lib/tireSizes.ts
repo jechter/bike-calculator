@@ -20,6 +20,13 @@ export interface WheelSize {
 // Common wheel sizes keyed by ISO bead diameter. narrow < 40 mm, wide >= 40 mm.
 export const WHEEL_SIZES: WheelSize[] = [
   {
+    // Newer "32-inch" MTB/gravel standard (622 + 64 mm bead), used for big-wheel
+    // trail and XC bikes, e.g. 50-686, 55-686, 62-686 (32 × 2.4).
+    iso: 686,
+    commonNames: ["32-inch"],
+    dias: [{ format: "decimal", dia: "32", width: "any" }],
+  },
+  {
     iso: 622,
     commonNames: ["700C", "29-inch (29er)", "28-inch"],
     dias: [
@@ -123,6 +130,7 @@ const FRACTION_LOOKUP: Array<{ dia: string; w: string; iso: number; mm: number }
 ];
 
 const DECIMAL_DIA_ISO: Record<string, number> = {
+  "32": 686,
   "29": 622,
   "28": 622,
   "27.5": 584,
@@ -161,6 +169,8 @@ export function parseTireSize(raw: string): ParsedTire | null {
     .trim()
     .replace(/×/g, "x")
     .replace(/["″]/g, "")
+    // Accept a comma as the decimal separator (e.g. "32 x 2,40").
+    .replace(/(\d),(\d)/g, "$1.$2")
     .replace(/\s+/g, " ");
 
   // ETRTO: two numbers with a dash (either order) — 28-622 or 622-28.
@@ -279,6 +289,9 @@ const COMMON_SIZE_LABELS = [
   "29x2.25",
   "29x2.35",
   "29x2.4",
+  // 32-inch (686) — newer big-wheel trail / gravel
+  "32x2.15",
+  "32x2.4",
   // 650B / 27.5"
   "650b x 47",
   "27.5x2.1",

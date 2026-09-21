@@ -290,7 +290,7 @@ const COMMON_SIZE_LABELS = [
   "29x2.35",
   "29x2.4",
   // 32-inch (686) — newer big-wheel trail / gravel
-  "32x2.2",
+  "32x2.15",
   "32x2.4",
   // 650B / 27.5"
   "650b x 47",

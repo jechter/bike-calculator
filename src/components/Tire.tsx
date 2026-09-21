@@ -6,6 +6,7 @@ import {
   type Surface,
   type TubeType,
 } from "../lib/tirePressure";
+import { recommendSealantMl } from "../lib/sealant";
 import { Field, NumberInput, TextInput, Select, Result, Section } from "./ui";
 import { getHashQueryParam } from "../useHashRoute";
 
@@ -37,6 +38,13 @@ export function Tire() {
     tubeType: tube,
     surface,
   });
+
+  // Tubeless sealant needs scale with casing area ≈ tire width × wheel
+  // circumference. Fall back to a 700C circumference when no size is parsed.
+  const sealant =
+    tube === "tubeless"
+      ? recommendSealantMl(pressureWidth, parsed ? circ : estimatedCircumferenceMm(622, pressureWidth))
+      : null;
 
   return (
     <>
@@ -176,6 +184,18 @@ export function Tire() {
             big
           />
         </div>
+        {sealant && (
+          <>
+            <div className="results" style={{ marginTop: 8 }}>
+              <Result label="Tubeless sealant (per tire)" value={`${sealant.ml} ml`} big />
+            </div>
+            <p className="field-hint" style={{ marginTop: 10 }}>
+              Coat the casing with roughly {sealant.lowMl}–{sealant.highMl} ml per
+              tire — use the higher end for porous casings, wider rims or hotter,
+              drier conditions. Top up every 2–6 months as it dries out.
+            </p>
+          </>
+        )}
       </Section>
     </>
   );

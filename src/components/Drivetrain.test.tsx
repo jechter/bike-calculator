@@ -359,6 +359,22 @@ describe("Drivetrain page", () => {
     expect(getByText("Links")).toBeTruthy();
   });
 
+  it("links to SRAM's Full Mount calculator instead of our chain length for a Full Mount derailleur", () => {
+    const { container, getByText, queryByText } = render(<Drivetrain />);
+    // Default cassette mode shows our Park Tool result (mm + links).
+    expect(getByText("Links")).toBeTruthy();
+    // Pick a SRAM Full Mount (Eagle Transmission) derailleur.
+    pickDerailleur(container, "GX Eagle", (t) => /Transmission/i.test(t));
+    // Our computed length is now hidden in favour of SRAM's guide.
+    expect(queryByText("Links")).toBeNull();
+    const link = Array.from(container.querySelectorAll("a")).find((a) =>
+      a.getAttribute("href")?.includes("axs.sram.com/guides/fullmount/chain/calculator"),
+    ) as HTMLAnchorElement;
+    expect(link).toBeTruthy();
+    expect(link.textContent).toMatch(/SRAM Full Mount/);
+    expect(link.getAttribute("target")).toBe("_blank");
+  });
+
   it("shows a hover tooltip with a gear's exact values", () => {
     const { container } = render(<Drivetrain />);
     const dot = container.querySelector(".gc-dot") as SVGCircleElement;

@@ -208,6 +208,7 @@ interface RawDerailleur {
   minLow?: number;
   capacity?: number;
   electronic?: string; // e.g. "Di2", "AXS", "eTap", "WT"
+  chainLengthGuide?: ChainLengthGuide;
   source?: DerailleurSource;
 }
 
@@ -215,6 +216,19 @@ export interface DerailleurSource {
   url: string;
   sourceType: 'primary' | 'secondary';
   note?: string;
+}
+
+/**
+ * Some derailleurs are sized by the manufacturer's own chain-length procedure
+ * rather than the generic Park Tool wrap formula — notably SRAM Full Mount
+ * (Eagle Transmission and 13-speed XPLR), which mount directly to the frame and
+ * derive chain length from chainstay + chainring with a setup key. When present,
+ * the UI links out to `url` instead of showing our computed length. `name` is
+ * the system's short label (e.g. "SRAM Full Mount").
+ */
+export interface ChainLengthGuide {
+  url: string;
+  name: string;
 }
 
 export interface DerailleurSpec {
@@ -236,6 +250,9 @@ export interface DerailleurSpec {
   /** Derived actuation family; matches a family in DERAILLEUR_SYSTEMS, or
    *  undefined when it can't be derived confidently (shown as "unknown"). */
   actuation?: string;
+  /** Manufacturer chain-length calculator that supersedes our formula, when the
+   *  model has its own sizing procedure (e.g. SRAM Full Mount). */
+  chainLengthGuide?: ChainLengthGuide;
   source?: DerailleurSource;
 }
 
@@ -425,6 +442,7 @@ function loadDerailleurs(): DerailleurSpec[] {
       introduced: r.introduced,
       discontinued: r.discontinued,
       actuation: deriveActuation(r),
+      chainLengthGuide: r.chainLengthGuide,
       source: r.source,
     };
   });

@@ -38,6 +38,11 @@ brand+model+cage+speeds — **not** stored in the file) and *derives* the
 - `electronic` — electronic group label (`"Di2"`, `"AXS"`, `"eTap"`, `"WT"`…) if
   the derailleur is electronic (no cable pull); optional.
 - `introduced`, `discontinued` — model years; optional.
+- `chainLengthGuide` — `{ url, name }` for models sized by the manufacturer's own
+  chain-length procedure rather than the generic Park Tool wrap formula (SRAM Full
+  Mount: Eagle Transmission and 13-speed XPLR). When present, the chain calculator
+  links out to `url` (labelled with `name`) instead of showing a computed length.
+  Optional.
 - `source` — `{ url, sourceType: "primary" | "secondary", note }` citing the specs.
 
 The `actuation` family is **derived** from brand/type/speeds/electronic and must

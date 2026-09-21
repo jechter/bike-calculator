@@ -1492,6 +1492,13 @@ export function Drivetrain() {
   // derailleur has no data (many older or third-party entries) — see
   // `fitDataMissing` below.
   const derailleur = derailleurByKey(focusCfg.derailleurId);
+  // Some derailleurs (SRAM Full Mount: Eagle Transmission, 13-speed XPLR) mount
+  // directly to the frame and have their own chain-length procedure, so the Park
+  // Tool wrap formula doesn't apply — link to the manufacturer's calculator
+  // instead of showing our computed length. Only meaningful when the drivetrain
+  // actually runs this derailleur (a rear derailleur + cassette).
+  const chainGuide =
+    hasDerailleur(focusCfg) && derailleur ? derailleur.chainLengthGuide : undefined;
   const shifter = focusCfg.shifter;
   // The selected cassette's cog-pitch standard, but only when the picked model
   // still matches the current cogs (a hand-edited cog list has no known model, so
@@ -1909,11 +1916,20 @@ export function Drivetrain() {
         title={(belt ? "Belt" : "Chain") + (comparing ? ` · ${focusLabel}` : "")}
         info={
           hasDerailleur(focusCfg) ? (
-            <>
-              Park Tool formula, rounded up so the link count is even (each link ≈
-              12.7 mm). It includes the +1 inch wrap for the rear derailleur. The
-              big-big wrap method is more reliable for wide 1× and full-suspension.
-            </>
+            chainGuide ? (
+              <>
+                {chainGuide.name} derailleurs mount directly to the frame and are
+                sized by the manufacturer's own procedure (chainstay length +
+                chainring, set with a setup key), not the Park Tool wrap formula —
+                so we link out to their calculator instead.
+              </>
+            ) : (
+              <>
+                Park Tool formula, rounded up so the link count is even (each link ≈
+                12.7 mm). It includes the +1 inch wrap for the rear derailleur. The
+                big-big wrap method is more reliable for wide 1× and full-suspension.
+              </>
+            )
           ) : belt ? (
             <>
               A belt is a closed loop — it can't be cut or shortened. You fit a
@@ -1970,11 +1986,35 @@ export function Drivetrain() {
         </div>
 
         {hasDerailleur(focusCfg) ? (
-          <div className="grid">
-            <Result label="Largest ring / cog" value={`${largestRing} / ${largestCog} T`} />
-            <Result label="Length" value={`${chain.mm} mm`} />
-            <Result label="Links" value={chain.links} big />
-          </div>
+          chainGuide ? (
+            <>
+              <div className="grid">
+                <Result label="Largest ring / cog" value={`${largestRing} / ${largestCog} T`} />
+              </div>
+              <Note tone="info">
+                {derailleurFullName(derailleur!)} is a{" "}
+                <strong>{chainGuide.name}</strong> derailleur — it mounts directly to
+                the frame and has its own chain-length procedure (from the chainstay
+                length and chainring size, set with a setup key), so the Park Tool
+                wrap formula below doesn't apply. Use the{" "}
+                <a
+                  className="inline-link"
+                  href={chainGuide.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {chainGuide.name} chain length calculator ↗
+                </a>{" "}
+                for the correct chain length and setup-key numbers.
+              </Note>
+            </>
+          ) : (
+            <div className="grid">
+              <Result label="Largest ring / cog" value={`${largestRing} / ${largestCog} T`} />
+              <Result label="Length" value={`${chain.mm} mm`} />
+              <Result label="Links" value={chain.links} big />
+            </div>
+          )
         ) : belt ? (
           <>
             <div className="grid">

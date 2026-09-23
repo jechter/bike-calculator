@@ -50,11 +50,13 @@ A single seat-tube number is a weak way to describe a frame:
   position", because they go together in practice: Time trial, Road (aero /
   vintage / endurance), Gravel (race / adventure), Mountain, Hybrid-city. Each
   category carries the inseam→size multiplier, the reach/stack position, and the
-  top-tube slope used to draw actual-vs-effective seat tube in the diagram. Stack
-  ranks as you'd expect — TT lowest, then aero ≈ vintage (a level-top-tube
-  vintage frame is inherently fairly low — it wasn't more aggressive than a
-  modern aero bike, just constrained by geometry), then endurance/gravel, with
-  MTB and upright city highest.
+  top-tube slope used to draw actual-vs-effective seat tube in the diagram. A
+  separate **Vintage** group (road / rigid MTB / city-roadster) covers the
+  traditional level-top-tube frames, which share a low stack and got their
+  upright position from a tall/long stem rather than frame height. Stack ranks as
+  you'd expect — TT lowest, then aero ≈ vintage (a level-top-tube frame is
+  inherently fairly low — not more aggressive, just constrained by geometry),
+  then endurance/gravel, with MTB and upright city highest.
 
 Gender isn't asked: what matters is the actual leg, torso and arm lengths, which
 the three body inputs already capture.

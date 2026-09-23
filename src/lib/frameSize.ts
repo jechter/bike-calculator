@@ -51,12 +51,16 @@ export interface FrameCategory {
 export const FRAME_CATEGORIES: FrameCategory[] = [
   { id: 'tt', label: 'Time trial / triathlon', group: 'Time trial', sizeMult: 0.66, reachBaseMm: 118, frontEndRiseMm: 3, topTubeSlopeDeg: 3, geometry: 'sloping' },
   { id: 'road-aero', label: 'Aero / race', group: 'Road', sizeMult: 0.665, reachBaseMm: 100, frontEndRiseMm: 18, topTubeSlopeDeg: 5, geometry: 'sloping' },
-  { id: 'road-vintage', label: 'Vintage / level top tube', group: 'Road', sizeMult: 0.665, reachBaseMm: 90, frontEndRiseMm: 22, topTubeSlopeDeg: 0, geometry: 'classic' },
   { id: 'road-endurance', label: 'Endurance / all-road', group: 'Road', sizeMult: 0.665, reachBaseMm: 80, frontEndRiseMm: 52, topTubeSlopeDeg: 7, geometry: 'sloping' },
   { id: 'gravel-race', label: 'Race', group: 'Gravel', sizeMult: 0.665, reachBaseMm: 82, frontEndRiseMm: 52, topTubeSlopeDeg: 6, geometry: 'sloping' },
   { id: 'gravel-adventure', label: 'Adventure', group: 'Gravel', sizeMult: 0.66, reachBaseMm: 66, frontEndRiseMm: 78, topTubeSlopeDeg: 10, geometry: 'sloping' },
   { id: 'mtb', label: 'Hardtail / trail', group: 'Mountain', sizeMult: 0.57, reachBaseMm: 58, frontEndRiseMm: 128, topTubeSlopeDeg: 14, geometry: 'suspension', showInches: true },
   { id: 'city', label: 'Upright', group: 'Hybrid / city', sizeMult: 0.63, reachBaseMm: 45, frontEndRiseMm: 112, topTubeSlopeDeg: 16, geometry: 'sloping' },
+  // Traditional level-top-tube frames: a low stack, with the upright position
+  // coming from a tall/long stem and swept bars rather than frame height.
+  { id: 'vintage-road', label: 'Road', group: 'Vintage', sizeMult: 0.665, reachBaseMm: 90, frontEndRiseMm: 22, topTubeSlopeDeg: 0, geometry: 'classic' },
+  { id: 'vintage-mtb', label: 'Mountain (rigid)', group: 'Vintage', sizeMult: 0.59, reachBaseMm: 64, frontEndRiseMm: 20, topTubeSlopeDeg: 0, geometry: 'classic', showInches: true },
+  { id: 'vintage-city', label: 'City / roadster', group: 'Vintage', sizeMult: 0.63, reachBaseMm: 52, frontEndRiseMm: 28, topTubeSlopeDeg: 0, geometry: 'classic' },
 ];
 
 export const DEFAULT_CATEGORY_ID = 'road-endurance';

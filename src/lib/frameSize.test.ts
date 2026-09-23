@@ -13,7 +13,7 @@ import {
 
 const ROAD = findCategory('road-endurance');
 const AERO = findCategory('road-aero');
-const VINTAGE = findCategory('road-vintage');
+const VINTAGE = findCategory('vintage-road');
 const TT = findCategory('tt');
 const CITY = findCategory('city');
 const MTB = findCategory('mtb');

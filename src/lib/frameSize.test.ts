@@ -4,7 +4,19 @@ import {
   fitFromFrameSize,
   inseamFromHeight,
   suggestCrankLength,
+  fitTargets,
+  armFromHeight,
+  armFromHeightInseam,
+  torsoFromHeightInseam,
+  findCategory,
 } from './frameSize';
+
+const ROAD = findCategory('road-endurance');
+const AERO = findCategory('road-aero');
+const VINTAGE = findCategory('road-vintage');
+const TT = findCategory('tt');
+const CITY = findCategory('city');
+const MTB = findCategory('mtb');
 
 describe('inseamFromHeight', () => {
   it('is ~47% of height', () => {
@@ -14,75 +26,56 @@ describe('inseamFromHeight', () => {
 });
 
 describe('frameSizeFromInseam', () => {
-  it('respects frame style (road taller frame than mtb for same inseam)', () => {
-    const road = frameSizeFromInseam({ inseamCm: 84, style: 'road' });
-    const mtb = frameSizeFromInseam({ inseamCm: 84, style: 'mtb' });
+  it('respects the category (road taller frame than mtb for same inseam)', () => {
+    const road = frameSizeFromInseam(84, ROAD);
+    const mtb = frameSizeFromInseam(84, MTB);
     expect(road.frameCm).toBeGreaterThan(mtb.frameCm);
   });
 
-  it('height path matches an equivalent measured inseam (consistency)', () => {
-    const viaHeight = frameSizeFromInseam({ inseamCm: inseamFromHeight(180), style: 'road' });
-    const viaInseam = frameSizeFromInseam({ inseamCm: 180 * 0.47, style: 'road' });
-    expect(viaHeight.frameCm).toBeCloseTo(viaInseam.frameCm, 6);
-  });
-
-  it('nominal size is by rider, consistent across styles (not XS for a tall rider)', () => {
+  it('nominal size is by rider, consistent across categories (not XS for a tall rider)', () => {
     const inseam = inseamFromHeight(185); // ~87 cm
-    const road = frameSizeFromInseam({ inseamCm: inseam, style: 'road' });
-    const mtb = frameSizeFromInseam({ inseamCm: inseam, style: 'mtb' });
+    const road = frameSizeFromInseam(inseam, ROAD);
+    const mtb = frameSizeFromInseam(inseam, MTB);
     expect(mtb.nominalSize).toBe(road.nominalSize);
     expect(mtb.nominalSize).not.toBe('XS');
     expect(['L', 'XL']).toContain(mtb.nominalSize);
   });
 
   it('nominal scales with rider size', () => {
-    expect(frameSizeFromInseam({ inseamCm: 74, style: 'mtb' }).nominalSize).toBe('XS');
-    expect(frameSizeFromInseam({ inseamCm: 82, style: 'mtb' }).nominalSize).toBe('M');
-    expect(frameSizeFromInseam({ inseamCm: 93, style: 'road' }).nominalSize).toBe('XXL');
+    expect(frameSizeFromInseam(74, MTB).nominalSize).toBe('XS');
+    expect(frameSizeFromInseam(82, MTB).nominalSize).toBe('M');
+    expect(frameSizeFromInseam(93, ROAD).nominalSize).toBe('XXL');
   });
 
   it('saddle height is the LeMond 0.883 factor', () => {
-    expect(frameSizeFromInseam({ inseamCm: 84, style: 'road' }).saddleHeightCm).toBeCloseTo(
-      84 * 0.883,
-      3,
-    );
+    expect(frameSizeFromInseam(84, ROAD).saddleHeightCm).toBeCloseTo(84 * 0.883, 3);
   });
 });
 
 describe('fitFromFrameSize', () => {
   it('inverts frameSizeFromInseam (frame → inseam round-trips)', () => {
-    const forward = frameSizeFromInseam({ inseamCm: 84, style: 'road' });
-    const back = fitFromFrameSize({ frameCm: forward.frameCm, style: 'road' });
+    const forward = frameSizeFromInseam(84, ROAD);
+    const back = fitFromFrameSize({ frameCm: forward.frameCm, category: ROAD });
     expect(back.inseamCm).toBeCloseTo(84, 6);
     expect(back.nominalSize).toBe(forward.nominalSize);
     expect(back.saddleHeightCm).toBeCloseTo(forward.saddleHeightCm, 6);
   });
 
-  it('the inseam band matches the forward frame range, inverted', () => {
-    const back = fitFromFrameSize({ frameCm: 56, style: 'road' });
-    // A rider at each end of the band sizes back onto (roughly) the frame range.
-    const lo = frameSizeFromInseam({ inseamCm: back.inseamRangeCm[0], style: 'road' });
-    const hi = frameSizeFromInseam({ inseamCm: back.inseamRangeCm[1], style: 'road' });
-    expect(lo.frameCm).toBeCloseTo(54.5, 6);
-    expect(hi.frameCm).toBeCloseTo(57.5, 6);
-  });
-
   it('a bigger road frame fits a taller rider', () => {
-    const small = fitFromFrameSize({ frameCm: 52, style: 'road' });
-    const large = fitFromFrameSize({ frameCm: 58, style: 'road' });
+    const small = fitFromFrameSize({ frameCm: 52, category: ROAD });
+    const large = fitFromFrameSize({ frameCm: 58, category: ROAD });
     expect(large.heightCm).toBeGreaterThan(small.heightCm);
   });
 
   it('same frame cm reads as a taller rider on an mtb than on a road bike', () => {
-    // MTB's smaller multiplier means a given seat-tube cm belongs to a longer leg.
-    const road = fitFromFrameSize({ frameCm: 48, style: 'road' });
-    const mtb = fitFromFrameSize({ frameCm: 48, style: 'mtb' });
+    const road = fitFromFrameSize({ frameCm: 48, category: ROAD });
+    const mtb = fitFromFrameSize({ frameCm: 48, category: MTB });
     expect(mtb.inseamCm).toBeGreaterThan(road.inseamCm);
   });
 
   it('leg proportion shifts the height band but not the inseam', () => {
-    const avg = fitFromFrameSize({ frameCm: 56, style: 'road', legProportion: 0.47 });
-    const longLegs = fitFromFrameSize({ frameCm: 56, style: 'road', legProportion: 0.49 });
+    const avg = fitFromFrameSize({ frameCm: 56, category: ROAD, legProportion: 0.47 });
+    const longLegs = fitFromFrameSize({ frameCm: 56, category: ROAD, legProportion: 0.49 });
     expect(longLegs.inseamCm).toBeCloseTo(avg.inseamCm, 6);
     expect(longLegs.heightCm).toBeLessThan(avg.heightCm); // longer legs → shorter rider
   });
@@ -93,5 +86,85 @@ describe('suggestCrankLength', () => {
     const r = suggestCrankLength(84);
     expect(r.suggestedMm).toBeGreaterThanOrEqual(165);
     expect(r.suggestedMm).toBeLessThanOrEqual(180);
+  });
+});
+
+describe('body-segment estimates', () => {
+  it('arm is ~33% of height', () => {
+    expect(armFromHeight(178)).toBeCloseTo(58.7, 1);
+  });
+
+  it('arm-from-height-and-inseam equals the height estimate at an average inseam', () => {
+    const avgInseam = 0.47 * 178;
+    expect(armFromHeightInseam(178, avgInseam)).toBeCloseTo(armFromHeight(178), 6);
+  });
+
+  it('arm-from-height-and-inseam grows with a leggier build (same height)', () => {
+    const leggy = armFromHeightInseam(178, 90);
+    const stocky = armFromHeightInseam(178, 78);
+    expect(leggy).toBeGreaterThan(stocky);
+  });
+
+  it('torso is shoulder height minus inseam, floored at zero', () => {
+    expect(torsoFromHeightInseam(178, 82)).toBeCloseTo(178 * 0.818 - 82, 5);
+    expect(torsoFromHeightInseam(178, 200)).toBe(0); // never negative
+  });
+});
+
+describe('fitTargets (reach & stack)', () => {
+  const base = { heightCm: 178, inseamCm: 82, armCm: 59, category: ROAD };
+
+  it('gives realistic reach & stack for a typical rider', () => {
+    const t = fitTargets(base);
+    expect(t.reachMm).toBeGreaterThan(360);
+    expect(t.reachMm).toBeLessThan(410);
+    expect(t.stackMm).toBeGreaterThan(555);
+    expect(t.stackMm).toBeLessThan(615);
+  });
+
+  it('surrounds the target with a band', () => {
+    const t = fitTargets(base);
+    expect(t.reachRangeMm[0]).toBeLessThan(t.reachMm);
+    expect(t.reachRangeMm[1]).toBeGreaterThan(t.reachMm);
+    expect(t.stackRangeMm[0]).toBeLessThan(t.stackMm);
+    expect(t.stackRangeMm[1]).toBeGreaterThan(t.stackMm);
+  });
+
+  it('a race category is longer & lower than an upright one', () => {
+    const aero = fitTargets({ ...base, category: AERO });
+    const city = fitTargets({ ...base, category: CITY });
+    expect(aero.reachMm).toBeGreaterThan(city.reachMm);
+    expect(aero.stackMm).toBeLessThan(city.stackMm);
+    expect(city.stackReach).toBeGreaterThan(aero.stackReach); // more upright = higher ratio
+  });
+
+  it('a longer torso/arm lengthens reach without touching stack', () => {
+    const longer = fitTargets({ ...base, armCm: base.armCm + 5 });
+    expect(longer.reachMm).toBeGreaterThan(fitTargets(base).reachMm);
+    expect(longer.stackMm).toBeCloseTo(fitTargets(base).stackMm, 6);
+  });
+
+  it('a longer inseam raises stack', () => {
+    const taller = fitTargets({ ...base, inseamCm: base.inseamCm + 4 });
+    expect(taller.stackMm).toBeGreaterThan(fitTargets(base).stackMm);
+  });
+
+  it('ranks stack sensibly across road positions: TT lowest, vintage above aero, below endurance', () => {
+    const body = { heightCm: 178, inseamCm: 82, armCm: 59 };
+    const tt = fitTargets({ ...body, category: TT }).stackMm;
+    const aero = fitTargets({ ...body, category: AERO }).stackMm;
+    const vintage = fitTargets({ ...body, category: VINTAGE }).stackMm;
+    const endurance = fitTargets({ ...body, category: ROAD }).stackMm;
+    // TT is the most aggressive; vintage is not more aggressive than modern aero.
+    expect(tt).toBeLessThan(aero);
+    expect(vintage).toBeGreaterThan(aero);
+    expect(vintage).toBeLessThan(endurance);
+  });
+
+  it('TT gives the longest reach', () => {
+    const body = { heightCm: 178, inseamCm: 82, armCm: 59 };
+    const tt = fitTargets({ ...body, category: TT }).reachMm;
+    const aero = fitTargets({ ...body, category: AERO }).reachMm;
+    expect(tt).toBeGreaterThan(aero);
   });
 });

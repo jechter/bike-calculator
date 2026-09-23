@@ -91,6 +91,8 @@ export function NumberInput(props: {
   min?: number;
   max?: number;
   step?: number;
+  /** Ghost text shown when the field is empty (e.g. an estimated default). */
+  placeholder?: string;
   /** A trailing unit label, or any control (e.g. a compact unit picker). */
   suffix?: React.ReactNode;
 }) {
@@ -99,6 +101,7 @@ export function NumberInput(props: {
       <input
         type="number"
         value={Number.isFinite(props.value) ? props.value : ""}
+        placeholder={props.placeholder}
         min={props.min}
         max={props.max}
         step={props.step ?? "any"}

@@ -2,309 +2,372 @@ import { useState } from "react";
 import {
   frameSizeFromInseam,
   fitFromFrameSize,
+  fitTargets,
   inseamFromHeight,
+  armFromHeightInseam,
   suggestCrankLength,
+  findCategory,
+  FRAME_CATEGORIES,
+  DEFAULT_CATEGORY_ID,
   LEG_PROPORTIONS,
-  type FrameStyle,
 } from "../lib/frameSize";
-import { Field, NumberInput, Select, SwatchSelect, Result, Section } from "./ui";
-import frameSizeDiagram from "../assets/frame-size-diagram.png";
+import { Field, NumberInput, Select, Note, Result, Section } from "./ui";
+import { FrameGeometryDiagram } from "./FrameGeometryDiagram";
 
-const STYLE_OPTIONS: Array<{ value: FrameStyle; label: string }> = [
-  { value: "road", label: "Road / Endurance" },
-  { value: "gravel", label: "Gravel / Cross" },
-  { value: "touring", label: "Touring" },
-  { value: "hybrid", label: "Hybrid / City" },
-  { value: "mtb", label: "Mountain" },
+type Method = "fit" | "frame";
+
+const METHOD_OPTIONS: Array<{ value: Method; label: string }> = [
+  { value: "fit", label: "Size a bike for a rider" },
+  { value: "frame", label: "Identify a frame you have" },
 ];
 
-type Method = "inseam" | "height" | "frameSize";
+// Categories grouped into <optgroup>s (Road / Gravel / Mountain / …), preserving
+// the order they're declared in.
+const CATEGORY_OPTIONS = (() => {
+  const groups: Array<{ label: string; options: Array<{ value: string; label: string }> }> = [];
+  for (const c of FRAME_CATEGORIES) {
+    let g = groups.find((x) => x.label === c.group);
+    if (!g) {
+      g = { label: c.group, options: [] };
+      groups.push(g);
+    }
+    g.options.push({ value: c.id, label: c.label });
+  }
+  return groups;
+})();
 
-// Tie each measurement back to the explainer diagram at the bottom of the page:
-// rider height is blue, inseam green, frame height red.
-const METHOD_COLOR: Record<Method, string> = {
-  inseam: "var(--diag-green)",
-  height: "var(--diag-blue)",
-  frameSize: "var(--diag-red)",
-};
+// Diagram legend: reach red, stack blue, seat tubes green.
+const REACH_COLOR = "var(--diag-red)";
+const STACK_COLOR = "var(--diag-blue)";
+const SIZE_COLOR = "var(--diag-green)";
 
-// One entry point for both directions: the first group sizes a bike for a rider,
-// the second runs it backwards to find who an existing frame fits.
-// A colour square prefixes each option in the open list (SwatchSelect); the
-// folded control shows just the label, tinted by the accent border instead.
-const METHOD_OPTIONS = [
-  {
-    label: "Find a frame for a rider",
-    options: [
-      { value: "inseam", label: "Inseam (best)", color: METHOD_COLOR.inseam },
-      { value: "height", label: "Body height", color: METHOD_COLOR.height },
-    ],
-  },
-  {
-    label: "Find a rider for a frame",
-    options: [
-      {
-        value: "frameSize",
-        label: "Frame size (seat tube c–t)",
-        shortLabel: "Frame size",
-        color: METHOD_COLOR.frameSize,
-      },
-    ],
-  },
-];
+const round = (n: number) => Math.round(n);
 
 export function FrameSize() {
-  const [method, setMethod] = useState<Method>("inseam");
-  const [inseam, setInseam] = useState(82);
+  const [method, setMethod] = useState<Method>("fit");
   const [height, setHeight] = useState(178);
-  const [legProp, setLegProp] = useState(0.47);
-  const [style, setStyle] = useState<FrameStyle>("road");
-  const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
+  // Inseam and arm start empty; we fall back to a height-based estimate (shown
+  // greyed as the field placeholder) until the user types a measured value.
+  const [inseam, setInseam] = useState(NaN);
+  const [arm, setArm] = useState(NaN);
+  const [categoryId, setCategoryId] = useState(DEFAULT_CATEGORY_ID);
+
+  // Reverse mode: a frame you already have → the rider it fits.
   const [frameSize, setFrameSize] = useState(56);
+  const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
+  const [legProp, setLegProp] = useState(0.47);
 
-  const reverse = method === "frameSize";
+  const reverse = method === "frame";
+  const category = findCategory(categoryId);
 
-  // Forward: inseam or height (translated to an approximate inseam so both use the
-  // same style-aware logic).
-  const effectiveInseam = method === "height" ? inseamFromHeight(height, legProp) : inseam;
-  const result = frameSizeFromInseam({ inseamCm: effectiveInseam, style });
-  const crank = suggestCrankLength(effectiveInseam);
+  const estInseam = round(inseamFromHeight(height));
+  const effInseam = Number.isFinite(inseam) ? inseam : estInseam;
+  // Arm is estimated from height *and* the (effective) inseam, so typing a real
+  // inseam sharpens the arm guess too.
+  const estArm = round(armFromHeightInseam(height, effInseam));
+  const effArm = Number.isFinite(arm) ? arm : estArm;
 
-  // Reverse: a frame you already have → the rider it fits.
+  // Forward: fit targets + a nominal size, both from the same body inputs.
+  const targets = fitTargets({ heightCm: height, inseamCm: effInseam, armCm: effArm, category });
+  const size = frameSizeFromInseam(effInseam, category);
+  const crank = suggestCrankLength(effInseam);
+
+  // Reverse: frame → rider band, and a representative rider for the diagram.
   const frameCm = sizeUnit === "in" ? frameSize * 2.54 : frameSize;
-  const fit = fitFromFrameSize({ frameCm, style, legProportion: legProp });
+  const fit = fitFromFrameSize({ frameCm, category, legProportion: legProp });
+
+  // The geometry diagram always reflects a concrete reach/stack. In reverse mode
+  // there are no body inputs, so illustrate the central rider this frame fits.
+  const geom = reverse
+    ? (() => {
+        const t = fitTargets({
+          heightCm: fit.heightCm,
+          inseamCm: fit.inseamCm,
+          armCm: armFromHeightInseam(fit.heightCm, fit.inseamCm),
+          category,
+        });
+        return {
+          reachMm: t.reachMm,
+          stackMm: t.stackMm,
+          topTubeSlopeDeg: category.topTubeSlopeDeg,
+          geometry: category.geometry,
+          saddleHeightMm: fit.saddleHeightCm * 10,
+        };
+      })()
+    : {
+        reachMm: targets.reachMm,
+        stackMm: targets.stackMm,
+        topTubeSlopeDeg: category.topTubeSlopeDeg,
+        geometry: category.geometry,
+        saddleHeightMm: targets.saddleHeightCm * 10,
+      };
 
   return (
     <div className="fs-workbench">
       <div className="fs-controls">
-      <Section
-        title="Input"
-        info={
-          reverse ? (
-            <>
-              Enter the frame size as you read it at the bench — seat-tube length in
-              cm for most bikes, or inches for an MTB frame. Measure the seat tube
-              centre-to-top if the label is missing or you don't trust it. The result
-              is a rider band to match against the waiting list;{" "}
-              <strong>inseam</strong> is the reliable match, height depends on leg
-              proportion.
-            </>
-          ) : (
-            <>
-              These are <strong>starting estimates</strong>, not prescriptions. Fit
-              depends on torso/arm length, riding style and brand geometry. Confirm
-              on a test ride. Prefer inseam over height when you have it.{" "}
-              <strong>Gender</strong> isn't asked directly: what actually matters is
-              leg-length proportion (on average women have proportionally longer legs
-              for a given height) — set that below when sizing from height. It has no
-              effect once you measure the inseam.
-            </>
-          )
-        }
-      >
-        <div className="grid">
-          <Field label="Method">
-            <SwatchSelect
-              value={method}
-              onChange={(v) => setMethod(v as Method)}
-              options={METHOD_OPTIONS}
-              accentColor={METHOD_COLOR[method]}
-            />
-          </Field>
-
-          {method === "inseam" && (
-            <Field
-              label="Cycling inseam"
-              hint="barefoot, crotch to floor, book pulled up firm"
-              dotColor={METHOD_COLOR.inseam}
-            >
-              <NumberInput value={inseam} onChange={setInseam} suffix="cm" min={50} max={110} />
-            </Field>
-          )}
-
-          {method === "height" && (
-            <>
-              <Field label="Body height" dotColor={METHOD_COLOR.height}>
-                <NumberInput value={height} onChange={setHeight} suffix="cm" min={140} max={210} />
-              </Field>
-              <Field label="Leg proportion" hint="varies by build / on average by sex">
-                <Select
-                  value={String(legProp)}
-                  onChange={(v) => setLegProp(parseFloat(v))}
-                  options={LEG_PROPORTIONS.map((p) => ({ value: String(p.value), label: p.label }))}
-                />
-              </Field>
-              <Field
-                label="Est. inseam"
-                hint={`≈ ${Math.round(legProp * 100)}% of height`}
-                dotColor={METHOD_COLOR.inseam}
-              >
-                <div className="static-value">≈ {effectiveInseam.toFixed(0)} cm</div>
-              </Field>
-            </>
-          )}
-
-          {method === "frameSize" && (
-            <>
-              <Field label="Frame size" hint="seat tube, centre-to-top" dotColor={METHOD_COLOR.frameSize}>
-                <NumberInput
-                  value={frameSize}
-                  onChange={setFrameSize}
-                  min={sizeUnit === "in" ? 12 : 30}
-                  max={sizeUnit === "in" ? 25 : 65}
-                  suffix={
-                    <select
-                      className="unit-suffix"
-                      value={sizeUnit}
-                      onChange={(e) => setSizeUnit(e.target.value as "cm" | "in")}
-                      aria-label="Size unit"
-                    >
-                      <option value="cm">cm</option>
-                      <option value="in">in</option>
-                    </select>
-                  }
-                />
-              </Field>
-              <Field label="Leg proportion" hint="shifts the height band only">
-                <Select
-                  value={String(legProp)}
-                  onChange={(v) => setLegProp(parseFloat(v))}
-                  options={LEG_PROPORTIONS.map((p) => ({ value: String(p.value), label: p.label }))}
-                />
-              </Field>
-            </>
-          )}
-        </div>
-
-        {/* Frame style always on its own row, separate from the rider inputs */}
-        <div className="rows">
-          <Field label="Frame style">
-            <Select value={style} onChange={setStyle} options={STYLE_OPTIONS} />
-          </Field>
-        </div>
-      </Section>
-
-      {reverse ? (
         <Section
-          title="Who it fits"
+          title="Input"
           info={
-            <>
-              The frame maps back to a <strong>rider height</strong> band and{" "}
-              <strong>cycling inseam</strong> band — call people in that range off the
-              list. Height is height ÷ leg proportion, so it slides if the rider's legs
-              are longer or shorter than average; the inseam band doesn't. Someone
-              between sizes can go either way (smaller = nimbler, larger = roomier),
-              so treat the edges as soft.
-            </>
+            reverse ? (
+              <>
+                Enter the frame size as you read it at the bench — seat-tube length
+                in cm for most bikes, or inches for an MTB frame. Measure the seat
+                tube centre-to-top if the label is missing. The result is a rider
+                band to match against the waiting list; <strong>inseam</strong> is the
+                reliable match, height depends on leg proportion.
+              </>
+            ) : (
+              <>
+                Enter measured body dimensions — the more accurate they are, the more
+                useful the result. Inseam and arm can be left blank to use an estimate
+                from height (shown greyed), but measuring is far better. These are{" "}
+                <strong>starting targets</strong>, not prescriptions: brand geometry,
+                flexibility and preference all shift them, so confirm on a fit.{" "}
+                <strong>Gender</strong> isn't asked — what matters is the actual leg,
+                torso and arm lengths, which these inputs already capture.
+              </>
+            )
           }
         >
-          <div className="results">
-            <Result
-              label="Rider height"
-              dotColor="var(--diag-blue)"
-              value={
-                <>
-                  {fit.heightRangeCm[0].toFixed(0)}–{fit.heightRangeCm[1].toFixed(0)} cm
-                  <span className="result-sub">≈ {fit.heightCm.toFixed(0)} cm centre</span>
-                </>
-              }
-              big
-            />
-            <Result
-              label="Cycling inseam"
-              dotColor="var(--diag-green)"
-              value={`${fit.inseamRangeCm[0].toFixed(0)}–${fit.inseamRangeCm[1].toFixed(0)} cm`}
-            />
-            <Result label="Nominal" value={fit.nominalSize} />
-            <Result label="Saddle height (BB→top)" value={`${fit.saddleHeightCm.toFixed(1)} cm`} />
+          <div className="grid">
+            <Field label="Method">
+              <Select value={method} onChange={(v) => setMethod(v as Method)} options={METHOD_OPTIONS} />
+            </Field>
+
+            {!reverse && (
+              <>
+                <Field label="Body height">
+                  <NumberInput value={height} onChange={setHeight} suffix="cm" min={140} max={210} />
+                </Field>
+                <Field
+                  label="Cycling inseam"
+                  hint="barefoot, crotch to floor — blank uses the estimate from height"
+                >
+                  <NumberInput
+                    value={inseam}
+                    onChange={setInseam}
+                    min={50}
+                    max={110}
+                    suffix="cm"
+                    placeholder={`≈ ${estInseam}`}
+                  />
+                </Field>
+                <Field
+                  label="Arm length"
+                  hint="shoulder (acromion) to wrist — blank estimates from height & inseam"
+                >
+                  <NumberInput
+                    value={arm}
+                    onChange={setArm}
+                    min={40}
+                    max={90}
+                    suffix="cm"
+                    placeholder={`≈ ${estArm}`}
+                  />
+                </Field>
+              </>
+            )}
+
+            {reverse && (
+              <>
+                <Field label="Frame size" hint="seat tube, centre-to-top" dotColor={SIZE_COLOR}>
+                  <NumberInput
+                    value={frameSize}
+                    onChange={setFrameSize}
+                    min={sizeUnit === "in" ? 12 : 30}
+                    max={sizeUnit === "in" ? 25 : 65}
+                    suffix={
+                      <select
+                        className="unit-suffix"
+                        value={sizeUnit}
+                        onChange={(e) => setSizeUnit(e.target.value as "cm" | "in")}
+                        aria-label="Size unit"
+                      >
+                        <option value="cm">cm</option>
+                        <option value="in">in</option>
+                      </select>
+                    }
+                  />
+                </Field>
+                <Field label="Leg proportion" hint="shifts the height band only">
+                  <Select
+                    value={String(legProp)}
+                    onChange={(v) => setLegProp(parseFloat(v))}
+                    options={LEG_PROPORTIONS.map((p) => ({ value: String(p.value), label: p.label }))}
+                  />
+                </Field>
+              </>
+            )}
+          </div>
+
+          {/* Bike category merges frame style + riding position: it sets the size
+              multiplier, the reach/stack position and the top-tube slope. */}
+          <div className="rows">
+            <Field label="Bike category" hint="how it's sized and how you sit on it">
+              <Select value={categoryId} onChange={setCategoryId} options={CATEGORY_OPTIONS} />
+            </Field>
           </div>
         </Section>
-      ) : (
-        <>
+
+        {reverse ? (
           <Section
-            title="Recommendation"
+            title="Who it fits"
             info={
               <>
-                {method === "height" && (
-                  <>
-                    Sized from the inseam estimated above, then treated like a measured
-                    inseam — measuring is more accurate.{" "}
-                  </>
-                )}
-                Saddle height is the LeMond estimate (inseam × 0.883), measured from
-                the centre of the bottom bracket to the top of the saddle along the
-                seat tube. Standover should sit a few cm below your inseam (more for
-                MTB).
+                The frame maps back to a <strong>rider height</strong> band and{" "}
+                <strong>cycling inseam</strong> band — call people in that range off the
+                list. Height is inseam ÷ leg proportion, so it slides if the rider's legs
+                are longer or shorter than average; the inseam band doesn't. Someone
+                between sizes can go either way (smaller = nimbler, larger = roomier), so
+                treat the edges as soft.
               </>
             }
           >
             <div className="results">
               <Result
-                label="Frame size (seat tube c–t)"
-                dotColor="var(--diag-red)"
+                label="Rider height"
+                dotColor={STACK_COLOR}
                 value={
                   <>
-                    {result.frameCm.toFixed(0)} cm
-                    {style === "mtb" && (
-                      <span className="result-sub">{result.frameInches.toFixed(1)} in</span>
-                    )}
+                    {fit.heightRangeCm[0].toFixed(0)}–{fit.heightRangeCm[1].toFixed(0)} cm
+                    <span className="result-sub">≈ {fit.heightCm.toFixed(0)} cm centre</span>
                   </>
                 }
                 big
               />
               <Result
-                label="Range"
-                dotColor="var(--diag-red)"
-                value={
-                  <>
-                    {result.frameCmRange[0].toFixed(0)}–{result.frameCmRange[1].toFixed(0)} cm
-                    {style === "mtb" && (
+                label="Cycling inseam"
+                dotColor={SIZE_COLOR}
+                value={`${fit.inseamRangeCm[0].toFixed(0)}–${fit.inseamRangeCm[1].toFixed(0)} cm`}
+              />
+              <Result label="Nominal" value={fit.nominalSize} />
+              <Result label="Saddle height (BB→top)" value={`${fit.saddleHeightCm.toFixed(1)} cm`} />
+            </div>
+          </Section>
+        ) : (
+          <>
+            <Section
+              title="Fit targets — reach & stack"
+              info={
+                <>
+                  <strong>Reach</strong> (horizontal) and <strong>stack</strong> (vertical)
+                  are the distance from the bottom bracket to the top of the head tube.
+                  They're the brand-independent way to compare frames, because — unlike a
+                  seat-tube "size" — they don't change when the top tube slopes. These
+                  targets assume a typical stem, a small spacer stack and a normal saddle
+                  setback, so read them as a starting window (± ~1 size) and fine-tune with
+                  stem length and spacers, or a proper fit.
+                </>
+              }
+            >
+              <div className="results">
+                <Result
+                  label="Reach"
+                  dotColor={REACH_COLOR}
+                  value={
+                    <>
+                      {round(targets.reachMm)} mm
                       <span className="result-sub">
-                        {(result.frameCmRange[0] / 2.54).toFixed(1)}–
-                        {(result.frameCmRange[1] / 2.54).toFixed(1)} in
+                        {round(targets.reachRangeMm[0])}–{round(targets.reachRangeMm[1])} mm
                       </span>
-                    )}
-                  </>
-                }
-              />
-              <Result label="Nominal" value={result.nominalSize} />
-              <Result
-                label="Saddle height (BB→top)"
-                value={`${result.saddleHeightCm.toFixed(1)} cm`}
-              />
-            </div>
-          </Section>
+                    </>
+                  }
+                  big
+                />
+                <Result
+                  label="Stack"
+                  dotColor={STACK_COLOR}
+                  value={
+                    <>
+                      {round(targets.stackMm)} mm
+                      <span className="result-sub">
+                        {round(targets.stackRangeMm[0])}–{round(targets.stackRangeMm[1])} mm
+                      </span>
+                    </>
+                  }
+                  big
+                />
+                <Result
+                  label="Stack : reach"
+                  value={
+                    <>
+                      {targets.stackReach.toFixed(2)}
+                      <span className="result-sub">higher = more upright</span>
+                    </>
+                  }
+                />
+                <Result label="Saddle height (BB→top)" value={`${targets.saddleHeightCm.toFixed(1)} cm`} />
+              </div>
+            </Section>
 
-          <Section
-            title="Crank length suggestion"
-            info={
-              <>
-                Published crank formulas disagree noticeably, so treat this as a
-                starting range and lean on fit/preference. Shorter cranks are a current
-                trend; also mind pedal/ground clearance and knee comfort.
-              </>
-            }
-          >
-            <div className="results">
-              <Result label="Suggested (nearest size)" value={`${crank.suggestedMm} mm`} big />
-              <Result
-                label="Rule-of-thumb range"
-                value={`${crank.rangeMm[0].toFixed(0)}–${crank.rangeMm[1].toFixed(0)} mm`}
-              />
-            </div>
-          </Section>
-        </>
-      )}
+            <Section title="Frame size">
+              <div className="results">
+                <Result
+                  label="Frame size"
+                  dotColor={SIZE_COLOR}
+                  value={
+                    <>
+                      {size.frameCm.toFixed(0)} cm
+                      {category.showInches && (
+                        <span className="result-sub">{size.frameInches.toFixed(1)} in</span>
+                      )}
+                    </>
+                  }
+                  big
+                />
+                <Result
+                  label="Range"
+                  dotColor={SIZE_COLOR}
+                  value={`${size.frameCmRange[0].toFixed(0)}–${size.frameCmRange[1].toFixed(0)} cm`}
+                />
+                <Result label="Nominal" value={size.nominalSize} />
+              </div>
+              <Note>
+                This is a <strong>nominal size</strong> (inseam × {category.sizeMult}) — the
+                traditional ballpark for finding the right size to try. Treat it as a label,
+                not a measurement: a manufacturer's "size" number usually sits somewhere
+                between the <em>actual</em> seat-tube length (shorter on a sloped frame) and
+                the <em>effective/virtual</em> length (to a horizontal top tube) — the
+                diagram shows both in green. Some brands quote one edge, some the other, some
+                a value in between, and many are moving to S/M/L for exactly this reason. To
+                compare real frames, use <strong>reach & stack</strong> above.
+              </Note>
+            </Section>
+
+            <Section
+              title="Crank length suggestion"
+              info={
+                <>
+                  Published crank formulas disagree noticeably, so treat this as a starting
+                  range and lean on fit/preference. Shorter cranks are a current trend; also
+                  mind pedal/ground clearance and knee comfort.
+                </>
+              }
+            >
+              <div className="results">
+                <Result label="Suggested (nearest size)" value={`${crank.suggestedMm} mm`} big />
+                <Result
+                  label="Rule-of-thumb range"
+                  value={`${crank.rangeMm[0].toFixed(0)}–${crank.rangeMm[1].toFixed(0)} mm`}
+                />
+              </div>
+            </Section>
+          </>
+        )}
       </div>
 
-      {/* Explainer: how frame height (red), rider height (blue) and inseam (green)
-          relate. Sits in a right-hand rail on wide screens (like the drivetrain /
-          wheel-building workbench), and drops below the controls when narrow. */}
+      {/* Explainer: reach (red) & stack (blue) from the BB to the head-tube top,
+          and the actual vs effective seat-tube length (two greens). Sits in a
+          right-hand rail on wide screens and drops below the controls when narrow. */}
       <figure className="fs-diagram fs-viz">
-        <img
-          src={frameSizeDiagram}
-          alt="Diagram showing frame height (seat tube centre-to-top), rider height and inseam height"
-        />
+        <FrameGeometryDiagram {...geom} />
+        <figcaption className="fs-caption">
+          <span style={{ color: REACH_COLOR }}>■</span> Reach ·{" "}
+          <span style={{ color: STACK_COLOR }}>■</span> Stack ·{" "}
+          <span style={{ color: SIZE_COLOR }}>■</span> Actual /{" "}
+          <span style={{ color: "color-mix(in srgb, var(--diag-green) 55%, var(--panel-2))" }}>■</span>{" "}
+          effective seat tube
+        </figcaption>
       </figure>
     </div>
   );

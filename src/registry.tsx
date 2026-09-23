@@ -56,7 +56,7 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: "frame-size",
     title: "Frame Size",
-    subtitle: "Frame size, saddle height and crank length from inseam or body height.",
+    subtitle: "Reach, stack and effective frame size from body measurements — the meaningful numbers, not just seat-tube height.",
     icon: <FrameIcon />,
     Component: FrameSize,
   },

@@ -409,21 +409,57 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   background: transparent;
 }
 
-/* Frame-size explainer figure */
+/* Frame-size explainer figure (inline SVG, like the other diagrams) */
 .fs-diagram {
   margin: 14px 0 0;
-  background: #fff;
+  background: var(--panel-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 12px;
 }
-.fs-diagram img { display: block; margin: 0 auto; }
-/* Stacked (narrow): grow the diagram to fill the available vertical space rather
-   than a fixed width cap, so it isn't small under the controls; the box hugs the
-   image so it doesn't leave a wide empty frame. */
+.fs-diagram svg { display: block; margin: 0 auto; }
+.fs-caption {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.fs-caption span { font-size: 11px; }
+
+/* Frame schematic: reach (red), stack (blue), effective seat-tube size (green),
+   over muted frame tubes / faint wheels. Colours come from the diagram vars so
+   they track light/dark like every other diagram. */
+.fg-ground { stroke: var(--border); stroke-width: 2; stroke-dasharray: 8 8; }
+.fg-wheel { fill: none; stroke: var(--border); stroke-width: 7; }
+.fg-tube { fill: none; stroke: var(--muted); stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; }
+.fg-headtube { stroke: var(--text); stroke-width: 14; }
+.fg-seatpost { fill: none; stroke: var(--muted); stroke-width: 6; stroke-linecap: round; }
+/* Suspension fork: thin stanchion up top, thick lowers below. */
+.fg-fork-stanchion { fill: none; stroke: var(--muted); stroke-width: 7; stroke-linecap: round; }
+.fg-fork-lowers { fill: none; stroke: var(--muted); stroke-width: 18; stroke-linecap: round; }
+.fg-tt-actual { fill: none; stroke: var(--muted); stroke-width: 8; stroke-linecap: round; opacity: 0.65; }
+/* Two shades of green: light = effective/virtual seat tube (drawn full length,
+   underneath), dark = actual seat tube (drawn over the lower part). */
+.fg-seat-effective { fill: none; stroke: color-mix(in srgb, var(--diag-green) 42%, var(--panel-2)); stroke-width: 13; stroke-linecap: round; }
+.fg-seat-actual { fill: none; stroke: var(--diag-green); stroke-width: 13; stroke-linecap: round; }
+.fg-virtual-tt { fill: none; stroke: color-mix(in srgb, var(--diag-green) 55%, var(--panel-2)); stroke-width: 5; stroke-dasharray: 12 9; }
+.fg-saddle { stroke: var(--text); stroke-width: 9; stroke-linecap: round; }
+.fg-node { fill: var(--text); }
+.fg-dim-reach { color: var(--diag-red); }
+.fg-dim-stack { color: var(--diag-blue); }
+.fg-dim-reach line, .fg-dim-stack line { stroke: currentColor; stroke-width: 4; }
+.fg-dim-reach polygon, .fg-dim-stack polygon { fill: currentColor; }
+.fg-dim-label { font-size: 34px; font-weight: 700; }
+.fg-note { fill: var(--muted); font-size: 24px; }
+.fg-note-green { fill: var(--diag-green); }
+.fg-note-green-soft { fill: color-mix(in srgb, var(--diag-green) 60%, var(--muted)); }
+.fg-note-red { fill: var(--diag-red); }
+.fg-note-blue { fill: var(--diag-blue); }
+
+/* Stacked (narrow): the diagram grows to fill the space under the controls. */
 @media (max-width: 1119px) {
-  .fs-viz { width: fit-content; max-width: 100%; }
-  .fs-viz img { width: auto; height: auto; max-width: 100%; max-height: 70vh; }
+  .fs-viz { max-width: 100%; }
+  .fs-viz svg { width: 100%; max-height: 62vh; }
 }
 
 /* Wide screens: controls take a fixed reading width on the left, the explainer
@@ -431,8 +467,6 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
    wheel-building workbench). The breakpoint is set high enough that the rail
    always has room for a decently-sized diagram; below it the layout stacks. */
 @media (min-width: 1120px) {
-  /* Use the full viewport width like the workbench pages so the diagram fills all
-     the horizontal space. Controls stay at their reading width; the rest is diagram. */
   .main--frame-size { max-width: none; }
   .fs-workbench {
     display: grid;
@@ -444,12 +478,9 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
     position: sticky;
     top: 16px;
     margin-top: 0;
-    /* Cap the whole figure (not just the image) so the box hugs the diagram
-       instead of stretching the full column, and keep it left-bound in the rail. */
-    max-width: 924px; /* 900px image + 2×12px padding */
-    justify-self: start;
+    justify-self: stretch;
   }
-  .fs-viz img { width: 100%; max-width: 900px; height: auto; max-height: none; }
+  .fs-viz svg { width: 100%; max-height: 80vh; }
 }
 
 /* Drivetrain (crankset + cassette) diagram */

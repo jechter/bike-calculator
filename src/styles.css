@@ -434,6 +434,10 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   color: var(--muted);
 }
 .fs-caption span { font-size: 11px; }
+/* Posture slider under the diagram: adjust the rider's seating position. */
+.fs-posture { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 12px; color: var(--muted); }
+.fs-posture input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); cursor: pointer; }
+.fs-posture span { white-space: nowrap; }
 
 /* Frame schematic: reach (red), stack (blue), effective seat-tube size (green),
    over muted frame tubes / faint wheels. Colours come from the diagram vars so

@@ -65,6 +65,9 @@ export function FrameSize() {
   const [hl, setHl] = useState<HighlightKey | null>(null);
   const link = (k: HighlightKey) => ({ activate: () => setHl(k), deactivate: () => setHl(null) });
 
+  // Seated posture on the bike: 0 = arms fully straight, 1 = forearm parallel.
+  const [posture, setPosture] = useState(0.4);
+
   const reverse = method === "frame";
   const category = findCategory(categoryId);
 
@@ -394,7 +397,20 @@ export function FrameSize() {
           approximate rider posed on the bike. Sits in a right-hand rail on wide
           screens and drops below the controls when narrow. */}
       <figure className="fs-diagram fs-viz">
-        <FrameGeometryDiagram {...geom} categoryId={category.id} highlight={hl} />
+        <FrameGeometryDiagram {...geom} categoryId={category.id} highlight={hl} posture={posture} />
+        <div className="fs-posture">
+          <span>Arms straight</span>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.01}
+            value={posture}
+            onChange={(e) => setPosture(parseFloat(e.target.value))}
+            aria-label="Seated posture, from arms straight to forearm level"
+          />
+          <span>Forearm level</span>
+        </div>
         <figcaption className="fs-caption">
           <span style={{ color: REACH_COLOR }}>■</span> Reach ·{" "}
           <span style={{ color: STACK_COLOR }}>■</span> Stack ·{" "}

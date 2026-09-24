@@ -220,9 +220,15 @@ geometry plus a per-category **cockpit default** (`COCKPITS` in
 `FrameGeometryDiagram.tsx`): a typical stem length + rise, spacer/quill height,
 and bar reach/drop place the **handlebar grip** (drawn up the steerer → along the
 stem → out to the hands); the saddle gives the **hips**; the crank/pedal gives
-the **foot**. The torso leans at a per-category angle (aggressive → low, city →
-upright), and the knee and elbow are solved with two-bone IK, with segment
-lengths from the body measurements — the torso tilts forward a little if needed
-so the **elbow always keeps a slight bend** (`ELBOW_BEND`). Like the rest of the
-fit model, the cockpit numbers and lean angles are **hand-picked
-approximations**, meant to visualise the position, not spec it.
+the **foot**. The knee is solved with two-bone IK; segment lengths come from the
+body measurements.
+
+A **posture slider** under the diagram sets how the rider holds the bars, from
+**arms fully straight** (0) to **forearm parallel to the ground** (1). Both keep
+the hips at the saddle and the hands on the grip, so only the torso lean and
+elbow bend change: we compute the torso-lean angle for each extreme (straight arm
+= shoulder a full arm from the grip; forearm level = elbow one forearm behind the
+grip at the same height) and interpolate, then the elbow follows by IK.
+Straightening the arms raises the torso; dropping to forearm-level lowers it. Like
+the rest of the fit model, the cockpit numbers are **hand-picked approximations**,
+meant to visualise the position, not spec it.

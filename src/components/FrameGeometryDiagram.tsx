@@ -66,6 +66,8 @@ export interface FrameGeometryDiagramProps {
   categoryId: string;
   /** Which measurement to emphasise (hovered/edited in the UI), if any. */
   highlight?: HighlightKey | null;
+  /** Seated posture: 0 = arms fully straight, 1 = forearm parallel to the ground. */
+  posture: number;
 }
 
 export type HighlightKey = "reach" | "stack" | "size" | "crank" | "body" | "inseam" | "arm";
@@ -116,9 +118,6 @@ const COCKPITS: Record<string, Cockpit> = {
   "vintage-mtb": { stemLenMm: 90, stemRiseDeg: 10, spacerMm: 40, gripFwdMm: -22, gripDropMm: 0, torsoDeg: 56 },
   "vintage-city": { stemLenMm: 100, stemRiseDeg: 30, spacerMm: 45, gripFwdMm: -55, gripDropMm: -8, torsoDeg: 70 },
 };
-// The elbow is always kept at least a little bent: the torso tilts forward as
-// needed so the straight-line shoulder→grip is no more than this × arm length.
-const ELBOW_BEND = 0.93;
 
 export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const {
@@ -133,6 +132,7 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
     armLengthMm,
     categoryId,
     highlight,
+    posture,
   } = props;
 
   const clipId = useId();
@@ -216,18 +216,26 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const rKnee = ik2(rHip, rAnkle, thigh, shank, +1);
   const rKnee2 = ik2(rHip, rAnkle2, thigh, shank, +1);
 
-  // Torso leans at the category angle, but tilt forward if needed so the elbow
-  // keeps a little bend (shoulder→grip ≤ ELBOW_BEND × arm).
+  // Posture (0 = arms fully straight, 1 = forearm parallel to the ground): both
+  // keep the hips at the saddle and the hands on the grip, so only the torso
+  // lean and elbow bend change. We find the torso-lean angle for each extreme
+  // and interpolate between them; the elbow then follows by IK.
   const rTorso = Math.max(0, 0.818 * HB - inseamMm);
   const armLen = armLengthMm;
-  const leanCat = (cockpit.torsoDeg * Math.PI) / 180;
-  const thresh = ik2(rHip, grip, rTorso, armLen * ELBOW_BEND, +1);
-  const leanThresh = Math.atan2(thresh.y - rHip.y, thresh.x - rHip.x);
-  const lean = clamp(Math.min(leanCat, leanThresh), 0.28, leanCat);
+  const upperArm = 0.52 * armLen;
+  const foreArm = 0.48 * armLen;
+  const leanOf = (shoulder: P) => Math.atan2(shoulder.y - rHip.y, shoulder.x - rHip.x);
+  // Straight arm: shoulder sits a full arm's length from the grip.
+  const leanStraight = leanOf(ik2(rHip, grip, rTorso, armLen, +1));
+  // Forearm level: the elbow is one forearm behind the grip, at the same height.
+  const elbowLevel = { x: grip.x - foreArm, y: grip.y };
+  const leanLevel = leanOf(ik2(rHip, elbowLevel, rTorso, upperArm, +1));
+  const lean = leanStraight + clamp(posture, 0, 1) * (leanLevel - leanStraight);
   const rShoulder = vadd(rHip, { x: rTorso * Math.cos(lean), y: rTorso * Math.sin(lean) });
-  const rElbow = ik2(rShoulder, grip, 0.52 * armLen, 0.48 * armLen, -1);
+  const rElbow = ik2(rShoulder, grip, upperArm, foreArm, -1);
   const rHeadR = 0.06 * HB;
-  const neckAng = (Math.min(cockpit.torsoDeg, 55) + 26) * (Math.PI / 180);
+  const leanDeg = (lean * 180) / Math.PI;
+  const neckAng = (Math.min(leanDeg, 55) + 26) * (Math.PI / 180);
   const rHead = vadd(rShoulder, { x: 0.11 * HB * Math.cos(neckAng), y: 0.11 * HB * Math.sin(neckAng) });
 
   // --- rider figure (bike-space, y up) ---------------------------------------

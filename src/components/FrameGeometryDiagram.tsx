@@ -286,9 +286,9 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const armVy = figScale * armScale; // vertical scale of the arm band
   const armTf = `translate(${figTX.toFixed(2)} ${(-elbowY - armPivotPy * armVy).toFixed(2)}) scale(${figScale.toFixed(4)} ${armVy.toFixed(4)})`;
 
-  // Dimension lines: body height + inseam nested clear of the left edge, arm on
-  // the bike-facing side.
-  const inseamDimX = figLeft - 0.03 * H;
+  // Dimension lines: body height + inseam nested close together, clear of the
+  // left edge (so the inseam label sits near its arrow); arm on the bike side.
+  const inseamDimX = figLeft - 0.075 * H;
   const bodyDimX = figLeft - 0.11 * H;
   const armDimX = figRight + 0.04 * H;
 

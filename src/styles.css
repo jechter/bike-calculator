@@ -11,13 +11,13 @@
   --warn: #b7791f;
   --danger: #c0392b;
   /* Frame-size diagram legend: rider height (blue), inseam (green), frame height (red) */
-  --diag-blue: #2f83c4;
-  --diag-green: #3faa5a;
-  --diag-red: #e13b34;
-  --diag-crank: #8b5cf6;
-  --diag-arm: #d98324;
-  --diag-body: #0d9488;
-  --diag-inseam: #d6409f;
+  --diag-blue: #2563eb;
+  --diag-green: #16a34a;
+  --diag-red: #dc2626;
+  --diag-crank: #9333ea;
+  --diag-arm: #d97706;
+  --diag-body: #0891b2;
+  --diag-inseam: #db2777;
   --radius: 10px;
   --sidebar-w: 240px;
   /* Shared height for all field-level controls so native <select>s (which the
@@ -39,13 +39,13 @@
     --ok: #46c07a;
     --warn: #e0a44a;
     --danger: #e8695b;
-    --diag-blue: #5aa9e6;
-    --diag-green: #5cc178;
-    --diag-red: #f26a63;
-    --diag-crank: #a98bf5;
-    --diag-arm: #e0a44a;
-    --diag-body: #2dd4bf;
-    --diag-inseam: #ec6cc0;
+    --diag-blue: #60a5fa;
+    --diag-green: #4ade80;
+    --diag-red: #f87171;
+    --diag-crank: #c084fc;
+    --diag-arm: #fbbf24;
+    --diag-body: #22d3ee;
+    --diag-inseam: #f472b6;
   }
 }
 

@@ -194,7 +194,7 @@ the crank suggestion is shown in the geometry too.
 
 To the **left**, a front-view cyclist is drawn to scale on the same ground line,
 with dimension lines for the three body inputs so the measurements driving the
-fit are visible: **body height** (teal, full height), **cycling inseam** (pink,
+fit are visible: **body height** (cyan, full height), **cycling inseam** (pink,
 ground to crotch) and **arm length** (amber, shoulder to wrist) — each with its
 own colour, echoed as a dot on the matching input. Every measurement label shows
 its value at a consistent size, and **hovering or editing a value in the UI

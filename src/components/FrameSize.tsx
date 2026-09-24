@@ -372,17 +372,19 @@ export function FrameSize() {
       </div>
 
       {/* Explainer: reach (red) & stack (blue) from the BB to the head-tube top,
-          and the actual vs effective seat-tube length (two greens). Sits in a
-          right-hand rail on wide screens and drops below the controls when narrow. */}
+          the actual vs effective seat-tube length (two greens), and an
+          approximate rider posed on the bike. Sits in a right-hand rail on wide
+          screens and drops below the controls when narrow. */}
       <figure className="fs-diagram fs-viz">
-        <FrameGeometryDiagram {...geom} />
+        <FrameGeometryDiagram {...geom} categoryId={category.id} />
         <figcaption className="fs-caption">
           <span style={{ color: REACH_COLOR }}>■</span> Reach ·{" "}
           <span style={{ color: STACK_COLOR }}>■</span> Stack ·{" "}
           <span style={{ color: SIZE_COLOR }}>■</span> Actual /{" "}
           <span style={{ color: "color-mix(in srgb, var(--diag-green) 55%, var(--panel-2))" }}>■</span>{" "}
           effective seat tube ·{" "}
-          <span style={{ color: CRANK_COLOR }}>■</span> Crank
+          <span style={{ color: CRANK_COLOR }}>■</span> Crank · rider on the bike is an
+          approximate riding position
         </figcaption>
       </figure>
     </div>

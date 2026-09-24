@@ -470,6 +470,17 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .fg-note-crank { fill: var(--diag-crank); }
 .fg-note-arm { fill: var(--diag-arm); }
 
+/* Seated rider posed on the bike in the frame diagram: translucent capsule limbs
+   (hips at the saddle, foot on the pedal, hands on the grip). */
+.rp-rider { opacity: 0.42; }
+.rp-far { opacity: 0.24; }
+.rp-limb { fill: none; stroke: var(--accent); stroke-width: 80; stroke-linecap: round; }
+.rp-trunk { fill: none; stroke: var(--accent); stroke-width: 140; stroke-linecap: round; }
+.rp-neck { fill: none; stroke: var(--accent); stroke-width: 70; stroke-linecap: round; }
+.rp-foot { fill: none; stroke: var(--accent); stroke-width: 60; stroke-linecap: round; }
+.rp-head { fill: var(--accent); }
+.rp-joint { fill: var(--accent); }
+
 /* Stacked (narrow): the diagram grows to fill the space under the controls. */
 @media (max-width: 1119px) {
   .fs-viz { max-width: 100%; }

@@ -207,3 +207,18 @@ hem) hang from the sleeve line and **scale vertically with arm length**,
 independent of the body. The dimension lines are labelled with the entered
 values. In "identify a frame" mode it illustrates the representative rider the
 frame fits.
+
+### Seated riding position
+
+The same diagram also poses an approximate **capsule rider on the bike** to show
+**how the rider would sit on it**. The three contact points come from the
+geometry plus a per-category **cockpit default** (`COCKPITS` in
+`FrameGeometryDiagram.tsx`): a typical stem length + rise, spacer/quill height,
+and bar reach/drop place the **handlebar grip** (drawn up the steerer → along the
+stem → out to the hands); the saddle gives the **hips**; the crank/pedal gives
+the **foot**. The torso leans at a per-category angle (aggressive → low, city →
+upright), and the knee and elbow are solved with two-bone IK, with segment
+lengths from the body measurements — the torso tilts forward a little if needed
+so the **elbow always keeps a slight bend** (`ELBOW_BEND`). Like the rest of the
+fit model, the cockpit numbers and lean angles are **hand-picked
+approximations**, meant to visualise the position, not spec it.

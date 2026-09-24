@@ -62,6 +62,8 @@ export interface FrameGeometryDiagramProps {
   inseamMm: number;
   /** Arm length, mm — shoulder-to-wrist on the rider figure. */
   armLengthMm: number;
+  /** Bike category id — picks the cockpit for the seated riding position. */
+  categoryId: string;
 }
 
 type P = { x: number; y: number };
@@ -69,6 +71,50 @@ type P = { x: number; y: number };
 const flip = (p: P): P => ({ x: p.x, y: -p.y });
 const onSeat = (len: number): P => ({ x: -len * COS, y: len * SIN });
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+const vadd = (a: P, b: P): P => ({ x: a.x + b.x, y: a.y + b.y });
+const vsub = (a: P, b: P): P => ({ x: a.x - b.x, y: a.y - b.y });
+const vscale = (a: P, s: number): P => ({ x: a.x * s, y: a.y * s });
+const vlen = (a: P): number => Math.hypot(a.x, a.y);
+const vnorm = (a: P): P => vscale(a, 1 / (vlen(a) || 1));
+
+// Two-bone IK: joint J with |A→J|=l1, |J→B|=l2, bending to the side `bend`
+// (+1/−1). If A and B are too far apart the limb straightens.
+function ik2(a: P, b: P, l1: number, l2: number, bend: number): P {
+  const d = vlen(vsub(b, a));
+  const u = vnorm(vsub(b, a));
+  if (d >= l1 + l2) return vadd(a, vscale(u, (l1 / (l1 + l2)) * d));
+  const a1 = (d * d + l1 * l1 - l2 * l2) / (2 * d);
+  const h = Math.sqrt(Math.max(0, l1 * l1 - a1 * a1));
+  const base = vadd(a, vscale(u, a1));
+  return vadd(base, vscale({ x: -u.y, y: u.x }, h * bend));
+}
+
+// Per-category cockpit defaults (hand-picked approximations, like the rest of
+// the fit model): stem length + net rise, spacer/quill height, bar type with a
+// reach/drop to the hands, and the torso lean the rider holds.
+interface Cockpit {
+  stemLenMm: number;
+  stemRiseDeg: number;
+  spacerMm: number;
+  gripFwdMm: number;
+  gripDropMm: number;
+  torsoDeg: number; // torso lean from horizontal (smaller = more aggressive)
+}
+const COCKPITS: Record<string, Cockpit> = {
+  tt: { stemLenMm: 80, stemRiseDeg: -4, spacerMm: 12, gripFwdMm: 155, gripDropMm: -8, torsoDeg: 24 },
+  "road-aero": { stemLenMm: 110, stemRiseDeg: 4, spacerMm: 15, gripFwdMm: 80, gripDropMm: 20, torsoDeg: 40 },
+  "road-endurance": { stemLenMm: 100, stemRiseDeg: 6, spacerMm: 30, gripFwdMm: 75, gripDropMm: 16, torsoDeg: 44 },
+  "gravel-race": { stemLenMm: 90, stemRiseDeg: 6, spacerMm: 25, gripFwdMm: 75, gripDropMm: 14, torsoDeg: 45 },
+  "gravel-adventure": { stemLenMm: 80, stemRiseDeg: 8, spacerMm: 35, gripFwdMm: 70, gripDropMm: 12, torsoDeg: 50 },
+  mtb: { stemLenMm: 50, stemRiseDeg: 2, spacerMm: 20, gripFwdMm: -18, gripDropMm: 0, torsoDeg: 54 },
+  city: { stemLenMm: 90, stemRiseDeg: 25, spacerMm: 30, gripFwdMm: -45, gripDropMm: -5, torsoDeg: 68 },
+  "vintage-road": { stemLenMm: 90, stemRiseDeg: 6, spacerMm: 50, gripFwdMm: 72, gripDropMm: 14, torsoDeg: 50 },
+  "vintage-mtb": { stemLenMm: 90, stemRiseDeg: 10, spacerMm: 40, gripFwdMm: -22, gripDropMm: 0, torsoDeg: 56 },
+  "vintage-city": { stemLenMm: 100, stemRiseDeg: 30, spacerMm: 45, gripFwdMm: -55, gripDropMm: -8, torsoDeg: 70 },
+};
+// The elbow is always kept at least a little bent: the torso tilts forward as
+// needed so the straight-line shoulder→grip is no more than this × arm length.
+const ELBOW_BEND = 0.93;
 
 export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const {
@@ -81,6 +127,7 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
     bodyHeightMm,
     inseamMm,
     armLengthMm,
+    categoryId,
   } = props;
 
   const clipId = useId();
@@ -136,6 +183,45 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   };
   const pedalL = { x: crankTip.x - PEDAL_HALF, y: crankTip.y };
   const pedalR = { x: crankTip.x + PEDAL_HALF, y: crankTip.y };
+
+  // --- seated rider posed on the bike (capsule limbs) ------------------------
+  const HB = bodyHeightMm;
+  const cockpit = COCKPITS[categoryId] ?? COCKPITS["road-endurance"];
+  // Handlebar grip: up the steerer by the spacers, along the stem, out to the hands.
+  const upSteer = { x: -Math.cos(HA), y: Math.sin(HA) };
+  const barBottom = vadd({ x: reachMm, y: stackMm }, vscale(upSteer, cockpit.spacerMm));
+  const stemRise = (cockpit.stemRiseDeg * Math.PI) / 180;
+  const barClamp = vadd(barBottom, { x: cockpit.stemLenMm * Math.cos(stemRise), y: cockpit.stemLenMm * Math.sin(stemRise) });
+  const grip = { x: barClamp.x + cockpit.gripFwdMm, y: barClamp.y - cockpit.gripDropMm };
+
+  // Contact points: hips just above the saddle, feet on the two pedals (the far
+  // crank is 180° opposite, up-and-back).
+  const rHip = { x: saddle.x + 10, y: saddle.y + 42 };
+  const crankTip2 = { x: -crankTip.x, y: -crankTip.y };
+  const pedal2L = { x: crankTip2.x - PEDAL_HALF, y: crankTip2.y };
+  const pedal2R = { x: crankTip2.x + PEDAL_HALF, y: crankTip2.y };
+  const rAnkle = { x: crankTip.x - 14, y: crankTip.y + 52 };
+  const rToe = { x: crankTip.x + 46, y: crankTip.y + 6 };
+  const rAnkle2 = { x: crankTip2.x - 12, y: crankTip2.y + 34 };
+  const rToe2 = { x: crankTip2.x + 42, y: crankTip2.y + 2 };
+  const thigh = 0.245 * HB;
+  const shank = 0.246 * HB;
+  const rKnee = ik2(rHip, rAnkle, thigh, shank, +1);
+  const rKnee2 = ik2(rHip, rAnkle2, thigh, shank, +1);
+
+  // Torso leans at the category angle, but tilt forward if needed so the elbow
+  // keeps a little bend (shoulder→grip ≤ ELBOW_BEND × arm).
+  const rTorso = Math.max(0, 0.818 * HB - inseamMm);
+  const armLen = armLengthMm;
+  const leanCat = (cockpit.torsoDeg * Math.PI) / 180;
+  const thresh = ik2(rHip, grip, rTorso, armLen * ELBOW_BEND, +1);
+  const leanThresh = Math.atan2(thresh.y - rHip.y, thresh.x - rHip.x);
+  const lean = clamp(Math.min(leanCat, leanThresh), 0.28, leanCat);
+  const rShoulder = vadd(rHip, { x: rTorso * Math.cos(lean), y: rTorso * Math.sin(lean) });
+  const rElbow = ik2(rShoulder, grip, 0.52 * armLen, 0.48 * armLen, -1);
+  const rHeadR = 0.06 * HB;
+  const neckAng = (Math.min(cockpit.torsoDeg, 55) + 26) * (Math.PI / 180);
+  const rHead = vadd(rShoulder, { x: 0.11 * HB * Math.cos(neckAng), y: 0.11 * HB * Math.sin(neckAng) });
 
   // --- rider figure (bike-space, y up) ---------------------------------------
   const H = bodyHeightMm;
@@ -214,6 +300,22 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
     crankTip: flip(crankTip),
     pedalL: flip(pedalL),
     pedalR: flip(pedalR),
+    crankTip2: flip(crankTip2),
+    pedal2L: flip(pedal2L),
+    pedal2R: flip(pedal2R),
+    rAnkle2: flip(rAnkle2),
+    rToe2: flip(rToe2),
+    rKnee2: flip(rKnee2),
+    barBottom: flip(barBottom),
+    barClamp: flip(barClamp),
+    grip: flip(grip),
+    rHip: flip(rHip),
+    rKnee: flip(rKnee),
+    rAnkle: flip(rAnkle),
+    rToe: flip(rToe),
+    rShoulder: flip(rShoulder),
+    rElbow: flip(rElbow),
+    rHead: flip(rHead),
   };
 
   const bounds: P[] = [
@@ -226,6 +328,8 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
     { x: s.crankTip.x + 210, y: s.crankTip.y }, // crank label room
     { x: bodyDimX - 200, y: -headTopY }, // rider labels + head top
     { x: personX, y: -headTopY },
+    { x: s.rHead.x, y: s.rHead.y - rHeadR }, // seated rider head
+    { x: s.grip.x, y: s.grip.y },
   ];
   const M = 34;
   const minX = Math.min(...bounds.map((p) => p.x)) - M;
@@ -277,7 +381,7 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
       width="100%"
       preserveAspectRatio="xMidYMid meet"
       role="img"
-      aria-label="Frame geometry: stack rises from the bottom bracket and reach runs forward to the head-tube top; the actual seat tube (to the sloping top tube) and the effective/virtual seat tube (to a horizontal top tube) are shown in two shades of green; a crank arm drawn to the suggested length pivots at the bottom bracket. To the left, a front-view cyclist stands to scale with dimension lines for body height, cycling inseam and arm length."
+      aria-label="Frame geometry: stack rises from the bottom bracket and reach runs forward to the head-tube top; the actual seat tube (to the sloping top tube) and the effective/virtual seat tube (to a horizontal top tube) are shown in two shades of green; a crank arm drawn to the suggested length pivots at the bottom bracket. To the left, a front-view cyclist stands to scale with dimension lines for body height, cycling inseam and arm length. An approximate rider is also posed on the bike to show the riding position."
     >
       <line x1={minX} y1={-groundY} x2={maxX} y2={-groundY} className="fg-ground" />
 
@@ -362,6 +466,16 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
       <circle cx={s.rearAxle.x} cy={s.rearAxle.y} r={WHEEL_R} className="fg-wheel" />
       <circle cx={s.frontAxle.x} cy={s.frontAxle.y} r={WHEEL_R} className="fg-wheel" />
 
+      {/* far-side crank + leg, drawn behind the frame and fainter for depth */}
+      <g className="rp-far">
+        {line(s.BB, s.crankTip2, "fg-crank")}
+        {line(s.pedal2L, s.pedal2R, "fg-pedal")}
+        {line(s.rHip, s.rKnee2, "rp-limb")}
+        {line(s.rKnee2, s.rAnkle2, "rp-limb")}
+        {line(s.rAnkle2, s.rToe2, "rp-foot")}
+        <circle cx={s.rKnee2.x} cy={s.rKnee2.y} r={11} className="rp-joint" />
+      </g>
+
       {/* rear triangle + fork (a suspension fork is drawn as stanchion + lowers) */}
       {line(s.BB, s.rearAxle, "fg-tube")}
       {line(s.rearAxle, s.jActual, "fg-tube")}
@@ -403,6 +517,28 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
         y2={s.saddle.y - 6}
         className="fg-saddle"
       />
+
+      {/* stem + handlebar (spacers up the steerer, stem, bar to the grip) */}
+      {line(s.headTop, s.barBottom, "fg-tube")}
+      {line(s.barBottom, s.barClamp, "fg-tube")}
+      {line(s.barClamp, s.grip, "fg-seatpost")}
+      <circle cx={s.grip.x} cy={s.grip.y} r={11} className="fg-node" />
+
+      {/* seated rider (translucent capsules): hips at the saddle, foot on the
+          pedal, hands on the grip; knee/elbow solved with two-bone IK */}
+      <g className="rp-rider">
+        {line(s.rHip, s.rKnee, "rp-limb")}
+        {line(s.rKnee, s.rAnkle, "rp-limb")}
+        {line(s.rAnkle, s.rToe, "rp-foot")}
+        {line(s.rHip, s.rShoulder, "rp-trunk")}
+        {line(s.rShoulder, s.rHead, "rp-neck")}
+        {line(s.rShoulder, s.rElbow, "rp-limb")}
+        {line(s.rElbow, s.grip, "rp-limb")}
+        <circle cx={s.rHead.x} cy={s.rHead.y} r={rHeadR} className="rp-head" />
+        {[s.rHip, s.rKnee, s.rShoulder, s.rElbow].map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r={11} className="rp-joint" />
+        ))}
+      </g>
 
       {/* crank arm + pedal, pivoting at the BB, drawn to the suggested length */}
       {line(s.BB, s.crankTip, "fg-crank")}

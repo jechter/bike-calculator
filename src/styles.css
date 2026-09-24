@@ -447,6 +447,10 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .fg-tube { fill: none; stroke: var(--muted); stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; }
 .fg-headtube { stroke: var(--text); stroke-width: 14; }
 .fg-seatpost { fill: none; stroke: var(--muted); stroke-width: 6; stroke-linecap: round; }
+/* Handlebar + the tops/hoods/drops hand positions (open dots); the active one is
+   drawn over them as the solid node. */
+.fg-bar { fill: none; stroke: var(--muted); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.fg-handpos { fill: var(--panel-2); stroke: var(--muted); stroke-width: 2.5; }
 /* Suspension fork: thin stanchion up top, thick lowers below. */
 .fg-fork-stanchion { fill: none; stroke: var(--muted); stroke-width: 7; stroke-linecap: round; }
 .fg-fork-lowers { fill: none; stroke: var(--muted); stroke-width: 18; stroke-linecap: round; }

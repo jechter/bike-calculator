@@ -223,12 +223,20 @@ stem → out to the hands); the saddle gives the **hips**; the crank/pedal gives
 the **foot**. The knee is solved with two-bone IK; segment lengths come from the
 body measurements.
 
-A **posture slider** under the diagram sets how the rider holds the bars, from
-**arms fully straight** (0) to **forearm parallel to the ground** (1). Both keep
-the hips at the saddle and the hands on the grip, so only the torso lean and
-elbow bend change: we compute the torso-lean angle for each extreme (straight arm
-= shoulder a full arm from the grip; forearm level = elbow one forearm behind the
-grip at the same height) and interpolate, then the elbow follows by IK.
-Straightening the arms raises the torso; dropping to forearm-level lowers it. Like
-the rest of the fit model, the cockpit numbers are **hand-picked approximations**,
-meant to visualise the position, not spec it.
+A **posture slider** under the diagram sets how aggressively the rider sits, from
+**arms fully straight** (0, upright) to the most aggressive position (1). Both
+keep the hips at the saddle and the hands on the bar; only the torso lean, elbow
+bend and (on drop/TT bars) the hand position change.
+
+- **Hand positions.** Drop bars carry three (**tops → hoods → drops**) and TT
+  bars two (**base bar → aero extensions**), derived from the cockpit's primary
+  hand position; flat bars have one. As the slider gets more aggressive the hands
+  move to the lower/more-forward position, and the others are shown as open dots.
+- **Torso lean.** For the current grip we find the lean for a straight arm
+  (shoulder a full arm from the grip) and for the aggressive extreme, then
+  interpolate; the elbow follows by IK. The aggressive extreme is a **forearm
+  parallel to the ground, OR a 120° elbow, whichever is reached first** — some
+  geometries can't reach a level forearm without over-bending the elbow.
+
+Like the rest of the fit model, the cockpit numbers are **hand-picked
+approximations**, meant to visualise the position, not spec it.

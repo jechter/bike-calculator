@@ -96,27 +96,49 @@ function ik2(a: P, b: P, l1: number, l2: number, bend: number): P {
 }
 
 // Per-category cockpit defaults (hand-picked approximations, like the rest of
-// the fit model): stem length + net rise, spacer/quill height, bar type with a
-// reach/drop to the hands, and the torso lean the rider holds.
+// the fit model): stem length + net rise, spacer/quill height, and the bar type
+// with its primary hand position (hoods for drops, the grip for flats, the aero
+// extensions for TT). `gripFwd/Drop` are that primary position relative to the
+// bar clamp; the other hand positions are derived in handOffsets().
+type BarType = "drop" | "flat" | "aero";
 interface Cockpit {
   stemLenMm: number;
   stemRiseDeg: number;
   spacerMm: number;
+  bar: BarType;
   gripFwdMm: number;
   gripDropMm: number;
-  torsoDeg: number; // torso lean from horizontal (smaller = more aggressive)
+}
+// Hand positions (offset fwd/drop from the bar clamp), from most upright to most
+// aggressive. Drop bars: tops → hoods → drops. TT: base bar → aero extensions.
+// Flats have a single position. Drop is +down.
+function handOffsets(c: Cockpit): Array<{ fwd: number; drop: number }> {
+  const f = c.gripFwdMm;
+  const d = c.gripDropMm;
+  if (c.bar === "drop")
+    return [
+      { fwd: f - 80, drop: d - 14 }, // tops (near the clamp, higher)
+      { fwd: f, drop: d }, // hoods
+      { fwd: f - 6, drop: d + 120 }, // drops (a touch back, much lower)
+    ];
+  if (c.bar === "aero")
+    return [
+      { fwd: f - 105, drop: d - 6 }, // base bar / brake levers (more upright)
+      { fwd: f, drop: d }, // aero extensions
+    ];
+  return [{ fwd: f, drop: d }]; // flat: one hand position
 }
 const COCKPITS: Record<string, Cockpit> = {
-  tt: { stemLenMm: 80, stemRiseDeg: -4, spacerMm: 12, gripFwdMm: 155, gripDropMm: -8, torsoDeg: 24 },
-  "road-aero": { stemLenMm: 110, stemRiseDeg: 4, spacerMm: 15, gripFwdMm: 80, gripDropMm: 20, torsoDeg: 40 },
-  "road-endurance": { stemLenMm: 100, stemRiseDeg: 6, spacerMm: 30, gripFwdMm: 75, gripDropMm: 16, torsoDeg: 44 },
-  "gravel-race": { stemLenMm: 90, stemRiseDeg: 6, spacerMm: 25, gripFwdMm: 75, gripDropMm: 14, torsoDeg: 45 },
-  "gravel-adventure": { stemLenMm: 80, stemRiseDeg: 8, spacerMm: 35, gripFwdMm: 70, gripDropMm: 12, torsoDeg: 50 },
-  mtb: { stemLenMm: 50, stemRiseDeg: 2, spacerMm: 20, gripFwdMm: -18, gripDropMm: 0, torsoDeg: 54 },
-  city: { stemLenMm: 90, stemRiseDeg: 25, spacerMm: 30, gripFwdMm: -45, gripDropMm: -5, torsoDeg: 68 },
-  "vintage-road": { stemLenMm: 90, stemRiseDeg: 6, spacerMm: 50, gripFwdMm: 72, gripDropMm: 14, torsoDeg: 50 },
-  "vintage-mtb": { stemLenMm: 90, stemRiseDeg: 10, spacerMm: 40, gripFwdMm: -22, gripDropMm: 0, torsoDeg: 56 },
-  "vintage-city": { stemLenMm: 100, stemRiseDeg: 30, spacerMm: 45, gripFwdMm: -55, gripDropMm: -8, torsoDeg: 70 },
+  tt: { stemLenMm: 80, stemRiseDeg: -4, spacerMm: 12, bar: "aero", gripFwdMm: 155, gripDropMm: -8 },
+  "road-aero": { stemLenMm: 110, stemRiseDeg: 4, spacerMm: 15, bar: "drop", gripFwdMm: 80, gripDropMm: 20 },
+  "road-endurance": { stemLenMm: 100, stemRiseDeg: 6, spacerMm: 30, bar: "drop", gripFwdMm: 75, gripDropMm: 16 },
+  "gravel-race": { stemLenMm: 90, stemRiseDeg: 6, spacerMm: 25, bar: "drop", gripFwdMm: 75, gripDropMm: 14 },
+  "gravel-adventure": { stemLenMm: 80, stemRiseDeg: 8, spacerMm: 35, bar: "drop", gripFwdMm: 70, gripDropMm: 12 },
+  mtb: { stemLenMm: 50, stemRiseDeg: 2, spacerMm: 20, bar: "flat", gripFwdMm: -18, gripDropMm: 0 },
+  city: { stemLenMm: 90, stemRiseDeg: 25, spacerMm: 30, bar: "flat", gripFwdMm: -45, gripDropMm: -5 },
+  "vintage-road": { stemLenMm: 90, stemRiseDeg: 6, spacerMm: 50, bar: "drop", gripFwdMm: 72, gripDropMm: 14 },
+  "vintage-mtb": { stemLenMm: 90, stemRiseDeg: 10, spacerMm: 40, bar: "flat", gripFwdMm: -22, gripDropMm: 0 },
+  "vintage-city": { stemLenMm: 100, stemRiseDeg: 30, spacerMm: 45, bar: "flat", gripFwdMm: -55, gripDropMm: -8 },
 };
 
 export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
@@ -194,12 +216,22 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   // --- seated rider posed on the bike (capsule limbs) ------------------------
   const HB = bodyHeightMm;
   const cockpit = COCKPITS[categoryId] ?? COCKPITS["road-endurance"];
-  // Handlebar grip: up the steerer by the spacers, along the stem, out to the hands.
+  const post = clamp(posture, 0, 1);
+  // Handlebar: up the steerer by the spacers, along the stem to the clamp.
   const upSteer = { x: -Math.cos(HA), y: Math.sin(HA) };
   const barBottom = vadd({ x: reachMm, y: stackMm }, vscale(upSteer, cockpit.spacerMm));
   const stemRise = (cockpit.stemRiseDeg * Math.PI) / 180;
   const barClamp = vadd(barBottom, { x: cockpit.stemLenMm * Math.cos(stemRise), y: cockpit.stemLenMm * Math.sin(stemRise) });
-  const grip = { x: barClamp.x + cockpit.gripFwdMm, y: barClamp.y - cockpit.gripDropMm };
+  // Hand positions on the bar (tops/hoods/drops, or base/extensions). As the
+  // posture gets more aggressive the hands move to the lower/more-forward ones.
+  const handPts = handOffsets(cockpit).map((o) => ({ x: barClamp.x + o.fwd, y: barClamp.y - o.drop }));
+  const segF = post * (handPts.length - 1);
+  const gi = Math.min(Math.floor(segF), handPts.length - 2 < 0 ? 0 : handPts.length - 2);
+  const gt = handPts.length > 1 ? segF - gi : 0;
+  const grip =
+    handPts.length > 1
+      ? { x: handPts[gi].x + gt * (handPts[gi + 1].x - handPts[gi].x), y: handPts[gi].y + gt * (handPts[gi + 1].y - handPts[gi].y) }
+      : handPts[0];
 
   // Contact points: hips just above the saddle, feet on the two pedals (the far
   // crank is 180° opposite, up-and-back).
@@ -216,10 +248,12 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const rKnee = ik2(rHip, rAnkle, thigh, shank, +1);
   const rKnee2 = ik2(rHip, rAnkle2, thigh, shank, +1);
 
-  // Posture (0 = arms fully straight, 1 = forearm parallel to the ground): both
-  // keep the hips at the saddle and the hands on the grip, so only the torso
-  // lean and elbow bend change. We find the torso-lean angle for each extreme
-  // and interpolate between them; the elbow then follows by IK.
+  // Posture (0 = arms fully straight, 1 = most aggressive): both keep the hips at
+  // the saddle and the hands on the grip, so only the torso lean and elbow bend
+  // change. We find the torso-lean for each extreme and interpolate; the elbow
+  // then follows by IK. The aggressive extreme is forearm-parallel-to-the-ground,
+  // OR a 120° elbow, whichever is reached first (some geometries can't reach a
+  // level forearm without over-bending the elbow).
   const rTorso = Math.max(0, 0.818 * HB - inseamMm);
   const armLen = armLengthMm;
   const upperArm = 0.52 * armLen;
@@ -230,7 +264,13 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   // Forearm level: the elbow is one forearm behind the grip, at the same height.
   const elbowLevel = { x: grip.x - foreArm, y: grip.y };
   const leanLevel = leanOf(ik2(rHip, elbowLevel, rTorso, upperArm, +1));
-  const lean = leanStraight + clamp(posture, 0, 1) * (leanLevel - leanStraight);
+  // Elbow at 120°: the shoulder→grip chord for a 120° interior elbow angle.
+  const chord120 = Math.sqrt(upperArm * upperArm + foreArm * foreArm + upperArm * foreArm);
+  const leanElbow120 = leanOf(ik2(rHip, grip, rTorso, chord120, +1));
+  // More aggressive = smaller lean; take whichever limit is reached first (the
+  // larger lean), and never less aggressive than a straight arm.
+  const leanAggr = Math.min(leanStraight, Math.max(leanLevel, leanElbow120));
+  const lean = leanStraight + post * (leanAggr - leanStraight);
   const rShoulder = vadd(rHip, { x: rTorso * Math.cos(lean), y: rTorso * Math.sin(lean) });
   const rElbow = ik2(rShoulder, grip, upperArm, foreArm, -1);
   const rHeadR = 0.06 * HB;
@@ -331,7 +371,23 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
     rShoulder: flip(rShoulder),
     rElbow: flip(rElbow),
     rHead: flip(rHead),
+    handPts: handPts.map(flip),
   };
+
+  // Handlebar profile: connect the bar clamp through the hand positions so the
+  // bar reads as tops→hoods→drops (or base→extensions on a TT bar).
+  const barSegs: Array<[P, P]> =
+    cockpit.bar === "drop"
+      ? [
+          [s.barClamp, s.handPts[1]],
+          [s.handPts[1], s.handPts[2]],
+        ]
+      : cockpit.bar === "aero"
+        ? [
+            [s.handPts[0], s.barClamp],
+            [s.barClamp, s.handPts[1]],
+          ]
+        : [[s.barClamp, s.handPts[0]]];
 
   const bounds: P[] = [
     s.saddle,
@@ -532,10 +588,15 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
         className="fg-saddle"
       />
 
-      {/* stem + handlebar (spacers up the steerer, stem, bar to the grip) */}
+      {/* stem + handlebar; hands rest on the active bar position, with the other
+          hand positions (tops/hoods/drops) marked */}
       {line(s.headTop, s.barBottom, "fg-tube")}
       {line(s.barBottom, s.barClamp, "fg-tube")}
-      {line(s.barClamp, s.grip, "fg-seatpost")}
+      {barSegs.map(([a, b], i) => (
+        <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y} className="fg-bar" />
+      ))}
+      {s.handPts.length > 1 &&
+        s.handPts.map((pt, i) => <circle key={i} cx={pt.x} cy={pt.y} r={7} className="fg-handpos" />)}
       <circle cx={s.grip.x} cy={s.grip.y} r={11} className="fg-node" />
 
       {/* seated rider (translucent capsules): hips at the saddle, foot on the

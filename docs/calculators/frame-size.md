@@ -202,5 +202,8 @@ scaled so its ink height equals the rider's body height. It is **split into thre
 slack, and the **head (neck→top) keeps its natural size** — so inseam reshapes
 only the legs and torso: a longer inseam draws longer legs and a shorter torso,
 and vice versa (widths keep the uniform scale; the splits are seamless). The
-dimension lines are labelled with the entered values. In "identify a frame" mode
-it illustrates the representative rider the frame fits.
+**arms** (bare forearms + hands, traced as a separate piece cut at the sleeve
+hem) hang from the sleeve line and **scale vertically with arm length**,
+independent of the body. The dimension lines are labelled with the entered
+values. In "identify a frame" mode it illustrates the representative rider the
+frame fits.

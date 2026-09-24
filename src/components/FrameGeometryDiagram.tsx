@@ -14,7 +14,17 @@
 // driving the fit are shown.
 
 import { useId } from "react";
-import { CYCLIST_PATHS, CYCLIST_INNER_TRANSFORM, CYCLIST_VIEW, CYCLIST_LANDMARKS } from "./cyclistFigure";
+import {
+  CYCLIST_BODY_PATHS,
+  CYCLIST_ARM_PATHS,
+  CYCLIST_INNER_TRANSFORM,
+  CYCLIST_VIEW,
+  CYCLIST_LANDMARKS,
+} from "./cyclistFigure";
+
+// Arm-length fraction of stature at which the arms are drawn undistorted; the
+// forearms scale relative to this so a typical rider renders as traced.
+const ARM_REF_FRAC = 0.331;
 
 const SA = (73 * Math.PI) / 180; // seat-tube angle
 const HA = (72 * Math.PI) / 180; // head-tube angle
@@ -175,6 +185,14 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const torsoTf = bandTf(sTorso, -gY - inseam - crotchPy * sTorso);
   const headTf = bandTf(figScale, -gY - inseam - torsoLen - neckPy * figScale);
 
+  // Arms (bare forearms + hands) hang from the sleeve hem and scale vertically
+  // about it by arm length, independent of the body reshaping.
+  const armPivotPy = CYCLIST_VIEW.bottom - CYCLIST_LANDMARKS.armPivot * figH;
+  const elbowY = pyToBikeY(armPivotPy); // sleeve-hem line, reshaped with the torso
+  const armScale = clamp(armLengthMm / (ARM_REF_FRAC * H), 0.7, 1.4);
+  const armVy = figScale * armScale; // vertical scale of the arm band
+  const armTf = `translate(${figTX.toFixed(2)} ${(-elbowY - armPivotPy * armVy).toFixed(2)}) scale(${figScale.toFixed(4)} ${armVy.toFixed(4)})`;
+
   // Dimension lines: body height + inseam nested clear of the left edge, arm on
   // the bike-facing side.
   const inseamDimX = figLeft - 0.03 * H;
@@ -273,10 +291,10 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
         const hSy = -(gY + H); // head top
         const cx0 = figLeft - 30;
         const cw = figRight - figLeft + 60;
-        const Fig = ({ tf }: { tf: string }) => (
+        const Fig = ({ tf, paths }: { tf: string; paths: string[] }) => (
           <g transform={tf}>
             <g transform={CYCLIST_INNER_TRANSFORM}>
-              {CYCLIST_PATHS.map((d, i) => (
+              {paths.map((d, i) => (
                 <path key={i} d={d} />
               ))}
             </g>
@@ -296,14 +314,16 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
             </defs>
             <g className="fg-rider">
               <g clipPath={`url(#${clipId}-lo)`}>
-                <Fig tf={lowerTf} />
+                <Fig tf={lowerTf} paths={CYCLIST_BODY_PATHS} />
               </g>
               <g clipPath={`url(#${clipId}-to)`}>
-                <Fig tf={torsoTf} />
+                <Fig tf={torsoTf} paths={CYCLIST_BODY_PATHS} />
               </g>
               <g clipPath={`url(#${clipId}-hd)`}>
-                <Fig tf={headTf} />
+                <Fig tf={headTf} paths={CYCLIST_BODY_PATHS} />
               </g>
+              {/* forearms + hands, scaled about the sleeve hem by arm length */}
+              <Fig tf={armTf} paths={CYCLIST_ARM_PATHS} />
             </g>
           </>
         );

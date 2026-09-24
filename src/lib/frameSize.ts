@@ -37,6 +37,10 @@ export interface FrameCategory {
   geometry: 'classic' | 'sloping' | 'suspension';
   /** Also show the size in inches (mountain bikes). */
   showInches?: boolean;
+  /** One line on what makes this category distinct. */
+  blurb: string;
+  /** What actually matters when sizing a bike of this category. */
+  sizing: string;
 }
 
 // frontEndRiseMm is how high the front end (head-tube top = stack) sits above
@@ -49,18 +53,68 @@ export interface FrameCategory {
 // effective seat-tube split in the diagram; more slope = shorter actual seat
 // tube for the same size.
 export const FRAME_CATEGORIES: FrameCategory[] = [
-  { id: 'tt', label: 'Time trial / triathlon', group: 'Time trial', sizeMult: 0.66, reachBaseMm: 118, frontEndRiseMm: 3, topTubeSlopeDeg: 3, geometry: 'sloping' },
-  { id: 'road-aero', label: 'Aero / race', group: 'Road', sizeMult: 0.665, reachBaseMm: 100, frontEndRiseMm: 18, topTubeSlopeDeg: 5, geometry: 'sloping' },
-  { id: 'road-endurance', label: 'Endurance / all-road', group: 'Road', sizeMult: 0.665, reachBaseMm: 80, frontEndRiseMm: 52, topTubeSlopeDeg: 7, geometry: 'sloping' },
-  { id: 'gravel-race', label: 'Race', group: 'Gravel', sizeMult: 0.665, reachBaseMm: 82, frontEndRiseMm: 52, topTubeSlopeDeg: 6, geometry: 'sloping' },
-  { id: 'gravel-adventure', label: 'Adventure', group: 'Gravel', sizeMult: 0.66, reachBaseMm: 66, frontEndRiseMm: 78, topTubeSlopeDeg: 10, geometry: 'sloping' },
-  { id: 'mtb', label: 'Hardtail / trail', group: 'Mountain', sizeMult: 0.57, reachBaseMm: 58, frontEndRiseMm: 128, topTubeSlopeDeg: 14, geometry: 'suspension', showInches: true },
-  { id: 'city', label: 'Upright', group: 'Hybrid / city', sizeMult: 0.63, reachBaseMm: 45, frontEndRiseMm: 112, topTubeSlopeDeg: 16, geometry: 'sloping' },
+  {
+    id: 'tt', label: 'Time trial / triathlon', group: 'Time trial',
+    sizeMult: 0.66, reachBaseMm: 118, frontEndRiseMm: 3, topTubeSlopeDeg: 3, geometry: 'sloping',
+    blurb: 'The most aggressive position — an aero tuck with a steep seat angle and weight forward on the aerobars.',
+    sizing: 'You fit to the aerobar pads, not the frame, so treat frame reach & stack as a starting point and dial it in with the extensions, pads and spacers.',
+  },
+  {
+    id: 'road-aero', label: 'Aero / race', group: 'Road',
+    sizeMult: 0.665, reachBaseMm: 100, frontEndRiseMm: 18, topTubeSlopeDeg: 5, geometry: 'sloping',
+    blurb: 'Long, low and stiff — a race position, often with an integrated cockpit.',
+    sizing: 'Compare frames on reach & stack; the seat-tube "size" means little on a sloped frame. Expect a low stack — if you can’t get comfortably low, look at endurance.',
+  },
+  {
+    id: 'road-endurance', label: 'Endurance / all-road', group: 'Road',
+    sizeMult: 0.665, reachBaseMm: 80, frontEndRiseMm: 52, topTubeSlopeDeg: 7, geometry: 'sloping',
+    blurb: 'A taller front end and longer wheelbase for a less bent-over drop-bar position, with room for wider tyres.',
+    sizing: 'Still size on reach & stack — just expect more stack than a race frame. Small gaps are easily trimmed with spacers and stem length.',
+  },
+  {
+    id: 'gravel-race', label: 'Race', group: 'Gravel',
+    sizeMult: 0.665, reachBaseMm: 82, frontEndRiseMm: 52, topTubeSlopeDeg: 6, geometry: 'sloping',
+    blurb: 'Drop-bar and fairly aggressive, but longer and more stable than road race, with big tyre clearance.',
+    sizing: 'Size on reach & stack like a road bike; flared bars add a little effective reach and width to allow for.',
+  },
+  {
+    id: 'gravel-adventure', label: 'Adventure', group: 'Gravel',
+    sizeMult: 0.66, reachBaseMm: 66, frontEndRiseMm: 78, topTubeSlopeDeg: 10, geometry: 'sloping',
+    blurb: 'Relaxed and stable for loaded, rough riding — more stack, shorter reach, room for bags.',
+    sizing: 'Reach & stack still guide it, but the position is forgiving, so a size either way usually works.',
+  },
+  {
+    id: 'mtb', label: 'Hardtail / trail', group: 'Mountain',
+    sizeMult: 0.57, reachBaseMm: 58, frontEndRiseMm: 128, topTubeSlopeDeg: 14, geometry: 'suspension', showInches: true,
+    blurb: 'A suspension fork and slack head angle; modern trail bikes run a long front-centre with a short stem.',
+    sizing: 'Size by reach, not seat-tube length — a longer reach is the "bigger" bike. Then check the short seat tube clears your dropper insertion; the fork and bars handle stack.',
+  },
+  {
+    id: 'city', label: 'Upright', group: 'Hybrid / city',
+    sizeMult: 0.63, reachBaseMm: 45, frontEndRiseMm: 112, topTubeSlopeDeg: 16, geometry: 'sloping',
+    blurb: 'Upright and comfort-focused, with flat or swept-back bars.',
+    sizing: 'Reach barely matters and bar height is easy to change, so don’t over-think stack. Mainly check the seat-tube size / standover suits your legs, then set saddle height.',
+  },
   // Traditional level-top-tube frames: a low stack, with the upright position
   // coming from a tall/long stem and swept bars rather than frame height.
-  { id: 'vintage-road', label: 'Road', group: 'Vintage', sizeMult: 0.665, reachBaseMm: 90, frontEndRiseMm: 22, topTubeSlopeDeg: 0, geometry: 'classic' },
-  { id: 'vintage-mtb', label: 'Mountain (rigid)', group: 'Vintage', sizeMult: 0.59, reachBaseMm: 64, frontEndRiseMm: 20, topTubeSlopeDeg: 0, geometry: 'classic', showInches: true },
-  { id: 'vintage-city', label: 'City / roadster', group: 'Vintage', sizeMult: 0.63, reachBaseMm: 52, frontEndRiseMm: 28, topTubeSlopeDeg: 0, geometry: 'classic' },
+  {
+    id: 'vintage-road', label: 'Road', group: 'Vintage',
+    sizeMult: 0.665, reachBaseMm: 90, frontEndRiseMm: 22, topTubeSlopeDeg: 0, geometry: 'classic',
+    blurb: 'A level top tube and (usually) a quill stem — classic steel road geometry.',
+    sizing: 'Frame stack is inherently low, but a quill stem gives lots of height adjustment. Size by seat tube / standover to your inseam and set bar height with the stem.',
+  },
+  {
+    id: 'vintage-mtb', label: 'Mountain (rigid)', group: 'Vintage',
+    sizeMult: 0.59, reachBaseMm: 64, frontEndRiseMm: 20, topTubeSlopeDeg: 0, geometry: 'classic', showInches: true,
+    blurb: 'Rigid, with a level top tube, usually sized in inches.',
+    sizing: 'Aim for plenty of standover clearance; size by the seat tube to your inseam and use the (often long) stem to set bar height and reach.',
+  },
+  {
+    id: 'vintage-city', label: 'City / roadster', group: 'Vintage',
+    sizeMult: 0.63, reachBaseMm: 52, frontEndRiseMm: 28, topTubeSlopeDeg: 0, geometry: 'classic',
+    blurb: 'A tall, very upright roadster — level top tube, swept bars, long stem.',
+    sizing: 'Size by the seat tube to your inseam (mind standover); the upright position comes from the tall stem, so frame reach & stack aren’t the deciding numbers.',
+  },
 ];
 
 export const DEFAULT_CATEGORY_ID = 'road-endurance';

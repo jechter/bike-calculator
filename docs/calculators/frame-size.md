@@ -56,7 +56,12 @@ A single seat-tube number is a weak way to describe a frame:
   upright position from a tall/long stem rather than frame height. Stack ranks as
   you'd expect — TT lowest, then aero ≈ vintage (a level-top-tube frame is
   inherently fairly low — not more aggressive, just constrained by geometry),
-  then endurance/gravel, with MTB and upright city highest.
+  then endurance/gravel, with MTB and upright city highest. Each category also
+  carries a short description (what's distinct about it) and category-specific
+  **sizing guidance**, shown under the picker — because what to check differs:
+  sporty sloped bikes live and die by reach & stack, upright city bikes mostly
+  need the right seat-tube/standover, and vintage bikes have a low frame stack
+  but lots of stem adjustment.
 
 Gender isn't asked: what matters is the actual leg, torso and arm lengths, which
 the three body inputs already capture.

@@ -207,6 +207,12 @@ export function FrameSize() {
               <Select value={categoryId} onChange={setCategoryId} options={CATEGORY_OPTIONS} />
             </Field>
           </div>
+          <Note>
+            {category.blurb}
+            <span className="note-sizing">
+              <strong>Sizing:</strong> {category.sizing}
+            </span>
+          </Note>
         </Section>
 
         {reverse ? (

@@ -320,6 +320,7 @@ select {
 .note { border-radius: 8px; padding: 10px 12px; font-size: 13px; margin: 12px 0; border: 1px solid var(--border); }
 .note-info { background: var(--panel-2); }
 .note-warn { background: color-mix(in srgb, var(--warn) 14%, var(--panel)); border-color: color-mix(in srgb, var(--warn) 40%, var(--border)); }
+.note-sizing { display: block; margin-top: 7px; }
 
 /* Tables */
 table { border-collapse: collapse; width: 100%; font-size: 13px; }

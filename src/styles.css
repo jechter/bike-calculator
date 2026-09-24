@@ -18,6 +18,7 @@
   --diag-arm: #d97706;
   --diag-body: #808081;
   --diag-inseam: #ff00b3;
+  --diag-wheel: #5b7085;
   --radius: 10px;
   --sidebar-w: 240px;
   /* Shared height for all field-level controls so native <select>s (which the
@@ -46,6 +47,7 @@
     --diag-arm: #f0a53c;
     --diag-body: #b4b9be;
     --diag-inseam: #ff4dcb;
+    --diag-wheel: #93a4b8;
   }
 }
 
@@ -444,6 +446,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
    they track light/dark like every other diagram. */
 .fg-ground { stroke: var(--border); stroke-width: 2; stroke-dasharray: 8 8; }
 .fg-wheel { fill: none; stroke: var(--border); stroke-width: 7; }
+/* Emphasis when the wheel-size value is hovered/edited in the UI. */
+.fg-wheel.fg-hl { stroke: var(--diag-wheel); stroke-width: 11; filter: drop-shadow(0 0 6px var(--diag-wheel)); }
 .fg-tube { fill: none; stroke: var(--muted); stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; }
 .fg-headtube { stroke: var(--text); stroke-width: 14; }
 .fg-seatpost { fill: none; stroke: var(--muted); stroke-width: 6; stroke-linecap: round; }
@@ -492,6 +496,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .fg-note-arm { fill: var(--diag-arm); }
 .fg-note-body { fill: var(--diag-body); }
 .fg-note-inseam { fill: var(--diag-inseam); }
+.fg-note-wheel { fill: var(--diag-wheel); }
 
 /* Seated rider posed on the bike in the frame diagram: translucent capsule limbs
    (hips at the saddle, foot on the pedal, hands on the grip). */

@@ -343,10 +343,183 @@ export function fitTargets(input: FitTargetsInput): FitTargets {
   };
 }
 
+// --- Wheel size -------------------------------------------------------------
+
+/**
+ * A wheel standard, described the way cyclists actually talk about wheels: a
+ * common name (700c, 29", …), the precise tyre-independent ISO/ETRTO bead-seat
+ * diameter, and an approximate outer diameter with a typical tyre for that use
+ * (so the diagram can draw it to scale).
+ */
+export interface Wheel {
+  /** Common name: "700c", "650b", "29\"", "27.5\"", "26\"", "27\"", "28\"". */
+  label: string;
+  /** ISO/ETRTO bead-seat diameter (mm) — the precise, tyre-independent number. */
+  isoMm: number;
+  /** Approx outer diameter with a typical tyre for this use (mm), for the diagram. */
+  outerMm: number;
+  /** One line on why this wheel suits the frame. */
+  note: string;
+}
+
+const WHEEL_700C: Wheel = {
+  label: '700c', isoMm: 622, outerMm: 700,
+  note: 'The road/gravel standard (ISO 622), used across almost every adult frame size.',
+};
+const WHEEL_650B: Wheel = {
+  label: '650b', isoMm: 584, outerMm: 678,
+  note: 'A smaller-diameter wheel (ISO 584) fitted to the smallest frames so the fit and handling stay right — also chosen for extra tyre volume.',
+};
+const WHEEL_29: Wheel = {
+  label: '29"', isoMm: 622, outerMm: 742,
+  note: 'The standard modern trail wheel — an ISO 622 rim under a fat tyre, so it rolls tall.',
+};
+const WHEEL_275: Wheel = {
+  label: '27.5"', isoMm: 584, outerMm: 706,
+  note: 'The smaller trail wheel (ISO 584), run on small frames for standover and a livelier feel.',
+};
+const WHEEL_26: Wheel = {
+  label: '26"', isoMm: 559, outerMm: 666,
+  note: 'The classic mountain-bike size (ISO 559).',
+};
+const WHEEL_27: Wheel = {
+  label: '27"', isoMm: 630, outerMm: 686,
+  note: 'The traditional road size (ISO 630) on older steel frames — a hair larger than 700c, but a rarer tyre.',
+};
+const WHEEL_28: Wheel = {
+  label: '28"', isoMm: 635, outerMm: 709,
+  note: 'The classic roadster wheel (ISO 635).',
+};
+// Kids' bikes are sized by their wheel, stepping down as the rider shrinks.
+const WHEEL_24: Wheel = {
+  label: '24"', isoMm: 507, outerMm: 550,
+  note: "A junior wheel (ISO 507) — the largest kids' size, just below the adult range.",
+};
+const WHEEL_20: Wheel = {
+  label: '20"', isoMm: 406, outerMm: 455,
+  note: "A kids' wheel (ISO 406, also the BMX size).",
+};
+const WHEEL_16: Wheel = {
+  label: '16"', isoMm: 305, outerMm: 345,
+  note: "A small kids' wheel (ISO 305).",
+};
+const WHEEL_14: Wheel = {
+  label: '14"', isoMm: 254, outerMm: 292,
+  note: "A very small kids' wheel (ISO 254).",
+};
+const WHEEL_12: Wheel = {
+  label: '12"', isoMm: 203, outerMm: 240,
+  note: "The smallest kids'/balance-bike wheel (ISO 203).",
+};
+
+/**
+ * Pick the wheel that makes sense for a frame's style *and* size. Style sets the
+ * standard (700c road/gravel, 29" trail, 27" vintage road, …); size then shifts
+ * it where the industry does — the smallest road/gravel frames drop to 650b, and
+ * the smallest trail frames drop from 29" to 27.5" — so the drawn wheel and the
+ * quoted size track how the bike would really be built. `frameCm` is the nominal
+ * (seat-tube) size in cm.
+ */
+export function wheelForFrame(category: FrameCategory, frameCm: number): Wheel {
+  // Below the adult range, a bike is sized by its wheel regardless of style, so
+  // step down a kids' ladder. Key it off the rider's cycling inseam (frame ÷ the
+  // category multiplier) rather than the raw frame cm, so a small "road" and a
+  // small "mtb" frame — which carry different multipliers — land on the same
+  // wheel for the same-sized child.
+  const inseamCm = frameCm / category.sizeMult;
+  if (inseamCm < 42) return WHEEL_12;
+  if (inseamCm < 47) return WHEEL_14;
+  if (inseamCm < 52) return WHEEL_16;
+  if (inseamCm < 60) return WHEEL_20;
+  if (inseamCm < 66) return WHEEL_24;
+
+  switch (category.id) {
+    case 'mtb':
+      // Trail bikes run 29"; the smallest sizes drop to 27.5" for standover/handling.
+      return frameCm < 44 ? WHEEL_275 : WHEEL_29;
+    case 'vintage-road':
+      return WHEEL_27;
+    case 'vintage-mtb':
+      return WHEEL_26;
+    case 'vintage-city':
+      return WHEEL_28;
+    case 'city':
+      return WHEEL_700C;
+    default:
+      // Road, gravel and TT: 700c, dropping to 650b on the smallest frames.
+      return frameCm < 48 ? WHEEL_650B : WHEEL_700C;
+  }
+}
+
+// --- Cockpit (stem + bar) ---------------------------------------------------
+
+/**
+ * The stem + handlebar setup used to draw the riding position and quote the
+ * cockpit. Like the rest of the fit model these are hand-picked approximations,
+ * not a spec — a *typical* build for the category and size.
+ */
+export type BarType = "drop" | "flat" | "aero";
+export interface CockpitSpec {
+  /** Stem length (mm), scaled with frame size. */
+  stemLenMm: number;
+  /** Stem rise above horizontal as drawn (deg); negative points down. */
+  stemRiseDeg: number;
+  /** Spacer stack / quill height under the stem (mm), scaled with frame size. */
+  spacerMm: number;
+  /** Handlebar type — sets the drawn bar and its hand positions. */
+  bar: BarType;
+  /** Primary hand position (fwd/drop from the bar clamp, mm): hoods / grip / extensions. */
+  gripFwdMm: number;
+  gripDropMm: number;
+}
+
+// Per-category base cockpit, defined for the category's AVERAGE frame (an 84 cm
+// inseam). cockpitForFrame() then scales the stem + spacers around this by frame
+// size. gripFwd/Drop and the bar type stay constant for the category.
+const COCKPITS: Record<string, CockpitSpec> = {
+  tt: { stemLenMm: 80, stemRiseDeg: -4, spacerMm: 12, bar: "aero", gripFwdMm: 155, gripDropMm: -8 },
+  "road-aero": { stemLenMm: 110, stemRiseDeg: 4, spacerMm: 15, bar: "drop", gripFwdMm: 80, gripDropMm: 20 },
+  "road-endurance": { stemLenMm: 100, stemRiseDeg: 6, spacerMm: 30, bar: "drop", gripFwdMm: 75, gripDropMm: 16 },
+  "gravel-race": { stemLenMm: 90, stemRiseDeg: 6, spacerMm: 25, bar: "drop", gripFwdMm: 75, gripDropMm: 14 },
+  "gravel-adventure": { stemLenMm: 80, stemRiseDeg: 8, spacerMm: 35, bar: "drop", gripFwdMm: 70, gripDropMm: 12 },
+  mtb: { stemLenMm: 50, stemRiseDeg: 2, spacerMm: 20, bar: "flat", gripFwdMm: -18, gripDropMm: 0 },
+  city: { stemLenMm: 90, stemRiseDeg: 25, spacerMm: 30, bar: "flat", gripFwdMm: -45, gripDropMm: -5 },
+  "vintage-road": { stemLenMm: 90, stemRiseDeg: 6, spacerMm: 50, bar: "drop", gripFwdMm: 72, gripDropMm: 14 },
+  "vintage-mtb": { stemLenMm: 90, stemRiseDeg: 10, spacerMm: 40, bar: "flat", gripFwdMm: -22, gripDropMm: 0 },
+  "vintage-city": { stemLenMm: 100, stemRiseDeg: 30, spacerMm: 45, bar: "flat", gripFwdMm: -55, gripDropMm: -8 },
+};
+
+const clampN = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+const roundTo = (v: number, step: number) => Math.round(v / step) * step;
+
+// How the stem/spacers move per cm of frame away from the category average.
+const STEM_PER_CM = 1.8; // longer stem on a bigger frame
+const SPACER_PER_CM = 1.0; // smaller frames run more spacers to reach the bars
+
+/**
+ * The cockpit for a frame of this style *and* size. Bigger frames get a longer
+ * stem and (since their head tubes are taller) fewer spacers; smaller frames the
+ * reverse — so the quoted stem length and spacer stack, and the stem drawn in the
+ * diagram, both track the frame size instead of being fixed per category. Stem
+ * length is snapped to the usual 10 mm increments and spacers to 5 mm.
+ */
+export function cockpitForFrame(category: FrameCategory, frameCm: number): CockpitSpec {
+  const base = COCKPITS[category.id] ?? COCKPITS["road-endurance"];
+  const refCm = 84 * category.sizeMult; // frame size for the average rider
+  const d = frameCm - refCm;
+  return {
+    ...base,
+    stemLenMm: clampN(roundTo(base.stemLenMm + STEM_PER_CM * d, 10), 35, 140),
+    spacerMm: clampN(roundTo(base.spacerMm - SPACER_PER_CM * d, 5), 5, 60),
+  };
+}
+
 // --- Crank length -----------------------------------------------------------
 
-/** Available crank lengths (mm) commonly sold. */
-export const CRANK_SIZES = [160, 165, 167.5, 170, 172.5, 175, 177.5, 180];
+/** Available crank lengths (mm) commonly sold — kids' lengths through adult. */
+export const CRANK_SIZES = [
+  102, 114, 127, 140, 152, 155, 160, 165, 167.5, 170, 172.5, 175, 177.5, 180,
+];
 
 export interface CrankSuggestion {
   suggestedMm: number; // nearest available size

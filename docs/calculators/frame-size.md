@@ -75,6 +75,8 @@ the three body inputs already capture.
   geometric length.
 - **Saddle height** (LeMond, `inseam × 0.883`, BB centre → saddle top).
 - **Crank length** suggestion (range + nearest available size).
+- **Wheel size** — the standard that fits the frame's style *and* size (see below),
+  shown with its ISO/ETRTO bead diameter and drawn to scale in the diagram.
 
 ## Formulas (approximate, calibrated rules of thumb)
 
@@ -212,16 +214,50 @@ independent of the body. The dimension lines are labelled with the entered
 values. In "identify a frame" mode it illustrates the representative rider the
 frame fits.
 
+### Wheel size
+
+`wheelForFrame(category, frameCm)` (in `frameSize.ts`) picks the wheel a frame of
+this **style and size** would really be built with. Style sets the standard —
+700c for road/gravel/TT, 29" for trail, 27" for vintage road, 26" for vintage
+MTB, 28" for a roadster — and size then shifts it where the industry does: the
+smallest road/gravel frames drop to **650b**, and the smallest trail frames drop
+from 29" to **27.5"**. Below the adult range the ladder continues down through
+the **kids' sizes** — **24" → 20" → 16" → 14" → 12"** — chosen by the rider's
+cycling inseam (`frameCm ÷ the category multiplier`) so a small "road" and a
+small "mtb" frame of the same-sized child land on the same wheel. Each `Wheel`
+carries the common name, the ISO/ETRTO bead diameter, and an approximate outer
+diameter with a typical tyre, so the diagram draws the wheels to scale (a 29"
+wheel is visibly taller than a 26", and a 12" a fraction of either). The value is
+shown in the results (name + ISO), labelled on the front wheel, and — like the
+other measurements — highlights in the diagram when hovered/edited.
+
+The frame parts that depend on the wheel — **BB drop, chainstay length, fork rake
+and fork-crown height** — scale with the wheel radius in the diagram (tuned so a
+700c wheel reproduces the original numbers), so a small wheel gets a
+correspondingly short fork and stays instead of a big-wheel frame drawn around a
+tiny wheel.
+
+(To fit children, the body-measurement minimums go down to a 100 cm rider / 38 cm
+inseam, and the crank list starts at kids' lengths — 102 mm and up.)
+
 ### Seated riding position
 
 The same diagram also poses an approximate **capsule rider on the bike** to show
 **how the rider would sit on it**. The three contact points come from the
-geometry plus a per-category **cockpit default** (`COCKPITS` in
-`FrameGeometryDiagram.tsx`): a typical stem length + rise, spacer/quill height,
-and bar reach/drop place the **handlebar grip** (drawn up the steerer → along the
-stem → out to the hands); the saddle gives the **hips**; the crank/pedal gives
-the **foot**. The knee is solved with two-bone IK; segment lengths come from the
-body measurements.
+geometry plus the **cockpit** — `cockpitForFrame(category, frameCm)` in
+`frameSize.ts`. A per-category base (`COCKPITS`, defined for the category's
+average frame) sets the stem rise, bar type and hand reach/drop; the **stem
+length and spacer stack then scale with frame size** — a bigger frame gets a
+longer stem and fewer spacers (its head tube is already taller), a smaller frame
+the reverse — snapped to the usual 10 mm / 5 mm increments. The stem length + rise,
+spacers and bar reach/drop place the **handlebar grip** (drawn up the steerer →
+along the stem → out to the hands); the saddle gives the **hips**; the
+crank/pedal gives the **foot**. The knee is solved with two-bone IK; segment
+lengths come from the body measurements.
+
+The **same resolved cockpit** is passed into the diagram *and* shown in the
+"Cockpit (typical)" results, so the quoted stem/spacers always match the stem
+drawn on the bike, and both move as the frame size changes.
 
 A **posture slider** under the diagram sets how aggressively the rider sits, from
 **arms fully straight** (0, upright) to the most aggressive position (1). Both

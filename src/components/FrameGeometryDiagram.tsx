@@ -14,6 +14,7 @@
 // driving the fit are shown.
 
 import { useId } from "react";
+import type { CockpitSpec } from "../lib/frameSize";
 import {
   CYCLIST_BODY_PATHS,
   CYCLIST_ARM_PATHS,
@@ -31,13 +32,18 @@ const HA = (72 * Math.PI) / 180; // head-tube angle
 const COS = Math.cos(SA);
 const SIN = Math.sin(SA);
 
-const WHEEL_R = 350; // ~700c with tyre, mm
-const BB_DROP = 70; // BB below the axle line, mm
-const CHAINSTAY = 430;
+const DEFAULT_WHEEL_R = 350; // ~700c with tyre, mm — used when no wheel is given
+// The frame dimensions that depend on the wheel scale WITH the wheel radius, tuned
+// so a 700c wheel (R = 350) reproduces the original numbers. Without this a small
+// (kids') wheel gets a big-wheel fork and chainstay drawn around it — the fork
+// crown floats above the tyre, and the head tube can even invert when the stack
+// falls below the fixed crown height.
+const WHEEL_R_REF = 350; // 700c reference radius
+const BB_DROP_RATIO = 0.2; // BB below the axle line, as a fraction of wheel R (70/350)
+const REAR_CLEARANCE = 80; // gap from the rear tyre back to the BB axis (chainstay = R + this)
+const SUSP_FORK_EXTRA = 80; // a suspension fork raises the crown this far above the tyre top
+const FORK_OFFSET_REF = 45; // fork rake at 700c
 const HEAD_STUB_MM = 14; // head tube + headset above the top-tube junction (~1 cm)
-const FORK_CROWN_Y = 419; // rigid fork crown / head-tube-bottom height above BB
-const SUSPENSION_FORK_CROWN_Y = 500; // a longer (suspension) fork sits the crown higher
-const FORK_OFFSET = 45;
 const CRANK_ANGLE = (32 * Math.PI) / 180; // crank arm, forward of straight-down
 const PEDAL_HALF = 30; // half-length of the drawn pedal, mm
 
@@ -62,15 +68,19 @@ export interface FrameGeometryDiagramProps {
   inseamMm: number;
   /** Arm length, mm — shoulder-to-wrist on the rider figure. */
   armLengthMm: number;
-  /** Bike category id — picks the cockpit for the seated riding position. */
-  categoryId: string;
+  /** Resolved cockpit (stem + spacers + bar) for the seated riding position. */
+  cockpit: CockpitSpec;
+  /** Outer wheel radius (mm), so the wheels are drawn to the chosen size. */
+  wheelRadiusMm?: number;
+  /** Wheel-size name (e.g. "700c", "29\"") labelled on the front wheel. */
+  wheelLabel?: string;
   /** Which measurement to emphasise (hovered/edited in the UI), if any. */
   highlight?: HighlightKey | null;
   /** Seated posture: 0 = arms fully straight, 1 = forearm parallel to the ground. */
   posture: number;
 }
 
-export type HighlightKey = "reach" | "stack" | "size" | "crank" | "body" | "inseam" | "arm";
+export type HighlightKey = "reach" | "stack" | "size" | "crank" | "body" | "inseam" | "arm" | "wheel";
 
 type P = { x: number; y: number };
 // Bike space has y up; SVG has y down, so flip as we place points.
@@ -95,24 +105,10 @@ function ik2(a: P, b: P, l1: number, l2: number, bend: number): P {
   return vadd(base, vscale({ x: -u.y, y: u.x }, h * bend));
 }
 
-// Per-category cockpit defaults (hand-picked approximations, like the rest of
-// the fit model): stem length + net rise, spacer/quill height, and the bar type
-// with its primary hand position (hoods for drops, the grip for flats, the aero
-// extensions for TT). `gripFwd/Drop` are that primary position relative to the
-// bar clamp; the other hand positions are derived in handOffsets().
-type BarType = "drop" | "flat" | "aero";
-interface Cockpit {
-  stemLenMm: number;
-  stemRiseDeg: number;
-  spacerMm: number;
-  bar: BarType;
-  gripFwdMm: number;
-  gripDropMm: number;
-}
 // Hand positions (offset fwd/drop from the bar clamp), from most upright to most
 // aggressive. Drop bars: tops → hoods → drops. TT: base bar → aero extensions.
 // Flats have a single position. Drop is +down.
-function handOffsets(c: Cockpit): Array<{ fwd: number; drop: number }> {
+function handOffsets(c: CockpitSpec): Array<{ fwd: number; drop: number }> {
   const f = c.gripFwdMm;
   const d = c.gripDropMm;
   if (c.bar === "drop")
@@ -128,18 +124,6 @@ function handOffsets(c: Cockpit): Array<{ fwd: number; drop: number }> {
     ];
   return [{ fwd: f, drop: d }]; // flat: one hand position
 }
-const COCKPITS: Record<string, Cockpit> = {
-  tt: { stemLenMm: 80, stemRiseDeg: -4, spacerMm: 12, bar: "aero", gripFwdMm: 155, gripDropMm: -8 },
-  "road-aero": { stemLenMm: 110, stemRiseDeg: 4, spacerMm: 15, bar: "drop", gripFwdMm: 80, gripDropMm: 20 },
-  "road-endurance": { stemLenMm: 100, stemRiseDeg: 6, spacerMm: 30, bar: "drop", gripFwdMm: 75, gripDropMm: 16 },
-  "gravel-race": { stemLenMm: 90, stemRiseDeg: 6, spacerMm: 25, bar: "drop", gripFwdMm: 75, gripDropMm: 14 },
-  "gravel-adventure": { stemLenMm: 80, stemRiseDeg: 8, spacerMm: 35, bar: "drop", gripFwdMm: 70, gripDropMm: 12 },
-  mtb: { stemLenMm: 50, stemRiseDeg: 2, spacerMm: 20, bar: "flat", gripFwdMm: -18, gripDropMm: 0 },
-  city: { stemLenMm: 90, stemRiseDeg: 25, spacerMm: 30, bar: "flat", gripFwdMm: -45, gripDropMm: -5 },
-  "vintage-road": { stemLenMm: 90, stemRiseDeg: 6, spacerMm: 50, bar: "drop", gripFwdMm: 72, gripDropMm: 14 },
-  "vintage-mtb": { stemLenMm: 90, stemRiseDeg: 10, spacerMm: 40, bar: "flat", gripFwdMm: -22, gripDropMm: 0 },
-  "vintage-city": { stemLenMm: 100, stemRiseDeg: 30, spacerMm: 45, bar: "flat", gripFwdMm: -55, gripDropMm: -8 },
-};
 
 export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const {
@@ -152,11 +136,18 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
     bodyHeightMm,
     inseamMm,
     armLengthMm,
-    categoryId,
+    cockpit,
+    wheelRadiusMm,
+    wheelLabel,
     highlight,
     posture,
   } = props;
 
+  const WHEEL_R = wheelRadiusMm ?? DEFAULT_WHEEL_R;
+  // Wheel-dependent frame dimensions (see the ratio constants above).
+  const BB_DROP = BB_DROP_RATIO * WHEEL_R;
+  const CHAINSTAY = WHEEL_R + REAR_CLEARANCE;
+  const FORK_OFFSET = FORK_OFFSET_REF * (WHEEL_R / WHEEL_R_REF);
   const clipId = useId();
   const hl = (k: HighlightKey) => highlight === k;
   const hlClass = (k: HighlightKey) => (highlight === k ? " fg-hl" : "");
@@ -167,9 +158,11 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const headTop = { x: reachMm, y: stackMm };
   const stackCorner = { x: 0, y: stackMm };
 
-  // A suspension fork sits the crown higher, so the head tube can be short even
-  // with a tall front end (mountain bikes).
-  const forkCrownY = geometry === 'suspension' ? SUSPENSION_FORK_CROWN_Y : FORK_CROWN_Y;
+  // The rigid fork crown sits at the tyre top (BB drop + wheel R above the BB); a
+  // suspension fork raises it further, so the head tube can be short even with a
+  // tall front end (mountain bikes). Both scale with the wheel, so a small wheel
+  // gets a correspondingly short fork.
+  const forkCrownY = BB_DROP + WHEEL_R + (geometry === 'suspension' ? SUSP_FORK_EXTRA : 0);
 
   // The top tube meets the head tube a fixed ~1 cm below the head-tube top.
   const stub = Math.min(HEAD_STUB_MM, Math.max(0, stackMm - forkCrownY - 20));
@@ -215,7 +208,6 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
 
   // --- seated rider posed on the bike (capsule limbs) ------------------------
   const HB = bodyHeightMm;
-  const cockpit = COCKPITS[categoryId] ?? COCKPITS["road-endurance"];
   const post = clamp(posture, 0, 1);
   // Handlebar: up the steerer by the spacers, along the stem to the clamp.
   const upSteer = { x: -Math.cos(HA), y: Math.sin(HA) };
@@ -371,20 +363,30 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
     handPts: handPts.map(flip),
   };
 
-  // Handlebar profile: connect the bar clamp through the hand positions so the
-  // bar reads as tops→hoods→drops (or base→extensions on a TT bar).
-  const barSegs: Array<[P, P]> =
-    cockpit.bar === "drop"
+  // Handlebar profile. Drop bars are a smooth curve from the clamp (tops) forward
+  // to the hoods and round into the drops; TT/flat bars are straight segments.
+  const isDrop = cockpit.bar === "drop";
+  const dropPath = (() => {
+    if (!isDrop) return null;
+    const c = s.barClamp;
+    const h = s.handPts[1];
+    const d = s.handPts[2];
+    // reach: leave the clamp forward at bar-top height, then curve down to the
+    // hoods. drop: bow forward off the hoods and hook down/back to the drops.
+    return (
+      `M ${c.x.toFixed(1)} ${c.y.toFixed(1)}` +
+      ` Q ${h.x.toFixed(1)} ${c.y.toFixed(1)} ${h.x.toFixed(1)} ${h.y.toFixed(1)}` +
+      ` Q ${(h.x + 38).toFixed(1)} ${((h.y + d.y) / 2).toFixed(1)} ${d.x.toFixed(1)} ${d.y.toFixed(1)}`
+    );
+  })();
+  const barSegs: Array<[P, P]> = isDrop
+    ? []
+    : cockpit.bar === "aero"
       ? [
+          [s.handPts[0], s.barClamp],
           [s.barClamp, s.handPts[1]],
-          [s.handPts[1], s.handPts[2]],
         ]
-      : cockpit.bar === "aero"
-        ? [
-            [s.handPts[0], s.barClamp],
-            [s.barClamp, s.handPts[1]],
-          ]
-        : [[s.barClamp, s.handPts[0]]];
+      : [[s.barClamp, s.handPts[0]]];
 
   const bounds: P[] = [
     s.saddle,
@@ -532,9 +534,19 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
         Arm {cm(armLengthMm)} cm
       </text>
 
-      {/* wheels for context */}
-      <circle cx={s.rearAxle.x} cy={s.rearAxle.y} r={WHEEL_R} className="fg-wheel" />
-      <circle cx={s.frontAxle.x} cy={s.frontAxle.y} r={WHEEL_R} className="fg-wheel" />
+      {/* wheels, drawn to the chosen wheel size; front one labelled */}
+      <circle cx={s.rearAxle.x} cy={s.rearAxle.y} r={WHEEL_R} className={"fg-wheel" + hlClass("wheel")} />
+      <circle cx={s.frontAxle.x} cy={s.frontAxle.y} r={WHEEL_R} className={"fg-wheel" + hlClass("wheel")} />
+      {wheelLabel && (
+        <text
+          x={s.frontAxle.x}
+          y={s.frontAxle.y + WHEEL_R * 0.62}
+          textAnchor="middle"
+          className={"fg-mlabel fg-note-wheel" + hlClass("wheel")}
+        >
+          {wheelLabel}
+        </text>
+      )}
 
       {/* far-side crank + leg, drawn behind the frame and fainter for depth */}
       <g className="rp-far">
@@ -589,6 +601,7 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
           hand positions (tops/hoods/drops) marked */}
       {line(s.headTop, s.barBottom, "fg-tube")}
       {line(s.barBottom, s.barClamp, "fg-tube")}
+      {dropPath && <path d={dropPath} className="fg-bar" fill="none" />}
       {barSegs.map(([a, b], i) => (
         <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y} className="fg-bar" />
       ))}

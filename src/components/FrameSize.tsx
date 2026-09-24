@@ -6,11 +6,13 @@ import {
   inseamFromHeight,
   armFromHeightInseam,
   suggestCrankLength,
+  wheelForFrame,
   findCategory,
   FRAME_CATEGORIES,
   DEFAULT_CATEGORY_ID,
   LEG_PROPORTIONS,
 } from "../lib/frameSize";
+import { cockpitForFrame } from "../lib/frameSize";
 import { Field, NumberInput, Select, Note, Result, Section } from "./ui";
 import { FrameGeometryDiagram, type HighlightKey } from "./FrameGeometryDiagram";
 
@@ -44,6 +46,7 @@ const CRANK_COLOR = "var(--diag-crank)";
 const HEIGHT_COLOR = "var(--diag-body)";
 const INSEAM_COLOR = "var(--diag-inseam)";
 const ARM_COLOR = "var(--diag-arm)";
+const WHEEL_COLOR = "var(--diag-wheel)";
 
 const round = (n: number) => Math.round(n);
 
@@ -82,10 +85,18 @@ export function FrameSize() {
   const targets = fitTargets({ heightCm: height, inseamCm: effInseam, armCm: effArm, category });
   const size = frameSizeFromInseam(effInseam, category);
   const crank = suggestCrankLength(effInseam);
+  // Wheel size + cockpit sensible for this frame style *and* size (forward: from
+  // the nominal size; reverse: from the frame you entered). The cockpit is
+  // computed once here and passed to the diagram, so the UI and the drawn stem
+  // always agree.
+  const wheel = wheelForFrame(category, size.frameCm);
+  const cockpit = cockpitForFrame(category, size.frameCm);
 
   // Reverse: frame → rider band, and a representative rider for the diagram.
   const frameCm = sizeUnit === "in" ? frameSize * 2.54 : frameSize;
   const fit = fitFromFrameSize({ frameCm, category, legProportion: legProp });
+  const revWheel = wheelForFrame(category, frameCm);
+  const revCockpit = cockpitForFrame(category, frameCm);
 
   // The geometry diagram always reflects a concrete reach/stack. In reverse mode
   // there are no body inputs, so illustrate the central rider this frame fits.
@@ -107,6 +118,8 @@ export function FrameSize() {
           bodyHeightMm: fit.heightCm * 10,
           inseamMm: fit.inseamCm * 10,
           armLengthMm: armFromHeightInseam(fit.heightCm, fit.inseamCm) * 10,
+          wheelRadiusMm: revWheel.outerMm / 2,
+          wheelLabel: revWheel.label,
         };
       })()
     : {
@@ -119,6 +132,8 @@ export function FrameSize() {
         bodyHeightMm: height * 10,
         inseamMm: effInseam * 10,
         armLengthMm: effArm * 10,
+        wheelRadiusMm: wheel.outerMm / 2,
+        wheelLabel: wheel.label,
       };
 
   return (
@@ -156,7 +171,7 @@ export function FrameSize() {
             {!reverse && (
               <>
                 <Field label="Body height" dotColor={HEIGHT_COLOR} {...link("body")}>
-                  <NumberInput value={height} onChange={setHeight} suffix="cm" min={140} max={210} />
+                  <NumberInput value={height} onChange={setHeight} suffix="cm" min={100} max={210} />
                 </Field>
                 <Field
                   label="Cycling inseam"
@@ -167,7 +182,7 @@ export function FrameSize() {
                   <NumberInput
                     value={inseam}
                     onChange={setInseam}
-                    min={50}
+                    min={38}
                     max={110}
                     suffix="cm"
                     placeholder={`≈ ${estInseam}`}
@@ -183,7 +198,7 @@ export function FrameSize() {
                   <NumberInput
                     value={arm}
                     onChange={setArm}
-                    min={40}
+                    min={28}
                     max={90}
                     suffix="cm"
                     placeholder={`≈ ${estArm}`}
@@ -199,7 +214,7 @@ export function FrameSize() {
                   <NumberInput
                     value={frameSize}
                     onChange={setFrameSize}
-                    min={sizeUnit === "in" ? 12 : 30}
+                    min={sizeUnit === "in" ? 8 : 20}
                     max={sizeUnit === "in" ? 25 : 65}
                     suffix={
                       <select
@@ -275,6 +290,17 @@ export function FrameSize() {
               />
               <Result label="Nominal" value={fit.nominalSize} />
               <Result label="Saddle height (BB→top)" value={`${fit.saddleHeightCm.toFixed(1)} cm`} />
+              <Result
+                label="Wheel size"
+                dotColor={WHEEL_COLOR}
+                {...link("wheel")}
+                value={
+                  <>
+                    {revWheel.label}
+                    <span className="result-sub">ISO {revWheel.isoMm} mm</span>
+                  </>
+                }
+              />
             </div>
           </Section>
         ) : (
@@ -357,6 +383,17 @@ export function FrameSize() {
                   value={`${size.frameCmRange[0].toFixed(0)}–${size.frameCmRange[1].toFixed(0)} cm`}
                 />
                 <Result label="Nominal" value={size.nominalSize} />
+                <Result
+                  label="Wheel size"
+                  dotColor={WHEEL_COLOR}
+                  {...link("wheel")}
+                  value={
+                    <>
+                      {wheel.label}
+                      <span className="result-sub">ISO {wheel.isoMm} mm</span>
+                    </>
+                  }
+                />
               </div>
               <Note>
                 This is a <strong>nominal size</strong> (inseam × {category.sizeMult}) — the
@@ -367,6 +404,9 @@ export function FrameSize() {
                 diagram shows both in green. Some brands quote one edge, some the other, some
                 a value in between, and many are moving to S/M/L for exactly this reason. To
                 compare real frames, use <strong>reach & stack</strong> above.
+                <span className="note-sizing">
+                  <strong>Wheels:</strong> {wheel.note}
+                </span>
               </Note>
             </Section>
 
@@ -388,6 +428,29 @@ export function FrameSize() {
                 />
               </div>
             </Section>
+
+            <Section
+              title="Cockpit (typical)"
+              info={
+                <>
+                  The stem &amp; spacers used to draw the riding position — a{" "}
+                  <strong>typical setup for this category and size</strong>, not a spec. A bigger
+                  frame gets a longer stem and fewer spacers (its head tube is already taller), and
+                  vice-versa, so these track the frame size. Stem angle is the rise above horizontal
+                  as drawn (negative points down); stem height is the spacer stack under the stem,
+                  or how far a quill is raised out of the steerer.
+                </>
+              }
+            >
+              <div className="results">
+                <Result label="Stem length" value={`${cockpit.stemLenMm} mm`} />
+                <Result
+                  label="Stem angle"
+                  value={`${cockpit.stemRiseDeg > 0 ? "+" : ""}${cockpit.stemRiseDeg}°`}
+                />
+                <Result label="Stem height (spacers)" value={`${cockpit.spacerMm} mm`} />
+              </div>
+            </Section>
           </>
         )}
       </div>
@@ -397,7 +460,12 @@ export function FrameSize() {
           approximate rider posed on the bike. Sits in a right-hand rail on wide
           screens and drops below the controls when narrow. */}
       <figure className="fs-diagram fs-viz">
-        <FrameGeometryDiagram {...geom} categoryId={category.id} highlight={hl} posture={posture} />
+        <FrameGeometryDiagram
+          {...geom}
+          cockpit={reverse ? revCockpit : cockpit}
+          highlight={hl}
+          posture={posture}
+        />
         <div className="fs-posture">
           <span>Arms straight</span>
           <input
@@ -417,7 +485,8 @@ export function FrameSize() {
           <span style={{ color: SIZE_COLOR }}>■</span> Actual /{" "}
           <span style={{ color: "color-mix(in srgb, var(--diag-green) 55%, var(--panel-2))" }}>■</span>{" "}
           effective seat tube ·{" "}
-          <span style={{ color: CRANK_COLOR }}>■</span> Crank
+          <span style={{ color: CRANK_COLOR }}>■</span> Crank ·{" "}
+          <span style={{ color: WHEEL_COLOR }}>■</span> Wheel size
           <br />
           <span style={{ color: HEIGHT_COLOR }}>■</span> Body height ·{" "}
           <span style={{ color: INSEAM_COLOR }}>■</span> Cycling inseam ·{" "}

@@ -4,6 +4,8 @@ import {
   fitFromFrameSize,
   inseamFromHeight,
   suggestCrankLength,
+  wheelForFrame,
+  cockpitForFrame,
   fitTargets,
   armFromHeight,
   armFromHeightInseam,
@@ -86,6 +88,87 @@ describe('suggestCrankLength', () => {
     const r = suggestCrankLength(84);
     expect(r.suggestedMm).toBeGreaterThanOrEqual(165);
     expect(r.suggestedMm).toBeLessThanOrEqual(180);
+  });
+});
+
+describe('wheelForFrame', () => {
+  const GRAVEL = findCategory('gravel-adventure');
+  const VINTAGE_MTB = findCategory('vintage-mtb');
+  const VINTAGE_CITY = findCategory('vintage-city');
+
+  it('road/gravel frames run 700c, dropping to 650b on the smallest sizes', () => {
+    expect(wheelForFrame(ROAD, 56).label).toBe('700c');
+    expect(wheelForFrame(GRAVEL, 54).label).toBe('700c');
+    expect(wheelForFrame(ROAD, 44).label).toBe('650b'); // small frame
+  });
+
+  it('trail bikes run 29", the smallest frames dropping to 27.5"', () => {
+    expect(wheelForFrame(MTB, 48).label).toBe('29"');
+    expect(wheelForFrame(MTB, 40).label).toBe('27.5"');
+  });
+
+  it('vintage frames keep their traditional sizes', () => {
+    expect(wheelForFrame(VINTAGE, 56).label).toBe('27"');
+    expect(wheelForFrame(VINTAGE_MTB, 48).label).toBe('26"');
+    expect(wheelForFrame(VINTAGE_CITY, 56).label).toBe('28"');
+  });
+
+  it('a 29" wheel is drawn larger than a 26" one', () => {
+    expect(wheelForFrame(MTB, 50).outerMm).toBeGreaterThan(wheelForFrame(VINTAGE_MTB, 50).outerMm);
+  });
+
+  it("steps down to kids' wheels as the frame (rider) shrinks", () => {
+    // Road multiplier 0.665: pick frames whose implied inseam lands in each band.
+    expect(wheelForFrame(ROAD, 0.665 * 63).label).toBe('24"'); // inseam ~63
+    expect(wheelForFrame(ROAD, 0.665 * 56).label).toBe('20"'); // inseam ~56
+    expect(wheelForFrame(ROAD, 0.665 * 49).label).toBe('16"'); // inseam ~49
+    expect(wheelForFrame(ROAD, 0.665 * 44).label).toBe('14"'); // inseam ~44
+    expect(wheelForFrame(ROAD, 0.665 * 40).label).toBe('12"'); // inseam ~40
+  });
+
+  it("the kids' ladder is keyed on the rider, so a small road and mtb frame agree", () => {
+    // Same-sized child: pick each category's frame cm for a 56 cm inseam.
+    expect(wheelForFrame(ROAD, 0.665 * 56).label).toBe('20"');
+    expect(wheelForFrame(MTB, 0.57 * 56).label).toBe('20"');
+  });
+
+  it("a small-adult mtb still gets 27.5\", not a kids' wheel", () => {
+    // 160 cm adult, ~75 cm inseam → well above the kids' range.
+    expect(wheelForFrame(MTB, 0.57 * 75).label).toBe('27.5"');
+  });
+
+  it('kids wheels are drawn smaller than adult ones', () => {
+    expect(wheelForFrame(ROAD, 0.665 * 56).outerMm).toBeLessThan(wheelForFrame(ROAD, 56).outerMm);
+  });
+});
+
+describe('cockpitForFrame', () => {
+  it('matches the category base at the average frame size', () => {
+    const refCm = 84 * ROAD.sizeMult;
+    const c = cockpitForFrame(ROAD, refCm);
+    expect(c.stemLenMm).toBe(100);
+    expect(c.spacerMm).toBe(30);
+    expect(c.bar).toBe('drop');
+  });
+
+  it('gives a bigger frame a longer stem and fewer spacers', () => {
+    const refCm = 84 * ROAD.sizeMult;
+    const big = cockpitForFrame(ROAD, refCm + 8);
+    const small = cockpitForFrame(ROAD, refCm - 8);
+    expect(big.stemLenMm).toBeGreaterThan(small.stemLenMm);
+    expect(big.spacerMm).toBeLessThan(small.spacerMm);
+  });
+
+  it('keeps the stem within a sensible range and snapped to 10 mm', () => {
+    const c = cockpitForFrame(ROAD, 62);
+    expect(c.stemLenMm % 10).toBe(0);
+    expect(c.stemLenMm).toBeGreaterThanOrEqual(35);
+    expect(c.stemLenMm).toBeLessThanOrEqual(140);
+  });
+
+  it('carries the category bar type', () => {
+    expect(cockpitForFrame(MTB, 48).bar).toBe('flat');
+    expect(cockpitForFrame(TT, 54).bar).toBe('aero');
   });
 });
 

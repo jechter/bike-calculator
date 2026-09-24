@@ -280,6 +280,8 @@ select {
 }
 .number-input { display: flex; align-items: center; gap: 6px; }
 .number-input input { flex: 1; }
+/* An unedited field showing its height-based estimate: greyed like a placeholder. */
+.number-input input.is-estimate { color: var(--muted); }
 .number-input .suffix { color: var(--muted); font-size: 13px; }
 /* A compact unit picker that attaches to a number field in place of a plain
    suffix — auto-width, muted, minimal chrome so it reads as a unit, not a field. */

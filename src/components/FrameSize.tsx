@@ -157,7 +157,7 @@ export function FrameSize() {
                 </Field>
                 <Field
                   label="Cycling inseam"
-                  hint="barefoot, crotch to floor — blank uses the estimate from height"
+                  hint="barefoot, crotch to floor — greyed value is estimated from height"
                   dotColor={INSEAM_COLOR}
                   {...link("inseam")}
                 >
@@ -167,12 +167,12 @@ export function FrameSize() {
                     min={50}
                     max={110}
                     suffix="cm"
-                    placeholder={`≈ ${estInseam}`}
+                    estimate={estInseam}
                   />
                 </Field>
                 <Field
                   label="Arm length"
-                  hint="shoulder (acromion) to wrist — blank estimates from height & inseam"
+                  hint="shoulder (acromion) to wrist — greyed value is estimated from height & inseam"
                   dotColor={ARM_COLOR}
                   {...link("arm")}
                 >
@@ -182,7 +182,7 @@ export function FrameSize() {
                     min={40}
                     max={90}
                     suffix="cm"
-                    placeholder={`≈ ${estArm}`}
+                    estimate={estArm}
                   />
                 </Field>
               </>

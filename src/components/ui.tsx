@@ -104,18 +104,28 @@ export function NumberInput(props: {
   step?: number;
   /** Ghost text shown when the field is empty (e.g. an estimated default). */
   placeholder?: string;
+  /**
+   * A greyed estimate shown (as the actual value) while the field is unset, so
+   * stepping/typing starts from it rather than the min. The parent still treats
+   * an unedited field as empty; the moment the user changes it, it commits.
+   */
+  estimate?: number;
   /** A trailing unit label, or any control (e.g. a compact unit picker). */
   suffix?: React.ReactNode;
 }) {
+  const finite = Number.isFinite(props.value);
+  const showEstimate = !finite && props.estimate != null && Number.isFinite(props.estimate);
   return (
     <span className="number-input">
       <input
         type="number"
-        value={Number.isFinite(props.value) ? props.value : ""}
+        className={showEstimate ? "is-estimate" : undefined}
+        value={finite ? props.value : showEstimate ? props.estimate : ""}
         placeholder={props.placeholder}
         min={props.min}
         max={props.max}
         step={props.step ?? "any"}
+        onFocus={showEstimate ? (e) => e.currentTarget.select() : undefined}
         onChange={(e) => props.onChange(parseFloat(e.target.value))}
       />
       {props.suffix && <span className="suffix">{props.suffix}</span>}

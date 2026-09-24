@@ -511,11 +511,8 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
       {line(s.jHead, s.jActual, "fg-tt-actual")}
       {line(s.jVirtual, s.saddle, "fg-seatpost")}
 
-      {/* seat-tube lengths: effective (light green, to the virtual horizontal
-          top tube) underneath, actual (dark green, to the sloping top tube) on
-          top; plus the dashed virtual top tube back from the head tube */}
-      {line(s.BB, s.jVirtual, "fg-seat-effective" + hlClass("size"))}
-      {line(s.BB, s.jActual, "fg-seat-actual" + hlClass("size"))}
+      {/* dashed virtual top tube back from the head tube (the two green seat-tube
+          length markers are drawn later, over the rider, so they stay visible) */}
       {line(s.jHead, s.jVirtual, "fg-virtual-tt")}
 
       {/* saddle */}
@@ -548,6 +545,12 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
           <circle key={i} cx={p.x} cy={p.y} r={11} className="rp-joint" />
         ))}
       </g>
+
+      {/* seat-tube length markers, drawn OVER the rider so the green stays clearly
+          visible: effective (light green, to the virtual horizontal top tube)
+          underneath, actual (dark green, to the sloping top tube) on top */}
+      {line(s.BB, s.jVirtual, "fg-seat-effective" + hlClass("size"))}
+      {line(s.BB, s.jActual, "fg-seat-actual" + hlClass("size"))}
 
       {/* crank arm + pedal, pivoting at the BB, drawn to the suggested length */}
       {line(s.BB, s.crankTip, "fg-crank" + hlClass("crank"))}

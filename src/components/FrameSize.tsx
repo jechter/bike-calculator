@@ -36,11 +36,14 @@ const CATEGORY_OPTIONS = (() => {
   return groups;
 })();
 
-// Diagram legend: reach red, stack blue, seat tubes green.
+// Diagram legend colours — each measurement in the diagram has its own colour.
 const REACH_COLOR = "var(--diag-red)";
 const STACK_COLOR = "var(--diag-blue)";
 const SIZE_COLOR = "var(--diag-green)";
 const CRANK_COLOR = "var(--diag-crank)";
+const HEIGHT_COLOR = "var(--diag-body)";
+const INSEAM_COLOR = "var(--diag-inseam)";
+const ARM_COLOR = "var(--diag-arm)";
 
 const round = (n: number) => Math.round(n);
 
@@ -145,12 +148,13 @@ export function FrameSize() {
 
             {!reverse && (
               <>
-                <Field label="Body height">
+                <Field label="Body height" dotColor={HEIGHT_COLOR}>
                   <NumberInput value={height} onChange={setHeight} suffix="cm" min={140} max={210} />
                 </Field>
                 <Field
                   label="Cycling inseam"
                   hint="barefoot, crotch to floor — blank uses the estimate from height"
+                  dotColor={INSEAM_COLOR}
                 >
                   <NumberInput
                     value={inseam}
@@ -164,6 +168,7 @@ export function FrameSize() {
                 <Field
                   label="Arm length"
                   hint="shoulder (acromion) to wrist — blank estimates from height & inseam"
+                  dotColor={ARM_COLOR}
                 >
                   <NumberInput
                     value={arm}
@@ -241,7 +246,7 @@ export function FrameSize() {
             <div className="results">
               <Result
                 label="Rider height"
-                dotColor={STACK_COLOR}
+                dotColor={HEIGHT_COLOR}
                 value={
                   <>
                     {fit.heightRangeCm[0].toFixed(0)}–{fit.heightRangeCm[1].toFixed(0)} cm
@@ -252,7 +257,7 @@ export function FrameSize() {
               />
               <Result
                 label="Cycling inseam"
-                dotColor={SIZE_COLOR}
+                dotColor={INSEAM_COLOR}
                 value={`${fit.inseamRangeCm[0].toFixed(0)}–${fit.inseamRangeCm[1].toFixed(0)} cm`}
               />
               <Result label="Nominal" value={fit.nominalSize} />
@@ -360,7 +365,7 @@ export function FrameSize() {
               }
             >
               <div className="results">
-                <Result label="Suggested (nearest size)" value={`${crank.suggestedMm} mm`} big />
+                <Result label="Suggested (nearest size)" value={`${crank.suggestedMm} mm`} big dotColor={CRANK_COLOR} />
                 <Result
                   label="Rule-of-thumb range"
                   value={`${crank.rangeMm[0].toFixed(0)}–${crank.rangeMm[1].toFixed(0)} mm`}
@@ -383,7 +388,11 @@ export function FrameSize() {
           <span style={{ color: SIZE_COLOR }}>■</span> Actual /{" "}
           <span style={{ color: "color-mix(in srgb, var(--diag-green) 55%, var(--panel-2))" }}>■</span>{" "}
           effective seat tube ·{" "}
-          <span style={{ color: CRANK_COLOR }}>■</span> Crank · rider on the bike is an
+          <span style={{ color: CRANK_COLOR }}>■</span> Crank
+          <br />
+          <span style={{ color: HEIGHT_COLOR }}>■</span> Body height ·{" "}
+          <span style={{ color: INSEAM_COLOR }}>■</span> Cycling inseam ·{" "}
+          <span style={{ color: ARM_COLOR }}>■</span> Arm length · the rider on the bike is an
           approximate riding position
         </figcaption>
       </figure>

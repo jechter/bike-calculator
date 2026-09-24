@@ -16,6 +16,8 @@
   --diag-red: #e13b34;
   --diag-crank: #8b5cf6;
   --diag-arm: #d98324;
+  --diag-body: #0d9488;
+  --diag-inseam: #d6409f;
   --radius: 10px;
   --sidebar-w: 240px;
   /* Shared height for all field-level controls so native <select>s (which the
@@ -42,6 +44,8 @@
     --diag-red: #f26a63;
     --diag-crank: #a98bf5;
     --diag-arm: #e0a44a;
+    --diag-body: #2dd4bf;
+    --diag-inseam: #ec6cc0;
   }
 }
 
@@ -454,8 +458,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .fg-node { fill: var(--text); }
 .fg-dim-reach { color: var(--diag-red); }
 .fg-dim-stack { color: var(--diag-blue); }
-.fg-dim-body { color: var(--diag-blue); }
-.fg-dim-inseam { color: var(--diag-green); }
+.fg-dim-body { color: var(--diag-body); }
+.fg-dim-inseam { color: var(--diag-inseam); }
 .fg-dim-arm { color: var(--diag-arm); }
 .fg-dim-reach line, .fg-dim-stack line, .fg-dim-body line, .fg-dim-inseam line, .fg-dim-arm line { stroke: currentColor; stroke-width: 4; }
 .fg-dim-reach polygon, .fg-dim-stack polygon, .fg-dim-body polygon, .fg-dim-inseam polygon, .fg-dim-arm polygon { fill: currentColor; }
@@ -469,6 +473,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .fg-note-blue { fill: var(--diag-blue); }
 .fg-note-crank { fill: var(--diag-crank); }
 .fg-note-arm { fill: var(--diag-arm); }
+.fg-note-body { fill: var(--diag-body); }
+.fg-note-inseam { fill: var(--diag-inseam); }
 
 /* Seated rider posed on the bike in the frame diagram: translucent capsule limbs
    (hips at the saddle, foot on the pedal, hands on the grip). */

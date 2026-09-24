@@ -194,8 +194,9 @@ the crank suggestion is shown in the geometry too.
 
 To the **left**, a front-view cyclist is drawn to scale on the same ground line,
 with dimension lines for the three body inputs so the measurements driving the
-fit are visible: **body height** (blue, full height), **cycling inseam** (green,
-ground to crotch) and **arm length** (amber, shoulder to wrist). The figure is a
+fit are visible: **body height** (teal, full height), **cycling inseam** (pink,
+ground to crotch) and **arm length** (amber, shoulder to wrist) — each with its
+own colour, echoed as a dot on the matching input. The figure is a
 vectorized (potrace) line-art illustration in `src/components/cyclistFigure.ts`,
 scaled so its ink height equals the rider's body height. It is **split into three bands that are vertically scaled independently** — legs
 (feet→crotch) span the actual **inseam**, the torso (crotch→neck) takes up the

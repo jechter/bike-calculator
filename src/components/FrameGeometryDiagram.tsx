@@ -445,11 +445,11 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
       {dim(pt(inseamDimX, gY), pt(inseamDimX, crotchY), "fg-dim-inseam")}
       {dim(pt(armDimX, shoulderY), pt(armDimX, wristY), "fg-dim-arm")}
 
-      <text x={bodyDimX - 16} y={pt(0, gY + 0.74 * H).y} textAnchor="end" className="fg-note fg-note-blue">
+      <text x={bodyDimX - 16} y={pt(0, gY + 0.74 * H).y} textAnchor="end" className="fg-note fg-note-body">
         Body height
         <tspan x={bodyDimX - 16} dy={40}>{cm(bodyHeightMm)} cm</tspan>
       </text>
-      <text x={bodyDimX - 16} y={pt(0, gY + 0.2 * H).y} textAnchor="end" className="fg-note fg-note-green">
+      <text x={bodyDimX - 16} y={pt(0, gY + 0.2 * H).y} textAnchor="end" className="fg-note fg-note-inseam">
         Cycling inseam
         <tspan x={bodyDimX - 16} dy={40}>{cm(inseamMm)} cm</tspan>
       </text>

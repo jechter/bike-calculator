@@ -40,6 +40,7 @@ const CATEGORY_OPTIONS = (() => {
 const REACH_COLOR = "var(--diag-red)";
 const STACK_COLOR = "var(--diag-blue)";
 const SIZE_COLOR = "var(--diag-green)";
+const CRANK_COLOR = "var(--diag-crank)";
 
 const round = (n: number) => Math.round(n);
 
@@ -92,6 +93,10 @@ export function FrameSize() {
           topTubeSlopeDeg: category.topTubeSlopeDeg,
           geometry: category.geometry,
           saddleHeightMm: fit.saddleHeightCm * 10,
+          crankLengthMm: suggestCrankLength(fit.inseamCm).suggestedMm,
+          bodyHeightMm: fit.heightCm * 10,
+          inseamMm: fit.inseamCm * 10,
+          armLengthMm: armFromHeightInseam(fit.heightCm, fit.inseamCm) * 10,
         };
       })()
     : {
@@ -100,6 +105,10 @@ export function FrameSize() {
         topTubeSlopeDeg: category.topTubeSlopeDeg,
         geometry: category.geometry,
         saddleHeightMm: targets.saddleHeightCm * 10,
+        crankLengthMm: crank.suggestedMm,
+        bodyHeightMm: height * 10,
+        inseamMm: effInseam * 10,
+        armLengthMm: effArm * 10,
       };
 
   return (
@@ -372,7 +381,8 @@ export function FrameSize() {
           <span style={{ color: STACK_COLOR }}>■</span> Stack ·{" "}
           <span style={{ color: SIZE_COLOR }}>■</span> Actual /{" "}
           <span style={{ color: "color-mix(in srgb, var(--diag-green) 55%, var(--panel-2))" }}>■</span>{" "}
-          effective seat tube
+          effective seat tube ·{" "}
+          <span style={{ color: CRANK_COLOR }}>■</span> Crank
         </figcaption>
       </figure>
     </div>

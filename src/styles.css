@@ -14,6 +14,8 @@
   --diag-blue: #2f83c4;
   --diag-green: #3faa5a;
   --diag-red: #e13b34;
+  --diag-crank: #8b5cf6;
+  --diag-arm: #d98324;
   --radius: 10px;
   --sidebar-w: 240px;
   /* Shared height for all field-level controls so native <select>s (which the
@@ -38,6 +40,8 @@
     --diag-blue: #5aa9e6;
     --diag-green: #5cc178;
     --diag-red: #f26a63;
+    --diag-crank: #a98bf5;
+    --diag-arm: #e0a44a;
   }
 }
 
@@ -444,18 +448,27 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .fg-seat-effective { fill: none; stroke: color-mix(in srgb, var(--diag-green) 42%, var(--panel-2)); stroke-width: 13; stroke-linecap: round; }
 .fg-seat-actual { fill: none; stroke: var(--diag-green); stroke-width: 13; stroke-linecap: round; }
 .fg-virtual-tt { fill: none; stroke: color-mix(in srgb, var(--diag-green) 55%, var(--panel-2)); stroke-width: 5; stroke-dasharray: 12 9; }
+.fg-crank { fill: none; stroke: var(--diag-crank); stroke-width: 9; stroke-linecap: round; }
+.fg-pedal { stroke: var(--diag-crank); stroke-width: 14; stroke-linecap: round; }
 .fg-saddle { stroke: var(--text); stroke-width: 9; stroke-linecap: round; }
 .fg-node { fill: var(--text); }
 .fg-dim-reach { color: var(--diag-red); }
 .fg-dim-stack { color: var(--diag-blue); }
-.fg-dim-reach line, .fg-dim-stack line { stroke: currentColor; stroke-width: 4; }
-.fg-dim-reach polygon, .fg-dim-stack polygon { fill: currentColor; }
+.fg-dim-body { color: var(--diag-blue); }
+.fg-dim-inseam { color: var(--diag-green); }
+.fg-dim-arm { color: var(--diag-arm); }
+.fg-dim-reach line, .fg-dim-stack line, .fg-dim-body line, .fg-dim-inseam line, .fg-dim-arm line { stroke: currentColor; stroke-width: 4; }
+.fg-dim-reach polygon, .fg-dim-stack polygon, .fg-dim-body polygon, .fg-dim-inseam polygon, .fg-dim-arm polygon { fill: currentColor; }
+.fg-rider path { fill: var(--muted); opacity: 0.9; }
+.fg-person-leader { stroke: var(--muted); stroke-width: 2.5; stroke-dasharray: 10 8; opacity: 0.6; }
 .fg-dim-label { font-size: 34px; font-weight: 700; }
 .fg-note { fill: var(--muted); font-size: 24px; }
 .fg-note-green { fill: var(--diag-green); }
 .fg-note-green-soft { fill: color-mix(in srgb, var(--diag-green) 60%, var(--muted)); }
 .fg-note-red { fill: var(--diag-red); }
 .fg-note-blue { fill: var(--diag-blue); }
+.fg-note-crank { fill: var(--diag-crank); }
+.fg-note-arm { fill: var(--diag-arm); }
 
 /* Stacked (narrow): the diagram grows to fill the space under the controls. */
 @media (max-width: 1119px) {

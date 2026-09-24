@@ -187,3 +187,20 @@ category picks one of three **geometry styles**:
   (most modern bikes);
 - **suspension** — a longer fork raises the crown, so the head tube stays short
   even with a tall front end, drawn with a stanchion + lowers (mountain bikes).
+
+A **crank arm** (violet) pivots at the bottom bracket, drawn to scale at the
+suggested crank length with a pedal across its end and the length labelled, so
+the crank suggestion is shown in the geometry too.
+
+To the **left**, a front-view cyclist is drawn to scale on the same ground line,
+with dimension lines for the three body inputs so the measurements driving the
+fit are visible: **body height** (blue, full height), **cycling inseam** (green,
+ground to crotch) and **arm length** (amber, shoulder to wrist). The figure is a
+vectorized (potrace) line-art illustration in `src/components/cyclistFigure.ts`,
+scaled so its ink height equals the rider's body height. It is **split into three bands that are vertically scaled independently** — legs
+(feet→crotch) span the actual **inseam**, the torso (crotch→neck) takes up the
+slack, and the **head (neck→top) keeps its natural size** — so inseam reshapes
+only the legs and torso: a longer inseam draws longer legs and a shorter torso,
+and vice versa (widths keep the uniform scale; the splits are seamless). The
+dimension lines are labelled with the entered values. In "identify a frame" mode
+it illustrates the representative rider the frame fits.

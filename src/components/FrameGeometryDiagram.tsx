@@ -7,6 +7,14 @@
 // seat-tube lengths are shown in two shades of green: the ACTUAL seat tube (dark,
 // to the real sloping top tube) and the EFFECTIVE / virtual seat tube (light, to
 // a horizontal top tube). A frame's marketing "size" sits between the two.
+//
+// To the left, a traced line-art cyclist (front view) is drawn to scale on the
+// same ground line, with dimension lines for the three body inputs — body height
+// (blue), cycling inseam (green) and arm length (amber) — so the measurements
+// driving the fit are shown.
+
+import { useId } from "react";
+import { CYCLIST_PATHS, CYCLIST_INNER_TRANSFORM, CYCLIST_VIEW, CYCLIST_LANDMARKS } from "./cyclistFigure";
 
 const SA = (73 * Math.PI) / 180; // seat-tube angle
 const HA = (72 * Math.PI) / 180; // head-tube angle
@@ -20,6 +28,12 @@ const HEAD_STUB_MM = 14; // head tube + headset above the top-tube junction (~1 
 const FORK_CROWN_Y = 419; // rigid fork crown / head-tube-bottom height above BB
 const SUSPENSION_FORK_CROWN_Y = 500; // a longer (suspension) fork sits the crown higher
 const FORK_OFFSET = 45;
+const CRANK_ANGLE = (32 * Math.PI) / 180; // crank arm, forward of straight-down
+const PEDAL_HALF = 30; // half-length of the drawn pedal, mm
+
+// The traced cyclist is scaled so its ink height = the rider's body height and
+// its feet sit on the ground line, a fixed gap left of the rear wheel.
+const PERSON_GAP = 560; // gap from the rear wheel to the rider, mm
 
 export interface FrameGeometryDiagramProps {
   reachMm: number;
@@ -30,15 +44,36 @@ export interface FrameGeometryDiagramProps {
   geometry: 'classic' | 'sloping' | 'suspension';
   /** Saddle height (BB → saddle top) along the seat tube, mm. */
   saddleHeightMm: number;
+  /** Suggested crank length, mm — drawn as a crank arm + pedal from the BB. */
+  crankLengthMm: number;
+  /** Rider body height, mm — sets the scale of the rider figure. */
+  bodyHeightMm: number;
+  /** Cycling inseam, mm — the crotch height on the rider figure. */
+  inseamMm: number;
+  /** Arm length, mm — shoulder-to-wrist on the rider figure. */
+  armLengthMm: number;
 }
 
 type P = { x: number; y: number };
 // Bike space has y up; SVG has y down, so flip as we place points.
 const flip = (p: P): P => ({ x: p.x, y: -p.y });
 const onSeat = (len: number): P => ({ x: -len * COS, y: len * SIN });
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
-  const { reachMm, stackMm, topTubeSlopeDeg, geometry, saddleHeightMm } = props;
+  const {
+    reachMm,
+    stackMm,
+    topTubeSlopeDeg,
+    geometry,
+    saddleHeightMm,
+    crankLengthMm,
+    bodyHeightMm,
+    inseamMm,
+    armLengthMm,
+  } = props;
+
+  const clipId = useId();
 
   // --- bike-space geometry (y up) --------------------------------------------
   const BB = { x: 0, y: 0 };
@@ -83,6 +118,69 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const actLen = (topTubeY - jHead.x * tan) / (SIN + COS * tan);
   const jActual = onSeat(actLen);
 
+  // Crank arm: pivots at the BB, drawn to scale pointing down-and-forward, with
+  // a short pedal across its end.
+  const crankTip = {
+    x: crankLengthMm * Math.sin(CRANK_ANGLE),
+    y: -crankLengthMm * Math.cos(CRANK_ANGLE),
+  };
+  const pedalL = { x: crankTip.x - PEDAL_HALF, y: crankTip.y };
+  const pedalR = { x: crankTip.x + PEDAL_HALF, y: crankTip.y };
+
+  // --- rider figure (bike-space, y up) ---------------------------------------
+  const H = bodyHeightMm;
+  const personX = rearAxle.x - WHEEL_R - PERSON_GAP; // centre, left of the bike
+  const gY = groundY; // feet on the ground line
+  const figScale = H / (CYCLIST_VIEW.bottom - CYCLIST_VIEW.top); // horizontal scale
+  const figLeft = personX - CYCLIST_VIEW.cx * figScale;
+  const figRight = personX + (CYCLIST_VIEW.w - CYCLIST_VIEW.cx) * figScale;
+
+  // Figure landmark rows (crop pixels, y down): feet, crotch, neck, shoulder, head.
+  const figH = CYCLIST_VIEW.bottom - CYCLIST_VIEW.top;
+  const footPy = CYCLIST_VIEW.bottom;
+  const headPy = CYCLIST_VIEW.top;
+  const crotchPy = CYCLIST_VIEW.bottom - CYCLIST_LANDMARKS.crotch * figH;
+  const neckPy = CYCLIST_VIEW.bottom - CYCLIST_LANDMARKS.neck * figH;
+  const shoulderPy = CYCLIST_VIEW.bottom - CYCLIST_LANDMARKS.shoulder * figH;
+
+  // Reshape for inseam: the figure is split into three bands, scaled vertically
+  // and independently — LEGS (feet→crotch) span the actual inseam, TORSO
+  // (crotch→neck) takes up the slack, and the HEAD (neck→top) keeps its natural
+  // size (uniform scale) so inseam only affects the legs and torso. Widths keep
+  // the uniform scale throughout.
+  const inseam = clamp(inseamMm, 0.3 * H, 0.62 * H);
+  const headMm = (neckPy - headPy) * figScale; // fixed head height
+  const torsoLen = Math.max(50, H - inseam - headMm);
+  const sLo = inseam / (footPy - crotchPy); // legs
+  const sTorso = torsoLen / (crotchPy - neckPy); // torso
+  // Vertical position (bike-space y) of any figure row under the reshaping.
+  const pyToBikeY = (py: number) =>
+    py >= crotchPy
+      ? gY + (footPy - py) * sLo
+      : py >= neckPy
+        ? gY + inseam + (crotchPy - py) * sTorso
+        : gY + inseam + torsoLen + (neckPy - py) * figScale;
+
+  const headTopY = pyToBikeY(headPy); // = gY + H
+  const crotchY = pyToBikeY(crotchPy); // = gY + inseam
+  const shoulderY = pyToBikeY(shoulderPy);
+  // Arm length (input) runs down from the shoulder toward the drawn wrist.
+  const wristY = clamp(shoulderY - armLengthMm, gY + 0.28 * H, shoulderY - 40);
+
+  // Per-band group transforms (crop-pixel → SVG).
+  const figTX = personX - CYCLIST_VIEW.cx * figScale;
+  const bandTf = (scaleY: number, transY: number) =>
+    `translate(${figTX.toFixed(2)} ${transY.toFixed(2)}) scale(${figScale.toFixed(4)} ${scaleY.toFixed(4)})`;
+  const lowerTf = bandTf(sLo, -gY - footPy * sLo);
+  const torsoTf = bandTf(sTorso, -gY - inseam - crotchPy * sTorso);
+  const headTf = bandTf(figScale, -gY - inseam - torsoLen - neckPy * figScale);
+
+  // Dimension lines: body height + inseam nested clear of the left edge, arm on
+  // the bike-facing side.
+  const inseamDimX = figLeft - 0.03 * H;
+  const bodyDimX = figLeft - 0.11 * H;
+  const armDimX = figRight + 0.04 * H;
+
   // --- SVG space (y flipped) -------------------------------------------------
   const s = {
     BB: flip(BB),
@@ -95,6 +193,9 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
     frontAxle: flip(frontAxle),
     rearAxle: flip(rearAxle),
     stackCorner: flip(stackCorner),
+    crankTip: flip(crankTip),
+    pedalL: flip(pedalL),
+    pedalR: flip(pedalR),
   };
 
   const bounds: P[] = [
@@ -104,14 +205,17 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
     { x: s.frontAxle.x + WHEEL_R, y: 0 },
     { x: s.jVirtual.x - 40, y: 0 },
     { x: 0, y: -groundY },
+    { x: s.crankTip.x + 210, y: s.crankTip.y }, // crank label room
+    { x: bodyDimX - 200, y: -headTopY }, // rider labels + head top
+    { x: personX, y: -headTopY },
   ];
   const M = 34;
   const minX = Math.min(...bounds.map((p) => p.x)) - M;
   const maxX = Math.max(...bounds.map((p) => p.x)) + M;
   const minY = Math.min(...bounds.map((p) => p.y)) - M;
   const maxY = Math.max(...bounds.map((p) => p.y)) + M;
-  const W = maxX - minX;
-  const H = maxY - minY;
+  const VW = maxX - minX;
+  const VH = maxY - minY;
 
   const line = (a: P, b: P, cls: string) => (
     <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} className={cls} />
@@ -143,15 +247,96 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const actualMid = flip(onSeat(actLen / 2));
   const effMid = flip(onSeat((actLen + effLen) / 2));
 
+  // Rider figure helpers: a point in SVG space, an arm "tube", and a path-point
+  // built from fractions of body height (half-width xf, height yf, about personX
+  // on the ground line) for the smooth body outline.
+  const pt = (x: number, y: number): P => flip({ x, y });
+  const cm = (mm: number) => Math.round(mm / 10);
+
   return (
     <svg
-      viewBox={`${minX} ${minY} ${W} ${H}`}
+      viewBox={`${minX} ${minY} ${VW} ${VH}`}
       width="100%"
       preserveAspectRatio="xMidYMid meet"
       role="img"
-      aria-label="Frame geometry: stack rises from the bottom bracket and reach runs forward to the head-tube top; the actual seat tube (to the sloping top tube) and the effective/virtual seat tube (to a horizontal top tube) are shown in two shades of green."
+      aria-label="Frame geometry: stack rises from the bottom bracket and reach runs forward to the head-tube top; the actual seat tube (to the sloping top tube) and the effective/virtual seat tube (to a horizontal top tube) are shown in two shades of green; a crank arm drawn to the suggested length pivots at the bottom bracket. To the left, a front-view cyclist stands to scale with dimension lines for body height, cycling inseam and arm length."
     >
       <line x1={minX} y1={-groundY} x2={maxX} y2={-groundY} className="fg-ground" />
+
+      {/* traced line-art cyclist (front view), split into three bands scaled
+          vertically and independently: legs (feet→crotch) span the inseam, torso
+          (crotch→neck) takes the slack, and the head (neck→top) is unscaled. */}
+      {(() => {
+        const gSy = -gY; // ground
+        const cSy = -(gY + inseam); // crotch split line
+        const nSy = -(gY + inseam + torsoLen); // neck split line
+        const hSy = -(gY + H); // head top
+        const cx0 = figLeft - 30;
+        const cw = figRight - figLeft + 60;
+        const Fig = ({ tf }: { tf: string }) => (
+          <g transform={tf}>
+            <g transform={CYCLIST_INNER_TRANSFORM}>
+              {CYCLIST_PATHS.map((d, i) => (
+                <path key={i} d={d} />
+              ))}
+            </g>
+          </g>
+        );
+        const band = (id: string, yTop: number, yBot: number) => (
+          <clipPath id={id} clipPathUnits="userSpaceOnUse">
+            <rect x={cx0} y={yTop - 1} width={cw} height={yBot - yTop + 2} />
+          </clipPath>
+        );
+        return (
+          <>
+            <defs>
+              {band(`${clipId}-lo`, cSy, gSy)}
+              {band(`${clipId}-to`, nSy, cSy)}
+              {band(`${clipId}-hd`, hSy, nSy)}
+            </defs>
+            <g className="fg-rider">
+              <g clipPath={`url(#${clipId}-lo)`}>
+                <Fig tf={lowerTf} />
+              </g>
+              <g clipPath={`url(#${clipId}-to)`}>
+                <Fig tf={torsoTf} />
+              </g>
+              <g clipPath={`url(#${clipId}-hd)`}>
+                <Fig tf={headTf} />
+              </g>
+            </g>
+          </>
+        );
+      })()}
+
+      {/* dashed leaders from the body landmarks out to each dimension line */}
+      {line(pt(personX, headTopY), pt(bodyDimX, headTopY), "fg-person-leader")}
+      {line(pt(personX, crotchY), pt(inseamDimX, crotchY), "fg-person-leader")}
+      {line(pt(figRight, shoulderY), pt(armDimX, shoulderY), "fg-person-leader")}
+      {line(pt(figRight, wristY), pt(armDimX, wristY), "fg-person-leader")}
+
+      {/* body-input dimensions: height (blue) + inseam (green) nested on the left,
+          arm length (amber) on the bike-facing side */}
+      {dim(pt(bodyDimX, gY), pt(bodyDimX, headTopY), "fg-dim-body")}
+      {dim(pt(inseamDimX, gY), pt(inseamDimX, crotchY), "fg-dim-inseam")}
+      {dim(pt(armDimX, shoulderY), pt(armDimX, wristY), "fg-dim-arm")}
+
+      <text x={bodyDimX - 16} y={pt(0, gY + 0.74 * H).y} textAnchor="end" className="fg-note fg-note-blue">
+        Body height
+        <tspan x={bodyDimX - 16} dy={40}>{cm(bodyHeightMm)} cm</tspan>
+      </text>
+      <text x={bodyDimX - 16} y={pt(0, gY + 0.2 * H).y} textAnchor="end" className="fg-note fg-note-green">
+        Cycling inseam
+        <tspan x={bodyDimX - 16} dy={40}>{cm(inseamMm)} cm</tspan>
+      </text>
+      <text
+        x={armDimX + 14}
+        y={pt(0, (shoulderY + wristY) / 2).y}
+        className="fg-note fg-note-arm"
+        dominantBaseline="middle"
+      >
+        Arm {cm(armLengthMm)} cm
+      </text>
 
       {/* wheels for context */}
       <circle cx={s.rearAxle.x} cy={s.rearAxle.y} r={WHEEL_R} className="fg-wheel" />
@@ -198,6 +383,18 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
         y2={s.saddle.y - 6}
         className="fg-saddle"
       />
+
+      {/* crank arm + pedal, pivoting at the BB, drawn to the suggested length */}
+      {line(s.BB, s.crankTip, "fg-crank")}
+      {line(s.pedalL, s.pedalR, "fg-pedal")}
+      <text
+        x={s.pedalR.x + 14}
+        y={s.crankTip.y + 6}
+        className="fg-note fg-note-crank"
+        dominantBaseline="middle"
+      >
+        Crank {crankLengthMm} mm
+      </text>
 
       {/* stack (blue) up from the BB, reach (red) forward to the head-tube top */}
       {dim(s.BB, s.stackCorner, "fg-dim-stack")}

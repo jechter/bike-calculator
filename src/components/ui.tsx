@@ -13,9 +13,20 @@ export function Field(props: {
   highlight?: boolean;
   /** Optional colour swatch before the label (ties the field to a diagram legend). */
   dotColor?: string;
+  /** Called on hover/focus and blur/leave — used to highlight a linked diagram element. */
+  activate?: () => void;
+  deactivate?: () => void;
 }) {
+  const linked = props.activate || props.deactivate
+    ? {
+        onMouseEnter: props.activate,
+        onMouseLeave: props.deactivate,
+        onFocus: props.activate,
+        onBlur: props.deactivate,
+      }
+    : {};
   return (
-    <div className={"field" + (props.highlight ? " field-highlight" : "")}>
+    <div className={"field" + (props.highlight ? " field-highlight" : "")} {...linked}>
       <span className="field-label">
         {props.dotColor && <span className="field-dot" style={{ background: props.dotColor }} />}
         {props.label}
@@ -274,7 +285,13 @@ export function Result(props: {
   accent?: "left" | "right";
   /** Optional colour swatch before the label (ties the card to a chart/bar). */
   dotColor?: string;
+  /** Called on hover and leave — used to highlight a linked diagram element. */
+  activate?: () => void;
+  deactivate?: () => void;
 }) {
+  const linked = props.activate || props.deactivate
+    ? { onMouseEnter: props.activate, onMouseLeave: props.deactivate }
+    : {};
   return (
     <div
       className={
@@ -282,6 +299,7 @@ export function Result(props: {
         (props.big ? " result-big" : "") +
         (props.accent ? ` result-accent-${props.accent}` : "")
       }
+      {...linked}
     >
       <div className="result-label">
         {props.dotColor && <span className="result-dot" style={{ background: props.dotColor }} />}

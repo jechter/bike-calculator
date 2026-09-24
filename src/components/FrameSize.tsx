@@ -12,7 +12,7 @@ import {
   LEG_PROPORTIONS,
 } from "../lib/frameSize";
 import { Field, NumberInput, Select, Note, Result, Section } from "./ui";
-import { FrameGeometryDiagram } from "./FrameGeometryDiagram";
+import { FrameGeometryDiagram, type HighlightKey } from "./FrameGeometryDiagram";
 
 type Method = "fit" | "frame";
 
@@ -60,6 +60,10 @@ export function FrameSize() {
   const [frameSize, setFrameSize] = useState(56);
   const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
   const [legProp, setLegProp] = useState(0.47);
+
+  // Which measurement is hovered/edited in the UI (highlighted in the diagram).
+  const [hl, setHl] = useState<HighlightKey | null>(null);
+  const link = (k: HighlightKey) => ({ activate: () => setHl(k), deactivate: () => setHl(null) });
 
   const reverse = method === "frame";
   const category = findCategory(categoryId);
@@ -148,13 +152,14 @@ export function FrameSize() {
 
             {!reverse && (
               <>
-                <Field label="Body height" dotColor={HEIGHT_COLOR}>
+                <Field label="Body height" dotColor={HEIGHT_COLOR} {...link("body")}>
                   <NumberInput value={height} onChange={setHeight} suffix="cm" min={140} max={210} />
                 </Field>
                 <Field
                   label="Cycling inseam"
                   hint="barefoot, crotch to floor — blank uses the estimate from height"
                   dotColor={INSEAM_COLOR}
+                  {...link("inseam")}
                 >
                   <NumberInput
                     value={inseam}
@@ -169,6 +174,7 @@ export function FrameSize() {
                   label="Arm length"
                   hint="shoulder (acromion) to wrist — blank estimates from height & inseam"
                   dotColor={ARM_COLOR}
+                  {...link("arm")}
                 >
                   <NumberInput
                     value={arm}
@@ -184,7 +190,7 @@ export function FrameSize() {
 
             {reverse && (
               <>
-                <Field label="Frame size" hint="seat tube, centre-to-top" dotColor={SIZE_COLOR}>
+                <Field label="Frame size" hint="seat tube, centre-to-top" dotColor={SIZE_COLOR} {...link("size")}>
                   <NumberInput
                     value={frameSize}
                     onChange={setFrameSize}
@@ -247,6 +253,7 @@ export function FrameSize() {
               <Result
                 label="Rider height"
                 dotColor={HEIGHT_COLOR}
+                {...link("body")}
                 value={
                   <>
                     {fit.heightRangeCm[0].toFixed(0)}–{fit.heightRangeCm[1].toFixed(0)} cm
@@ -258,6 +265,7 @@ export function FrameSize() {
               <Result
                 label="Cycling inseam"
                 dotColor={INSEAM_COLOR}
+                {...link("inseam")}
                 value={`${fit.inseamRangeCm[0].toFixed(0)}–${fit.inseamRangeCm[1].toFixed(0)} cm`}
               />
               <Result label="Nominal" value={fit.nominalSize} />
@@ -284,6 +292,7 @@ export function FrameSize() {
                 <Result
                   label="Reach"
                   dotColor={REACH_COLOR}
+                  {...link("reach")}
                   value={
                     <>
                       {round(targets.reachMm)} mm
@@ -297,6 +306,7 @@ export function FrameSize() {
                 <Result
                   label="Stack"
                   dotColor={STACK_COLOR}
+                  {...link("stack")}
                   value={
                     <>
                       {round(targets.stackMm)} mm
@@ -325,6 +335,7 @@ export function FrameSize() {
                 <Result
                   label="Frame size"
                   dotColor={SIZE_COLOR}
+                  {...link("size")}
                   value={
                     <>
                       {size.frameCm.toFixed(0)} cm
@@ -365,7 +376,7 @@ export function FrameSize() {
               }
             >
               <div className="results">
-                <Result label="Suggested (nearest size)" value={`${crank.suggestedMm} mm`} big dotColor={CRANK_COLOR} />
+                <Result label="Suggested (nearest size)" value={`${crank.suggestedMm} mm`} big dotColor={CRANK_COLOR} {...link("crank")} />
                 <Result
                   label="Rule-of-thumb range"
                   value={`${crank.rangeMm[0].toFixed(0)}–${crank.rangeMm[1].toFixed(0)} mm`}
@@ -381,7 +392,7 @@ export function FrameSize() {
           approximate rider posed on the bike. Sits in a right-hand rail on wide
           screens and drops below the controls when narrow. */}
       <figure className="fs-diagram fs-viz">
-        <FrameGeometryDiagram {...geom} categoryId={category.id} />
+        <FrameGeometryDiagram {...geom} categoryId={category.id} highlight={hl} />
         <figcaption className="fs-caption">
           <span style={{ color: REACH_COLOR }}>■</span> Reach ·{" "}
           <span style={{ color: STACK_COLOR }}>■</span> Stack ·{" "}

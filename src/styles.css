@@ -461,11 +461,20 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .fg-dim-body { color: var(--diag-body); }
 .fg-dim-inseam { color: var(--diag-inseam); }
 .fg-dim-arm { color: var(--diag-arm); }
-.fg-dim-reach line, .fg-dim-stack line, .fg-dim-body line, .fg-dim-inseam line, .fg-dim-arm line { stroke: currentColor; stroke-width: 4; }
-.fg-dim-reach polygon, .fg-dim-stack polygon, .fg-dim-body polygon, .fg-dim-inseam polygon, .fg-dim-arm polygon { fill: currentColor; }
+.fg-dim .fg-dim-seg { stroke: currentColor; stroke-width: 7; }
+.fg-dim polygon { fill: currentColor; }
+.fg-dim-halo { stroke: currentColor; stroke-width: 28; stroke-linecap: round; opacity: 0.22; }
+/* Emphasis when the matching measurement is hovered/edited in the UI. */
+.fg-dim.fg-hl .fg-dim-seg { stroke-width: 11; }
+.fg-dim.fg-hl { filter: drop-shadow(0 0 4px currentColor); }
+.fg-seat-actual.fg-hl, .fg-seat-effective.fg-hl { filter: drop-shadow(0 0 6px var(--diag-green)); }
+.fg-crank.fg-hl, .fg-pedal.fg-hl { filter: drop-shadow(0 0 6px var(--diag-crank)); }
 .fg-rider path { fill: var(--muted); opacity: 0.9; }
 .fg-person-leader { stroke: var(--muted); stroke-width: 2.5; stroke-dasharray: 10 8; opacity: 0.6; }
-.fg-dim-label { font-size: 34px; font-weight: 700; }
+/* Measurement labels (reach, stack, body height, inseam, arm, crank): one
+   consistent size, enlarged when the measurement is highlighted. */
+.fg-mlabel { font-size: 30px; font-weight: 700; }
+.fg-mlabel.fg-hl { font-size: 37px; }
 .fg-note { fill: var(--muted); font-size: 24px; }
 .fg-note-green { fill: var(--diag-green); }
 .fg-note-green-soft { fill: color-mix(in srgb, var(--diag-green) 60%, var(--muted)); }

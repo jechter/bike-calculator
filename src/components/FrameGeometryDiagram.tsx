@@ -64,7 +64,11 @@ export interface FrameGeometryDiagramProps {
   armLengthMm: number;
   /** Bike category id — picks the cockpit for the seated riding position. */
   categoryId: string;
+  /** Which measurement to emphasise (hovered/edited in the UI), if any. */
+  highlight?: HighlightKey | null;
 }
+
+export type HighlightKey = "reach" | "stack" | "size" | "crank" | "body" | "inseam" | "arm";
 
 type P = { x: number; y: number };
 // Bike space has y up; SVG has y down, so flip as we place points.
@@ -128,9 +132,12 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
     inseamMm,
     armLengthMm,
     categoryId,
+    highlight,
   } = props;
 
   const clipId = useId();
+  const hl = (k: HighlightKey) => highlight === k;
+  const hlClass = (k: HighlightKey) => (highlight === k ? " fg-hl" : "");
 
   // --- bike-space geometry (y up) --------------------------------------------
   const BB = { x: 0, y: 0 };
@@ -343,9 +350,10 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
     <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} className={cls} />
   );
 
-  // A double-headed dimension segment drawn on the geometry itself.
-  const dim = (a: P, b: P, cls: string) => {
-    const A = 11;
+  // A double-headed dimension segment drawn on the geometry itself. `emph`
+  // adds a soft halo behind it (used to highlight the hovered measurement).
+  const dim = (a: P, b: P, cls: string, emph = false) => {
+    const A = 16;
     const dx = b.x - a.x;
     const dy = b.y - a.y;
     const L = Math.hypot(dx, dy) || 1;
@@ -357,8 +365,9 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
       `${tip.x},${tip.y} ${tip.x - A * ox + A * 0.55 * px},${tip.y - A * oy + A * 0.55 * py} ` +
       `${tip.x - A * ox - A * 0.55 * px},${tip.y - A * oy - A * 0.55 * py}`;
     return (
-      <g className={cls}>
-        <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} />
+      <g className={"fg-dim " + cls + (emph ? " fg-hl" : "")}>
+        {emph && <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} className="fg-dim-halo" />}
+        <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} className="fg-dim-seg" />
         <polygon points={head(a, -ux, -uy)} />
         <polygon points={head(b, ux, uy)} />
       </g>
@@ -439,24 +448,24 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
       {line(pt(figRight, shoulderY), pt(armDimX, shoulderY), "fg-person-leader")}
       {line(pt(figRight, wristY), pt(armDimX, wristY), "fg-person-leader")}
 
-      {/* body-input dimensions: height (blue) + inseam (green) nested on the left,
+      {/* body-input dimensions: height (teal) + inseam (pink) nested on the left,
           arm length (amber) on the bike-facing side */}
-      {dim(pt(bodyDimX, gY), pt(bodyDimX, headTopY), "fg-dim-body")}
-      {dim(pt(inseamDimX, gY), pt(inseamDimX, crotchY), "fg-dim-inseam")}
-      {dim(pt(armDimX, shoulderY), pt(armDimX, wristY), "fg-dim-arm")}
+      {dim(pt(bodyDimX, gY), pt(bodyDimX, headTopY), "fg-dim-body", hl("body"))}
+      {dim(pt(inseamDimX, gY), pt(inseamDimX, crotchY), "fg-dim-inseam", hl("inseam"))}
+      {dim(pt(armDimX, shoulderY), pt(armDimX, wristY), "fg-dim-arm", hl("arm"))}
 
-      <text x={bodyDimX - 16} y={pt(0, gY + 0.74 * H).y} textAnchor="end" className="fg-note fg-note-body">
+      <text x={bodyDimX - 16} y={pt(0, gY + 0.74 * H).y} textAnchor="end" className={"fg-mlabel fg-note-body" + hlClass("body")}>
         Body height
         <tspan x={bodyDimX - 16} dy={40}>{cm(bodyHeightMm)} cm</tspan>
       </text>
-      <text x={bodyDimX - 16} y={pt(0, gY + 0.2 * H).y} textAnchor="end" className="fg-note fg-note-inseam">
+      <text x={bodyDimX - 16} y={pt(0, gY + 0.2 * H).y} textAnchor="end" className={"fg-mlabel fg-note-inseam" + hlClass("inseam")}>
         Cycling inseam
         <tspan x={bodyDimX - 16} dy={40}>{cm(inseamMm)} cm</tspan>
       </text>
       <text
         x={armDimX + 14}
         y={pt(0, (shoulderY + wristY) / 2).y}
-        className="fg-note fg-note-arm"
+        className={"fg-mlabel fg-note-arm" + hlClass("arm")}
         dominantBaseline="middle"
       >
         Arm {cm(armLengthMm)} cm
@@ -505,8 +514,8 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
       {/* seat-tube lengths: effective (light green, to the virtual horizontal
           top tube) underneath, actual (dark green, to the sloping top tube) on
           top; plus the dashed virtual top tube back from the head tube */}
-      {line(s.BB, s.jVirtual, "fg-seat-effective")}
-      {line(s.BB, s.jActual, "fg-seat-actual")}
+      {line(s.BB, s.jVirtual, "fg-seat-effective" + hlClass("size"))}
+      {line(s.BB, s.jActual, "fg-seat-actual" + hlClass("size"))}
       {line(s.jHead, s.jVirtual, "fg-virtual-tt")}
 
       {/* saddle */}
@@ -541,31 +550,31 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
       </g>
 
       {/* crank arm + pedal, pivoting at the BB, drawn to the suggested length */}
-      {line(s.BB, s.crankTip, "fg-crank")}
-      {line(s.pedalL, s.pedalR, "fg-pedal")}
+      {line(s.BB, s.crankTip, "fg-crank" + hlClass("crank"))}
+      {line(s.pedalL, s.pedalR, "fg-pedal" + hlClass("crank"))}
       <text
         x={s.pedalR.x + 14}
         y={s.crankTip.y + 6}
-        className="fg-note fg-note-crank"
+        className={"fg-mlabel fg-note-crank" + hlClass("crank")}
         dominantBaseline="middle"
       >
         Crank {crankLengthMm} mm
       </text>
 
       {/* stack (blue) up from the BB, reach (red) forward to the head-tube top */}
-      {dim(s.BB, s.stackCorner, "fg-dim-stack")}
-      {dim(s.stackCorner, s.headTop, "fg-dim-reach")}
+      {dim(s.BB, s.stackCorner, "fg-dim-stack", hl("stack"))}
+      {dim(s.stackCorner, s.headTop, "fg-dim-reach", hl("reach"))}
 
       {/* BB + head-tube-top nodes */}
       <circle cx={s.BB.x} cy={s.BB.y} r={9} className="fg-node" />
       <circle cx={s.headTop.x} cy={s.headTop.y} r={9} className="fg-node" />
 
       {/* labels */}
-      <text x={s.headTop.x / 2} y={s.headTop.y - 16} textAnchor="middle" className="fg-dim-label fg-note-red">
-        Reach
+      <text x={s.headTop.x / 2} y={s.headTop.y - 18} textAnchor="middle" className={"fg-mlabel fg-note-red" + hlClass("reach")}>
+        Reach {Math.round(reachMm)} mm
       </text>
-      <text x={14} y={s.stackCorner.y * 0.5} className="fg-dim-label fg-note-blue" dominantBaseline="middle">
-        Stack
+      <text x={16} y={s.stackCorner.y * 0.5} className={"fg-mlabel fg-note-blue" + hlClass("stack")} dominantBaseline="middle">
+        Stack {Math.round(stackMm)} mm
       </text>
       {stub >= 28 && (
         <text x={(s.jVirtual.x + s.jHead.x) / 2} y={s.jVirtual.y - 16} textAnchor="middle" className="fg-note fg-note-green">

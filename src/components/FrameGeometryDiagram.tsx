@@ -222,16 +222,12 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const barBottom = vadd({ x: reachMm, y: stackMm }, vscale(upSteer, cockpit.spacerMm));
   const stemRise = (cockpit.stemRiseDeg * Math.PI) / 180;
   const barClamp = vadd(barBottom, { x: cockpit.stemLenMm * Math.cos(stemRise), y: cockpit.stemLenMm * Math.sin(stemRise) });
-  // Hand positions on the bar (tops/hoods/drops, or base/extensions). As the
-  // posture gets more aggressive the hands move to the lower/more-forward ones.
+  // Hand positions on the bar (tops/hoods/drops, or base/extensions). You can't
+  // grip between them, so the posture snaps to one — the more aggressive, the
+  // lower/more-forward — dividing the slider into equal bands.
   const handPts = handOffsets(cockpit).map((o) => ({ x: barClamp.x + o.fwd, y: barClamp.y - o.drop }));
-  const segF = post * (handPts.length - 1);
-  const gi = Math.min(Math.floor(segF), handPts.length - 2 < 0 ? 0 : handPts.length - 2);
-  const gt = handPts.length > 1 ? segF - gi : 0;
-  const grip =
-    handPts.length > 1
-      ? { x: handPts[gi].x + gt * (handPts[gi + 1].x - handPts[gi].x), y: handPts[gi].y + gt * (handPts[gi + 1].y - handPts[gi].y) }
-      : handPts[0];
+  const gi = Math.min(Math.floor(post * handPts.length), handPts.length - 1);
+  const grip = handPts[gi];
 
   // Contact points: hips just above the saddle, feet on the two pedals (the far
   // crank is 180° opposite, up-and-back).
@@ -264,12 +260,13 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   // Forearm level: the elbow is one forearm behind the grip, at the same height.
   const elbowLevel = { x: grip.x - foreArm, y: grip.y };
   const leanLevel = leanOf(ik2(rHip, elbowLevel, rTorso, upperArm, +1));
-  // Elbow at 120°: the shoulder→grip chord for a 120° interior elbow angle.
-  const chord120 = Math.sqrt(upperArm * upperArm + foreArm * foreArm + upperArm * foreArm);
-  const leanElbow120 = leanOf(ik2(rHip, grip, rTorso, chord120, +1));
+  // Elbow at 60°: the shoulder→grip chord for a 60° interior elbow angle
+  // (cos 60° = ½), the most the elbow is allowed to bend.
+  const chord60 = Math.sqrt(upperArm * upperArm + foreArm * foreArm - upperArm * foreArm);
+  const leanElbow60 = leanOf(ik2(rHip, grip, rTorso, chord60, +1));
   // More aggressive = smaller lean; take whichever limit is reached first (the
   // larger lean), and never less aggressive than a straight arm.
-  const leanAggr = Math.min(leanStraight, Math.max(leanLevel, leanElbow120));
+  const leanAggr = Math.min(leanStraight, Math.max(leanLevel, leanElbow60));
   const lean = leanStraight + post * (leanAggr - leanStraight);
   const rShoulder = vadd(rHip, { x: rTorso * Math.cos(lean), y: rTorso * Math.sin(lean) });
   const rElbow = ik2(rShoulder, grip, upperArm, foreArm, -1);

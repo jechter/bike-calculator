@@ -230,12 +230,13 @@ bend and (on drop/TT bars) the hand position change.
 
 - **Hand positions.** Drop bars carry three (**tops → hoods → drops**) and TT
   bars two (**base bar → aero extensions**), derived from the cockpit's primary
-  hand position; flat bars have one. As the slider gets more aggressive the hands
-  move to the lower/more-forward position, and the others are shown as open dots.
+  hand position; flat bars have one. You can't grip between them, so the slider
+  is split into equal bands and the hand **snaps** to one — the more aggressive,
+  the lower/more-forward — with the inactive positions shown as open dots.
 - **Torso lean.** For the current grip we find the lean for a straight arm
   (shoulder a full arm from the grip) and for the aggressive extreme, then
   interpolate; the elbow follows by IK. The aggressive extreme is a **forearm
-  parallel to the ground, OR a 120° elbow, whichever is reached first** — some
+  parallel to the ground, OR a 60° elbow, whichever is reached first** — some
   geometries can't reach a level forearm without over-bending the elbow.
 
 Like the rest of the fit model, the cockpit numbers are **hand-picked

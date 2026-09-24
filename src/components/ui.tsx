@@ -105,28 +105,65 @@ export function NumberInput(props: {
   /** Ghost text shown when the field is empty (e.g. an estimated default). */
   placeholder?: string;
   /**
-   * A greyed estimate shown (as the actual value) while the field is unset, so
-   * stepping/typing starts from it rather than the min. The parent still treats
-   * an unedited field as empty; the moment the user changes it, it commits.
+   * The height-based estimate. The field stays visually empty (showing the
+   * greyed `placeholder`), but stepping it — spinner buttons, arrow keys or the
+   * wheel — increments from this estimate and commits, instead of the browser's
+   * default of jumping to the field minimum.
    */
   estimate?: number;
   /** A trailing unit label, or any control (e.g. a compact unit picker). */
   suffix?: React.ReactNode;
 }) {
   const finite = Number.isFinite(props.value);
-  const showEstimate = !finite && props.estimate != null && Number.isFinite(props.estimate);
+  const est = props.estimate;
+  const onEstimate = !finite && est != null && Number.isFinite(est);
+  const stepBy = props.step && props.step > 0 ? props.step : 1;
+  const clampVal = (v: number) => {
+    if (props.min != null) v = Math.max(props.min, v);
+    if (props.max != null) v = Math.min(props.max, v);
+    return v;
+  };
+  // When the field only shows its estimate, a native step would jump to the min.
+  // Arrow keys are handled directly; a spinner press lands on the min, so we
+  // remap that to estimate ± step using which half (up/down) was pressed.
+  const spinUp = useRef(true);
+  const emptyStepLands = props.min ?? 0;
   return (
     <span className="number-input">
       <input
         type="number"
-        className={showEstimate ? "is-estimate" : undefined}
-        value={finite ? props.value : showEstimate ? props.estimate : ""}
+        value={finite ? props.value : ""}
         placeholder={props.placeholder}
         min={props.min}
         max={props.max}
         step={props.step ?? "any"}
-        onFocus={showEstimate ? (e) => e.currentTarget.select() : undefined}
-        onChange={(e) => props.onChange(parseFloat(e.target.value))}
+        onKeyDown={
+          onEstimate
+            ? (e) => {
+                const d = e.key === "ArrowUp" ? 1 : e.key === "ArrowDown" ? -1 : 0;
+                if (d) {
+                  e.preventDefault();
+                  props.onChange(clampVal(est + d * stepBy));
+                }
+              }
+            : undefined
+        }
+        onPointerDown={
+          onEstimate
+            ? (e) => {
+                const r = e.currentTarget.getBoundingClientRect();
+                spinUp.current = e.clientY < r.top + r.height / 2;
+              }
+            : undefined
+        }
+        onChange={(e) => {
+          const raw = parseFloat(e.target.value);
+          if (onEstimate && raw === emptyStepLands) {
+            props.onChange(clampVal(est + (spinUp.current ? 1 : -1) * stepBy));
+          } else {
+            props.onChange(raw);
+          }
+        }}
       />
       {props.suffix && <span className="suffix">{props.suffix}</span>}
     </span>

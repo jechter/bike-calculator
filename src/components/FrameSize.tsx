@@ -143,7 +143,7 @@ export function FrameSize() {
     : reachGiven && stackGiven
       ? "Ignored as stack and reach are supplied"
       : bikeSource;
-  const cockpitSource = "Estimated for body and frame dimensions";
+  const cockpitSource = "Estimated for body and frame";
 
   // Cockpit + crank are proposed from the frame, but stay editable so you can see
   // how (say) a longer stem changes the position. The stem/spacer suggestion also

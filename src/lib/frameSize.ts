@@ -260,6 +260,12 @@ export function inseamForNominal(size: string): number {
   }
 }
 
+/** The nominal size a frame reads as, via the cycling inseam it implies for its
+ *  category — so the size label always matches the frame-size number. */
+export function nominalForFrame(frameCm: number, category: FrameCategory): string {
+  return nominalSize(inseamFromFrame(frameCm, category));
+}
+
 // --- Height → inseam --------------------------------------------------------
 
 /**

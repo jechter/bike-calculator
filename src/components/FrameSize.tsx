@@ -9,6 +9,7 @@ import {
   WHEELS,
   NOMINAL_SIZES,
   inseamForNominal,
+  nominalForFrame,
   findCategory,
   FRAME_CATEGORIES,
   DEFAULT_CATEGORY_ID,
@@ -330,11 +331,13 @@ export function FrameSize() {
             </Field>
             <Field label="Nominal" hint="rider size band" dotColor={SIZE_COLOR} {...link("size")}>
               <Select
-                value={fit.frame.nominalSize}
+                value={nominalForFrame(fit.frameCm, category)}
                 onChange={(v) => {
-                  // Picking a size sets a representative inseam; re-picking the
-                  // current one is a no-op so it doesn't nudge a measured value.
-                  if (v !== fit.frame.nominalSize) edit("inseam", inseamForNominal(v));
+                  // The size label is just a view on the frame-size field: picking
+                  // one writes a representative frame size (which you can then clear
+                  // or edit), so the two never disagree.
+                  if (v !== nominalForFrame(fit.frameCm, category))
+                    edit("frame", Math.round(inseamForNominal(v) * category.sizeMult));
                 }}
                 options={NOMINAL_SIZES.map((s) => ({ value: s, label: s }))}
               />

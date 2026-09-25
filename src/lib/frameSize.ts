@@ -455,7 +455,9 @@ export function cockpitForFrame(category: FrameCategory, frameCm: number): Cockp
   return {
     ...base,
     stemLenMm: clampN(roundTo(base.stemLenMm + STEM_PER_CM * d, 10), 35, 140),
-    spacerMm: clampN(roundTo(base.spacerMm - SPACER_PER_CM * d, 5), 5, 60),
+    // No upper bound: a modern road bike runs little, but a classic quill stem
+    // pulls up a long way, so the spacer/quill height is only floored at 0.
+    spacerMm: Math.max(0, roundTo(base.spacerMm - SPACER_PER_CM * d, 5)),
   };
 }
 
@@ -490,7 +492,7 @@ export function cockpitForFit(
   return {
     ...base,
     stemLenMm: clampN(roundTo(base.stemLenMm + reachGap, 10), 35, 150),
-    spacerMm: clampN(roundTo(base.spacerMm + stackGap / Math.sin(HEAD_ANGLE), 5), 0, 80),
+    spacerMm: Math.max(0, roundTo(base.spacerMm + stackGap / Math.sin(HEAD_ANGLE), 5)),
   };
 }
 

@@ -466,7 +466,7 @@ export function FrameSize() {
               reserveSource
               {...link("spacer")}
             >
-              {input("spacer", recCockpit.spacerMm, { min: 0, max: 80, step: 5, suffix: "mm" })}
+              {input("spacer", recCockpit.spacerMm, { min: 0, step: 5, suffix: "mm" })}
             </Field>
           </div>
           <Note>

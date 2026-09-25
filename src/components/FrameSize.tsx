@@ -136,11 +136,15 @@ export function FrameSize() {
           : stackGiven
             ? "Estimated for stack"
             : undefined;
-  // A supplied reach + stack fully define the frame geometry, so the frame size
-  // (typed or estimated) and its nominal are ignored — shown once, full width,
-  // under the row rather than per field.
+  // The frame size + nominal share one caption, shown full width under the row
+  // (never per field): "Ignored…" when reach & stack fully define the frame,
+  // "Estimated for body measurements" when the size is derived, else (typed) none.
   const frameIgnored = reachGiven && stackGiven;
-  const frameSource = frameIgnored || frameGiven ? undefined : bikeSource;
+  const frameNote = frameIgnored
+    ? "Ignored as stack and reach are supplied"
+    : frameGiven
+      ? undefined
+      : bikeSource;
   const cockpitSource = "Estimated for body and frame";
 
   // Cockpit + crank are proposed from the frame, but stay editable so you can see
@@ -341,8 +345,6 @@ export function FrameSize() {
             <Field
               label="Frame size"
               hint="nominal seat tube, centre-to-top"
-              source={frameSource}
-              reserveSource
               dotColor={SIZE_COLOR}
               {...link("size")}
             >
@@ -383,9 +385,7 @@ export function FrameSize() {
             </Field>
             {/* Applies to both Frame size and Nominal, so it spans the row. Always
                 rendered (empty when not) so the rows below don't shift. */}
-            <div className="bike-grid-note field-source">
-              {frameIgnored ? "Ignored as stack and reach are supplied" : " "}
-            </div>
+            <div className="bike-grid-note field-source">{frameNote ?? " "}</div>
 
             <Field
               label="Stack"

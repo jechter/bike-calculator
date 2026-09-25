@@ -71,25 +71,12 @@
     "sizeMult": 0.57,
     "reachBaseMm": 128,
     "frontEndRiseMm": 152,
-    "topTubeSlopeDeg": 14,
+    "topTubeSlopeDeg": 24,
     "geometry": "suspension",
     "showInches": true,
     "blurb": "A suspension fork and slack head angle; modern trail bikes run a long front-centre with a short stem.",
     "sizing": "Size by reach, not seat-tube length — a longer reach is the \"bigger\" bike. Then check the short seat tube clears your dropper insertion; the fork and bars handle stack.",
     "cockpit": { "stemLenMm": 50, "stemRiseDeg": 0, "spacerMm": 20, "bar": "flat", "gripFwdMm": -18, "gripDropMm": 0 }
-  },
-  {
-    "id": "city",
-    "label": "Upright",
-    "group": "Hybrid / city",
-    "sizeMult": 0.63,
-    "reachBaseMm": 93,
-    "frontEndRiseMm": 171,
-    "topTubeSlopeDeg": 16,
-    "geometry": "sloping",
-    "blurb": "Upright and comfort-focused, with flat or swept-back bars.",
-    "sizing": "Reach barely matters and bar height is easy to change, so don’t over-think stack. Mainly check the seat-tube size / standover suits your legs, then set saddle height.",
-    "cockpit": { "stemLenMm": 90, "stemRiseDeg": 25, "spacerMm": 30, "bar": "flat", "gripFwdMm": -45, "gripDropMm": -5 }
   },
   {
     "id": "trekking",
@@ -103,6 +90,19 @@
     "blurb": "A sporty upright hybrid for road, light trails and loaded touring — flat bars, a fairly tall front end, with rack and mudguard mounts.",
     "sizing": "Size on the seat tube / standover to your inseam; reach & stack are forgiving and bar height is easy to fine-tune with the stem and spacers.",
     "cockpit": { "stemLenMm": 90, "stemRiseDeg": 15, "spacerMm": 30, "bar": "flat", "gripFwdMm": -35, "gripDropMm": 0 }
+  },  
+  {
+    "id": "city",
+    "label": "Upright",
+    "group": "Hybrid / city",
+    "sizeMult": 0.63,
+    "reachBaseMm": 93,
+    "frontEndRiseMm": 171,
+    "topTubeSlopeDeg": 16,
+    "geometry": "sloping",
+    "blurb": "Upright and comfort-focused, with flat or swept-back bars.",
+    "sizing": "Reach barely matters and bar height is easy to change, so don’t over-think stack. Mainly check the seat-tube size / standover suits your legs, then set saddle height.",
+    "cockpit": { "stemLenMm": 60, "stemRiseDeg": 25, "spacerMm": 80, "bar": "flat", "gripFwdMm": -100, "gripDropMm": 0 }
   },
   {
     "id": "vintage-road",
@@ -121,27 +121,27 @@
     "id": "vintage-mtb",
     "label": "Mountain (rigid)",
     "group": "Vintage",
-    "sizeMult": 0.59,
-    "reachBaseMm": 64,
+    "sizeMult": 0.57,
+    "reachBaseMm": 84,
     "frontEndRiseMm": 20,
     "topTubeSlopeDeg": 0,
     "geometry": "classic",
     "showInches": true,
     "blurb": "Rigid, with a level top tube, usually sized in inches.",
     "sizing": "Aim for plenty of standover clearance; size by the seat tube to your inseam and use the (often long) stem to set bar height and reach.",
-    "cockpit": { "stemLenMm": 90, "stemRiseDeg": 6, "spacerMm": 40, "bar": "flat", "gripFwdMm": -22, "gripDropMm": 0 }
+    "cockpit": { "stemLenMm": 90, "stemRiseDeg": 20, "spacerMm": 60, "bar": "flat", "gripFwdMm": -22, "gripDropMm": 0 }
   },
   {
     "id": "vintage-city",
     "label": "City / roadster",
     "group": "Vintage",
-    "sizeMult": 0.63,
+    "sizeMult": 0.68,
     "reachBaseMm": 52,
     "frontEndRiseMm": 28,
     "topTubeSlopeDeg": 0,
     "geometry": "classic",
     "blurb": "A tall, very upright roadster — level top tube, swept bars, long stem.",
     "sizing": "Size by the seat tube to your inseam (mind standover); the upright position comes from the tall stem, so frame reach & stack aren’t the deciding numbers.",
-    "cockpit": { "stemLenMm": 100, "stemRiseDeg": 25, "spacerMm": 45, "bar": "flat", "gripFwdMm": -55, "gripDropMm": -8 }
+    "cockpit": { "stemLenMm": 20, "stemRiseDeg": 25, "spacerMm": 80  , "bar": "flat", "gripFwdMm": -120, "gripDropMm": -20 }
   }
 ]

@@ -126,6 +126,20 @@ export function findCategory(id: string): FrameCategory {
 export const SEAT_ANGLE_DEG = 73;
 const SEAT_ANGLE = (SEAT_ANGLE_DEG * Math.PI) / 180;
 const SADDLE_FACTOR = 0.883; // LeMond: BB centre → saddle top, along the seat tube
+// The crank length the LeMond saddle factor implicitly assumes. A longer crank
+// pushes the pedal farther from the BB at the bottom of the stroke, so the saddle
+// must drop by the extra length to keep the same leg extension (and vice-versa).
+const REF_CRANK_MM = 170;
+
+/**
+ * Starting saddle height (BB centre → saddle top), cm, from the cycling inseam and
+ * the crank length. The LeMond 0.883 × inseam figure assumes a ~170 mm crank; a
+ * longer crank lowers the saddle by the difference, a shorter one raises it, so the
+ * leg extension at the bottom of the pedal stroke stays consistent.
+ */
+export function saddleHeight(inseamCm: number, crankMm: number = REF_CRANK_MM): number {
+  return inseamCm * SADDLE_FACTOR - (crankMm - REF_CRANK_MM) / 10;
+}
 
 // --- Nominal frame size -----------------------------------------------------
 
@@ -420,6 +434,17 @@ const WHEEL_12: Wheel = {
  * quoted size track how the bike would really be built. `frameCm` is the nominal
  * (seat-tube) size in cm.
  */
+// Every wheel size, largest to smallest — for the (editable) wheel picker.
+export const WHEELS: Wheel[] = [
+  WHEEL_29, WHEEL_28, WHEEL_27, WHEEL_700C, WHEEL_275, WHEEL_650B, WHEEL_26,
+  WHEEL_24, WHEEL_20, WHEEL_16, WHEEL_14, WHEEL_12,
+];
+
+/** Look up a wheel by its common name (e.g. "700c", "29\""). */
+export function wheelByLabel(label: string): Wheel | undefined {
+  return WHEELS.find((w) => w.label === label);
+}
+
 export function wheelForFrame(category: FrameCategory, frameCm: number): Wheel {
   // Below the adult range, a bike is sized by its wheel regardless of style, so
   // step down a kids' ladder. Key it off the rider's cycling inseam (frame ÷ the
@@ -514,6 +539,41 @@ export function cockpitForFrame(category: FrameCategory, frameCm: number): Cockp
   };
 }
 
+// Head-tube angle used to turn a stack shortfall into spacer height: spacers
+// climb the steerer, so their vertical lift is sin(head angle) per mm.
+const HEAD_ANGLE = (72 * Math.PI) / 180;
+
+export interface CockpitFitGaps {
+  /** Rider target reach − the frame's actual reach (mm). +ve = frame too short. */
+  reachGapMm?: number;
+  /** Rider target stack − the frame's actual stack (mm). +ve = frame too low. */
+  stackGapMm?: number;
+}
+
+/**
+ * The recommended cockpit for a frame, compensating a reach/stack mismatch. On
+ * top of the size-scaled base ({@link cockpitForFrame}), a frame that's too short
+ * for the rider gets a longer stem (≈1:1 with the reach shortfall), and one that's
+ * too low gets more spacers — a vertical stack shortfall needs shortfall ÷ sin(head
+ * angle) of spacer, since spacers climb the steerer. Both stay within buildable
+ * limits, so a gap too big to fix this way is only partly closed (and then shows
+ * up as the rider over-reaching in the diagram).
+ */
+export function cockpitForFit(
+  category: FrameCategory,
+  frameCm: number,
+  gaps: CockpitFitGaps = {},
+): CockpitSpec {
+  const base = cockpitForFrame(category, frameCm);
+  const reachGap = gaps.reachGapMm ?? 0;
+  const stackGap = gaps.stackGapMm ?? 0;
+  return {
+    ...base,
+    stemLenMm: clampN(roundTo(base.stemLenMm + reachGap, 10), 35, 150),
+    spacerMm: clampN(roundTo(base.spacerMm + stackGap / Math.sin(HEAD_ANGLE), 5), 0, 80),
+  };
+}
+
 // --- Crank length -----------------------------------------------------------
 
 /** Available crank lengths (mm) commonly sold — kids' lengths through adult. */
@@ -543,4 +603,161 @@ export function suggestCrankLength(inseamCm: number): CrankSuggestion {
     Math.abs(s - mid) < Math.abs(best - mid) ? s : best,
   );
   return { suggestedMm, rangeMm: [lo, hi] };
+}
+
+// --- Unified two-way solve --------------------------------------------------
+
+// The frame-size page is one linked model, not a set of separate calculators:
+// every measurement is editable, and each one you set fills in the rest with a
+// best guess. body height, cycling inseam, frame size, reach and stack are all
+// different windows onto the same rider + frame, so we resolve them from a
+// single hidden body model (height, inseam, arm) and recompute every field from
+// it. The inverse helpers below turn a frame-side number the user typed back
+// into the body measurement it implies.
+
+/** Cycling inseam (cm) implied by a nominal frame size — inverse of the size multiplier. */
+export function inseamFromFrame(frameCm: number, category: FrameCategory): number {
+  return frameCm / category.sizeMult;
+}
+
+/**
+ * Cycling inseam (cm) implied by a stack height — inverse of the stack model in
+ * {@link fitTargets} (stack = seat-tube vertical rise + the category front-end rise).
+ */
+export function inseamFromStack(stackMm: number, category: FrameCategory): number {
+  const denom = 10 * category.sizeMult * Math.sin(SEAT_ANGLE);
+  return (stackMm - category.frontEndRiseMm) / denom;
+}
+
+/**
+ * Body height (cm) implied by a reach target, given the inseam — inverse of the
+ * reach model in {@link fitTargets} (reach ∝ torso + arm). If the arm length is
+ * known it's held fixed; otherwise arm is taken as its height+inseam estimate
+ * and folded into the solve, so a typed reach reproduces exactly on the way back.
+ */
+export function heightFromReach(
+  reachMm: number,
+  inseamCm: number,
+  category: FrameCategory,
+  armCm?: number | null,
+): number {
+  // reach = REACH_SLOPE·10·(torso + arm) + reachBase  ⇒  torso + arm (cm):
+  const reachSum = (reachMm - category.reachBaseMm) / (REACH_SLOPE * 10);
+  if (typeof armCm === "number" && Number.isFinite(armCm)) {
+    // torso = reachSum − arm, and torso = shoulderRatio·H − inseam.
+    return (reachSum - armCm + inseamCm) / SHOULDER_HEIGHT_RATIO;
+  }
+  // Arm estimated from height & inseam, so reachSum is linear in H and inseam:
+  //   reachSum = coefH·H + coefI·inseam   (substitute armFromHeightInseam).
+  const coefH = SHOULDER_HEIGHT_RATIO + ARM_HEIGHT_RATIO - ARM_INSEAM_COEF * AVG_INSEAM_RATIO;
+  const coefI = -1 + ARM_INSEAM_COEF;
+  return (reachSum - coefI * inseamCm) / coefH;
+}
+
+/** A rider height used to seed the model before anything is entered. */
+export const SEED_HEIGHT_CM = 178;
+
+/**
+ * The measurements the user may pin. Any left null/undefined are filled from a
+ * best guess. At most one of {inseamCm, frameCm, stackCm} should be set (they all
+ * pin the inseam) and at most one of {heightCm, reachMm} (they both pin height);
+ * the UI enforces that by clearing the others when one is edited.
+ */
+export interface FitFields {
+  heightCm?: number | null;
+  inseamCm?: number | null;
+  armCm?: number | null;
+  frameCm?: number | null;
+  reachMm?: number | null;
+  stackMm?: number | null;
+}
+
+export interface ResolvedFit {
+  heightCm: number;
+  inseamCm: number;
+  armCm: number;
+  /** Nominal frame size (cm) — equals a typed frame size, else derived from inseam. */
+  frameCm: number;
+  frame: FrameSizeResult;
+  targets: FitTargets;
+  crank: CrankSuggestion;
+  wheel: Wheel;
+  /** Typical cockpit for the resolved frame — the default, before any user override. */
+  cockpit: CockpitSpec;
+  saddleHeightCm: number;
+}
+
+const isNum = (v: number | null | undefined): v is number =>
+  typeof v === "number" && Number.isFinite(v);
+
+/**
+ * Resolve the whole linked model from whatever the user has pinned. Nothing is
+ * cleared: any field can be held, and the rest are *recommended*. A measured inseam
+ * always wins; otherwise, if a body height is given the inseam (and arm) are derived
+ * from it — a height fixes the rider's proportions, so a frame or stack pinned
+ * alongside it drives only its own part of the bike, not the body. With no height,
+ * the inseam comes from a typed frame size, else a typed stack, so the tool still
+ * works back from a frame to the rider. Height is a typed height, else proposed from
+ * the inseam, else the seed; a typed reach proposes the height when none is pinned.
+ * Frame size is taken as typed (a real frame is its own measurement) and only
+ * otherwise derived from the inseam; the wheel and typical cockpit follow it.
+ */
+export function resolveFit(
+  fields: FitFields,
+  category: FrameCategory,
+  legProportion = 0.47,
+): ResolvedFit {
+  const { heightCm, inseamCm, armCm, frameCm: frameCm_, reachMm, stackMm } = fields;
+  const iHasSource = isNum(inseamCm) || isNum(frameCm_) || isNum(stackMm);
+  const hHasDirect = isNum(heightCm);
+
+  // Inseam: a measured value wins; else a body height fixes it (and so the whole
+  // body), taking priority over a frame/stack; else it's worked back from a frame
+  // size or a stack.
+  let I = isNum(inseamCm)
+    ? inseamCm
+    : hHasDirect
+      ? (heightCm as number) * legProportion
+      : isNum(frameCm_)
+        ? inseamFromFrame(frameCm_, category)
+        : isNum(stackMm)
+          ? inseamFromStack(stackMm, category)
+          : NaN;
+
+  // Height: pinned directly, else proposed from the inseam, else the seed.
+  let H = hHasDirect ? (heightCm as number) : NaN;
+  if (!Number.isFinite(H) && !iHasSource) H = SEED_HEIGHT_CM;
+  if (!Number.isFinite(H) && iHasSource) H = I / legProportion;
+  if (!Number.isFinite(I)) I = H * legProportion;
+
+  let A = isNum(armCm) ? armCm : armFromHeightInseam(H, I);
+
+  // A typed reach proposes the height, unless one was pinned directly.
+  if (isNum(reachMm) && !hHasDirect) {
+    H = heightFromReach(reachMm, I, category, isNum(armCm) ? armCm : null);
+    if (!iHasSource) I = H * legProportion;
+    if (!isNum(armCm)) A = armFromHeightInseam(H, I);
+  }
+
+  const targets = fitTargets({ heightCm: H, inseamCm: I, armCm: A, category });
+  const frame = frameSizeFromInseam(I, category);
+  // A typed frame size is its own measurement; only fall back to the inseam-
+  // derived recommendation when it's blank. The wheel and cockpit follow it.
+  const frameCm = isNum(frameCm_) ? frameCm_ : frame.frameCm;
+  const crank = suggestCrankLength(I);
+  const wheel = wheelForFrame(category, frameCm);
+  const cockpit = cockpitForFrame(category, frameCm);
+
+  return {
+    heightCm: H,
+    inseamCm: I,
+    armCm: A,
+    frameCm,
+    frame,
+    targets,
+    crank,
+    wheel,
+    cockpit,
+    saddleHeightCm: saddleHeight(I, crank.suggestedMm),
+  };
 }

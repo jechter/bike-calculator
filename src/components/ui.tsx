@@ -113,6 +113,11 @@ export function NumberInput(props: {
   estimate?: number;
   /** A trailing unit label, or any control (e.g. a compact unit picker). */
   suffix?: React.ReactNode;
+  /**
+   * When set, a small "×" clears the field back to its estimate. Shown only
+   * while the field holds a user value (so there's something to clear).
+   */
+  onClear?: () => void;
 }) {
   const finite = Number.isFinite(props.value);
   const est = props.estimate;
@@ -123,33 +128,94 @@ export function NumberInput(props: {
     if (props.max != null) v = Math.min(props.max, v);
     return v;
   };
+
+  // Fields with a reset (the frame-size workbench) use custom steppers on the LEFT
+  // and the "×" on the right, so neither moves as the other appears — the native
+  // spinner, stuck on the right, can't be repositioned. Other NumberInputs keep
+  // the plain native spinner.
+  const custom = !!props.onClear;
+  // Step from the current value, or from the estimate when the field is empty
+  // (so a first press nudges the greyed default instead of jumping to the min).
+  const stepFrom = finite ? props.value : onEstimate ? est : props.min ?? 0;
+  const step = (dir: number) => props.onChange(clampVal(stepFrom + dir * stepBy));
+
+  // Press-and-hold auto-repeat for the custom steppers. A local `base` carries the
+  // running value, so it keeps climbing across ticks without waiting on re-renders.
+  const holdDelay = useRef<number | null>(null);
+  const holdRepeat = useRef<number | null>(null);
+  const stopHold = () => {
+    if (holdDelay.current != null) window.clearTimeout(holdDelay.current);
+    if (holdRepeat.current != null) window.clearInterval(holdRepeat.current);
+    holdDelay.current = holdRepeat.current = null;
+  };
+  const startHold = (dir: number) => {
+    stopHold();
+    let base = finite ? props.value : onEstimate ? (est as number) : props.min ?? 0;
+    const tick = () => {
+      base = clampVal(base + dir * stepBy);
+      props.onChange(base);
+    };
+    tick(); // step once immediately
+    holdDelay.current = window.setTimeout(() => {
+      holdRepeat.current = window.setInterval(tick, 70);
+    }, 300);
+  };
+  useEffect(() => stopHold, []); // clear timers on unmount
+
   // When the field only shows its estimate, a native step would jump to the min.
   // Arrow keys are handled directly; a spinner press lands on the min, so we
   // remap that to estimate ± step using which half (up/down) was pressed.
   const spinUp = useRef(true);
   const emptyStepLands = props.min ?? 0;
+  const holdButton = (dir: number, glyph: string) => (
+    <button
+      type="button"
+      className="ni-step"
+      tabIndex={-1}
+      aria-hidden
+      onPointerDown={(e) => {
+        e.preventDefault();
+        startHold(dir);
+      }}
+      onPointerUp={stopHold}
+      onPointerLeave={stopHold}
+      onPointerCancel={stopHold}
+    >
+      {glyph}
+    </button>
+  );
   return (
     <span className="number-input">
+      <span className="ni-field">
       <input
         type="number"
+        className={custom ? "ni-custom" : undefined}
         value={finite ? props.value : ""}
         placeholder={props.placeholder}
         min={props.min}
         max={props.max}
         step={props.step ?? "any"}
         onKeyDown={
-          onEstimate
+          custom
             ? (e) => {
                 const d = e.key === "ArrowUp" ? 1 : e.key === "ArrowDown" ? -1 : 0;
                 if (d) {
                   e.preventDefault();
-                  props.onChange(clampVal(est + d * stepBy));
+                  step(d);
                 }
               }
-            : undefined
+            : onEstimate
+              ? (e) => {
+                  const d = e.key === "ArrowUp" ? 1 : e.key === "ArrowDown" ? -1 : 0;
+                  if (d) {
+                    e.preventDefault();
+                    props.onChange(clampVal(est + d * stepBy));
+                  }
+                }
+              : undefined
         }
         onPointerDown={
-          onEstimate
+          !custom && onEstimate
             ? (e) => {
                 const r = e.currentTarget.getBoundingClientRect();
                 spinUp.current = e.clientY < r.top + r.height / 2;
@@ -158,13 +224,31 @@ export function NumberInput(props: {
         }
         onChange={(e) => {
           const raw = parseFloat(e.target.value);
-          if (onEstimate && raw === emptyStepLands) {
+          if (!custom && onEstimate && raw === emptyStepLands) {
             props.onChange(clampVal(est + (spinUp.current ? 1 : -1) * stepBy));
           } else {
             props.onChange(raw);
           }
         }}
       />
+      {custom && finite && (
+        <button
+          type="button"
+          className="number-clear"
+          title="Reset to the recommended value"
+          aria-label="Reset to the recommended value"
+          onClick={props.onClear}
+        >
+          ×
+        </button>
+      )}
+      </span>
+      {custom && (
+        <span className="ni-stepper">
+          {holdButton(1, "▲")}
+          {holdButton(-1, "▼")}
+        </span>
+      )}
       {props.suffix && <span className="suffix">{props.suffix}</span>}
     </span>
   );

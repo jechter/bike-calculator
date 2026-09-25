@@ -1,27 +1,20 @@
 import { useState } from "react";
+import type { ReactNode } from "react";
 import {
-  frameSizeFromInseam,
-  fitFromFrameSize,
-  fitTargets,
-  inseamFromHeight,
-  armFromHeightInseam,
-  suggestCrankLength,
-  wheelForFrame,
+  resolveFit,
+  cockpitForFit,
+  cockpitForFrame,
+  saddleHeight,
+  wheelByLabel,
+  WHEELS,
   findCategory,
   FRAME_CATEGORIES,
   DEFAULT_CATEGORY_ID,
   LEG_PROPORTIONS,
+  type CockpitSpec,
 } from "../lib/frameSize";
-import { cockpitForFrame } from "../lib/frameSize";
 import { Field, NumberInput, Select, Note, Result, Section } from "./ui";
 import { FrameGeometryDiagram, type HighlightKey } from "./FrameGeometryDiagram";
-
-type Method = "fit" | "frame";
-
-const METHOD_OPTIONS: Array<{ value: Method; label: string }> = [
-  { value: "fit", label: "Size a bike for a rider" },
-  { value: "frame", label: "Identify a frame you have" },
-];
 
 // Categories grouped into <optgroup>s (Road / Gravel / Mountain / …), preserving
 // the order they're declared in.
@@ -50,19 +43,32 @@ const WHEEL_COLOR = "var(--diag-wheel)";
 
 const round = (n: number) => Math.round(n);
 
-export function FrameSize() {
-  const [method, setMethod] = useState<Method>("fit");
-  const [height, setHeight] = useState(178);
-  // Inseam and arm start empty; we fall back to a height-based estimate (shown
-  // greyed as the field placeholder) until the user types a measured value.
-  const [inseam, setInseam] = useState(NaN);
-  const [arm, setArm] = useState(NaN);
-  const [categoryId, setCategoryId] = useState(DEFAULT_CATEGORY_ID);
+// The editable fields. Everything is one linked model: any field you set is kept
+// as-is, and every field you leave blank is recommended from the ones you did
+// set. Nothing is cleared automatically — you can pin your height, inseam, frame,
+// reach and stack all at once (e.g. to read off cockpit dimensions, or just to
+// see how you'd sit on a bike you already own). Where two pinned values could
+// disagree, the solver prefers the most direct measurement (see resolveFit).
+type FieldKey =
+  | "height" | "inseam" | "arm" // body
+  | "frame" | "reach" | "stack" // frame side
+  | "stemLen" | "stemAngle" | "spacer" | "crank"; // cockpit overrides
 
-  // Reverse mode: a frame you already have → the rider it fits.
-  const [frameSize, setFrameSize] = useState(56);
-  const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
+const EMPTY: Record<FieldKey, number> = {
+  height: NaN, inseam: NaN, arm: NaN,
+  frame: NaN, reach: NaN, stack: NaN,
+  stemLen: NaN, stemAngle: NaN, spacer: NaN, crank: NaN,
+};
+
+export function FrameSize() {
+  // Every field starts empty (auto): the model seeds itself from a nominal rider
+  // and shows each value greyed as an "≈" estimate until you type over it.
+  const [vals, setVals] = useState<Record<FieldKey, number>>(EMPTY);
+  const [categoryId, setCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const [legProp, setLegProp] = useState(0.47);
+  const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
+  // Wheel size: "" = the size recommended for the frame; else a chosen wheel.
+  const [wheelSel, setWheelSel] = useState("");
 
   // Which measurement is hovered/edited in the UI (highlighted in the diagram).
   const [hl, setHl] = useState<HighlightKey | null>(null);
@@ -71,180 +77,198 @@ export function FrameSize() {
   // Seated posture on the bike: 0 = arms fully straight, 1 = forearm parallel.
   const [posture, setPosture] = useState(0.4);
 
-  const reverse = method === "frame";
   const category = findCategory(categoryId);
 
-  const estInseam = round(inseamFromHeight(height));
-  const effInseam = Number.isFinite(inseam) ? inseam : estInseam;
-  // Arm is estimated from height *and* the (effective) inseam, so typing a real
-  // inseam sharpens the arm guess too.
-  const estArm = round(armFromHeightInseam(height, effInseam));
-  const effArm = Number.isFinite(arm) ? arm : estArm;
+  // Setting a field just pins that one value; everything else stays put and the
+  // blanks re-recommend around it. A NaN hands the field back to its estimate.
+  const edit = (field: FieldKey, v: number) =>
+    setVals((prev) => ({ ...prev, [field]: v }));
+  const clearField = (field: FieldKey) => edit(field, NaN);
+  const clearAll = () => setVals(EMPTY);
+  const anySet = Object.values(vals).some((v) => Number.isFinite(v));
 
-  // Forward: fit targets + a nominal size, both from the same body inputs.
-  const targets = fitTargets({ heightCm: height, inseamCm: effInseam, armCm: effArm, category });
-  const size = frameSizeFromInseam(effInseam, category);
-  const crank = suggestCrankLength(effInseam);
-  // Wheel size + cockpit sensible for this frame style *and* size (forward: from
-  // the nominal size; reverse: from the frame you entered). The cockpit is
-  // computed once here and passed to the diagram, so the UI and the drawn stem
-  // always agree.
-  const wheel = wheelForFrame(category, size.frameCm);
-  const cockpit = cockpitForFrame(category, size.frameCm);
+  const num = (v: number) => (Number.isFinite(v) ? v : null);
 
-  // Reverse: frame → rider band, and a representative rider for the diagram.
-  const frameCm = sizeUnit === "in" ? frameSize * 2.54 : frameSize;
-  const fit = fitFromFrameSize({ frameCm, category, legProportion: legProp });
-  const revWheel = wheelForFrame(category, frameCm);
-  const revCockpit = cockpitForFrame(category, frameCm);
+  // Frame size is stored internally in cm; the field shows cm or inches.
+  const frameToDisplay = (cm: number) => (sizeUnit === "in" ? cm / 2.54 : cm);
+  const frameFromDisplay = (v: number) => (sizeUnit === "in" ? v * 2.54 : v);
 
-  // The geometry diagram always reflects a concrete reach/stack. In reverse mode
-  // there are no body inputs, so illustrate the central rider this frame fits.
-  const geom = reverse
-    ? (() => {
-        const t = fitTargets({
-          heightCm: fit.heightCm,
-          inseamCm: fit.inseamCm,
-          armCm: armFromHeightInseam(fit.heightCm, fit.inseamCm),
-          category,
-        });
-        return {
-          reachMm: t.reachMm,
-          stackMm: t.stackMm,
-          topTubeSlopeDeg: category.topTubeSlopeDeg,
-          geometry: category.geometry,
-          saddleHeightMm: fit.saddleHeightCm * 10,
-          crankLengthMm: suggestCrankLength(fit.inseamCm).suggestedMm,
-          bodyHeightMm: fit.heightCm * 10,
-          inseamMm: fit.inseamCm * 10,
-          armLengthMm: armFromHeightInseam(fit.heightCm, fit.inseamCm) * 10,
-          wheelRadiusMm: revWheel.outerMm / 2,
-          wheelLabel: revWheel.label,
-        };
-      })()
-    : {
-        reachMm: targets.reachMm,
-        stackMm: targets.stackMm,
-        topTubeSlopeDeg: category.topTubeSlopeDeg,
-        geometry: category.geometry,
-        saddleHeightMm: targets.saddleHeightCm * 10,
-        crankLengthMm: crank.suggestedMm,
-        bodyHeightMm: height * 10,
-        inseamMm: effInseam * 10,
-        armLengthMm: effArm * 10,
-        wheelRadiusMm: wheel.outerMm / 2,
-        wheelLabel: wheel.label,
-      };
+  const fit = resolveFit(
+    {
+      heightCm: num(vals.height),
+      inseamCm: num(vals.inseam),
+      armCm: num(vals.arm),
+      frameCm: num(vals.frame),
+      reachMm: num(vals.reach),
+      stackMm: num(vals.stack),
+    },
+    category,
+    legProp,
+  );
+
+  // The drawn reach/stack (a pinned value, else the recommendation).
+  const drawnReach = num(vals.reach) ?? fit.targets.reachMm;
+  const drawnStack = num(vals.stack) ?? fit.targets.stackMm;
+
+  // Cockpit + crank are proposed from the frame, but stay editable so you can see
+  // how (say) a longer stem changes the position. The stem/spacer suggestion also
+  // compensates a reach/stack that falls short of the rider's target — a frame
+  // that's too short gets a longer stem, one that's too low gets more spacers.
+  const recCockpit = cockpitForFit(category, fit.frameCm, {
+    reachGapMm: fit.targets.reachMm - drawnReach,
+    stackGapMm: fit.targets.stackMm - drawnStack,
+  });
+  const effCockpit: CockpitSpec = {
+    ...recCockpit,
+    stemLenMm: num(vals.stemLen) ?? recCockpit.stemLenMm,
+    stemRiseDeg: num(vals.stemAngle) ?? recCockpit.stemRiseDeg,
+    spacerMm: num(vals.spacer) ?? recCockpit.spacerMm,
+  };
+  const effCrank = num(vals.crank) ?? fit.crank.suggestedMm;
+
+  // Arm over-reach: the bars (drawn reach + the fitted stem's horizontal reach)
+  // sit farther forward than the rider's own target reach + a nominal stem. This
+  // fires when a too-long reach can't be pulled back by the stem, or the stem is
+  // overridden longer than needed — the rider is drawn stretched, in warning red.
+  const stemReach = (c: CockpitSpec) => c.stemLenMm * Math.cos((c.stemRiseDeg * Math.PI) / 180);
+  const targetGripX = fit.targets.reachMm + stemReach(cockpitForFrame(category, fit.frameCm));
+  const drawnGripX = drawnReach + stemReach(effCockpit);
+  const armOver = drawnGripX - targetGripX > 45;
+
+  // Wheel: the recommended size for the frame, unless one is chosen.
+  const effWheel = (wheelSel && wheelByLabel(wheelSel)) || fit.wheel;
+  // Saddle height follows the effective crank (a longer crank lowers it), so the
+  // quoted number and the drawn saddle track a crank change.
+  const effSaddleCm = saddleHeight(fit.inseamCm, effCrank);
+
+  // A NumberInput bound to a field: it shows the resolved value greyed as an
+  // estimate until you type, and steps from that estimate rather than the min.
+  const input = (
+    field: FieldKey,
+    derived: number,
+    o: {
+      min?: number;
+      max?: number;
+      step?: number;
+      suffix?: ReactNode;
+      decimals?: number;
+      value?: number; // display value override (frame unit conversion)
+      onChange?: (v: number) => void; // override (frame unit conversion)
+      estimate?: number; // display estimate override (frame unit conversion)
+    } = {},
+  ) => {
+    const est =
+      o.estimate ?? (o.decimals ? Number(derived.toFixed(o.decimals)) : round(derived));
+    return (
+      <NumberInput
+        value={o.value ?? vals[field]}
+        onChange={o.onChange ?? ((v) => edit(field, v))}
+        onClear={() => clearField(field)}
+        min={o.min}
+        max={o.max}
+        step={o.step}
+        suffix={o.suffix}
+        placeholder={`≈ ${est}`}
+        estimate={est}
+      />
+    );
+  };
+
+  // The diagram shows the user's actual bike where they've supplied it: a pinned
+  // reach/stack draws directly, even if it disagrees with the inseam-derived
+  // recommendation, so you can see how you'd sit on a frame you already own.
+  const geom = {
+    reachMm: drawnReach,
+    stackMm: drawnStack,
+    topTubeSlopeDeg: category.topTubeSlopeDeg,
+    geometry: category.geometry,
+    saddleHeightMm: effSaddleCm * 10,
+    crankLengthMm: effCrank,
+    bodyHeightMm: fit.heightCm * 10,
+    inseamMm: fit.inseamCm * 10,
+    armLengthMm: fit.armCm * 10,
+    wheelRadiusMm: effWheel.outerMm / 2,
+    wheelLabel: effWheel.label,
+  };
 
   return (
     <div className="fs-workbench">
       <div className="fs-controls">
+        <div className="fs-toolbar">
+          <span className="fs-toolbar-hint">
+            Every value is editable — set the ones you know, the rest are recommended.
+          </span>
+          <button
+            type="button"
+            className="fs-clear-all"
+            onClick={clearAll}
+            disabled={!anySet}
+            title="Reset every field to its recommended value"
+          >
+            Clear all
+          </button>
+        </div>
         <Section
-          title="Input"
+          title="Rider"
           info={
-            reverse ? (
-              <>
-                Enter the frame size as you read it at the bench — seat-tube length
-                in cm for most bikes, or inches for an MTB frame. Measure the seat
-                tube centre-to-top if the label is missing. The result is a rider
-                band to match against the waiting list; <strong>inseam</strong> is the
-                reliable match, height depends on leg proportion.
-              </>
-            ) : (
-              <>
-                Enter measured body dimensions — the more accurate they are, the more
-                useful the result. Inseam and arm can be left blank to use an estimate
-                from height (shown greyed), but measuring is far better. These are{" "}
-                <strong>starting targets</strong>, not prescriptions: brand geometry,
-                flexibility and preference all shift them, so confirm on a fit.{" "}
-                <strong>Gender</strong> isn't asked — what matters is the actual leg,
-                torso and arm lengths, which these inputs already capture.
-              </>
-            )
+            <>
+              Everything on this page is one linked model — set any measurement and
+              the rest fill in with a best guess (shown greyed as an{" "}
+              <strong>≈ estimate</strong> until you type over it). Enter a body height
+              and it proposes inseam, arm, frame size and reach &amp; stack; enter a
+              frame or a reach &amp; stack instead and it works back to the rider.
+              These are <strong>starting targets</strong>, not prescriptions —
+              brand geometry, flexibility and preference all shift them.{" "}
+              <strong>Gender</strong> isn't asked; what matters is the actual leg,
+              torso and arm lengths, which these inputs capture. Measured inseam and
+              arm beat the height estimate.
+            </>
           }
         >
           <div className="grid">
-            <Field label="Method">
-              <Select value={method} onChange={(v) => setMethod(v as Method)} options={METHOD_OPTIONS} />
+            <Field label="Body height" dotColor={HEIGHT_COLOR} {...link("body")}>
+              {input("height", fit.heightCm, { min: 100, max: 210, suffix: "cm" })}
             </Field>
-
-            {!reverse && (
-              <>
-                <Field label="Body height" dotColor={HEIGHT_COLOR} {...link("body")}>
-                  <NumberInput value={height} onChange={setHeight} suffix="cm" min={100} max={210} />
-                </Field>
-                <Field
-                  label="Cycling inseam"
-                  hint="barefoot, crotch to floor — blank uses the estimate from height"
-                  dotColor={INSEAM_COLOR}
-                  {...link("inseam")}
-                >
-                  <NumberInput
-                    value={inseam}
-                    onChange={setInseam}
-                    min={38}
-                    max={110}
-                    suffix="cm"
-                    placeholder={`≈ ${estInseam}`}
-                    estimate={estInseam}
-                  />
-                </Field>
-                <Field
-                  label="Arm length"
-                  hint="shoulder (acromion) to wrist — blank estimates from height & inseam"
-                  dotColor={ARM_COLOR}
-                  {...link("arm")}
-                >
-                  <NumberInput
-                    value={arm}
-                    onChange={setArm}
-                    min={28}
-                    max={90}
-                    suffix="cm"
-                    placeholder={`≈ ${estArm}`}
-                    estimate={estArm}
-                  />
-                </Field>
-              </>
-            )}
-
-            {reverse && (
-              <>
-                <Field label="Frame size" hint="seat tube, centre-to-top" dotColor={SIZE_COLOR} {...link("size")}>
-                  <NumberInput
-                    value={frameSize}
-                    onChange={setFrameSize}
-                    min={sizeUnit === "in" ? 8 : 20}
-                    max={sizeUnit === "in" ? 25 : 65}
-                    suffix={
-                      <select
-                        className="unit-suffix"
-                        value={sizeUnit}
-                        onChange={(e) => setSizeUnit(e.target.value as "cm" | "in")}
-                        aria-label="Size unit"
-                      >
-                        <option value="cm">cm</option>
-                        <option value="in">in</option>
-                      </select>
-                    }
-                  />
-                </Field>
-                <Field label="Leg proportion" hint="shifts the height band only">
-                  <Select
-                    value={String(legProp)}
-                    onChange={(v) => setLegProp(parseFloat(v))}
-                    options={LEG_PROPORTIONS.map((p) => ({ value: String(p.value), label: p.label }))}
-                  />
-                </Field>
-              </>
-            )}
+            <Field
+              label="Cycling inseam"
+              hint="barefoot, crotch to floor"
+              dotColor={INSEAM_COLOR}
+              {...link("inseam")}
+            >
+              {input("inseam", fit.inseamCm, { min: 38, max: 110, suffix: "cm" })}
+            </Field>
+            <Field
+              label="Arm length"
+              hint="shoulder (acromion) to wrist"
+              dotColor={ARM_COLOR}
+              {...link("arm")}
+            >
+              {input("arm", fit.armCm, { min: 28, max: 90, suffix: "cm" })}
+            </Field>
           </div>
+        </Section>
 
-          {/* Bike category merges frame style + riding position: it sets the size
-              multiplier, the reach/stack position and the top-tube slope. */}
-          <div className="rows">
-            <Field label="Bike category" hint="how it's sized and how you sit on it">
+        <Section
+          title="Bike category"
+          info={
+            <>
+              A category merges frame style (how it's sized) with riding position
+              (how low &amp; long you sit): it sets the size multiplier, the
+              reach/stack position and the top-tube slope. <strong>Leg proportion</strong>{" "}
+              only links height and inseam when one is estimated from the other.
+            </>
+          }
+        >
+          <div className="grid">
+            <Field label="Category" hint="how it's sized and how you sit on it">
               <Select value={categoryId} onChange={setCategoryId} options={CATEGORY_OPTIONS} />
+            </Field>
+            <Field label="Leg proportion" hint="links height ↔ inseam when estimated">
+              <Select
+                value={String(legProp)}
+                onChange={(v) => setLegProp(parseFloat(v))}
+                options={LEG_PROPORTIONS.map((p) => ({ value: String(p.value), label: p.label }))}
+              />
             </Field>
           </div>
           <Note>
@@ -255,204 +279,124 @@ export function FrameSize() {
           </Note>
         </Section>
 
-        {reverse ? (
-          <Section
-            title="Who it fits"
-            info={
-              <>
-                The frame maps back to a <strong>rider height</strong> band and{" "}
-                <strong>cycling inseam</strong> band — call people in that range off the
-                list. Height is inseam ÷ leg proportion, so it slides if the rider's legs
-                are longer or shorter than average; the inseam band doesn't. Someone
-                between sizes can go either way (smaller = nimbler, larger = roomier), so
-                treat the edges as soft.
-              </>
-            }
-          >
-            <div className="results">
-              <Result
-                label="Rider height"
-                dotColor={HEIGHT_COLOR}
-                {...link("body")}
-                value={
-                  <>
-                    {fit.heightRangeCm[0].toFixed(0)}–{fit.heightRangeCm[1].toFixed(0)} cm
-                    <span className="result-sub">≈ {fit.heightCm.toFixed(0)} cm centre</span>
-                  </>
-                }
-                big
+        <Section
+          title="Frame & fit — reach, stack, size"
+          info={
+            <>
+              <strong>Reach</strong> (horizontal) and <strong>stack</strong> (vertical)
+              are the bottom-bracket-to-head-tube-top distances — the brand-independent
+              way to compare frames, because unlike a seat-tube "size" they don't change
+              when the top tube slopes. The <strong>frame size</strong> is the traditional
+              nominal (inseam × the category multiplier); it's a label, so the diagram
+              shows both the actual and effective seat tube in green. Set any of these to
+              solve back to a rider, or read them off the body inputs above.
+            </>
+          }
+        >
+          <div className="grid">
+            <Field
+              label="Frame size"
+              hint="nominal seat tube, centre-to-top"
+              dotColor={SIZE_COLOR}
+              {...link("size")}
+            >
+              {input("frame", fit.frameCm, {
+                min: sizeUnit === "in" ? 8 : 20,
+                max: sizeUnit === "in" ? 25 : 65,
+                decimals: sizeUnit === "in" ? 1 : 0,
+                value: Number.isFinite(vals.frame) ? frameToDisplay(vals.frame) : NaN,
+                estimate: Number(
+                  frameToDisplay(fit.frameCm).toFixed(sizeUnit === "in" ? 1 : 0),
+                ),
+                onChange: (v) => edit("frame", frameFromDisplay(v)),
+                suffix: (
+                  <select
+                    className="unit-suffix"
+                    value={sizeUnit}
+                    onChange={(e) => setSizeUnit(e.target.value as "cm" | "in")}
+                    aria-label="Size unit"
+                  >
+                    <option value="cm">cm</option>
+                    <option value="in">in</option>
+                  </select>
+                ),
+              })}
+            </Field>
+            <Field label="Reach" dotColor={REACH_COLOR} {...link("reach")}>
+              {input("reach", fit.targets.reachMm, { min: 250, max: 520, step: 5, suffix: "mm" })}
+            </Field>
+            <Field label="Stack" dotColor={STACK_COLOR} {...link("stack")}>
+              {input("stack", fit.targets.stackMm, { min: 400, max: 750, step: 5, suffix: "mm" })}
+            </Field>
+            <Field
+              label="Wheel size"
+              hint={`ISO ${effWheel.isoMm} mm`}
+              dotColor={WHEEL_COLOR}
+              {...link("wheel")}
+            >
+              <Select
+                value={wheelSel}
+                onChange={setWheelSel}
+                options={[
+                  { value: "", label: `Auto — ${fit.wheel.label}` },
+                  ...WHEELS.map((w) => ({ value: w.label, label: `${w.label} (ISO ${w.isoMm})` })),
+                ]}
               />
-              <Result
-                label="Cycling inseam"
-                dotColor={INSEAM_COLOR}
-                {...link("inseam")}
-                value={`${fit.inseamRangeCm[0].toFixed(0)}–${fit.inseamRangeCm[1].toFixed(0)} cm`}
-              />
-              <Result label="Nominal" value={fit.nominalSize} />
-              <Result label="Saddle height (BB→top)" value={`${fit.saddleHeightCm.toFixed(1)} cm`} />
-              <Result
-                label="Wheel size"
-                dotColor={WHEEL_COLOR}
-                {...link("wheel")}
-                value={
-                  <>
-                    {revWheel.label}
-                    <span className="result-sub">ISO {revWheel.isoMm} mm</span>
-                  </>
-                }
-              />
-            </div>
-          </Section>
-        ) : (
-          <>
-            <Section
-              title="Fit targets — reach & stack"
-              info={
+            </Field>
+          </div>
+          <div className="results">
+            <Result label="Nominal" value={fit.frame.nominalSize} />
+            <Result
+              label="Stack : reach"
+              value={
                 <>
-                  <strong>Reach</strong> (horizontal) and <strong>stack</strong> (vertical)
-                  are the distance from the bottom bracket to the top of the head tube.
-                  They're the brand-independent way to compare frames, because — unlike a
-                  seat-tube "size" — they don't change when the top tube slopes. These
-                  targets assume a typical stem, a small spacer stack and a normal saddle
-                  setback, so read them as a starting window (± ~1 size) and fine-tune with
-                  stem length and spacers, or a proper fit.
+                  {fit.targets.stackReach.toFixed(2)}
+                  <span className="result-sub">higher = more upright</span>
                 </>
               }
-            >
-              <div className="results">
-                <Result
-                  label="Reach"
-                  dotColor={REACH_COLOR}
-                  {...link("reach")}
-                  value={
-                    <>
-                      {round(targets.reachMm)} mm
-                      <span className="result-sub">
-                        {round(targets.reachRangeMm[0])}–{round(targets.reachRangeMm[1])} mm
-                      </span>
-                    </>
-                  }
-                  big
-                />
-                <Result
-                  label="Stack"
-                  dotColor={STACK_COLOR}
-                  {...link("stack")}
-                  value={
-                    <>
-                      {round(targets.stackMm)} mm
-                      <span className="result-sub">
-                        {round(targets.stackRangeMm[0])}–{round(targets.stackRangeMm[1])} mm
-                      </span>
-                    </>
-                  }
-                  big
-                />
-                <Result
-                  label="Stack : reach"
-                  value={
-                    <>
-                      {targets.stackReach.toFixed(2)}
-                      <span className="result-sub">higher = more upright</span>
-                    </>
-                  }
-                />
-                <Result label="Saddle height (BB→top)" value={`${targets.saddleHeightCm.toFixed(1)} cm`} />
-              </div>
-            </Section>
+            />
+            <Result label="Saddle height (BB→top)" value={`${effSaddleCm.toFixed(1)} cm`} />
+          </div>
+          <Note>
+            <strong>Reach &amp; stack</strong> show a typical band of ±{" "}
+            {round(fit.targets.reachRangeMm[1] - fit.targets.reachMm)}/±{" "}
+            {round(fit.targets.stackRangeMm[1] - fit.targets.stackMm)} mm around the
+            target — trim small gaps with stem length and spacers.
+            <span className="note-sizing">
+              <strong>Wheels:</strong> {effWheel.note}
+            </span>
+          </Note>
+        </Section>
 
-            <Section title="Frame size">
-              <div className="results">
-                <Result
-                  label="Frame size"
-                  dotColor={SIZE_COLOR}
-                  {...link("size")}
-                  value={
-                    <>
-                      {size.frameCm.toFixed(0)} cm
-                      {category.showInches && (
-                        <span className="result-sub">{size.frameInches.toFixed(1)} in</span>
-                      )}
-                    </>
-                  }
-                  big
-                />
-                <Result
-                  label="Range"
-                  dotColor={SIZE_COLOR}
-                  value={`${size.frameCmRange[0].toFixed(0)}–${size.frameCmRange[1].toFixed(0)} cm`}
-                />
-                <Result label="Nominal" value={size.nominalSize} />
-                <Result
-                  label="Wheel size"
-                  dotColor={WHEEL_COLOR}
-                  {...link("wheel")}
-                  value={
-                    <>
-                      {wheel.label}
-                      <span className="result-sub">ISO {wheel.isoMm} mm</span>
-                    </>
-                  }
-                />
-              </div>
-              <Note>
-                This is a <strong>nominal size</strong> (inseam × {category.sizeMult}) — the
-                traditional ballpark for finding the right size to try. Treat it as a label,
-                not a measurement: a manufacturer's "size" number usually sits somewhere
-                between the <em>actual</em> seat-tube length (shorter on a sloped frame) and
-                the <em>effective/virtual</em> length (to a horizontal top tube) — the
-                diagram shows both in green. Some brands quote one edge, some the other, some
-                a value in between, and many are moving to S/M/L for exactly this reason. To
-                compare real frames, use <strong>reach & stack</strong> above.
-                <span className="note-sizing">
-                  <strong>Wheels:</strong> {wheel.note}
-                </span>
-              </Note>
-            </Section>
-
-            <Section
-              title="Crank length suggestion"
-              info={
-                <>
-                  Published crank formulas disagree noticeably, so treat this as a starting
-                  range and lean on fit/preference. Shorter cranks are a current trend; also
-                  mind pedal/ground clearance and knee comfort.
-                </>
-              }
-            >
-              <div className="results">
-                <Result label="Suggested (nearest size)" value={`${crank.suggestedMm} mm`} big dotColor={CRANK_COLOR} {...link("crank")} />
-                <Result
-                  label="Rule-of-thumb range"
-                  value={`${crank.rangeMm[0].toFixed(0)}–${crank.rangeMm[1].toFixed(0)} mm`}
-                />
-              </div>
-            </Section>
-
-            <Section
-              title="Cockpit (typical)"
-              info={
-                <>
-                  The stem &amp; spacers used to draw the riding position — a{" "}
-                  <strong>typical setup for this category and size</strong>, not a spec. A bigger
-                  frame gets a longer stem and fewer spacers (its head tube is already taller), and
-                  vice-versa, so these track the frame size. Stem angle is the rise above horizontal
-                  as drawn (negative points down); stem height is the spacer stack under the stem,
-                  or how far a quill is raised out of the steerer.
-                </>
-              }
-            >
-              <div className="results">
-                <Result label="Stem length" value={`${cockpit.stemLenMm} mm`} />
-                <Result
-                  label="Stem angle"
-                  value={`${cockpit.stemRiseDeg > 0 ? "+" : ""}${cockpit.stemRiseDeg}°`}
-                />
-                <Result label="Stem height (spacers)" value={`${cockpit.spacerMm} mm`} />
-              </div>
-            </Section>
-          </>
-        )}
+        <Section
+          title="Cockpit & crank"
+          info={
+            <>
+              The stem, spacers and crank are proposed for this category and size — a
+              typical setup, not a spec — but stay editable, so you can see how (say) a
+              longer stem or more spacers change the drawn riding position. A bigger
+              frame gets a longer stem and fewer spacers, and vice-versa. Stem angle is
+              the rise above horizontal (negative points down); stem height is the spacer
+              stack, or how far a quill is raised. Clear a field to return to the
+              suggestion.
+            </>
+          }
+        >
+          <div className="grid">
+            <Field label="Stem length" dotColor={CRANK_COLOR} {...link("crank")}>
+              {input("stemLen", recCockpit.stemLenMm, { min: 35, max: 150, step: 5, suffix: "mm" })}
+            </Field>
+            <Field label="Stem angle">
+              {input("stemAngle", recCockpit.stemRiseDeg, { min: -20, max: 45, suffix: "°" })}
+            </Field>
+            <Field label="Stem height (spacers)">
+              {input("spacer", recCockpit.spacerMm, { min: 0, max: 80, step: 5, suffix: "mm" })}
+            </Field>
+            <Field label="Crank length" dotColor={CRANK_COLOR} {...link("crank")}>
+              {input("crank", fit.crank.suggestedMm, { min: 100, max: 200, step: 2.5, suffix: "mm" })}
+            </Field>
+          </div>
+        </Section>
       </div>
 
       {/* Explainer: reach (red) & stack (blue) from the BB to the head-tube top,
@@ -462,9 +406,10 @@ export function FrameSize() {
       <figure className="fs-diagram fs-viz">
         <FrameGeometryDiagram
           {...geom}
-          cockpit={reverse ? revCockpit : cockpit}
+          cockpit={effCockpit}
           highlight={hl}
           posture={posture}
+          armOver={armOver}
         />
         <div className="fs-posture">
           <span>Arms straight</span>

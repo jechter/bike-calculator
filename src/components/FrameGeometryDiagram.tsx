@@ -46,6 +46,14 @@ const FORK_OFFSET_REF = 45; // fork rake at 700c
 const HEAD_STUB_MM = 14; // head tube + headset above the top-tube junction (~1 cm)
 const CRANK_ANGLE = (32 * Math.PI) / 180; // crank arm, forward of straight-down
 const PEDAL_HALF = 30; // half-length of the drawn pedal, mm
+// A limb is flagged as over-extended once its contact point sits past this
+// fraction of its full (bone-to-bone) length — a small margin over 1.0 so a
+// normally near-straight cycling leg isn't flagged.
+const OVEREXT = 1.04;
+// The saddle can't drop below the seat cluster: at least this much post shows
+// above the actual seat tube, so a frame too tall for the rider forces the
+// saddle (and the rider's hips) up until the leg over-reaches the pedal.
+const MIN_POST_ABOVE = 60;
 
 // The traced cyclist is scaled so its ink height = the rider's body height and
 // its feet sit on the ground line, a fixed gap left of the rear wheel.
@@ -78,6 +86,12 @@ export interface FrameGeometryDiagramProps {
   highlight?: HighlightKey | null;
   /** Seated posture: 0 = arms fully straight, 1 = forearm parallel to the ground. */
   posture: number;
+  /**
+   * The bars sit farther forward than the rider should reach (frame + stem too
+   * long) — judged by the caller against the rider's target reach. Draws the arms
+   * in warning red.
+   */
+  armOver?: boolean;
 }
 
 export type HighlightKey = "reach" | "stack" | "size" | "crank" | "body" | "inseam" | "arm" | "wheel";
@@ -141,6 +155,7 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
     wheelLabel,
     highlight,
     posture,
+    armOver = false,
   } = props;
 
   const WHEEL_R = wheelRadiusMm ?? DEFAULT_WHEEL_R;
@@ -154,7 +169,6 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
 
   // --- bike-space geometry (y up) --------------------------------------------
   const BB = { x: 0, y: 0 };
-  const saddle = onSeat(saddleHeightMm);
   const headTop = { x: reachMm, y: stackMm };
   const stackCorner = { x: 0, y: stackMm };
 
@@ -197,6 +211,12 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const actLen = (topTubeY - jHead.x * tan) / (SIN + COS * tan);
   const jActual = onSeat(actLen);
 
+  // Effective saddle height: a frame too tall for the rider can't let the saddle
+  // drop below its seat cluster (a minimum of post must show), so the saddle — and
+  // the rider's hips — are forced up above the inseam-ideal height.
+  const effSaddleMm = Math.max(saddleHeightMm, actLen + MIN_POST_ABOVE);
+  const saddle = onSeat(effSaddleMm);
+
   // Crank arm: pivots at the BB, drawn to scale pointing down-and-forward, with
   // a short pedal across its end.
   const crankTip = {
@@ -227,13 +247,20 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const crankTip2 = { x: -crankTip.x, y: -crankTip.y };
   const pedal2L = { x: crankTip2.x - PEDAL_HALF, y: crankTip2.y };
   const pedal2R = { x: crankTip2.x + PEDAL_HALF, y: crankTip2.y };
-  const rAnkle = { x: crankTip.x - 14, y: crankTip.y + 52 };
-  const rToe = { x: crankTip.x + 46, y: crankTip.y + 6 };
+  const pedalAnkle = { x: crankTip.x - 14, y: crankTip.y + 52 };
   const rAnkle2 = { x: crankTip2.x - 12, y: crankTip2.y + 34 };
   const rToe2 = { x: crankTip2.x + 42, y: crankTip2.y + 2 };
   const thigh = 0.245 * HB;
   const shank = 0.246 * HB;
-  const rKnee = ik2(rHip, rAnkle, thigh, shank, +1);
+  // Near leg: if the pedal is farther than the leg can reach (a saddle forced too
+  // high for this rider), draw the leg straight to full extension with a gap to the
+  // pedal, and flag it, rather than stretching the shank to meet the pedal.
+  const legSpan = thigh + shank;
+  const legDir = vnorm(vsub(pedalAnkle, rHip));
+  const legOver = vlen(vsub(pedalAnkle, rHip)) > legSpan * OVEREXT;
+  const rAnkle = legOver ? vadd(rHip, vscale(legDir, legSpan)) : pedalAnkle;
+  const rToe = { x: rAnkle.x + 60, y: rAnkle.y - 46 };
+  const rKnee = legOver ? vadd(rHip, vscale(legDir, thigh)) : ik2(rHip, rAnkle, thigh, shank, +1);
   const rKnee2 = ik2(rHip, rAnkle2, thigh, shank, +1);
 
   // Posture (0 = arms fully straight, 1 = most aggressive): both keep the hips at
@@ -259,6 +286,9 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   // More aggressive = smaller lean; take whichever limit is reached first (the
   // larger lean), and never less aggressive than a straight arm.
   const leanAggr = Math.min(leanStraight, Math.max(leanLevel, leanElbow60));
+  // The rider leans to reach the bars, so the arm itself doesn't run out of reach;
+  // whether the bars are too far for a comfortable straight-arm reach is judged by
+  // the caller (which knows the rider's target reach) and passed in as armOver.
   const lean = leanStraight + post * (leanAggr - leanStraight);
   const rShoulder = vadd(rHip, { x: rTorso * Math.cos(lean), y: rTorso * Math.sin(lean) });
   const rElbow = ik2(rShoulder, grip, upperArm, foreArm, -1);
@@ -612,18 +642,41 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
       {/* seated rider (translucent capsules): hips at the saddle, foot on the
           pedal, hands on the grip; knee/elbow solved with two-bone IK */}
       <g className="rp-rider">
-        {line(s.rHip, s.rKnee, "rp-limb")}
-        {line(s.rKnee, s.rAnkle, "rp-limb")}
-        {line(s.rAnkle, s.rToe, "rp-foot")}
+        {line(s.rHip, s.rKnee, "rp-limb" + (legOver ? " rp-over" : ""))}
+        {line(s.rKnee, s.rAnkle, "rp-limb" + (legOver ? " rp-over" : ""))}
+        {line(s.rAnkle, s.rToe, "rp-foot" + (legOver ? " rp-over" : ""))}
         {line(s.rHip, s.rShoulder, "rp-trunk")}
         {line(s.rShoulder, s.rHead, "rp-neck")}
-        {line(s.rShoulder, s.rElbow, "rp-limb")}
-        {line(s.rElbow, s.grip, "rp-limb")}
+        {line(s.rShoulder, s.rElbow, "rp-limb" + (armOver ? " rp-over" : ""))}
+        {line(s.rElbow, s.grip, "rp-limb" + (armOver ? " rp-over" : ""))}
         <circle cx={s.rHead.x} cy={s.rHead.y} r={rHeadR} className="rp-head" />
         {[s.rHip, s.rKnee, s.rShoulder, s.rElbow].map((p, i) => (
           <circle key={i} cx={p.x} cy={p.y} r={11} className="rp-joint" />
         ))}
       </g>
+
+      {/* over-extension flags: the limb can't reach its contact point (bars too
+          far, or a saddle forced too high for the rider on a too-big frame) */}
+      {armOver && (
+        <text
+          x={s.grip.x}
+          y={s.grip.y - 26}
+          textAnchor="middle"
+          className="fg-note fg-note-over"
+        >
+          reach too long
+        </text>
+      )}
+      {legOver && (
+        <text
+          x={s.rAnkle.x}
+          y={s.rAnkle.y + 40}
+          textAnchor="middle"
+          className="fg-note fg-note-over"
+        >
+          saddle too high
+        </text>
+      )}
 
       {/* seat-tube length markers, drawn OVER the rider so the green stays clearly
           visible: effective (light green, to the virtual horizontal top tube)

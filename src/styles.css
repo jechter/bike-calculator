@@ -280,9 +280,74 @@ select {
   color: var(--muted);
   font-weight: 600;
 }
-.number-input { display: flex; align-items: center; gap: 6px; }
+.number-input { display: flex; align-items: center; gap: 0; }
 .number-input input { flex: 1; }
-.number-input .suffix { color: var(--muted); font-size: 13px; }
+.number-input .suffix { color: var(--muted); font-size: 13px; margin-left: 6px; }
+/* Custom up/down steppers attached to the RIGHT of the field — flush, sharing the
+   field's border, so the field reads as one element and the steppers hold a fixed
+   position as the reset "×" appears/disappears. Used by the frame-size fields. */
+.ni-stepper {
+  flex: none;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  overflow: hidden;
+}
+.ni-step {
+  flex: 1;
+  width: 24px;
+  min-height: 14px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: none;
+}
+.ni-step:first-child { border-bottom: 1px solid var(--border); }
+.ni-step:hover { background: var(--border); color: var(--text); }
+/* Square off the field's right side and hide the native spinner so the steppers
+   sit flush; leave room on the right for the "×". */
+input.ni-custom {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  padding-right: 30px;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+input.ni-custom::-webkit-outer-spin-button,
+input.ni-custom::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+/* Wraps the input so the reset "×" can sit inside it, at the right edge. */
+.ni-field { position: relative; flex: 1; display: flex; min-width: 0; }
+/* A small "×" that resets a field to its recommended estimate. */
+.number-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.number-clear:hover { background: var(--border); color: var(--text); }
 /* A compact unit picker that attaches to a number field in place of a plain
    suffix — auto-width, muted, minimal chrome so it reads as a unit, not a field. */
 .unit-suffix {
@@ -420,6 +485,29 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   background: transparent;
 }
 
+/* Frame-size top toolbar: a hint + a Clear all reset. */
+.fs-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.fs-toolbar-hint { font-size: 13px; color: var(--muted); }
+.fs-clear-all {
+  margin-left: auto;
+  flex: none;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fs-clear-all:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.fs-clear-all:disabled { opacity: 0.45; cursor: default; }
+
 /* Frame-size explainer figure (inline SVG, like the other diagrams) */
 .fs-diagram {
   margin: 14px 0 0;
@@ -491,6 +579,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .fg-note-green { fill: var(--diag-green); }
 .fg-note-green-soft { fill: color-mix(in srgb, var(--diag-green) 60%, var(--muted)); }
 .fg-note-red { fill: var(--diag-red); }
+.fg-note-over { fill: var(--diag-red); font-weight: 700; }
 .fg-note-blue { fill: var(--diag-blue); }
 .fg-note-crank { fill: var(--diag-crank); }
 .fg-note-arm { fill: var(--diag-arm); }
@@ -508,6 +597,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .rp-foot { fill: none; stroke: var(--accent); stroke-width: 60; stroke-linecap: round; }
 .rp-head { fill: var(--accent); }
 .rp-joint { fill: var(--accent); }
+/* An over-extended limb (can't reach its bar/pedal) is drawn in warning red. */
+.rp-over { stroke: var(--diag-red); }
 
 /* Stacked (narrow): the diagram grows to fill the space under the controls. */
 @media (max-width: 1119px) {

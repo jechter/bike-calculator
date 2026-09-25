@@ -6,11 +6,18 @@ import {
   suggestCrankLength,
   wheelForFrame,
   cockpitForFrame,
+  cockpitForFit,
   fitTargets,
   armFromHeight,
   armFromHeightInseam,
   torsoFromHeightInseam,
   findCategory,
+  resolveFit,
+  inseamFromFrame,
+  inseamFromStack,
+  heightFromReach,
+  saddleHeight,
+  SEED_HEIGHT_CM,
 } from './frameSize';
 
 const ROAD = findCategory('road-endurance');
@@ -172,6 +179,41 @@ describe('cockpitForFrame', () => {
   });
 });
 
+describe('cockpitForFit (reach/stack compensation)', () => {
+  const refCm = 84 * ROAD.sizeMult;
+
+  it('matches the plain cockpit when there is no gap', () => {
+    const base = cockpitForFrame(ROAD, refCm);
+    const fit = cockpitForFit(ROAD, refCm, { reachGapMm: 0, stackGapMm: 0 });
+    expect(fit.stemLenMm).toBe(base.stemLenMm);
+    expect(fit.spacerMm).toBe(base.spacerMm);
+  });
+
+  it('lengthens the stem to cover a frame that is too short in reach', () => {
+    const base = cockpitForFrame(ROAD, refCm);
+    const fit = cockpitForFit(ROAD, refCm, { reachGapMm: 30 });
+    expect(fit.stemLenMm).toBeGreaterThan(base.stemLenMm);
+    expect(fit.stemLenMm - base.stemLenMm).toBeGreaterThanOrEqual(20);
+  });
+
+  it('adds spacers to raise a frame that is too low in stack', () => {
+    const base = cockpitForFrame(ROAD, refCm);
+    const fit = cockpitForFit(ROAD, refCm, { stackGapMm: 30 });
+    expect(fit.spacerMm).toBeGreaterThan(base.spacerMm);
+  });
+
+  it('shortens the stem for a frame longer than the rider needs', () => {
+    const base = cockpitForFrame(ROAD, refCm);
+    const fit = cockpitForFit(ROAD, refCm, { reachGapMm: -30 });
+    expect(fit.stemLenMm).toBeLessThan(base.stemLenMm);
+  });
+
+  it('keeps the stem within buildable limits for a huge gap', () => {
+    const fit = cockpitForFit(ROAD, refCm, { reachGapMm: 400 });
+    expect(fit.stemLenMm).toBeLessThanOrEqual(150);
+  });
+});
+
 describe('body-segment estimates', () => {
   it('arm is ~33% of height', () => {
     expect(armFromHeight(178)).toBeCloseTo(58.7, 1);
@@ -249,5 +291,119 @@ describe('fitTargets (reach & stack)', () => {
     const tt = fitTargets({ ...body, category: TT }).reachMm;
     const aero = fitTargets({ ...body, category: AERO }).reachMm;
     expect(tt).toBeGreaterThan(aero);
+  });
+});
+
+describe('saddleHeight (crank-aware)', () => {
+  it('equals the LeMond factor at the reference crank', () => {
+    expect(saddleHeight(84, 170)).toBeCloseTo(84 * 0.883, 6);
+  });
+  it('drops for a longer crank and rises for a shorter one', () => {
+    expect(saddleHeight(84, 175)).toBeCloseTo(84 * 0.883 - 0.5, 6);
+    expect(saddleHeight(84, 165)).toBeCloseTo(84 * 0.883 + 0.5, 6);
+  });
+});
+
+describe('inverse helpers', () => {
+  it('inseamFromFrame inverts the size multiplier', () => {
+    const f = frameSizeFromInseam(84, ROAD);
+    expect(inseamFromFrame(f.frameCm, ROAD)).toBeCloseTo(84, 9);
+  });
+
+  it('inseamFromStack inverts the stack model', () => {
+    const t = fitTargets({ heightCm: 178, inseamCm: 82, armCm: 59, category: ROAD });
+    expect(inseamFromStack(t.stackMm, ROAD)).toBeCloseTo(82, 6);
+  });
+
+  it('heightFromReach inverts reach for both an estimated and a known arm', () => {
+    // Estimated arm: reproduce the height whose reach we started from.
+    const H = 178;
+    const inseam = inseamFromHeight(H);
+    const arm = armFromHeightInseam(H, inseam);
+    const t = fitTargets({ heightCm: H, inseamCm: inseam, armCm: arm, category: ROAD });
+    expect(heightFromReach(t.reachMm, inseam, ROAD)).toBeCloseTo(H, 4);
+    // Known (measured) arm held fixed.
+    const t2 = fitTargets({ heightCm: H, inseamCm: inseam, armCm: 62, category: ROAD });
+    expect(heightFromReach(t2.reachMm, inseam, ROAD, 62)).toBeCloseTo(H, 4);
+  });
+});
+
+describe('resolveFit (unified two-way solve)', () => {
+  it('seeds a full rider + frame from nothing', () => {
+    const r = resolveFit({}, ROAD);
+    expect(r.heightCm).toBeCloseTo(SEED_HEIGHT_CM, 6);
+    expect(r.inseamCm).toBeGreaterThan(70);
+    expect(r.frameCm).toBeGreaterThan(45);
+    expect(r.targets.reachMm).toBeGreaterThan(300);
+  });
+
+  it('a body height fills inseam, arm, frame and reach/stack', () => {
+    const tall = resolveFit({ heightCm: 190 }, ROAD);
+    const short = resolveFit({ heightCm: 160 }, ROAD);
+    expect(tall.inseamCm).toBeGreaterThan(short.inseamCm);
+    expect(tall.frameCm).toBeGreaterThan(short.frameCm);
+    expect(tall.targets.reachMm).toBeGreaterThan(short.targets.reachMm);
+    expect(tall.targets.stackMm).toBeGreaterThan(short.targets.stackMm);
+  });
+
+  it('a typed frame size reproduces on the way back and proposes a height', () => {
+    const r = resolveFit({ frameCm: 50 }, ROAD);
+    expect(r.frameCm).toBeCloseTo(50, 6); // round-trips
+    expect(r.inseamCm).toBeCloseTo(inseamFromFrame(50, ROAD), 6);
+    // Height is proposed from the frame, not the seed.
+    expect(r.heightCm).not.toBeCloseTo(SEED_HEIGHT_CM, 1);
+    expect(r.heightCm).toBeCloseTo(inseamFromFrame(50, ROAD) / 0.47, 4);
+  });
+
+  it('a typed reach & stack reproduce, and propose a matching rider', () => {
+    const r = resolveFit({ reachMm: 400, stackMm: 600 }, ROAD);
+    expect(r.targets.reachMm).toBeCloseTo(400, 3);
+    expect(r.targets.stackMm).toBeCloseTo(600, 3);
+    expect(r.inseamCm).toBeGreaterThan(60);
+    expect(r.heightCm).toBeGreaterThan(140);
+  });
+
+  it('honours a measured inseam independent of height', () => {
+    const r = resolveFit({ heightCm: 178, inseamCm: 90 }, ROAD);
+    expect(r.heightCm).toBeCloseTo(178, 6); // height stays
+    expect(r.inseamCm).toBeCloseTo(90, 6); // measured inseam kept
+    expect(r.frameCm).toBeCloseTo(frameSizeFromInseam(90, ROAD).frameCm, 6);
+  });
+
+  it('derives the inseam from a body height even when a frame is pinned too', () => {
+    // Height fixes the rider's proportions; the frame drives only its own parts.
+    const r = resolveFit({ heightCm: 178, frameCm: 50 }, ROAD, 0.47);
+    expect(r.inseamCm).toBeCloseTo(178 * 0.47, 6); // from height, not the frame
+    expect(r.frameCm).toBeCloseTo(50, 6); // frame kept as typed
+    expect(r.wheel.label).toBe(wheelForFrame(ROAD, 50).label); // wheel follows the frame
+  });
+
+  it('still works back from a frame when no height is given', () => {
+    const r = resolveFit({ frameCm: 50 }, ROAD, 0.47);
+    expect(r.inseamCm).toBeCloseTo(50 / ROAD.sizeMult, 6);
+  });
+
+  it('lowers the saddle for a longer crank (crank-aware)', () => {
+    const short = resolveFit({ inseamCm: 84 }, ROAD).saddleHeightCm;
+    // The suggested crank for an 84 cm inseam is ~175 mm (> 170 ref), so the
+    // resolved saddle sits a touch below the plain LeMond figure.
+    expect(short).toBeLessThan(84 * 0.883);
+  });
+
+  it('keeps a pinned frame independent of a measured inseam', () => {
+    // Frame and inseam disagree (frame is bigger than the inseam recommends):
+    // both are kept — inseam drives the body, the frame drives wheel/cockpit.
+    const r = resolveFit({ inseamCm: 78, frameCm: 60 }, ROAD);
+    expect(r.inseamCm).toBeCloseTo(78, 6); // body from the measured inseam
+    expect(r.frameCm).toBeCloseTo(60, 6); // frame kept as typed
+    expect(r.wheel.label).toBe(wheelForFrame(ROAD, 60).label);
+    expect(r.cockpit.stemLenMm).toBe(cockpitForFrame(ROAD, 60).stemLenMm);
+  });
+
+  it('leg proportion proposes a different height from the same frame', () => {
+    const avg = resolveFit({ frameCm: 56 }, ROAD, 0.47);
+    const leggy = resolveFit({ frameCm: 56 }, ROAD, 0.49);
+    expect(avg.inseamCm).toBeCloseTo(leggy.inseamCm, 6); // inseam unchanged
+    expect(leggy.heightCm).toBeLessThan(avg.heightCm); // longer legs → shorter rider
   });
 });

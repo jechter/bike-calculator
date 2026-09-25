@@ -15,6 +15,9 @@ export function Field(props: {
   dotColor?: string;
   /** A small caption under the value noting what an estimate is based on. */
   source?: React.ReactNode;
+  /** Always render the caption line (empty when there's no source), so the field
+   *  keeps a constant height and neighbours don't move as the caption toggles. */
+  reserveSource?: boolean;
   /** Called on hover/focus and blur/leave — used to highlight a linked diagram element. */
   activate?: () => void;
   deactivate?: () => void;
@@ -34,7 +37,9 @@ export function Field(props: {
         {props.label}
       </span>
       {props.children}
-      {props.source && <span className="field-source">{props.source}</span>}
+      {(props.source !== undefined || props.reserveSource) && (
+        <span className="field-source">{props.source ?? " "}</span>
+      )}
       {props.hint && <span className="field-hint">{props.hint}</span>}
     </div>
   );

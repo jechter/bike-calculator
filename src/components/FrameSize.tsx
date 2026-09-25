@@ -136,13 +136,11 @@ export function FrameSize() {
           : stackGiven
             ? "Estimated for stack"
             : undefined;
-  // A supplied reach + stack fully define the frame geometry, so the size label
-  // no longer drives anything.
-  const frameSource = frameGiven
-    ? undefined
-    : reachGiven && stackGiven
-      ? "Ignored as stack and reach are supplied"
-      : bikeSource;
+  // A supplied reach + stack fully define the frame geometry, so the frame size
+  // (typed or estimated) and its nominal are ignored — shown once, full width,
+  // under the row rather than per field.
+  const frameIgnored = reachGiven && stackGiven;
+  const frameSource = frameIgnored || frameGiven ? undefined : bikeSource;
   const cockpitSource = "Estimated for body and frame";
 
   // Cockpit + crank are proposed from the frame, but stay editable so you can see
@@ -275,7 +273,7 @@ export function FrameSize() {
           }
         >
           <div className="rows">
-            <Field label="Body height" source={heightSource} dotColor={HEIGHT_COLOR} {...link("body")}>
+            <Field label="Body height" source={heightSource} reserveSource dotColor={HEIGHT_COLOR} {...link("body")}>
               {input("height", fit.heightCm, { min: 100, max: 210, suffix: "cm" })}
             </Field>
           </div>
@@ -292,6 +290,7 @@ export function FrameSize() {
                 </>
               }
               source={srcIf(!inseamGiven, riderSource)}
+              reserveSource
               dotColor={INSEAM_COLOR}
               {...link("inseam")}
             >
@@ -301,6 +300,7 @@ export function FrameSize() {
               label="Arm length"
               hint="shoulder (acromion) to wrist"
               source={srcIf(!armGiven, riderSource)}
+              reserveSource
               dotColor={ARM_COLOR}
               {...link("arm")}
             >
@@ -342,6 +342,7 @@ export function FrameSize() {
               label="Frame size"
               hint="nominal seat tube, centre-to-top"
               source={frameSource}
+              reserveSource
               dotColor={SIZE_COLOR}
               {...link("size")}
             >
@@ -380,10 +381,16 @@ export function FrameSize() {
                 options={NOMINAL_SIZES.map((s) => ({ value: s, label: s }))}
               />
             </Field>
+            {/* Applies to both Frame size and Nominal, so it spans the row. Always
+                rendered (empty when not) so the rows below don't shift. */}
+            <div className="bike-grid-note field-source">
+              {frameIgnored ? "Ignored as stack and reach are supplied" : " "}
+            </div>
 
             <Field
               label="Stack"
               source={srcIf(!stackGiven, bikeSource)}
+              reserveSource
               dotColor={STACK_COLOR}
               {...link("stack")}
             >
@@ -392,6 +399,7 @@ export function FrameSize() {
             <Field
               label="Reach"
               source={srcIf(!reachGiven, bikeSource)}
+              reserveSource
               dotColor={REACH_COLOR}
               {...link("reach")}
             >
@@ -411,6 +419,7 @@ export function FrameSize() {
               label="Wheel size"
               hint={`ISO ${effWheel.isoMm} mm`}
               source={wheelSel === "" ? "Estimated for frame size" : undefined}
+              reserveSource
               dotColor={WHEEL_COLOR}
               {...link("wheel")}
             >
@@ -426,24 +435,34 @@ export function FrameSize() {
             <Field
               label="Crank length"
               source={srcIf(!Number.isFinite(vals.crank), "Estimated for body measurements")}
+              reserveSource
               dotColor={CRANK_COLOR}
               {...link("crank")}
             >
               {input("crank", fit.crank.suggestedMm, { min: 100, max: 200, step: 2.5, suffix: "mm" })}
             </Field>
 
-            <Field label="Stem length" source={srcIf(!Number.isFinite(vals.stemLen), cockpitSource)}>
+            <Field
+              label="Stem length"
+              source={srcIf(!Number.isFinite(vals.stemLen), cockpitSource)}
+              reserveSource
+            >
               {input("stemLen", recCockpit.stemLenMm, { min: 35, max: 150, step: 5, suffix: "mm" })}
             </Field>
             <Field
               label="Stem angle"
               hint="from perpendicular to the steerer"
               source={srcIf(!Number.isFinite(vals.stemAngle), cockpitSource)}
+              reserveSource
             >
               {input("stemAngle", recCockpit.stemRiseDeg, { min: -30, max: 45, suffix: "°" })}
             </Field>
 
-            <Field label="Stem height (spacers)" source={srcIf(!Number.isFinite(vals.spacer), cockpitSource)}>
+            <Field
+              label="Stem height (spacers)"
+              source={srcIf(!Number.isFinite(vals.spacer), cockpitSource)}
+              reserveSource
+            >
               {input("spacer", recCockpit.spacerMm, { min: 0, max: 80, step: 5, suffix: "mm" })}
             </Field>
           </div>

@@ -226,6 +226,8 @@ body {
 /* A fixed two-column grid mixing editable fields with read-only cells. */
 .bike-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
 @media (max-width: 520px) { .bike-grid { grid-template-columns: 1fr; } }
+/* A note that applies to the whole row (e.g. frame size + nominal both ignored). */
+.bike-grid-note { grid-column: 1 / -1; margin-top: -6px; }
 
 /* Fields */
 .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 4px; }

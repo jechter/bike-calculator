@@ -253,8 +253,13 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const pedalAnkle = { x: crankTip.x - 14, y: crankTip.y + 52 };
   const rAnkle2 = { x: crankTip2.x - 12, y: crankTip2.y + 34 };
   const rToe2 = { x: crankTip2.x + 42, y: crankTip2.y + 2 };
-  const thigh = 0.245 * HB;
-  const shank = 0.246 * HB;
+  // Leg bones track the cycling inseam, not overall height: saddle height is set
+  // from the inseam, so the pedalling leg must be too — otherwise a long- or
+  // short-legged rider on the same height would over-extend or over-bend the knee.
+  // The 1.045 keeps a normal build (inseam ≈ 0.47·height) at the old length.
+  const legLen = inseamMm * 1.045;
+  const thigh = 0.499 * legLen;
+  const shank = 0.501 * legLen;
   // Near leg: if the pedal is farther than the leg can reach (a saddle forced too
   // high for this rider), draw the leg straight to full extension with a gap to the
   // pedal, and flag it, rather than stretching the shank to meet the pedal.

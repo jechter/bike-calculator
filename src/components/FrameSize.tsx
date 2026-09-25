@@ -414,7 +414,7 @@ export function FrameSize() {
           armOver={armOver}
         />
         <div className="fs-posture">
-          <span>Arms straight</span>
+          <span>Upright</span>
           <input
             type="range"
             min={0}
@@ -422,9 +422,9 @@ export function FrameSize() {
             step={0.01}
             value={posture}
             onChange={(e) => setPosture(parseFloat(e.target.value))}
-            aria-label="Seated posture, from arms straight to forearm level"
+            aria-label="Seated posture, from upright to aggressive"
           />
-          <span>Forearm level</span>
+          <span>Aggressive</span>
         </div>
         <figcaption className="fs-caption">
           <span style={{ color: REACH_COLOR }}>■</span> Reach ·{" "}

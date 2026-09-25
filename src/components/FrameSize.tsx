@@ -409,7 +409,7 @@ export function FrameSize() {
             {readout(
               "Stack : reach",
               <>
-                {fit.frameTargets.stackReach.toFixed(2)}{" "}
+                {(drawnStack / drawnReach).toFixed(2)}{" "}
                 <span className="field-readout-sub">higher = more upright</span>
               </>,
             )}

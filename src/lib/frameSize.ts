@@ -1,5 +1,12 @@
 // Frame size, saddle height and crank length estimates.
 // See docs/calculators/frame-size.md. These are STARTING ESTIMATES only.
+//
+// The editable data — the frame categories (with their blurb/sizing text and
+// per-category cockpit) and the wheel definitions — lives in src/data/*.json;
+// this module just types it and holds the fit logic.
+
+import frameCategoriesData from "../data/frameCategories.json";
+import wheelsData from "../data/wheels.json";
 
 // --- Frame categories -------------------------------------------------------
 
@@ -41,6 +48,8 @@ export interface FrameCategory {
   blurb: string;
   /** What actually matters when sizing a bike of this category. */
   sizing: string;
+  /** The typical stem + bar setup for this category (its average-frame cockpit). */
+  cockpit: CockpitSpec;
 }
 
 // frontEndRiseMm is how high the front end (head-tube top = stack) sits above
@@ -52,70 +61,7 @@ export interface FrameCategory {
 // the frame, from spacers / taller stems. topTubeSlopeDeg drives the actual-vs-
 // effective seat-tube split in the diagram; more slope = shorter actual seat
 // tube for the same size.
-export const FRAME_CATEGORIES: FrameCategory[] = [
-  {
-    id: 'tt', label: 'Time trial / triathlon', group: 'Time trial',
-    sizeMult: 0.66, reachBaseMm: 118, frontEndRiseMm: 3, topTubeSlopeDeg: 3, geometry: 'sloping',
-    blurb: 'The most aggressive position — an aero tuck with a steep seat angle and weight forward on the aerobars.',
-    sizing: 'You fit to the aerobar pads, not the frame, so treat frame reach & stack as a starting point and dial it in with the extensions, pads and spacers.',
-  },
-  {
-    id: 'road-aero', label: 'Aero / race', group: 'Road',
-    sizeMult: 0.665, reachBaseMm: 100, frontEndRiseMm: 18, topTubeSlopeDeg: 5, geometry: 'sloping',
-    blurb: 'Long, low and stiff — a race position, often with an integrated cockpit.',
-    sizing: 'Compare frames on reach & stack; the seat-tube "size" means little on a sloped frame. Expect a low stack — if you can’t get comfortably low, look at endurance.',
-  },
-  {
-    id: 'road-endurance', label: 'Endurance / all-road', group: 'Road',
-    sizeMult: 0.665, reachBaseMm: 80, frontEndRiseMm: 52, topTubeSlopeDeg: 7, geometry: 'sloping',
-    blurb: 'A taller front end and longer wheelbase for a less bent-over drop-bar position, with room for wider tyres.',
-    sizing: 'Still size on reach & stack — just expect more stack than a race frame. Small gaps are easily trimmed with spacers and stem length.',
-  },
-  {
-    id: 'gravel-race', label: 'Race', group: 'Gravel',
-    sizeMult: 0.665, reachBaseMm: 82, frontEndRiseMm: 52, topTubeSlopeDeg: 6, geometry: 'sloping',
-    blurb: 'Drop-bar and fairly aggressive, but longer and more stable than road race, with big tyre clearance.',
-    sizing: 'Size on reach & stack like a road bike; flared bars add a little effective reach and width to allow for.',
-  },
-  {
-    id: 'gravel-adventure', label: 'Adventure', group: 'Gravel',
-    sizeMult: 0.66, reachBaseMm: 66, frontEndRiseMm: 78, topTubeSlopeDeg: 10, geometry: 'sloping',
-    blurb: 'Relaxed and stable for loaded, rough riding — more stack, shorter reach, room for bags.',
-    sizing: 'Reach & stack still guide it, but the position is forgiving, so a size either way usually works.',
-  },
-  {
-    id: 'mtb', label: 'Hardtail / trail', group: 'Mountain',
-    sizeMult: 0.57, reachBaseMm: 58, frontEndRiseMm: 128, topTubeSlopeDeg: 14, geometry: 'suspension', showInches: true,
-    blurb: 'A suspension fork and slack head angle; modern trail bikes run a long front-centre with a short stem.',
-    sizing: 'Size by reach, not seat-tube length — a longer reach is the "bigger" bike. Then check the short seat tube clears your dropper insertion; the fork and bars handle stack.',
-  },
-  {
-    id: 'city', label: 'Upright', group: 'Hybrid / city',
-    sizeMult: 0.63, reachBaseMm: 45, frontEndRiseMm: 112, topTubeSlopeDeg: 16, geometry: 'sloping',
-    blurb: 'Upright and comfort-focused, with flat or swept-back bars.',
-    sizing: 'Reach barely matters and bar height is easy to change, so don’t over-think stack. Mainly check the seat-tube size / standover suits your legs, then set saddle height.',
-  },
-  // Traditional level-top-tube frames: a low stack, with the upright position
-  // coming from a tall/long stem and swept bars rather than frame height.
-  {
-    id: 'vintage-road', label: 'Road', group: 'Vintage',
-    sizeMult: 0.665, reachBaseMm: 90, frontEndRiseMm: 22, topTubeSlopeDeg: 0, geometry: 'classic',
-    blurb: 'A level top tube and (usually) a quill stem — classic steel road geometry.',
-    sizing: 'Frame stack is inherently low, but a quill stem gives lots of height adjustment. Size by seat tube / standover to your inseam and set bar height with the stem.',
-  },
-  {
-    id: 'vintage-mtb', label: 'Mountain (rigid)', group: 'Vintage',
-    sizeMult: 0.59, reachBaseMm: 64, frontEndRiseMm: 20, topTubeSlopeDeg: 0, geometry: 'classic', showInches: true,
-    blurb: 'Rigid, with a level top tube, usually sized in inches.',
-    sizing: 'Aim for plenty of standover clearance; size by the seat tube to your inseam and use the (often long) stem to set bar height and reach.',
-  },
-  {
-    id: 'vintage-city', label: 'City / roadster', group: 'Vintage',
-    sizeMult: 0.63, reachBaseMm: 52, frontEndRiseMm: 28, topTubeSlopeDeg: 0, geometry: 'classic',
-    blurb: 'A tall, very upright roadster — level top tube, swept bars, long stem.',
-    sizing: 'Size by the seat tube to your inseam (mind standover); the upright position comes from the tall stem, so frame reach & stack aren’t the deciding numbers.',
-  },
-];
+export const FRAME_CATEGORIES: FrameCategory[] = frameCategoriesData as unknown as FrameCategory[];
 
 export const DEFAULT_CATEGORY_ID = 'road-endurance';
 
@@ -402,60 +348,16 @@ export interface Wheel {
   note: string;
 }
 
-const WHEEL_700C: Wheel = {
-  label: '700c', isoMm: 622, outerMm: 700,
-  note: 'The road/gravel standard (ISO 622), used across almost every adult frame size.',
-};
-const WHEEL_650B: Wheel = {
-  label: '650b', isoMm: 584, outerMm: 678,
-  note: 'A smaller-diameter wheel (ISO 584) fitted to the smallest frames so the fit and handling stay right — also chosen for extra tyre volume.',
-};
-const WHEEL_29: Wheel = {
-  label: '29"', isoMm: 622, outerMm: 742,
-  note: 'The standard modern trail wheel — an ISO 622 rim under a fat tyre, so it rolls tall.',
-};
-// Not auto-proposed (still niche); offered in the picker for those who want it.
-const WHEEL_32: Wheel = {
-  label: '32"', isoMm: 686, outerMm: 810,
-  note: 'An emerging larger-than-29" mountain wheel (ISO 686) — rolls over rough ground even better, at some cost in weight, stiffness and frame/fork availability.',
-};
-const WHEEL_275: Wheel = {
-  label: '27.5"', isoMm: 584, outerMm: 706,
-  note: 'The smaller trail wheel (ISO 584), run on small frames for standover and a livelier feel.',
-};
-const WHEEL_26: Wheel = {
-  label: '26"', isoMm: 559, outerMm: 666,
-  note: 'The classic mountain-bike size (ISO 559).',
-};
-const WHEEL_27: Wheel = {
-  label: '27"', isoMm: 630, outerMm: 686,
-  note: 'The traditional road size (ISO 630) on older steel frames — a hair larger than 700c, but a rarer tyre.',
-};
-const WHEEL_28: Wheel = {
-  label: '28"', isoMm: 635, outerMm: 709,
-  note: 'The classic roadster wheel (ISO 635).',
-};
-// Kids' bikes are sized by their wheel, stepping down as the rider shrinks.
-const WHEEL_24: Wheel = {
-  label: '24"', isoMm: 507, outerMm: 550,
-  note: "A junior wheel (ISO 507) — the largest kids' size, just below the adult range.",
-};
-const WHEEL_20: Wheel = {
-  label: '20"', isoMm: 406, outerMm: 455,
-  note: "A kids' wheel (ISO 406, also the BMX size).",
-};
-const WHEEL_16: Wheel = {
-  label: '16"', isoMm: 305, outerMm: 345,
-  note: "A small kids' wheel (ISO 305).",
-};
-const WHEEL_14: Wheel = {
-  label: '14"', isoMm: 254, outerMm: 292,
-  note: "A very small kids' wheel (ISO 254).",
-};
-const WHEEL_12: Wheel = {
-  label: '12"', isoMm: 203, outerMm: 240,
-  note: "The smallest kids'/balance-bike wheel (ISO 203).",
-};
+// Every wheel size, largest to smallest — for the (editable) wheel picker.
+export const WHEELS: Wheel[] = wheelsData as Wheel[];
+
+// Internal lookup by label, used by the wheelForFrame rules below.
+const wheel = (label: string): Wheel => WHEELS.find((w) => w.label === label) as Wheel;
+
+/** Look up a wheel by its common name (e.g. "700c", "29\""). */
+export function wheelByLabel(label: string): Wheel | undefined {
+  return WHEELS.find((w) => w.label === label);
+}
 
 /**
  * Pick the wheel that makes sense for a frame's style *and* size. Style sets the
@@ -465,17 +367,6 @@ const WHEEL_12: Wheel = {
  * quoted size track how the bike would really be built. `frameCm` is the nominal
  * (seat-tube) size in cm.
  */
-// Every wheel size, largest to smallest — for the (editable) wheel picker.
-export const WHEELS: Wheel[] = [
-  WHEEL_32, WHEEL_29, WHEEL_28, WHEEL_27, WHEEL_700C, WHEEL_275, WHEEL_650B,
-  WHEEL_26, WHEEL_24, WHEEL_20, WHEEL_16, WHEEL_14, WHEEL_12,
-];
-
-/** Look up a wheel by its common name (e.g. "700c", "29\""). */
-export function wheelByLabel(label: string): Wheel | undefined {
-  return WHEELS.find((w) => w.label === label);
-}
-
 export function wheelForFrame(category: FrameCategory, frameCm: number): Wheel {
   // Below the adult range, a bike is sized by its wheel regardless of style, so
   // step down a kids' ladder. Key it off the rider's cycling inseam (frame ÷ the
@@ -483,27 +374,27 @@ export function wheelForFrame(category: FrameCategory, frameCm: number): Wheel {
   // small "mtb" frame — which carry different multipliers — land on the same
   // wheel for the same-sized child.
   const inseamCm = frameCm / category.sizeMult;
-  if (inseamCm < 42) return WHEEL_12;
-  if (inseamCm < 47) return WHEEL_14;
-  if (inseamCm < 52) return WHEEL_16;
-  if (inseamCm < 60) return WHEEL_20;
-  if (inseamCm < 66) return WHEEL_24;
+  if (inseamCm < 42) return wheel('12"');
+  if (inseamCm < 47) return wheel('14"');
+  if (inseamCm < 52) return wheel('16"');
+  if (inseamCm < 60) return wheel('20"');
+  if (inseamCm < 66) return wheel('24"');
 
   switch (category.id) {
     case 'mtb':
       // Trail bikes run 29"; the smallest sizes drop to 27.5" for standover/handling.
-      return frameCm < 44 ? WHEEL_275 : WHEEL_29;
+      return frameCm < 44 ? wheel('27.5"') : wheel('29"');
     case 'vintage-road':
-      return WHEEL_27;
+      return wheel('27"');
     case 'vintage-mtb':
-      return WHEEL_26;
+      return wheel('26"');
     case 'vintage-city':
-      return WHEEL_28;
+      return wheel('28"');
     case 'city':
-      return WHEEL_700C;
+      return wheel('700c');
     default:
       // Road, gravel and TT: 700c, dropping to 650b on the smallest frames.
-      return frameCm < 48 ? WHEEL_650B : WHEEL_700C;
+      return frameCm < 48 ? wheel('650b') : wheel('700c');
   }
 }
 
@@ -534,23 +425,12 @@ export interface CockpitSpec {
   gripDropMm: number;
 }
 
-// Per-category base cockpit, defined for the category's AVERAGE frame (an 84 cm
-// inseam). cockpitForFrame() then scales the stem + spacers around this by frame
-// size. gripFwd/Drop and the bar type stay constant for the category.
-// stemRiseDeg is the printed stem angle (from perpendicular to the steerer); the
-// diagram adds the head tube's lean, so ~−18° draws level, more positive rises.
-const COCKPITS: Record<string, CockpitSpec> = {
-  tt: { stemLenMm: 80, stemRiseDeg: -17, spacerMm: 12, bar: "aero", gripFwdMm: 155, gripDropMm: -8 },
-  "road-aero": { stemLenMm: 110, stemRiseDeg: -12, spacerMm: 15, bar: "drop", gripFwdMm: 80, gripDropMm: 20 },
-  "road-endurance": { stemLenMm: 100, stemRiseDeg: -6, spacerMm: 30, bar: "drop", gripFwdMm: 75, gripDropMm: 16 },
-  "gravel-race": { stemLenMm: 90, stemRiseDeg: -6, spacerMm: 25, bar: "drop", gripFwdMm: 75, gripDropMm: 14 },
-  "gravel-adventure": { stemLenMm: 80, stemRiseDeg: 0, spacerMm: 35, bar: "drop", gripFwdMm: 70, gripDropMm: 12 },
-  mtb: { stemLenMm: 50, stemRiseDeg: 0, spacerMm: 20, bar: "flat", gripFwdMm: -18, gripDropMm: 0 },
-  city: { stemLenMm: 90, stemRiseDeg: 25, spacerMm: 30, bar: "flat", gripFwdMm: -45, gripDropMm: -5 },
-  "vintage-road": { stemLenMm: 90, stemRiseDeg: -6, spacerMm: 50, bar: "drop", gripFwdMm: 72, gripDropMm: 14 },
-  "vintage-mtb": { stemLenMm: 90, stemRiseDeg: 6, spacerMm: 40, bar: "flat", gripFwdMm: -22, gripDropMm: 0 },
-  "vintage-city": { stemLenMm: 100, stemRiseDeg: 25, spacerMm: 45, bar: "flat", gripFwdMm: -55, gripDropMm: -8 },
-};
+// The per-category base cockpit (category.cockpit, from frameCategories.json) is
+// defined for the category's AVERAGE frame (an 84 cm inseam); cockpitForFrame()
+// scales the stem + spacers around it by frame size. gripFwd/Drop and the bar type
+// stay constant per category. stemRiseDeg is the printed stem angle (from
+// perpendicular to the steerer); the diagram adds the head tube's lean, so ~−18°
+// draws level, more positive rises.
 
 const clampN = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const roundTo = (v: number, step: number) => Math.round(v / step) * step;
@@ -567,7 +447,7 @@ const SPACER_PER_CM = 1.0; // smaller frames run more spacers to reach the bars
  * length is snapped to the usual 10 mm increments and spacers to 5 mm.
  */
 export function cockpitForFrame(category: FrameCategory, frameCm: number): CockpitSpec {
-  const base = COCKPITS[category.id] ?? COCKPITS["road-endurance"];
+  const base = category.cockpit;
   const refCm = 84 * category.sizeMult; // frame size for the average rider
   const d = frameCm - refCm;
   return {

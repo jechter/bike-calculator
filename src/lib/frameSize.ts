@@ -717,7 +717,14 @@ export interface ResolvedFit {
   /** Nominal frame size (cm) — equals a typed frame size, else derived from inseam. */
   frameCm: number;
   frame: FrameSizeResult;
+  /** The rider's own target reach/stack, from the resolved body. */
   targets: FitTargets;
+  /**
+   * The frame's reach/stack: when a frame size is pinned it drives these (via the
+   * rider it implies), so they describe the frame; otherwise they equal the rider
+   * target. This is what the reach/stack fields show and the diagram draws.
+   */
+  frameTargets: FitTargets;
   crank: CrankSuggestion;
   wheel: Wheel;
   /** Typical cockpit for the resolved frame — the default, before any user override. */
@@ -778,6 +785,16 @@ export function resolveFit(
   }
 
   const targets = fitTargets({ heightCm: H, inseamCm: I, armCm: A, category });
+  // Reach & stack describe the FRAME, so a pinned frame size drives them (via its
+  // implied rider) — mirroring how a body height drives the inseam/arm. Without a
+  // pinned frame they equal the rider's own target.
+  const frameTargets = isNum(frameCm_)
+    ? (() => {
+        const fi = inseamFromFrame(frameCm_, category);
+        const fh = fi / legProportion;
+        return fitTargets({ heightCm: fh, inseamCm: fi, armCm: armFromHeightInseam(fh, fi), category });
+      })()
+    : targets;
   const frame = frameSizeFromInseam(I, category);
   // A typed frame size is its own measurement; only fall back to the inseam-
   // derived recommendation when it's blank. The wheel and cockpit follow it.
@@ -793,6 +810,7 @@ export function resolveFit(
     frameCm,
     frame,
     targets,
+    frameTargets,
     crank,
     wheel,
     cockpit,

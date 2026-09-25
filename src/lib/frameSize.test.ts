@@ -386,6 +386,23 @@ describe('resolveFit (unified two-way solve)', () => {
     expect(r.inseamCm).toBeCloseTo(50 / ROAD.sizeMult, 6);
   });
 
+  it('a pinned frame drives reach/stack even alongside a body height', () => {
+    const r = resolveFit({ heightCm: 185, frameCm: 50 }, ROAD);
+    // The rider target (from the 185 cm body) exceeds the small frame's own
+    // reach/stack, and frameTargets follow the frame, not the body.
+    expect(r.targets.reachMm).toBeGreaterThan(r.frameTargets.reachMm);
+    expect(r.targets.stackMm).toBeGreaterThan(r.frameTargets.stackMm);
+    const frameOnly = resolveFit({ frameCm: 50 }, ROAD);
+    expect(r.frameTargets.reachMm).toBeCloseTo(frameOnly.frameTargets.reachMm, 6);
+    expect(r.frameTargets.stackMm).toBeCloseTo(frameOnly.frameTargets.stackMm, 6);
+  });
+
+  it('without a pinned frame, frameTargets equal the rider target', () => {
+    const r = resolveFit({ heightCm: 178 }, ROAD);
+    expect(r.frameTargets.reachMm).toBeCloseTo(r.targets.reachMm, 6);
+    expect(r.frameTargets.stackMm).toBeCloseTo(r.targets.stackMm, 6);
+  });
+
   it('resolves the saddle at the plain LeMond height (suggested crank)', () => {
     // resolveFit uses the suggested crank, so no spurious crank adjustment.
     expect(resolveFit({ inseamCm: 84 }, ROAD).saddleHeightCm).toBeCloseTo(84 * 0.883, 6);

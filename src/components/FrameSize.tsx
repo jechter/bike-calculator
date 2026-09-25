@@ -106,9 +106,19 @@ export function FrameSize() {
     category,
   );
 
-  // The drawn reach/stack (a pinned value, else the recommendation).
-  const drawnReach = num(vals.reach) ?? fit.targets.reachMm;
-  const drawnStack = num(vals.stack) ?? fit.targets.stackMm;
+  // The drawn reach/stack: a pinned value, else the frame's reach/stack (which a
+  // pinned frame size drives), else the rider's target.
+  const drawnReach = num(vals.reach) ?? fit.frameTargets.reachMm;
+  const drawnStack = num(vals.stack) ?? fit.frameTargets.stackMm;
+
+  // Which measurements the user actually supplied, for the "Estimated for …"
+  // captions: a body height fixes the rider's proportions; a frame size fixes the
+  // frame's reach & stack.
+  const bodyGiven = Number.isFinite(vals.height);
+  const frameGiven = Number.isFinite(vals.frame);
+  const riderSource = frameGiven && !bodyGiven ? "Estimated for frame dimensions" : "Estimated for body size";
+  const bikeSource = frameGiven ? "Estimated for frame size" : "Estimated for body measurements";
+  const srcIf = (unset: boolean, s: string) => (unset ? s : undefined);
 
   // Cockpit + crank are proposed from the frame, but stay editable so you can see
   // how (say) a longer stem changes the position. The stem/spacer suggestion also
@@ -256,6 +266,7 @@ export function FrameSize() {
                   legs
                 </>
               }
+              source={srcIf(!Number.isFinite(vals.inseam), riderSource)}
               dotColor={INSEAM_COLOR}
               {...link("inseam")}
             >
@@ -264,6 +275,7 @@ export function FrameSize() {
             <Field
               label="Arm length"
               hint="shoulder (acromion) to wrist"
+              source={srcIf(!Number.isFinite(vals.arm), riderSource)}
               dotColor={ARM_COLOR}
               {...link("arm")}
             >
@@ -304,6 +316,7 @@ export function FrameSize() {
             <Field
               label="Frame size"
               hint="nominal seat tube, centre-to-top"
+              source={srcIf(!frameGiven, bikeSource)}
               dotColor={SIZE_COLOR}
               {...link("size")}
             >
@@ -343,17 +356,27 @@ export function FrameSize() {
               />
             </Field>
 
-            <Field label="Stack" dotColor={STACK_COLOR} {...link("stack")}>
-              {input("stack", fit.targets.stackMm, { min: 400, max: 750, step: 5, suffix: "mm" })}
+            <Field
+              label="Stack"
+              source={srcIf(!Number.isFinite(vals.stack), bikeSource)}
+              dotColor={STACK_COLOR}
+              {...link("stack")}
+            >
+              {input("stack", fit.frameTargets.stackMm, { min: 400, max: 750, step: 5, suffix: "mm" })}
             </Field>
-            <Field label="Reach" dotColor={REACH_COLOR} {...link("reach")}>
-              {input("reach", fit.targets.reachMm, { min: 250, max: 520, step: 5, suffix: "mm" })}
+            <Field
+              label="Reach"
+              source={srcIf(!Number.isFinite(vals.reach), bikeSource)}
+              dotColor={REACH_COLOR}
+              {...link("reach")}
+            >
+              {input("reach", fit.frameTargets.reachMm, { min: 250, max: 520, step: 5, suffix: "mm" })}
             </Field>
 
             {readout(
               "Stack : reach",
               <>
-                {fit.targets.stackReach.toFixed(2)}{" "}
+                {fit.frameTargets.stackReach.toFixed(2)}{" "}
                 <span className="field-readout-sub">higher = more upright</span>
               </>,
             )}

@@ -549,6 +549,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 /* Emphasis when the wheel-size value is hovered/edited in the UI. */
 .fg-wheel.fg-hl { stroke: var(--diag-wheel); stroke-width: 11; filter: drop-shadow(0 0 6px var(--diag-wheel)); }
 .fg-tube { fill: none; stroke: var(--muted); stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; }
+.fg-tube.fg-hl { stroke: var(--text); stroke-width: 14; filter: drop-shadow(0 0 6px var(--accent)); }
 .fg-headtube { stroke: var(--text); stroke-width: 14; }
 .fg-seatpost { fill: none; stroke: var(--muted); stroke-width: 6; stroke-linecap: round; }
 /* Handlebar + the tops/hoods/drops hand positions (open dots); the active one is

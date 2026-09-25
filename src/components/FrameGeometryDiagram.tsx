@@ -94,7 +94,9 @@ export interface FrameGeometryDiagramProps {
   armOver?: boolean;
 }
 
-export type HighlightKey = "reach" | "stack" | "size" | "crank" | "body" | "inseam" | "arm" | "wheel";
+export type HighlightKey =
+  | "reach" | "stack" | "size" | "crank" | "body" | "inseam" | "arm" | "wheel"
+  | "stem" | "spacer";
 
 type P = { x: number; y: number };
 // Bike space has y up; SVG has y down, so flip as we place points.
@@ -636,9 +638,10 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
       />
 
       {/* stem + handlebar; hands rest on the active bar position, with the other
-          hand positions (tops/hoods/drops) marked */}
-      {line(s.headTop, s.barBottom, "fg-tube")}
-      {line(s.barBottom, s.barClamp, "fg-tube")}
+          hand positions (tops/hoods/drops) marked. The spacer stack (up the
+          steerer) and the stem highlight when their fields are hovered. */}
+      {line(s.headTop, s.barBottom, "fg-tube" + hlClass("spacer"))}
+      {line(s.barBottom, s.barClamp, "fg-tube" + hlClass("stem"))}
       {dropPath && <path d={dropPath} className="fg-bar" fill="none" />}
       {barSegs.map(([a, b], i) => (
         <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y} className="fg-bar" />

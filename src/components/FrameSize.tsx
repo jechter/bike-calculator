@@ -447,6 +447,7 @@ export function FrameSize() {
               label="Stem length"
               source={srcIf(!Number.isFinite(vals.stemLen), cockpitSource)}
               reserveSource
+              {...link("stem")}
             >
               {input("stemLen", recCockpit.stemLenMm, { min: 35, max: 150, step: 5, suffix: "mm" })}
             </Field>
@@ -460,9 +461,10 @@ export function FrameSize() {
             </Field>
 
             <Field
-              label="Stem height (spacers)"
+              label="Stem height (spacers) + headset"
               source={srcIf(!Number.isFinite(vals.spacer), cockpitSource)}
               reserveSource
+              {...link("spacer")}
             >
               {input("spacer", recCockpit.spacerMm, { min: 0, max: 80, step: 5, suffix: "mm" })}
             </Field>

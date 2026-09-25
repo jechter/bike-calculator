@@ -27,9 +27,11 @@ export interface FrameCategory {
   /** Reach offset (mm): larger = longer/lower cockpit. */
   reachBaseMm: number;
   /**
-   * How high the front end sits above the classic (level-top-tube) seat-tube
-   * top, in mm — small for race, tall for upright. Added to the seat-tube
-   * vertical rise to give the stack.
+   * How high the front end (head-tube top = stack) sits above the seat cluster,
+   * in mm — small for race, tall for upright. Added to the seat-tube vertical rise
+   * to give the stack, and calibrated so a size-M rider lands on real reach/stack
+   * for the category. Can be NEGATIVE on aggressive frames (TT/aero), where the
+   * head-tube top sits below the seat cluster.
    */
   frontEndRiseMm: number;
   /** Top-tube slope (degrees below horizontal) — 0 for a level vintage frame. */

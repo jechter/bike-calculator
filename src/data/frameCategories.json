@@ -135,13 +135,13 @@
     "id": "vintage-city",
     "label": "City / roadster",
     "group": "Vintage",
-    "sizeMult": 0.68,
+    "sizeMult": 0.69,
     "reachBaseMm": 52,
     "frontEndRiseMm": 28,
     "topTubeSlopeDeg": 0,
     "geometry": "classic",
     "blurb": "A tall, very upright roadster — level top tube, swept bars, long stem.",
     "sizing": "Size by the seat tube to your inseam (mind standover); the upright position comes from the tall stem, so frame reach & stack aren’t the deciding numbers.",
-    "cockpit": { "stemLenMm": 20, "stemRiseDeg": 25, "spacerMm": 80  , "bar": "flat", "gripFwdMm": -120, "gripDropMm": -20 }
+    "cockpit": { "stemLenMm": 20, "stemRiseDeg": 25, "spacerMm": 120  , "bar": "flat", "gripFwdMm": -140, "gripDropMm": -30 }
   }
 ]

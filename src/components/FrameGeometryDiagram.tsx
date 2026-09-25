@@ -491,7 +491,7 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
     <svg
       viewBox={`${minX} ${minY} ${VW} ${VH}`}
       width="100%"
-      preserveAspectRatio="xMidYMid meet"
+      preserveAspectRatio="xMidYMax meet"
       role="img"
       aria-label="Frame geometry: stack rises from the bottom bracket and reach runs forward to the head-tube top; the actual seat tube (to the sloping top tube) and the effective/virtual seat tube (to a horizontal top tube) are shown in two shades of green; a crank arm drawn to the suggested length pivots at the bottom bracket. To the left, a front-view cyclist stands to scale with dimension lines for body height, cycling inseam and arm length. An approximate rider is also posed on the bike to show the riding position."
     >

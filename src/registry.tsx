@@ -31,6 +31,8 @@ export interface CalculatorDef {
   shareable?: boolean;
   /** Optional extra control(s) rendered in the page header, left of "Copy link". */
   HeaderActions?: React.ComponentType;
+  /** The page renders its own heading (App skips the shared .main-head). */
+  ownHeader?: boolean;
 }
 
 export const CALCULATORS: CalculatorDef[] = [
@@ -56,9 +58,10 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: "frame-size",
     title: "Frame Size",
-    subtitle: "Reach, stack and effective frame size from body measurements — the meaningful numbers, not just seat-tube height.",
+    subtitle: "",
     icon: <FrameIcon />,
     Component: FrameSize,
+    ownHeader: true,
   },
   {
     id: "tire",

@@ -522,6 +522,10 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .fs-clear-all:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .fs-clear-all:disabled { opacity: 0.45; cursor: default; }
 
+/* The page title lives inside the left (controls) column so it sits above the
+   inputs only, leaving the diagram rail free to use the full height. */
+.fs-title { margin: 0 0 16px; font-size: 24px; }
+
 /* Frame-size explainer figure (inline SVG, like the other diagrams) */
 .fs-diagram {
   margin: 14px 0 0;
@@ -621,25 +625,49 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   .fs-viz svg { width: 100%; max-height: 62vh; }
 }
 
-/* Wide screens: controls take a fixed reading width on the left, the explainer
-   fills the remaining space in a sticky right rail (mirrors the drivetrain /
-   wheel-building workbench). The breakpoint is set high enough that the rail
+/* Wide screens: the workbench fills the viewport height. The controls (left) take
+   a fixed reading width and scroll on their own; the diagram (right) is fixed to
+   the full height and never moves. The breakpoint is set high enough that the rail
    always has room for a decently-sized diagram; below it the layout stacks. */
 @media (min-width: 1120px) {
-  .main--frame-size { max-width: none; }
+  /* Pin the page: only the controls column scrolls, so the diagram stays put. */
+  .main--frame-size {
+    max-width: none;
+    height: 100vh;
+    padding: 0;
+    overflow: hidden;
+  }
+  /* Only horizontal padding here; each column owns its vertical spacing so the
+     controls can scroll edge-to-edge (the gap scrolls with the content instead
+     of clipping it at a fixed inset band). */
   .fs-workbench {
     display: grid;
     grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
     gap: 24px;
-    align-items: start;
+    align-items: stretch;
+    height: 100vh;
+    padding: 0 32px;
+  }
+  .fs-controls {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    /* Top/bottom breathing room lives inside the scroll area, so it scrolls
+       away rather than culling content at a fixed band. */
+    padding: 28px 8px 28px 0;
   }
   .fs-viz {
-    position: sticky;
-    top: 16px;
-    margin-top: 0;
-    justify-self: stretch;
+    margin: 28px 0;
+    height: calc(100vh - 56px);
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
   }
-  .fs-viz svg { width: 100%; max-height: 80vh; }
+  /* The SVG box grows to fill the space above the slider/caption; the drawing is
+     bottom-anchored (preserveAspectRatio xMidYMax), so the ground line stays put
+     and the flexible slack sits above the image as the rider scales. */
+  .fs-viz-svg { flex: 1 1 auto; min-height: 0; display: flex; }
+  .fs-viz-svg svg { width: 100%; height: 100%; max-height: none; }
 }
 
 /* Drivetrain (crankset + cassette) diagram */

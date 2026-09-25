@@ -245,6 +245,7 @@ export function FrameSize() {
   return (
     <div className="fs-workbench">
       <div className="fs-controls">
+        <h1 className="fs-title">Frame Size</h1>
         <div className="fs-toolbar">
           <span className="fs-toolbar-hint">
             Every value is editable — set the ones you know, the rest are recommended.
@@ -493,13 +494,15 @@ export function FrameSize() {
           approximate rider posed on the bike. Sits in a right-hand rail on wide
           screens and drops below the controls when narrow. */}
       <figure className="fs-diagram fs-viz">
-        <FrameGeometryDiagram
-          {...geom}
-          cockpit={effCockpit}
-          highlight={hl}
-          posture={posture}
-          armOver={armOver}
-        />
+        <div className="fs-viz-svg">
+          <FrameGeometryDiagram
+            {...geom}
+            cockpit={effCockpit}
+            highlight={hl}
+            posture={posture}
+            armOver={armOver}
+          />
+        </div>
         <div className="fs-posture">
           <span>Upright</span>
           <input

@@ -100,18 +100,20 @@ export function App() {
         </aside>
 
         <main className={`main main--${active.id}`}>
-          <div className="main-head">
-            <div>
-              <h1>{active.title}</h1>
-              <p className="subtitle">{active.subtitle}</p>
-            </div>
-            {(active.HeaderActions || active.shareable) && (
-              <div className="main-actions">
-                {active.HeaderActions && <active.HeaderActions />}
-                {active.shareable && <CopyLinkButton />}
+          {!active.ownHeader && (
+            <div className="main-head">
+              <div>
+                <h1>{active.title}</h1>
+                <p className="subtitle">{active.subtitle}</p>
               </div>
-            )}
-          </div>
+              {(active.HeaderActions || active.shareable) && (
+                <div className="main-actions">
+                  {active.HeaderActions && <active.HeaderActions />}
+                  {active.shareable && <CopyLinkButton />}
+                </div>
+              )}
+            </div>
+          )}
           <Active key={active.shareable ? hashKey : active.id} />
         </main>
       </div>

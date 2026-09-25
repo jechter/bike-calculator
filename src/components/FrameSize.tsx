@@ -10,10 +10,9 @@ import {
   findCategory,
   FRAME_CATEGORIES,
   DEFAULT_CATEGORY_ID,
-  LEG_PROPORTIONS,
   type CockpitSpec,
 } from "../lib/frameSize";
-import { Field, NumberInput, Select, Note, Result, Section } from "./ui";
+import { Field, NumberInput, Select, Note, Section } from "./ui";
 import { FrameGeometryDiagram, type HighlightKey } from "./FrameGeometryDiagram";
 
 // Categories grouped into <optgroup>s (Road / Gravel / Mountain / …), preserving
@@ -65,7 +64,6 @@ export function FrameSize() {
   // and shows each value greyed as an "≈" estimate until you type over it.
   const [vals, setVals] = useState<Record<FieldKey, number>>(EMPTY);
   const [categoryId, setCategoryId] = useState(DEFAULT_CATEGORY_ID);
-  const [legProp, setLegProp] = useState(0.47);
   const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
   // Wheel size: "" = the size recommended for the frame; else a chosen wheel.
   const [wheelSel, setWheelSel] = useState("");
@@ -103,7 +101,6 @@ export function FrameSize() {
       stackMm: num(vals.stack),
     },
     category,
-    legProp,
   );
 
   // The drawn reach/stack (a pinned value, else the recommendation).
@@ -176,6 +173,18 @@ export function FrameSize() {
     );
   };
 
+  // A read-only cell that sits in the same grid as the editable fields (label on
+  // top, value below), so derived numbers line up next to the inputs.
+  const readout = (
+    label: string,
+    value: ReactNode,
+    o: { dotColor?: string; hl?: HighlightKey } = {},
+  ) => (
+    <Field label={label} dotColor={o.dotColor} {...(o.hl ? link(o.hl) : {})}>
+      <div className="field-readout">{value}</div>
+    </Field>
+  );
+
   // The diagram shows the user's actual bike where they've supplied it: a pinned
   // reach/stack draws directly, even if it disagrees with the inseam-derived
   // recommendation, so you can see how you'd sit on a frame you already own.
@@ -233,7 +242,15 @@ export function FrameSize() {
             </Field>
             <Field
               label="Cycling inseam"
-              hint="barefoot, crotch to floor"
+              hint={
+                <>
+                  barefoot, crotch to floor
+                  <br />
+                  For a {round(fit.heightCm)} cm rider: {round(fit.heightCm * 0.47)} cm avg,{" "}
+                  {round(fit.heightCm * 0.49)} cm long legs, {round(fit.heightCm * 0.45)} cm short
+                  legs
+                </>
+              }
               dotColor={INSEAM_COLOR}
               {...link("inseam")}
             >
@@ -251,26 +268,24 @@ export function FrameSize() {
         </Section>
 
         <Section
-          title="Bike category"
+          title="Bike"
           info={
             <>
-              A category merges frame style (how it's sized) with riding position
-              (how low &amp; long you sit): it sets the size multiplier, the
-              reach/stack position and the top-tube slope. <strong>Leg proportion</strong>{" "}
-              only links height and inseam when one is estimated from the other.
+              <strong>Reach</strong> &amp; <strong>stack</strong> — the
+              bottom-bracket-to-head-tube-top distances — are the brand-independent way to
+              compare frames (unlike a seat-tube "size", they don't shift when the top tube
+              slopes). <strong>Frame size</strong> is the traditional nominal (inseam ×
+              the category multiplier), a label only — the diagram shows both the actual and
+              effective seat tube in green. The stem, spacers and crank are a typical setup
+              for the size — everything's editable, so you can solve back to a rider or see
+              how a longer stem changes the position. Stem angle is the printed spec
+              (degrees from perpendicular to the steerer), so a stem near −18° sits level.
             </>
           }
         >
-          <div className="grid">
+          <div className="rows">
             <Field label="Category" hint="how it's sized and how you sit on it">
               <Select value={categoryId} onChange={setCategoryId} options={CATEGORY_OPTIONS} />
-            </Field>
-            <Field label="Leg proportion" hint="links height ↔ inseam when estimated">
-              <Select
-                value={String(legProp)}
-                onChange={(v) => setLegProp(parseFloat(v))}
-                options={LEG_PROPORTIONS.map((p) => ({ value: String(p.value), label: p.label }))}
-              />
             </Field>
           </div>
           <Note>
@@ -279,23 +294,8 @@ export function FrameSize() {
               <strong>Sizing:</strong> {category.sizing}
             </span>
           </Note>
-        </Section>
 
-        <Section
-          title="Frame & fit — reach, stack, size"
-          info={
-            <>
-              <strong>Reach</strong> (horizontal) and <strong>stack</strong> (vertical)
-              are the bottom-bracket-to-head-tube-top distances — the brand-independent
-              way to compare frames, because unlike a seat-tube "size" they don't change
-              when the top tube slopes. The <strong>frame size</strong> is the traditional
-              nominal (inseam × the category multiplier); it's a label, so the diagram
-              shows both the actual and effective seat tube in green. Set any of these to
-              solve back to a rider, or read them off the body inputs above.
-            </>
-          }
-        >
-          <div className="grid">
+          <div className="bike-grid">
             <Field
               label="Frame size"
               hint="nominal seat tube, centre-to-top"
@@ -324,12 +324,24 @@ export function FrameSize() {
                 ),
               })}
             </Field>
-            <Field label="Reach" dotColor={REACH_COLOR} {...link("reach")}>
-              {input("reach", fit.targets.reachMm, { min: 250, max: 520, step: 5, suffix: "mm" })}
-            </Field>
+            {readout("Nominal", fit.frame.nominalSize, { dotColor: SIZE_COLOR })}
+
             <Field label="Stack" dotColor={STACK_COLOR} {...link("stack")}>
               {input("stack", fit.targets.stackMm, { min: 400, max: 750, step: 5, suffix: "mm" })}
             </Field>
+            <Field label="Reach" dotColor={REACH_COLOR} {...link("reach")}>
+              {input("reach", fit.targets.reachMm, { min: 250, max: 520, step: 5, suffix: "mm" })}
+            </Field>
+
+            {readout(
+              "Stack : reach",
+              <>
+                {fit.targets.stackReach.toFixed(2)}{" "}
+                <span className="field-readout-sub">higher = more upright</span>
+              </>,
+            )}
+            {readout("Saddle height (BB→top)", `${effSaddleCm.toFixed(1)} cm`)}
+
             <Field
               label="Wheel size"
               hint={`ISO ${effWheel.isoMm} mm`}
@@ -345,19 +357,20 @@ export function FrameSize() {
                 ]}
               />
             </Field>
-          </div>
-          <div className="results">
-            <Result label="Nominal" value={fit.frame.nominalSize} />
-            <Result
-              label="Stack : reach"
-              value={
-                <>
-                  {fit.targets.stackReach.toFixed(2)}
-                  <span className="result-sub">higher = more upright</span>
-                </>
-              }
-            />
-            <Result label="Saddle height (BB→top)" value={`${effSaddleCm.toFixed(1)} cm`} />
+            <Field label="Crank length" dotColor={CRANK_COLOR} {...link("crank")}>
+              {input("crank", fit.crank.suggestedMm, { min: 100, max: 200, step: 2.5, suffix: "mm" })}
+            </Field>
+
+            <Field label="Stem length" dotColor={CRANK_COLOR} {...link("crank")}>
+              {input("stemLen", recCockpit.stemLenMm, { min: 35, max: 150, step: 5, suffix: "mm" })}
+            </Field>
+            <Field label="Stem angle" hint="from perpendicular to the steerer">
+              {input("stemAngle", recCockpit.stemRiseDeg, { min: -30, max: 45, suffix: "°" })}
+            </Field>
+
+            <Field label="Stem height (spacers)">
+              {input("spacer", recCockpit.spacerMm, { min: 0, max: 80, step: 5, suffix: "mm" })}
+            </Field>
           </div>
           <Note>
             <strong>Reach &amp; stack</strong> show a typical band of ±{" "}
@@ -368,37 +381,6 @@ export function FrameSize() {
               <strong>Wheels:</strong> {effWheel.note}
             </span>
           </Note>
-        </Section>
-
-        <Section
-          title="Cockpit & crank"
-          info={
-            <>
-              The stem, spacers and crank are proposed for this category and size — a
-              typical setup, not a spec — but stay editable, so you can see how (say) a
-              longer stem or more spacers change the drawn riding position. A bigger
-              frame gets a longer stem and fewer spacers, and vice-versa. Stem angle is
-              the printed stem spec — degrees from perpendicular to the steerer (the head
-              tube), positive raising the bar — so a stem near −18° sits roughly level;
-              stem height is the spacer stack, or how far a quill is raised. Clear a field
-              to return to the suggestion.
-            </>
-          }
-        >
-          <div className="grid">
-            <Field label="Stem length" dotColor={CRANK_COLOR} {...link("crank")}>
-              {input("stemLen", recCockpit.stemLenMm, { min: 35, max: 150, step: 5, suffix: "mm" })}
-            </Field>
-            <Field label="Stem angle" hint="from perpendicular to the steerer">
-              {input("stemAngle", recCockpit.stemRiseDeg, { min: -30, max: 45, suffix: "°" })}
-            </Field>
-            <Field label="Stem height (spacers)">
-              {input("spacer", recCockpit.spacerMm, { min: 0, max: 80, step: 5, suffix: "mm" })}
-            </Field>
-            <Field label="Crank length" dotColor={CRANK_COLOR} {...link("crank")}>
-              {input("crank", fit.crank.suggestedMm, { min: 100, max: 200, step: 2.5, suffix: "mm" })}
-            </Field>
-          </div>
         </Section>
       </div>
 

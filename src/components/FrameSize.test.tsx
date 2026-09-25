@@ -23,7 +23,7 @@ describe("Frame size page", () => {
   it("presents every measurement as one editable, linked model", () => {
     const { container, getByRole } = render(<FrameSize />);
     expect(getByRole("heading", { name: "Rider" })).toBeTruthy();
-    expect(getByRole("heading", { name: /Frame & fit/ })).toBeTruthy();
+    expect(getByRole("heading", { name: "Bike" })).toBeTruthy();
     // Body height, frame size, reach and stack are all editable fields.
     for (const label of ["Body height", "Frame size", "Reach", "Stack"]) {
       expect(fieldInput(container, label)).toBeTruthy();

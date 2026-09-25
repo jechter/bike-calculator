@@ -197,7 +197,10 @@ export function NumberInput(props: {
       <span className="ni-field">
       <input
         type="number"
-        className={custom ? "ni-custom" : undefined}
+        className={
+          [custom && "ni-custom", custom && finite && "ni-set"].filter(Boolean).join(" ") ||
+          undefined
+        }
         value={finite ? props.value : ""}
         placeholder={props.placeholder}
         min={props.min}
@@ -292,12 +295,14 @@ export function Select<T extends string | number>(props: {
   value: T;
   options: Array<SelectOption<T> | SelectGroup<T>>;
   onChange: (v: T) => void;
+  className?: string;
 }) {
   const isGroup = (o: SelectOption<T> | SelectGroup<T>): o is SelectGroup<T> =>
     "options" in o;
   const flat = props.options.flatMap((o) => (isGroup(o) ? o.options : [o]));
   return (
     <select
+      className={props.className}
       value={String(props.value)}
       onChange={(e) => {
         const raw = e.target.value;

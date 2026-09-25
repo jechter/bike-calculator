@@ -335,6 +335,8 @@ input.ni-custom {
 }
 input.ni-custom::-webkit-outer-spin-button,
 input.ni-custom::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+/* Hand-entered values are bold, to stand out from the greyed estimates. */
+input.ni-set, select.ni-set { font-weight: 700; }
 /* Wraps the input so the reset "×" can sit inside it, at the right edge. */
 .ni-field { position: relative; flex: 1; display: flex; min-width: 0; }
 /* A small "×" that resets a field to its recommended estimate. */

@@ -426,6 +426,7 @@ export function FrameSize() {
               <Select
                 value={wheelSel}
                 onChange={setWheelSel}
+                className={wheelSel ? "ni-set" : undefined}
                 options={[
                   { value: "", label: `Auto — ${fit.wheel.label}` },
                   ...WHEELS.map((w) => ({ value: w.label, label: `${w.label} (ISO ${w.isoMm})` })),

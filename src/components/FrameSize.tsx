@@ -7,6 +7,8 @@ import {
   saddleHeight,
   wheelByLabel,
   WHEELS,
+  NOMINAL_SIZES,
+  inseamForNominal,
   findCategory,
   FRAME_CATEGORIES,
   DEFAULT_CATEGORY_ID,
@@ -236,10 +238,12 @@ export function FrameSize() {
             </>
           }
         >
-          <div className="grid">
+          <div className="rows">
             <Field label="Body height" dotColor={HEIGHT_COLOR} {...link("body")}>
               {input("height", fit.heightCm, { min: 100, max: 210, suffix: "cm" })}
             </Field>
+          </div>
+          <div className="bike-grid">
             <Field
               label="Cycling inseam"
               hint={
@@ -324,7 +328,17 @@ export function FrameSize() {
                 ),
               })}
             </Field>
-            {readout("Nominal", fit.frame.nominalSize, { dotColor: SIZE_COLOR })}
+            <Field label="Nominal" hint="rider size band" dotColor={SIZE_COLOR} {...link("size")}>
+              <Select
+                value={fit.frame.nominalSize}
+                onChange={(v) => {
+                  // Picking a size sets a representative inseam; re-picking the
+                  // current one is a no-op so it doesn't nudge a measured value.
+                  if (v !== fit.frame.nominalSize) edit("inseam", inseamForNominal(v));
+                }}
+                options={NOMINAL_SIZES.map((s) => ({ value: s, label: s }))}
+              />
+            </Field>
 
             <Field label="Stack" dotColor={STACK_COLOR} {...link("stack")}>
               {input("stack", fit.targets.stackMm, { min: 400, max: 750, step: 5, suffix: "mm" })}
@@ -361,7 +375,7 @@ export function FrameSize() {
               {input("crank", fit.crank.suggestedMm, { min: 100, max: 200, step: 2.5, suffix: "mm" })}
             </Field>
 
-            <Field label="Stem length" dotColor={CRANK_COLOR} {...link("crank")}>
+            <Field label="Stem length">
               {input("stemLen", recCockpit.stemLenMm, { min: 35, max: 150, step: 5, suffix: "mm" })}
             </Field>
             <Field label="Stem angle" hint="from perpendicular to the steerer">

@@ -240,6 +240,26 @@ function nominalSize(inseamCm: number): string {
   return 'XXL';
 }
 
+/** The nominal sizes, smallest to largest — for the (editable) size picker. */
+export const NOMINAL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
+
+/**
+ * A representative cycling inseam (cm) for a nominal size — the middle of the band
+ * {@link nominalSize} assigns — so picking a size from the menu sets a sensible
+ * rider (and round-trips back to the same label).
+ */
+export function inseamForNominal(size: string): number {
+  switch (size) {
+    case 'XS': return 74;
+    case 'S': return 78.5;
+    case 'M': return 82;
+    case 'L': return 85.5;
+    case 'XL': return 89;
+    case 'XXL': return 93;
+    default: return 82;
+  }
+}
+
 // --- Height → inseam --------------------------------------------------------
 
 /**

@@ -344,7 +344,14 @@ export function FrameSize() {
           <div className="bike-grid">
             <Field
               label="Frame size"
-              hint="nominal seat tube, centre-to-top"
+              hint={
+                "nominal seat tube, centre-to-top" +
+                // Mountain frames are traditionally sized in inches — show the
+                // rounded inch equivalent alongside the cm value.
+                (category.showInches && sizeUnit === "cm"
+                  ? ` · ≈ ${Math.round(fit.frameCm / 2.54)} in`
+                  : "")
+              }
               dotColor={SIZE_COLOR}
               {...link("size")}
             >

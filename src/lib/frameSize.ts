@@ -414,6 +414,11 @@ const WHEEL_29: Wheel = {
   label: '29"', isoMm: 622, outerMm: 742,
   note: 'The standard modern trail wheel — an ISO 622 rim under a fat tyre, so it rolls tall.',
 };
+// Not auto-proposed (still niche); offered in the picker for those who want it.
+const WHEEL_32: Wheel = {
+  label: '32"', isoMm: 686, outerMm: 810,
+  note: 'An emerging larger-than-29" mountain wheel (ISO 686) — rolls over rough ground even better, at some cost in weight, stiffness and frame/fork availability.',
+};
 const WHEEL_275: Wheel = {
   label: '27.5"', isoMm: 584, outerMm: 706,
   note: 'The smaller trail wheel (ISO 584), run on small frames for standover and a livelier feel.',
@@ -462,8 +467,8 @@ const WHEEL_12: Wheel = {
  */
 // Every wheel size, largest to smallest — for the (editable) wheel picker.
 export const WHEELS: Wheel[] = [
-  WHEEL_29, WHEEL_28, WHEEL_27, WHEEL_700C, WHEEL_275, WHEEL_650B, WHEEL_26,
-  WHEEL_24, WHEEL_20, WHEEL_16, WHEEL_14, WHEEL_12,
+  WHEEL_32, WHEEL_29, WHEEL_28, WHEEL_27, WHEEL_700C, WHEEL_275, WHEEL_650B,
+  WHEEL_26, WHEEL_24, WHEEL_20, WHEEL_16, WHEEL_14, WHEEL_12,
 ];
 
 /** Look up a wheel by its common name (e.g. "700c", "29\""). */

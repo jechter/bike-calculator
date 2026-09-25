@@ -232,8 +232,11 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   // Handlebar: up the steerer by the spacers, along the stem to the clamp.
   const upSteer = { x: -Math.cos(HA), y: Math.sin(HA) };
   const barBottom = vadd({ x: reachMm, y: stackMm }, vscale(upSteer, cockpit.spacerMm));
-  const stemRise = (cockpit.stemRiseDeg * Math.PI) / 180;
-  const barClamp = vadd(barBottom, { x: cockpit.stemLenMm * Math.cos(stemRise), y: cockpit.stemLenMm * Math.sin(stemRise) });
+  // Stem angle is the conventional spec — degrees from perpendicular to the
+  // steerer — so its angle vs. the ground adds the head tube's rearward lean
+  // (90° − head angle). A −18°-ish stem thus draws roughly level here.
+  const stemGround = (cockpit.stemRiseDeg * Math.PI) / 180 + (Math.PI / 2 - HA);
+  const barClamp = vadd(barBottom, { x: cockpit.stemLenMm * Math.cos(stemGround), y: cockpit.stemLenMm * Math.sin(stemGround) });
   // Hand positions on the bar (tops/hoods/drops, or base/extensions). You can't
   // grip between them, so the posture snaps to one — the more aggressive, the
   // lower/more-forward — dividing the slider into equal bands.

@@ -130,7 +130,9 @@ export function FrameSize() {
   // sit farther forward than the rider's own target reach + a nominal stem. This
   // fires when a too-long reach can't be pulled back by the stem, or the stem is
   // overridden longer than needed — the rider is drawn stretched, in warning red.
-  const stemReach = (c: CockpitSpec) => c.stemLenMm * Math.cos((c.stemRiseDeg * Math.PI) / 180);
+  // Horizontal reach of a stem. Its angle vs. the ground adds the head tube's
+  // lean (~18° for the drawn 72° head angle) to the printed stem angle.
+  const stemReach = (c: CockpitSpec) => c.stemLenMm * Math.cos(((c.stemRiseDeg + 18) * Math.PI) / 180);
   const targetGripX = fit.targets.reachMm + stemReach(cockpitForFrame(category, fit.frameCm));
   const drawnGripX = drawnReach + stemReach(effCockpit);
   const armOver = drawnGripX - targetGripX > 45;
@@ -376,9 +378,10 @@ export function FrameSize() {
               typical setup, not a spec — but stay editable, so you can see how (say) a
               longer stem or more spacers change the drawn riding position. A bigger
               frame gets a longer stem and fewer spacers, and vice-versa. Stem angle is
-              the rise above horizontal (negative points down); stem height is the spacer
-              stack, or how far a quill is raised. Clear a field to return to the
-              suggestion.
+              the printed stem spec — degrees from perpendicular to the steerer (the head
+              tube), positive raising the bar — so a stem near −18° sits roughly level;
+              stem height is the spacer stack, or how far a quill is raised. Clear a field
+              to return to the suggestion.
             </>
           }
         >
@@ -386,8 +389,8 @@ export function FrameSize() {
             <Field label="Stem length" dotColor={CRANK_COLOR} {...link("crank")}>
               {input("stemLen", recCockpit.stemLenMm, { min: 35, max: 150, step: 5, suffix: "mm" })}
             </Field>
-            <Field label="Stem angle">
-              {input("stemAngle", recCockpit.stemRiseDeg, { min: -20, max: 45, suffix: "°" })}
+            <Field label="Stem angle" hint="from perpendicular to the steerer">
+              {input("stemAngle", recCockpit.stemRiseDeg, { min: -30, max: 45, suffix: "°" })}
             </Field>
             <Field label="Stem height (spacers)">
               {input("spacer", recCockpit.spacerMm, { min: 0, max: 80, step: 5, suffix: "mm" })}

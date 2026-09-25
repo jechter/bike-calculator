@@ -487,7 +487,12 @@ export type BarType = "drop" | "flat" | "aero";
 export interface CockpitSpec {
   /** Stem length (mm), scaled with frame size. */
   stemLenMm: number;
-  /** Stem rise above horizontal as drawn (deg); negative points down. */
+  /**
+   * Stem angle in the conventional sense: degrees from perpendicular to the
+   * steerer — the number printed on a stem (e.g. ±6°, +17°). Positive raises the
+   * bar. The drawn angle vs. the ground adds the head tube's lean (90° − head
+   * angle), so a stem near −18° sits roughly level on a typical frame.
+   */
   stemRiseDeg: number;
   /** Spacer stack / quill height under the stem (mm), scaled with frame size. */
   spacerMm: number;
@@ -501,17 +506,19 @@ export interface CockpitSpec {
 // Per-category base cockpit, defined for the category's AVERAGE frame (an 84 cm
 // inseam). cockpitForFrame() then scales the stem + spacers around this by frame
 // size. gripFwd/Drop and the bar type stay constant for the category.
+// stemRiseDeg is the printed stem angle (from perpendicular to the steerer); the
+// diagram adds the head tube's lean, so ~−18° draws level, more positive rises.
 const COCKPITS: Record<string, CockpitSpec> = {
-  tt: { stemLenMm: 80, stemRiseDeg: -4, spacerMm: 12, bar: "aero", gripFwdMm: 155, gripDropMm: -8 },
-  "road-aero": { stemLenMm: 110, stemRiseDeg: 4, spacerMm: 15, bar: "drop", gripFwdMm: 80, gripDropMm: 20 },
-  "road-endurance": { stemLenMm: 100, stemRiseDeg: 6, spacerMm: 30, bar: "drop", gripFwdMm: 75, gripDropMm: 16 },
-  "gravel-race": { stemLenMm: 90, stemRiseDeg: 6, spacerMm: 25, bar: "drop", gripFwdMm: 75, gripDropMm: 14 },
-  "gravel-adventure": { stemLenMm: 80, stemRiseDeg: 8, spacerMm: 35, bar: "drop", gripFwdMm: 70, gripDropMm: 12 },
-  mtb: { stemLenMm: 50, stemRiseDeg: 2, spacerMm: 20, bar: "flat", gripFwdMm: -18, gripDropMm: 0 },
+  tt: { stemLenMm: 80, stemRiseDeg: -17, spacerMm: 12, bar: "aero", gripFwdMm: 155, gripDropMm: -8 },
+  "road-aero": { stemLenMm: 110, stemRiseDeg: -12, spacerMm: 15, bar: "drop", gripFwdMm: 80, gripDropMm: 20 },
+  "road-endurance": { stemLenMm: 100, stemRiseDeg: -6, spacerMm: 30, bar: "drop", gripFwdMm: 75, gripDropMm: 16 },
+  "gravel-race": { stemLenMm: 90, stemRiseDeg: -6, spacerMm: 25, bar: "drop", gripFwdMm: 75, gripDropMm: 14 },
+  "gravel-adventure": { stemLenMm: 80, stemRiseDeg: 0, spacerMm: 35, bar: "drop", gripFwdMm: 70, gripDropMm: 12 },
+  mtb: { stemLenMm: 50, stemRiseDeg: 0, spacerMm: 20, bar: "flat", gripFwdMm: -18, gripDropMm: 0 },
   city: { stemLenMm: 90, stemRiseDeg: 25, spacerMm: 30, bar: "flat", gripFwdMm: -45, gripDropMm: -5 },
-  "vintage-road": { stemLenMm: 90, stemRiseDeg: 6, spacerMm: 50, bar: "drop", gripFwdMm: 72, gripDropMm: 14 },
-  "vintage-mtb": { stemLenMm: 90, stemRiseDeg: 10, spacerMm: 40, bar: "flat", gripFwdMm: -22, gripDropMm: 0 },
-  "vintage-city": { stemLenMm: 100, stemRiseDeg: 30, spacerMm: 45, bar: "flat", gripFwdMm: -55, gripDropMm: -8 },
+  "vintage-road": { stemLenMm: 90, stemRiseDeg: -6, spacerMm: 50, bar: "drop", gripFwdMm: 72, gripDropMm: 14 },
+  "vintage-mtb": { stemLenMm: 90, stemRiseDeg: 6, spacerMm: 40, bar: "flat", gripFwdMm: -22, gripDropMm: 0 },
+  "vintage-city": { stemLenMm: 100, stemRiseDeg: 25, spacerMm: 45, bar: "flat", gripFwdMm: -55, gripDropMm: -8 },
 };
 
 const clampN = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));

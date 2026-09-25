@@ -295,12 +295,15 @@ describe('fitTargets (reach & stack)', () => {
 });
 
 describe('saddleHeight (crank-aware)', () => {
-  it('equals the LeMond factor at the reference crank', () => {
-    expect(saddleHeight(84, 170)).toBeCloseTo(84 * 0.883, 6);
+  it('is the plain LeMond figure at the suggested crank', () => {
+    expect(saddleHeight(84)).toBeCloseTo(84 * 0.883, 6);
+    // A kid's short-crank bike also sits at the LeMond height — no spurious raise.
+    expect(saddleHeight(63)).toBeCloseTo(63 * 0.883, 6);
   });
-  it('drops for a longer crank and rises for a shorter one', () => {
-    expect(saddleHeight(84, 175)).toBeCloseTo(84 * 0.883 - 0.5, 6);
-    expect(saddleHeight(84, 165)).toBeCloseTo(84 * 0.883 + 0.5, 6);
+  it('drops for a crank longer than suggested, rises for a shorter one', () => {
+    const ref = suggestCrankLength(84).suggestedMm;
+    expect(saddleHeight(84, ref + 10)).toBeCloseTo(84 * 0.883 - 1.0, 6);
+    expect(saddleHeight(84, ref - 10)).toBeCloseTo(84 * 0.883 + 1.0, 6);
   });
 });
 
@@ -383,11 +386,9 @@ describe('resolveFit (unified two-way solve)', () => {
     expect(r.inseamCm).toBeCloseTo(50 / ROAD.sizeMult, 6);
   });
 
-  it('lowers the saddle for a longer crank (crank-aware)', () => {
-    const short = resolveFit({ inseamCm: 84 }, ROAD).saddleHeightCm;
-    // The suggested crank for an 84 cm inseam is ~175 mm (> 170 ref), so the
-    // resolved saddle sits a touch below the plain LeMond figure.
-    expect(short).toBeLessThan(84 * 0.883);
+  it('resolves the saddle at the plain LeMond height (suggested crank)', () => {
+    // resolveFit uses the suggested crank, so no spurious crank adjustment.
+    expect(resolveFit({ inseamCm: 84 }, ROAD).saddleHeightCm).toBeCloseTo(84 * 0.883, 6);
   });
 
   it('keeps a pinned frame independent of a measured inseam', () => {

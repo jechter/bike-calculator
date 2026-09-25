@@ -126,19 +126,19 @@ export function findCategory(id: string): FrameCategory {
 export const SEAT_ANGLE_DEG = 73;
 const SEAT_ANGLE = (SEAT_ANGLE_DEG * Math.PI) / 180;
 const SADDLE_FACTOR = 0.883; // LeMond: BB centre → saddle top, along the seat tube
-// The crank length the LeMond saddle factor implicitly assumes. A longer crank
-// pushes the pedal farther from the BB at the bottom of the stroke, so the saddle
-// must drop by the extra length to keep the same leg extension (and vice-versa).
-const REF_CRANK_MM = 170;
-
 /**
  * Starting saddle height (BB centre → saddle top), cm, from the cycling inseam and
- * the crank length. The LeMond 0.883 × inseam figure assumes a ~170 mm crank; a
- * longer crank lowers the saddle by the difference, a shorter one raises it, so the
- * leg extension at the bottom of the pedal stroke stays consistent.
+ * the crank length. At the crank length *suggested* for that inseam it's the plain
+ * LeMond 0.883 × inseam; fitting a longer crank than suggested lowers the saddle by
+ * the difference (a shorter one raises it), keeping leg extension at the bottom of
+ * the stroke consistent. Referencing the suggested crank rather than a fixed 170 mm
+ * means a correctly-cranked bike — an adult's or a kid's short-crank bike — sits at
+ * the LeMond height with no spurious adjustment.
  */
-export function saddleHeight(inseamCm: number, crankMm: number = REF_CRANK_MM): number {
-  return inseamCm * SADDLE_FACTOR - (crankMm - REF_CRANK_MM) / 10;
+export function saddleHeight(inseamCm: number, crankMm?: number): number {
+  const refCrankMm = suggestCrankLength(inseamCm).suggestedMm;
+  const crank = crankMm ?? refCrankMm;
+  return inseamCm * SADDLE_FACTOR - (crank - refCrankMm) / 10;
 }
 
 // --- Nominal frame size -----------------------------------------------------

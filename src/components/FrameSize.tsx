@@ -112,13 +112,38 @@ export function FrameSize() {
   const drawnStack = num(vals.stack) ?? fit.frameTargets.stackMm;
 
   // Which measurements the user actually supplied, for the "Estimated for …"
-  // captions: a body height fixes the rider's proportions; a frame size fixes the
-  // frame's reach & stack.
-  const bodyGiven = Number.isFinite(vals.height);
+  // captions under the filled-in fields: a body height fixes the rider's
+  // proportions; a frame size fixes the frame's reach & stack.
+  const heightGiven = Number.isFinite(vals.height);
+  const inseamGiven = Number.isFinite(vals.inseam);
+  const armGiven = Number.isFinite(vals.arm);
   const frameGiven = Number.isFinite(vals.frame);
-  const riderSource = frameGiven && !bodyGiven ? "Estimated for frame dimensions" : "Estimated for body size";
-  const bikeSource = frameGiven ? "Estimated for frame size" : "Estimated for body measurements";
+  const reachGiven = Number.isFinite(vals.reach);
+  const stackGiven = Number.isFinite(vals.stack);
   const srcIf = (unset: boolean, s: string) => (unset ? s : undefined);
+
+  const riderSource = frameGiven && !heightGiven ? "Estimated for frame dimensions" : "Estimated for body size";
+  const bikeSource = frameGiven ? "Estimated for frame size" : "Estimated for body measurements";
+  // Height leans on whichever of inseam / frame / reach / stack is supplied.
+  const heightSource = heightGiven
+    ? undefined
+    : inseamGiven
+      ? "Estimated for inseam"
+      : frameGiven
+        ? "Estimated for frame dimensions"
+        : reachGiven
+          ? "Estimated for reach"
+          : stackGiven
+            ? "Estimated for stack"
+            : undefined;
+  // A supplied reach + stack fully define the frame geometry, so the size label
+  // no longer drives anything.
+  const frameSource = frameGiven
+    ? undefined
+    : reachGiven && stackGiven
+      ? "Ignored as stack and reach are supplied"
+      : bikeSource;
+  const cockpitSource = "Estimated for body and frame dimensions";
 
   // Cockpit + crank are proposed from the frame, but stay editable so you can see
   // how (say) a longer stem changes the position. The stem/spacer suggestion also
@@ -250,7 +275,7 @@ export function FrameSize() {
           }
         >
           <div className="rows">
-            <Field label="Body height" dotColor={HEIGHT_COLOR} {...link("body")}>
+            <Field label="Body height" source={heightSource} dotColor={HEIGHT_COLOR} {...link("body")}>
               {input("height", fit.heightCm, { min: 100, max: 210, suffix: "cm" })}
             </Field>
           </div>
@@ -266,7 +291,7 @@ export function FrameSize() {
                   legs
                 </>
               }
-              source={srcIf(!Number.isFinite(vals.inseam), riderSource)}
+              source={srcIf(!inseamGiven, riderSource)}
               dotColor={INSEAM_COLOR}
               {...link("inseam")}
             >
@@ -275,7 +300,7 @@ export function FrameSize() {
             <Field
               label="Arm length"
               hint="shoulder (acromion) to wrist"
-              source={srcIf(!Number.isFinite(vals.arm), riderSource)}
+              source={srcIf(!armGiven, riderSource)}
               dotColor={ARM_COLOR}
               {...link("arm")}
             >
@@ -316,7 +341,7 @@ export function FrameSize() {
             <Field
               label="Frame size"
               hint="nominal seat tube, centre-to-top"
-              source={srcIf(!frameGiven, bikeSource)}
+              source={frameSource}
               dotColor={SIZE_COLOR}
               {...link("size")}
             >
@@ -358,7 +383,7 @@ export function FrameSize() {
 
             <Field
               label="Stack"
-              source={srcIf(!Number.isFinite(vals.stack), bikeSource)}
+              source={srcIf(!stackGiven, bikeSource)}
               dotColor={STACK_COLOR}
               {...link("stack")}
             >
@@ -366,7 +391,7 @@ export function FrameSize() {
             </Field>
             <Field
               label="Reach"
-              source={srcIf(!Number.isFinite(vals.reach), bikeSource)}
+              source={srcIf(!reachGiven, bikeSource)}
               dotColor={REACH_COLOR}
               {...link("reach")}
             >
@@ -385,6 +410,7 @@ export function FrameSize() {
             <Field
               label="Wheel size"
               hint={`ISO ${effWheel.isoMm} mm`}
+              source={wheelSel === "" ? "Estimated for frame size" : undefined}
               dotColor={WHEEL_COLOR}
               {...link("wheel")}
             >
@@ -397,18 +423,27 @@ export function FrameSize() {
                 ]}
               />
             </Field>
-            <Field label="Crank length" dotColor={CRANK_COLOR} {...link("crank")}>
+            <Field
+              label="Crank length"
+              source={srcIf(!Number.isFinite(vals.crank), "Estimated for body measurements")}
+              dotColor={CRANK_COLOR}
+              {...link("crank")}
+            >
               {input("crank", fit.crank.suggestedMm, { min: 100, max: 200, step: 2.5, suffix: "mm" })}
             </Field>
 
-            <Field label="Stem length">
+            <Field label="Stem length" source={srcIf(!Number.isFinite(vals.stemLen), cockpitSource)}>
               {input("stemLen", recCockpit.stemLenMm, { min: 35, max: 150, step: 5, suffix: "mm" })}
             </Field>
-            <Field label="Stem angle" hint="from perpendicular to the steerer">
+            <Field
+              label="Stem angle"
+              hint="from perpendicular to the steerer"
+              source={srcIf(!Number.isFinite(vals.stemAngle), cockpitSource)}
+            >
               {input("stemAngle", recCockpit.stemRiseDeg, { min: -30, max: 45, suffix: "°" })}
             </Field>
 
-            <Field label="Stem height (spacers)">
+            <Field label="Stem height (spacers)" source={srcIf(!Number.isFinite(vals.spacer), cockpitSource)}>
               {input("spacer", recCockpit.spacerMm, { min: 0, max: 80, step: 5, suffix: "mm" })}
             </Field>
           </div>

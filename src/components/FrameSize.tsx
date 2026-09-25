@@ -344,14 +344,7 @@ export function FrameSize() {
           <div className="bike-grid">
             <Field
               label="Frame size"
-              hint={
-                "nominal seat tube, centre-to-top" +
-                // Mountain frames are traditionally sized in inches — show the
-                // rounded inch equivalent alongside the cm value.
-                (category.showInches && sizeUnit === "cm"
-                  ? ` · ≈ ${Math.round(fit.frameCm / 2.54)} in`
-                  : "")
-              }
+              hint="nominal seat tube, centre-to-top"
               dotColor={SIZE_COLOR}
               {...link("size")}
             >
@@ -365,15 +358,22 @@ export function FrameSize() {
                 ),
                 onChange: (v) => edit("frame", frameFromDisplay(v)),
                 suffix: (
-                  <select
-                    className="unit-suffix"
-                    value={sizeUnit}
-                    onChange={(e) => setSizeUnit(e.target.value as "cm" | "in")}
-                    aria-label="Size unit"
-                  >
-                    <option value="cm">cm</option>
-                    <option value="in">in</option>
-                  </select>
+                  <>
+                    <select
+                      className="unit-suffix"
+                      value={sizeUnit}
+                      onChange={(e) => setSizeUnit(e.target.value as "cm" | "in")}
+                      aria-label="Size unit"
+                    >
+                      <option value="cm">cm</option>
+                      <option value="in">in</option>
+                    </select>
+                    {/* Mountain frames are traditionally sized in inches — show the
+                        rounded inch equivalent right after the cm label. */}
+                    {category.showInches && sizeUnit === "cm" && (
+                      <span className="unit-alt">≈ {Math.round(fit.frameCm / 2.54)} in</span>
+                    )}
+                  </>
                 ),
               })}
             </Field>

@@ -293,6 +293,8 @@ select {
 .number-input { display: flex; align-items: center; gap: 0; }
 .number-input input { flex: 1; }
 .number-input .suffix { color: var(--muted); font-size: 13px; margin-left: 6px; }
+/* Alternate-unit readout after the unit label (e.g. "≈ 19 in" on MTB sizes). */
+.unit-alt { margin-left: 6px; white-space: nowrap; }
 /* Custom up/down steppers attached to the RIGHT of the field — flush, sharing the
    field's border, so the field reads as one element and the steppers hold a fixed
    position as the reset "×" appears/disappears. Used by the frame-size fields. */

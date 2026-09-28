@@ -10,7 +10,7 @@
     "geometry": "sloping",
     "blurb": "The most aggressive position — an aero tuck with a steep seat angle and weight forward on the aerobars.",
     "sizing": "You fit to the aerobar pads, not the frame, so treat frame reach & stack as a starting point and dial it in with the extensions, pads and spacers.",
-    "cockpit": { "stemLenMm": 80, "stemRiseDeg": -17, "spacerMm": 12, "bar": "aero", "gripFwdMm": 155, "gripDropMm": -8 }
+    "cockpit": { "stemLenMm": 80, "stemRiseDeg": -17, "spacerMm": 22, "bar": "aero", "gripFwdMm": 155, "gripDropMm": -8 }
   },
   {
     "id": "road-aero",
@@ -23,7 +23,7 @@
     "geometry": "sloping",
     "blurb": "Long, low and stiff — a race position, often with an integrated cockpit.",
     "sizing": "Compare frames on reach & stack; the seat-tube \"size\" means little on a sloped frame. Expect a low stack — if you can’t get comfortably low, look at endurance.",
-    "cockpit": { "stemLenMm": 110, "stemRiseDeg": -12, "spacerMm": 15, "bar": "drop", "gripFwdMm": 80, "gripDropMm": 20 }
+    "cockpit": { "stemLenMm": 110, "stemRiseDeg": -12, "spacerMm": 25, "bar": "drop", "gripFwdMm": 80, "gripDropMm": 20 }
   },
   {
     "id": "road-endurance",
@@ -36,7 +36,7 @@
     "geometry": "sloping",
     "blurb": "A taller front end and longer wheelbase for a less bent-over drop-bar position, with room for wider tyres.",
     "sizing": "Still size on reach & stack — just expect more stack than a race frame. Small gaps are easily trimmed with spacers and stem length.",
-    "cockpit": { "stemLenMm": 100, "stemRiseDeg": -6, "spacerMm": 30, "bar": "drop", "gripFwdMm": 75, "gripDropMm": 16 }
+    "cockpit": { "stemLenMm": 100, "stemRiseDeg": -6, "spacerMm": 40, "bar": "drop", "gripFwdMm": 75, "gripDropMm": 16 }
   },
   {
     "id": "gravel-race",
@@ -49,7 +49,7 @@
     "geometry": "sloping",
     "blurb": "Drop-bar and fairly aggressive, but longer and more stable than road race, with big tyre clearance.",
     "sizing": "Size on reach & stack like a road bike; flared bars add a little effective reach and width to allow for.",
-    "cockpit": { "stemLenMm": 90, "stemRiseDeg": -6, "spacerMm": 25, "bar": "drop", "gripFwdMm": 75, "gripDropMm": 14 }
+    "cockpit": { "stemLenMm": 90, "stemRiseDeg": -6, "spacerMm": 35, "bar": "drop", "gripFwdMm": 75, "gripDropMm": 14 }
   },
   {
     "id": "gravel-adventure",
@@ -62,7 +62,7 @@
     "geometry": "sloping",
     "blurb": "Relaxed and stable for loaded, rough riding — more stack, shorter reach, room for bags.",
     "sizing": "Reach & stack still guide it, but the position is forgiving, so a size either way usually works.",
-    "cockpit": { "stemLenMm": 80, "stemRiseDeg": 0, "spacerMm": 35, "bar": "drop", "gripFwdMm": 70, "gripDropMm": 12 }
+    "cockpit": { "stemLenMm": 80, "stemRiseDeg": 0, "spacerMm": 45, "bar": "drop", "gripFwdMm": 70, "gripDropMm": 12 }
   },
   {
     "id": "mtb",
@@ -76,7 +76,7 @@
     "showInches": true,
     "blurb": "A suspension fork and slack head angle; modern trail bikes run a long front-centre with a short stem.",
     "sizing": "Size by reach, not seat-tube length — a longer reach is the \"bigger\" bike. Then check the short seat tube clears your dropper insertion; the fork and bars handle stack.",
-    "cockpit": { "stemLenMm": 50, "stemRiseDeg": 0, "spacerMm": 20, "bar": "flat", "gripFwdMm": -18, "gripDropMm": 0 }
+    "cockpit": { "stemLenMm": 50, "stemRiseDeg": 0, "spacerMm": 30, "bar": "flat", "gripFwdMm": -18, "gripDropMm": 0 }
   },
   {
     "id": "trekking",
@@ -89,7 +89,7 @@
     "geometry": "sloping",
     "blurb": "A sporty upright hybrid for road, light trails and loaded touring — flat bars, a fairly tall front end, with rack and mudguard mounts.",
     "sizing": "Size on the seat tube / standover to your inseam; reach & stack are forgiving and bar height is easy to fine-tune with the stem and spacers.",
-    "cockpit": { "stemLenMm": 90, "stemRiseDeg": 15, "spacerMm": 30, "bar": "flat", "gripFwdMm": -35, "gripDropMm": 0 }
+    "cockpit": { "stemLenMm": 90, "stemRiseDeg": 15, "spacerMm": 40, "bar": "flat", "gripFwdMm": -35, "gripDropMm": 0 }
   },  
   {
     "id": "city",
@@ -102,7 +102,7 @@
     "geometry": "sloping",
     "blurb": "Upright and comfort-focused, with flat or swept-back bars.",
     "sizing": "Reach barely matters and bar height is easy to change, so don’t over-think stack. Mainly check the seat-tube size / standover suits your legs, then set saddle height.",
-    "cockpit": { "stemLenMm": 60, "stemRiseDeg": 25, "spacerMm": 80, "bar": "flat", "gripFwdMm": -100, "gripDropMm": 0 }
+    "cockpit": { "stemLenMm": 60, "stemRiseDeg": 25, "spacerMm": 90, "bar": "flat", "gripFwdMm": -100, "gripDropMm": 0 }
   },
   {
     "id": "vintage-road",
@@ -115,7 +115,7 @@
     "geometry": "classic",
     "blurb": "A level top tube and (usually) a quill stem — classic steel road geometry.",
     "sizing": "Frame stack is inherently low, but a quill stem gives lots of height adjustment. Size by seat tube / standover to your inseam and set bar height with the stem.",
-    "cockpit": { "stemLenMm": 90, "stemRiseDeg": -6, "spacerMm": 50, "bar": "drop", "gripFwdMm": 72, "gripDropMm": 14 }
+    "cockpit": { "stemLenMm": 90, "stemRiseDeg": -6, "spacerMm": 60, "bar": "drop", "gripFwdMm": 72, "gripDropMm": 14 }
   },
   {
     "id": "vintage-mtb",
@@ -129,7 +129,7 @@
     "showInches": true,
     "blurb": "Rigid, with a level top tube, usually sized in inches.",
     "sizing": "Aim for plenty of standover clearance; size by the seat tube to your inseam and use the (often long) stem to set bar height and reach.",
-    "cockpit": { "stemLenMm": 90, "stemRiseDeg": 20, "spacerMm": 60, "bar": "flat", "gripFwdMm": -22, "gripDropMm": 0 }
+    "cockpit": { "stemLenMm": 90, "stemRiseDeg": 20, "spacerMm": 70, "bar": "flat", "gripFwdMm": -22, "gripDropMm": 0 }
   },
   {
     "id": "vintage-city",
@@ -142,6 +142,6 @@
     "geometry": "classic",
     "blurb": "A tall, very upright roadster — level top tube, swept bars, long stem.",
     "sizing": "Size by the seat tube to your inseam (mind standover); the upright position comes from the tall stem, so frame reach & stack aren’t the deciding numbers.",
-    "cockpit": { "stemLenMm": 20, "stemRiseDeg": 25, "spacerMm": 120  , "bar": "flat", "gripFwdMm": -140, "gripDropMm": -30 }
+    "cockpit": { "stemLenMm": 20, "stemRiseDeg": 25, "spacerMm": 130  , "bar": "flat", "gripFwdMm": -140, "gripDropMm": -30 }
   }
 ]

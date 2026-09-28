@@ -154,7 +154,7 @@ describe('cockpitForFrame', () => {
     const refCm = 84 * ROAD.sizeMult;
     const c = cockpitForFrame(ROAD, refCm);
     expect(c.stemLenMm).toBe(100);
-    expect(c.spacerMm).toBe(30);
+    expect(c.spacerMm).toBe(40);
     expect(c.bar).toBe('drop');
   });
 

@@ -369,7 +369,7 @@ export function FrameSize() {
                       the seat tube.
                     </li>
                   </ul>
-                  Since the late 1990s most frames use <i>sloping geometries</i>,
+                  Since the late 1990s, most frames use <i>sloping geometries</i>,
                   where the top tube drops towards the seat tube. That makes the
                   seat-tube length less meaningful, so some vendors quote instead:
                   <ul>
@@ -459,7 +459,11 @@ export function FrameSize() {
                   The vertical distance from the bottom bracket to the top of the
                   head tube. More stack raises the handlebars for a more upright
                   position. Together with reach it describes a frame's fit in a
-                  brand-independent way, unlike the seat-tube "size".
+                  brand-independent way, unlike the seat-tube "size".<br/><br/>
+
+                  The effective stack (position of the handlebar grips) can be
+                  adjusted by changing the stem height and angle, but the frame stack 
+                  defines a minimum height constraint. 
                 </>
               }
               {...link("stack")}
@@ -476,7 +480,11 @@ export function FrameSize() {
                   The horizontal distance from the bottom bracket to the top of the
                   head tube. More reach stretches you out farther forward for a
                   longer, more aggressive position. Together with stack it describes
-                  a frame's fit in a brand-independent way, unlike the seat-tube "size".
+                  a frame's fit in a brand-independent way, unlike the seat-tube "size".<br/><br/>
+
+                  The effective reach (position of the handlebar grips) can be
+                  adjusted by using a different stem length and angle, but the frame reach defines a
+                  minimum distance constraint.
                 </>
               }
               {...link("reach")}

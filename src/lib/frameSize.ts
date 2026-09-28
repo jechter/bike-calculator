@@ -505,21 +505,27 @@ export const CRANK_SIZES = [
 
 export interface CrankSuggestion {
   suggestedMm: number; // nearest available size
-  rangeMm: [number, number]; // rough range from the two rules of thumb
+  rangeMm: [number, number]; // span of the common formulae (lowest → highest)
 }
 
 /**
- * Suggest a crank length from inseam. Published formulas disagree; we take two
- * common rules of thumb and present the spanning range, then snap the midpoint
- * to the nearest available size. Fit/preference dominates; shorter cranks are a
- * current trend.
+ * Suggest a crank length from inseam, with a plausible range.
+ *
+ * Crank sizing is opinionated and the published formulas disagree, so rather
+ * than commit to one we evaluate several commonly-cited rules of thumb and
+ * report the span of their results as the range. The single suggestion snaps the
+ * middle of that span to the nearest available size. Fit and preference dominate
+ * in practice, and shorter cranks are a current trend.
  */
 export function suggestCrankLength(inseamCm: number): CrankSuggestion {
   const inseamMm = inseamCm * 10;
-  const a = inseamCm * 1.25 + 65; // common "1.25 x inseam(cm) + 65 mm" rule
-  const b = inseamMm * 0.216; // "0.216 x inseam(mm)" rule
-  const lo = Math.min(a, b);
-  const hi = Math.max(a, b);
+  const formulas = [
+    inseamMm * 0.20, // ~20% of inseam — shorter, modern short-crank end
+    inseamMm * 0.216, // ~21.6% of inseam — common proportional rule
+    inseamCm * 1.25 + 65, // "1.25 x inseam(cm) + 65 mm" — traditional linear rule
+  ];
+  const lo = Math.min(...formulas);
+  const hi = Math.max(...formulas);
   const mid = (lo + hi) / 2;
   const suggestedMm = CRANK_SIZES.reduce((best, s) =>
     Math.abs(s - mid) < Math.abs(best - mid) ? s : best,

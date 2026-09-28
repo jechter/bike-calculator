@@ -499,12 +499,19 @@ export function FrameSize() {
             </Field>
             <Field
               label="Crank length"
+              hint={
+                <>
+                  plausible range: {round(fit.crank.rangeMm[0])} - {round(fit.crank.rangeMm[1])} mm
+                </>
+              }
               info={
                 <>
-                  The length of the crank arms in mm from crank axle to pedal axle. Estimates are 
-                  based on rider inseam, but there is no single agreed upon formula for the best 
+                  The length of the crank arms in mm from crank axle to pedal axle. Estimates are
+                  based on rider inseam, but there is no single agreed upon formula for the best
                   crank size, and there are conflicting opinions and preferences around this subject.
-                  Current trends prefer smaller cranks.
+                  Current trends prefer smaller cranks.<br /><br />
+                  The <b>plausible range</b> reported below the field shows the highest and lowest result 
+                  of different proposed crank length formulae.
                 </>
               }
               source={srcIf(!Number.isFinite(vals.crank), "Estimated for body measurements")}
@@ -512,7 +519,7 @@ export function FrameSize() {
               dotColor={CRANK_COLOR}
               {...link("crank")}
             >
-              {input("crank", fit.crank.suggestedMm, { min: 100, max: 200, step: 2.5, suffix: "mm" })}
+              {input("crank", fit.crank.suggestedMm, { min: 100, max: 200, step: 2.5, decimals: 1, suffix: "mm" })}
             </Field>
 
             <Field

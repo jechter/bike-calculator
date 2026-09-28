@@ -15,7 +15,7 @@ import {
   DEFAULT_CATEGORY_ID,
   type CockpitSpec,
 } from "../lib/frameSize";
-import { Field, NumberInput, Select, Note, Section } from "./ui";
+import { Field, NumberInput, Select, Section } from "./ui";
 import { FrameGeometryDiagram, type HighlightKey } from "./FrameGeometryDiagram";
 
 // Categories grouped into <optgroup>s (Road / Gravel / Mountain / …), preserving
@@ -218,9 +218,9 @@ export function FrameSize() {
   const readout = (
     label: string,
     value: ReactNode,
-    o: { dotColor?: string; hl?: HighlightKey } = {},
+    o: { dotColor?: string; hl?: HighlightKey; info?: ReactNode } = {},
   ) => (
-    <Field label={label} dotColor={o.dotColor} {...(o.hl ? link(o.hl) : {})}>
+    <Field label={label} dotColor={o.dotColor} info={o.info} {...(o.hl ? link(o.hl) : {})}>
       <div className="field-readout">{value}</div>
     </Field>
   );
@@ -243,37 +243,34 @@ export function FrameSize() {
   };
 
   return (
-    <div className="fs-workbench">
-      <div className="fs-controls">
-        <h1 className="fs-title">Frame Size</h1>
-        <div className="fs-toolbar">
-          <span className="fs-toolbar-hint">
-            Every value is editable — set the ones you know, the rest are recommended.
-          </span>
-          <button
-            type="button"
-            className="fs-clear-all"
-            onClick={clearAll}
-            disabled={!anySet}
-            title="Reset every field to its recommended value"
-          >
-            Clear all
-          </button>
+    <>
+      <div className="fs-head">
+        <div className="fs-head-text">
+          <h1>Frame Size</h1>
+          <p className="fs-head-hint">
+            Find out which frame size matches a rider — or how a rider would fit
+            onto a frame. Set the values you know, the rest are recommended.
+          </p>
         </div>
-        <Section
+        <button
+          type="button"
+          className="fs-clear-all"
+          onClick={clearAll}
+          disabled={!anySet}
+          title="Reset every field to its recommended value"
+        >
+          Clear all
+        </button>
+      </div>
+      <div className="fs-workbench">
+        <div className="fs-controls">
+          <Section
           title="Rider"
           info={
             <>
-              Everything on this page is one linked model — set any measurement and
-              the rest fill in with a best guess (shown greyed as an{" "}
-              <strong>≈ estimate</strong> until you type over it). Enter a body height
-              and it proposes inseam, arm, frame size and reach &amp; stack; enter a
-              frame or a reach &amp; stack instead and it works back to the rider.
-              These are <strong>starting targets</strong>, not prescriptions —
-              brand geometry, flexibility and preference all shift them.{" "}
-              <strong>Gender</strong> isn't asked; what matters is the actual leg,
-              torso and arm lengths, which these inputs capture. Measured inseam and
-              arm beat the height estimate.
+              Enter rider measurements to get an estimate of what bike would fit them. 
+              For best recommendations, enter at least body height and inseam, but the 
+              tool will estimate your inseam based on body height if you don't know it.
             </>
           }
         >
@@ -287,27 +284,34 @@ export function FrameSize() {
               label="Cycling inseam"
               hint={
                 <>
-                  barefoot, crotch to floor
-                  <br />
-                  For a {round(fit.heightCm)} cm rider: {round(fit.heightCm * 0.47)} cm avg,{" "}
-                  {round(fit.heightCm * 0.49)} cm long legs, {round(fit.heightCm * 0.45)} cm short
-                  legs
+                  recommended range: {round(fit.heightCm * 0.49)} cm (long legs) - {round(fit.heightCm * 0.45)} cm (short legs)
                 </>
               }
               source={srcIf(!inseamGiven, riderSource)}
               reserveSource
               dotColor={INSEAM_COLOR}
               {...link("inseam")}
+              info={
+                <>
+                  The riders inseam length, crotch to floor.
+                  Best measured by pulling up a book between your legs while standing barefoot against
+                  a wall, and measuring the distance from the floor to the top of the book.
+                </>
+              }
             >
               {input("inseam", fit.inseamCm, { min: 38, max: 110, suffix: "cm" })}
             </Field>
             <Field
               label="Arm length"
-              hint="shoulder (acromion) to wrist"
               source={srcIf(!armGiven, riderSource)}
               reserveSource
               dotColor={ARM_COLOR}
               {...link("arm")}
+              info={
+                <>
+                  The riders arm length, shoulder (acromion) to wrist.
+                </>
+              }
             >
               {input("arm", fit.armCm, { min: 28, max: 90, suffix: "cm" })}
             </Field>
@@ -318,35 +322,67 @@ export function FrameSize() {
           title="Bike"
           info={
             <>
-              <strong>Reach</strong> &amp; <strong>stack</strong> — the
-              bottom-bracket-to-head-tube-top distances — are the brand-independent way to
-              compare frames (unlike a seat-tube "size", they don't shift when the top tube
-              slopes). <strong>Frame size</strong> is the traditional nominal (inseam ×
-              the category multiplier), a label only — the diagram shows both the actual and
-              effective seat tube in green. The stem, spacers and crank are a typical setup
-              for the size — everything's editable, so you can solve back to a rider or see
-              how a longer stem changes the position. Stem angle is the printed spec
-              (degrees from perpendicular to the steerer), so a stem near −18° sits level.
+              Pick a <strong>bike category</strong> to get recommendations suitable for that style of bicycle. Then:
+              <ul>
+                <li>Just enter rider details above, to get a recommendation of what bike would fit them.</li>
+                <li>Enter measurements for a specific bike below, and get a recommendation above for whom it would ideally fit.</li>
+                <li>Enter both bike and rider measurements, to see a visualization of how the rider would fit on the bike, 
+                and to experiment with different cockpit dimensions.</li>
+              </ul>
             </>
           }
         >
           <div className="rows">
-            <Field label="Category" hint="how it's sized and how you sit on it">
+            <Field label="Category">
               <Select value={categoryId} onChange={setCategoryId} options={CATEGORY_OPTIONS} />
             </Field>
           </div>
-          <Note>
-            {category.blurb}
-            <span className="note-sizing">
-              <strong>Sizing:</strong> {category.sizing}
-            </span>
-          </Note>
 
           <div className="bike-grid">
             <Field
               label="Frame size"
-              hint="nominal seat tube, centre-to-top"
               dotColor={SIZE_COLOR}
+              info={
+                <>
+                  <i>Frame size</i> is traditionally the seat-tube length in cm (or
+                  inches for MTBs), but there's no consistency in how it's
+                  measured. For a horizontal top tube it's usually one of:
+
+                  <ul>
+                    <li>
+                      <strong>C-C:</strong> bottom-bracket centre to the centre
+                      of the seat-tube / top-tube junction.
+                    </li>
+                    <li>
+                      <strong>C-T:</strong> bottom-bracket centre to the top of
+                      the seat tube.
+                    </li>
+                  </ul>
+                  Since the late 1990s most frames use <i>sloping geometries</i>,
+                  where the top tube drops towards the seat tube. That makes the
+                  seat-tube length less meaningful, so some vendors quote instead:
+                  <ul>
+                    <li>
+                      <strong>Effective / virtual:</strong> bottom-bracket centre
+                      to where the seat tube meets an imagined horizontal top tube.
+                    </li>
+                    <li>
+                      <strong>Custom vendor size:</strong> a vendor-specific value
+                      that isn't a physical measurement — a "size that would fit a
+                      rider on a traditional geometry".
+                    </li>
+                  </ul>
+
+                  Because of the confusion, vendors are moving to S/M/L labels.
+                  Stack and reach describe geometry more precisely than frame
+                  size — use those if you have them. Otherwise use 
+                  the <strong>C-T</strong> measurement for traditional ("Vintage") frames, 
+                  and <strong>virtual</strong> or <strong>custom vendor sizes</strong> (frame 
+                  height number or S/M/L) for modern ones. Treat this as a starting point
+                  only: it's not a replacement for a proper bike fit, and a
+                  vendor's own calculator may be more precise for a specific model.
+                </>
+              }
               {...link("size")}
             >
               {input("frame", fit.frameCm, {
@@ -378,7 +414,7 @@ export function FrameSize() {
                 ),
               })}
             </Field>
-            <Field label="Nominal" hint="rider size band" dotColor={SIZE_COLOR} {...link("size")}>
+            <Field label="Nominal" dotColor={SIZE_COLOR} {...link("size")}>
               <Select
                 value={nominalForFrame(fit.frameCm, category)}
                 onChange={(v) => {
@@ -420,6 +456,15 @@ export function FrameSize() {
                 {(drawnStack / drawnReach).toFixed(2)}{" "}
                 <span className="field-readout-sub">higher = more upright</span>
               </>,
+              {
+                info: (
+                  <>
+                    Stack divided by reach - this number is an indicator of how one would sit on a bike. 
+                    Higher numbers result in an upright seating position, whereas lower numbers give you
+                    a more aggressive and aerodynamic position.
+                  </>
+                ),
+              },
             )}
             {readout("Saddle height (BB→top)", `${effSaddleCm.toFixed(1)} cm`)}
 
@@ -443,6 +488,14 @@ export function FrameSize() {
             </Field>
             <Field
               label="Crank length"
+              info={
+                <>
+                  The length of the crank arms in mm from crank axle to pedal axle. Estimates are 
+                  based on rider inseam, but there is no single agreed upon formula for the best 
+                  crank size, and there are conflicting opinions and preferences around this subject.
+                  Current trends prefer smaller cranks.
+                </>
+              }
               source={srcIf(!Number.isFinite(vals.crank), "Estimated for body measurements")}
               reserveSource
               dotColor={CRANK_COLOR}
@@ -461,7 +514,6 @@ export function FrameSize() {
             </Field>
             <Field
               label="Stem angle"
-              hint="from perpendicular to the steerer"
               source={srcIf(!Number.isFinite(vals.stemAngle), cockpitSource)}
               reserveSource
             >
@@ -477,15 +529,6 @@ export function FrameSize() {
               {input("spacer", recCockpit.spacerMm, { min: 0, step: 5, suffix: "mm" })}
             </Field>
           </div>
-          <Note>
-            <strong>Reach &amp; stack</strong> show a typical band of ±{" "}
-            {round(fit.targets.reachRangeMm[1] - fit.targets.reachMm)}/±{" "}
-            {round(fit.targets.stackRangeMm[1] - fit.targets.stackMm)} mm around the
-            target — trim small gaps with stem length and spacers.
-            <span className="note-sizing">
-              <strong>Wheels:</strong> {effWheel.note}
-            </span>
-          </Note>
         </Section>
       </div>
 
@@ -531,6 +574,7 @@ export function FrameSize() {
           approximate riding position
         </figcaption>
       </figure>
-    </div>
+      </div>
+    </>
   );
 }

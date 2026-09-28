@@ -1,10 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 // Small shared UI primitives used across calculators.
 
 export function Field(props: {
   label: string;
   hint?: React.ReactNode;
+  /** Supplementary explanation revealed by an "i" tooltip next to the label. */
+  info?: React.ReactNode;
   children: React.ReactNode;
   /**
    * Accent the field's input and label (e.g. the value you last edited in a
@@ -35,6 +38,7 @@ export function Field(props: {
       <span className="field-label">
         {props.dotColor && <span className="field-dot" style={{ background: props.dotColor }} />}
         {props.label}
+        {props.info && <InfoTip label={`About: ${props.label}`}>{props.info}</InfoTip>}
       </span>
       {props.children}
       {(props.source !== undefined || props.reserveSource) && (
@@ -464,7 +468,9 @@ export function Note(props: { children: React.ReactNode; tone?: "info" | "warn" 
  */
 export function InfoTip(props: { children: React.ReactNode; label?: string }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const popRef = useRef<HTMLDivElement>(null);
   const timer = useRef<number | null>(null);
 
   const show = () => {
@@ -478,18 +484,51 @@ export function InfoTip(props: { children: React.ReactNode; label?: string }) {
     timer.current = window.setTimeout(() => setOpen(false), 140);
   };
 
+  // The popover is portalled to <body> and fixed-positioned from the button's
+  // rect, so it floats above the page (e.g. the diagram) instead of being
+  // clipped by the scrolling controls column's overflow. Placed below the button
+  // by default, flipped above when it wouldn't fit, and clamped to the viewport.
+  useLayoutEffect(() => {
+    if (!open) return;
+    const place = () => {
+      const b = btnRef.current?.getBoundingClientRect();
+      if (!b) return;
+      const margin = 8;
+      const width = popRef.current?.offsetWidth ?? 340;
+      const height = popRef.current?.offsetHeight ?? 320;
+      const left = Math.max(margin, Math.min(b.left, window.innerWidth - width - margin));
+      const below = b.bottom + 6;
+      const flip = below + height > window.innerHeight - margin && b.top - height - 6 > margin;
+      setPos({ top: flip ? b.top - height - 6 : below, left });
+    };
+    place();
+    // A second pass once the popover has real dimensions, so the flip/clamp use
+    // its actual size rather than the estimate.
+    const raf = requestAnimationFrame(place);
+    window.addEventListener("scroll", place, true);
+    window.addEventListener("resize", place);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", place, true);
+      window.removeEventListener("resize", place);
+    };
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (btnRef.current?.contains(t) || popRef.current?.contains(t)) return;
+      setOpen(false);
     };
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, [open]);
 
   return (
-    <div className="infotip" ref={ref} onMouseEnter={show} onMouseLeave={hide}>
+    <span className="infotip" onMouseEnter={show} onMouseLeave={hide}>
       <button
+        ref={btnRef}
         type="button"
         className={"infotip-btn" + (open ? " open" : "")}
         aria-label={props.label ?? "More information"}
@@ -498,12 +537,21 @@ export function InfoTip(props: { children: React.ReactNode; label?: string }) {
       >
         i
       </button>
-      {open && (
-        <div className="infotip-pop" role="tooltip" onMouseEnter={show} onMouseLeave={hide}>
-          {props.children}
-        </div>
-      )}
-    </div>
+      {open &&
+        createPortal(
+          <div
+            ref={popRef}
+            className="infotip-pop"
+            role="tooltip"
+            style={{ top: pos?.top ?? -9999, left: pos?.left ?? -9999 }}
+            onMouseEnter={show}
+            onMouseLeave={hide}
+          >
+            {props.children}
+          </div>,
+          document.body,
+        )}
+    </span>
   );
 }
 

@@ -210,8 +210,9 @@ body {
 }
 .infotip-btn:hover, .infotip-btn.open { border-color: var(--accent); color: var(--accent); }
 .infotip-pop {
-  position: absolute; z-index: 40;
-  top: calc(100% + 6px); left: 0;
+  /* Portalled to <body> and positioned from the button's rect (see InfoTip), so
+     it layers above the page instead of being clipped by a scrolling column. */
+  position: fixed; z-index: 60;
   width: 340px; max-width: 78vw;
   background: var(--panel);
   border: 1px solid var(--border);
@@ -221,6 +222,11 @@ body {
   font-size: 13px; line-height: 1.5; color: var(--text);
   text-transform: none; letter-spacing: normal; font-weight: 400;
 }
+.infotip-pop ul { margin: 6px 0; padding-left: 18px; }
+.infotip-pop li { margin: 2px 0; }
+.infotip-pop p { margin: 6px 0; }
+.infotip-pop :first-child { margin-top: 0; }
+.infotip-pop :last-child { margin-bottom: 0; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
 /* A fixed two-column grid mixing editable fields with read-only cells. */
@@ -231,7 +237,9 @@ body {
 
 /* Fields */
 .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 4px; }
-.field-label { font-weight: 600; font-size: 13px; }
+.field-label { font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; }
+.field-label .infotip { margin-left: 6px; }
+.field-label .infotip-btn { width: 16px; height: 16px; }
 /* A derived value shown in the same grid as the inputs (no input box). */
 .field-readout { font-size: 15px; font-weight: 600; padding: 7px 0; }
 .field-readout-sub { font-weight: 500; font-size: 12px; color: var(--muted); }
@@ -499,16 +507,22 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   background: transparent;
 }
 
-/* Frame-size top toolbar: a hint + a Clear all reset. */
-.fs-toolbar {
+/* Frame-size title bar: an h1 + intro hint on the left and a Clear all reset on
+   the right, spanning the full page width above the two-column workbench (like
+   the pinned header on the drivetrain / wheel-building pages). */
+.fs-head {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  justify-content: space-between;
+  gap: 16px;
 }
-.fs-toolbar-hint { font-size: 13px; color: var(--muted); }
+/* Title + intro sit side by side to keep the bar short; they wrap when narrow.
+   Vertically centred so the (single-line) title lines up with the middle of the
+   two-line hint rather than dropping below its first line. */
+.fs-head-text { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 14px; }
+.fs-head h1 { margin: 0; font-size: 24px; }
+.fs-head-hint { margin: 0; font-size: 13px; color: var(--muted); max-width: 62ch; }
 .fs-clear-all {
-  margin-left: auto;
   flex: none;
   padding: 6px 12px;
   border: 1px solid var(--border);
@@ -521,10 +535,6 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .fs-clear-all:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .fs-clear-all:disabled { opacity: 0.45; cursor: default; }
-
-/* The page title lives inside the left (controls) column so it sits above the
-   inputs only, leaving the diagram rail free to use the full height. */
-.fs-title { margin: 0 0 16px; font-size: 24px; }
 
 /* Frame-size explainer figure (inline SVG, like the other diagrams) */
 .fs-diagram {
@@ -619,8 +629,9 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 /* An over-extended limb (can't reach its bar/pedal) is drawn in warning red. */
 .rp-over { stroke: var(--diag-red); }
 
-/* Stacked (narrow): the diagram grows to fill the space under the controls. */
+/* Stacked (narrow): the title bar sits above the stacked controls + diagram. */
 @media (max-width: 1119px) {
+  .fs-head { margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
   .fs-viz { max-width: 100%; }
   .fs-viz svg { width: 100%; max-height: 62vh; }
 }
@@ -630,22 +641,34 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
    the full height and never moves. The breakpoint is set high enough that the rail
    always has room for a decently-sized diagram; below it the layout stacks. */
 @media (min-width: 1120px) {
-  /* Pin the page: only the controls column scrolls, so the diagram stays put. */
+  /* Pin the page: a full-width title bar on top, then only the controls column
+     scrolls beneath it so the diagram stays put. Flex column so the header takes
+     its natural height and the workbench fills the rest of the viewport. */
   .main--frame-size {
     max-width: none;
     height: 100vh;
     padding: 0;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  /* The title bar spans the page edge-to-edge, above both columns. */
+  .main--frame-size .fs-head {
+    flex: none;
+    padding: 16px 32px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
   }
   /* Only horizontal padding here; each column owns its vertical spacing so the
      controls can scroll edge-to-edge (the gap scrolls with the content instead
      of clipping it at a fixed inset band). */
   .fs-workbench {
+    flex: 1 1 auto;
+    min-height: 0;
     display: grid;
     grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
     gap: 24px;
     align-items: stretch;
-    height: 100vh;
     padding: 0 32px;
   }
   .fs-controls {
@@ -658,7 +681,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   }
   .fs-viz {
     margin: 28px 0;
-    height: calc(100vh - 56px);
+    height: calc(100% - 56px);
     min-height: 0;
     display: flex;
     flex-direction: column;

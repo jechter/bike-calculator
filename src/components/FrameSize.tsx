@@ -45,6 +45,17 @@ const WHEEL_COLOR = "var(--diag-wheel)";
 
 const round = (n: number) => Math.round(n);
 
+// A plain-language label for a stack:reach ratio — how upright the riding
+// position is. Bands are chosen around the spread this model produces across
+// categories (≈1.14 time-trial → ≈1.71 city); boundaries are deliberately soft.
+const stackReachLabel = (ratio: number): string => {
+  if (ratio < 1.28) return "very aggressive";
+  if (ratio < 1.44) return "aggressive";
+  if (ratio < 1.56) return "balanced";
+  if (ratio < 1.66) return "relaxed";
+  return "upright";
+};
+
 // The editable fields. Everything is one linked model: any field you set is kept
 // as-is, and every field you leave blank is recommended from the ones you did
 // set. Nothing is cleared automatically — you can pin your height, inseam, frame,
@@ -454,7 +465,7 @@ export function FrameSize() {
               "Stack : reach",
               <>
                 {(drawnStack / drawnReach).toFixed(2)}{" "}
-                <span className="field-readout-sub">higher = more upright</span>
+                <span className="field-readout-sub">{stackReachLabel(drawnStack / drawnReach)}</span>
               </>,
               {
                 info: (

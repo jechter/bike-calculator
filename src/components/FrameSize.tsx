@@ -389,9 +389,16 @@ export function FrameSize() {
                   size — use those if you have them. Otherwise use 
                   the <strong>C-T</strong> measurement for traditional ("Vintage") frames, 
                   and <strong>virtual</strong> or <strong>custom vendor sizes</strong> (frame 
-                  height number or S/M/L) for modern ones. Treat this as a starting point
-                  only: it's not a replacement for a proper bike fit, and a
-                  vendor's own calculator may be more precise for a specific model.
+                  height number or S/M/L) for modern ones. <strong>Treat this as a starting point
+                  only:</strong> it's not a replacement for a proper bike fit, and a
+                  vendor's own calculator may be more precise for a specific model.<br/><br/>
+            
+                  Frames can be adjusted by changing the cockpit (stem) dimensions and 
+                  saddle height. When unsure between two sizes, the smaller one may give you
+                  a more aggressive and dynamic riding position, and the bigger one lets you sit more
+                  relaxed. More upright frame styles typically allow a wider range of 
+                  adjustments than sportier frames, where getting the stack and reach
+                  exactly right matters much more.
                 </>
               }
               {...link("size")}
@@ -447,6 +454,14 @@ export function FrameSize() {
               source={srcIf(!stackGiven, bikeSource)}
               reserveSource
               dotColor={STACK_COLOR}
+              info={
+                <>
+                  The vertical distance from the bottom bracket to the top of the
+                  head tube. More stack raises the handlebars for a more upright
+                  position. Together with reach it describes a frame's fit in a
+                  brand-independent way, unlike the seat-tube "size".
+                </>
+              }
               {...link("stack")}
             >
               {input("stack", fit.frameTargets.stackMm, { min: 400, max: 750, step: 5, suffix: "mm" })}
@@ -456,6 +471,14 @@ export function FrameSize() {
               source={srcIf(!reachGiven, bikeSource)}
               reserveSource
               dotColor={REACH_COLOR}
+              info={
+                <>
+                  The horizontal distance from the bottom bracket to the top of the
+                  head tube. More reach stretches you out farther forward for a
+                  longer, more aggressive position. Together with stack it describes
+                  a frame's fit in a brand-independent way, unlike the seat-tube "size".
+                </>
+              }
               {...link("reach")}
             >
               {input("reach", fit.frameTargets.reachMm, { min: 250, max: 520, step: 5, suffix: "mm" })}

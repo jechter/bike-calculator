@@ -210,10 +210,12 @@ body {
 }
 .infotip-btn:hover, .infotip-btn.open { border-color: var(--accent); color: var(--accent); }
 .infotip-pop {
-  /* Portalled to <body> and positioned from the button's rect (see InfoTip), so
-     it layers above the page instead of being clipped by a scrolling column. */
+  /* Portalled to <body>; width, position and max-height are set inline by
+     InfoTip (it widens a tall tooltip so it fits the viewport height, capping
+     the height and scrolling only as a last resort). The 340px width here is
+     just the pre-measurement default. */
   position: fixed; z-index: 60;
-  width: 340px; max-width: 78vw;
+  width: 340px; overflow-y: auto;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;

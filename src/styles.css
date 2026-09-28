@@ -521,7 +521,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
    two-line hint rather than dropping below its first line. */
 .fs-head-text { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 14px; }
 .fs-head h1 { margin: 0; font-size: 24px; }
-.fs-head-hint { margin: 0; font-size: 13px; color: var(--muted); max-width: 62ch; }
+.fs-head-hint { margin: 0; font-size: 13px; color: var(--muted); max-width: 72ch; }
 .fs-clear-all {
   flex: none;
   padding: 6px 12px;

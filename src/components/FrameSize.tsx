@@ -260,7 +260,7 @@ export function FrameSize() {
           <h1>Frame Size</h1>
           <p className="fs-head-hint">
             Find out which frame size matches a rider — or how a rider would fit
-            onto a frame. Set the values you know, the rest are recommended.
+            onto a frame. Set the values you know, the rest are recommended. <strong>Not a substitute for a professional bike fit!</strong>
           </p>
         </div>
         <button

@@ -11,9 +11,14 @@
   --warn: #b7791f;
   --danger: #c0392b;
   /* Frame-size diagram legend: rider height (blue), inseam (green), frame height (red) */
-  --diag-blue: #2f83c4;
-  --diag-green: #3faa5a;
-  --diag-red: #e13b34;
+  --diag-blue: #1a61fa;
+  --diag-green: #02bc46;
+  --diag-red: #dc2626;
+  --diag-crank: #911dfe;
+  --diag-arm: #d97706;
+  --diag-body: #808081;
+  --diag-inseam: #ff00b3;
+  --diag-wheel: #5b7085;
   --radius: 10px;
   --sidebar-w: 240px;
   /* Shared height for all field-level controls so native <select>s (which the
@@ -35,9 +40,14 @@
     --ok: #46c07a;
     --warn: #e0a44a;
     --danger: #e8695b;
-    --diag-blue: #5aa9e6;
-    --diag-green: #5cc178;
-    --diag-red: #f26a63;
+    --diag-blue: #5c8bff;
+    --diag-green: #2fd96a;
+    --diag-red: #f87171;
+    --diag-crank: #b366ff;
+    --diag-arm: #f0a53c;
+    --diag-body: #b4b9be;
+    --diag-inseam: #ff4dcb;
+    --diag-wheel: #93a4b8;
   }
 }
 
@@ -200,9 +210,12 @@ body {
 }
 .infotip-btn:hover, .infotip-btn.open { border-color: var(--accent); color: var(--accent); }
 .infotip-pop {
-  position: absolute; z-index: 40;
-  top: calc(100% + 6px); left: 0;
-  width: 340px; max-width: 78vw;
+  /* Portalled to <body>; width, position and max-height are set inline by
+     InfoTip (it widens a tall tooltip so it fits the viewport height, capping
+     the height and scrolling only as a last resort). The 340px width here is
+     just the pre-measurement default. */
+  position: fixed; z-index: 60;
+  width: 340px; overflow-y: auto;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -211,14 +224,31 @@ body {
   font-size: 13px; line-height: 1.5; color: var(--text);
   text-transform: none; letter-spacing: normal; font-weight: 400;
 }
+.infotip-pop ul { margin: 6px 0; padding-left: 18px; }
+.infotip-pop li { margin: 2px 0; }
+.infotip-pop p { margin: 6px 0; }
+.infotip-pop :first-child { margin-top: 0; }
+.infotip-pop :last-child { margin-bottom: 0; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+/* A fixed two-column grid mixing editable fields with read-only cells. */
+.bike-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+@media (max-width: 520px) { .bike-grid { grid-template-columns: 1fr; } }
+/* A note that applies to the whole row (e.g. frame size + nominal both ignored). */
+.bike-grid-note { grid-column: 1 / -1; margin-top: -6px; }
 
 /* Fields */
 .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 4px; }
-.field-label { font-weight: 600; font-size: 13px; }
+.field-label { font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; }
+.field-label .infotip { margin-left: 6px; }
+.field-label .infotip-btn { width: 16px; height: 16px; }
+/* A derived value shown in the same grid as the inputs (no input box). */
+.field-readout { font-size: 15px; font-weight: 600; padding: 7px 0; }
+.field-readout-sub { font-weight: 500; font-size: 12px; color: var(--muted); }
 .field-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: baseline; }
 .field-hint { font-size: 12px; color: var(--muted); }
+/* "Estimated for …" caption showing what a filled-in value is based on. */
+.field-source { font-size: 11px; font-style: italic; color: var(--accent); }
 .field-hint-warn { color: var(--warn); font-weight: 500; }
 /* Accent the input itself to mark the value you set in a two-way solve
    (e.g. Speed ⇄ Power) — a thicker top border matching the wheel-building
@@ -270,9 +300,78 @@ select {
   color: var(--muted);
   font-weight: 600;
 }
-.number-input { display: flex; align-items: center; gap: 6px; }
+.number-input { display: flex; align-items: center; gap: 0; }
 .number-input input { flex: 1; }
-.number-input .suffix { color: var(--muted); font-size: 13px; }
+.number-input .suffix { color: var(--muted); font-size: 13px; margin-left: 6px; }
+/* Alternate-unit readout after the unit label (e.g. "≈ 19 in" on MTB sizes). */
+.unit-alt { margin-left: 6px; white-space: nowrap; }
+/* Custom up/down steppers attached to the RIGHT of the field — flush, sharing the
+   field's border, so the field reads as one element and the steppers hold a fixed
+   position as the reset "×" appears/disappears. Used by the frame-size fields. */
+.ni-stepper {
+  flex: none;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  overflow: hidden;
+}
+.ni-step {
+  flex: 1;
+  width: 24px;
+  min-height: 14px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: none;
+}
+.ni-step:first-child { border-bottom: 1px solid var(--border); }
+.ni-step:hover { background: var(--border); color: var(--text); }
+/* Square off the field's right side and hide the native spinner so the steppers
+   sit flush; leave room on the right for the "×". */
+input.ni-custom {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  padding-right: 30px;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+input.ni-custom::-webkit-outer-spin-button,
+input.ni-custom::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+/* Hand-entered values are bold, to stand out from the greyed estimates. */
+input.ni-set, select.ni-set { font-weight: 700; }
+/* Wraps the input so the reset "×" can sit inside it, at the right edge. */
+.ni-field { position: relative; flex: 1; display: flex; min-width: 0; }
+/* A small "×" that resets a field to its recommended estimate. */
+.number-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.number-clear:hover { background: var(--border); color: var(--text); }
 /* A compact unit picker that attaches to a number field in place of a plain
    suffix — auto-width, muted, minimal chrome so it reads as a unit, not a field. */
 .unit-suffix {
@@ -320,6 +419,7 @@ select {
 .note { border-radius: 8px; padding: 10px 12px; font-size: 13px; margin: 12px 0; border: 1px solid var(--border); }
 .note-info { background: var(--panel-2); }
 .note-warn { background: color-mix(in srgb, var(--warn) 14%, var(--panel)); border-color: color-mix(in srgb, var(--warn) 40%, var(--border)); }
+.note-sizing { display: block; margin-top: 7px; }
 
 /* Tables */
 table { border-collapse: collapse; width: 100%; font-size: 13px; }
@@ -409,47 +509,190 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   background: transparent;
 }
 
-/* Frame-size explainer figure */
+/* Frame-size title bar: an h1 + intro hint on the left and a Clear all reset on
+   the right, spanning the full page width above the two-column workbench (like
+   the pinned header on the drivetrain / wheel-building pages). */
+.fs-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+/* Title + intro sit side by side to keep the bar short; they wrap when narrow.
+   Vertically centred so the (single-line) title lines up with the middle of the
+   two-line hint rather than dropping below its first line. */
+.fs-head-text { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 14px; }
+.fs-head h1 { margin: 0; font-size: 24px; }
+.fs-head-hint { margin: 0; font-size: 13px; color: var(--muted); max-width: 72ch; }
+.fs-clear-all {
+  flex: none;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fs-clear-all:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.fs-clear-all:disabled { opacity: 0.45; cursor: default; }
+
+/* Frame-size explainer figure (inline SVG, like the other diagrams) */
 .fs-diagram {
   margin: 14px 0 0;
-  background: #fff;
+  background: var(--panel-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 12px;
 }
-.fs-diagram img { display: block; margin: 0 auto; }
-/* Stacked (narrow): grow the diagram to fill the available vertical space rather
-   than a fixed width cap, so it isn't small under the controls; the box hugs the
-   image so it doesn't leave a wide empty frame. */
+.fs-diagram svg { display: block; margin: 0 auto; }
+.fs-caption {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.fs-caption span { font-size: 11px; }
+/* Posture slider under the diagram: adjust the rider's seating position. */
+.fs-posture { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 12px; color: var(--muted); }
+.fs-posture input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); cursor: pointer; }
+.fs-posture span { white-space: nowrap; }
+
+/* Frame schematic: reach (red), stack (blue), effective seat-tube size (green),
+   over muted frame tubes / faint wheels. Colours come from the diagram vars so
+   they track light/dark like every other diagram. */
+.fg-ground { stroke: var(--border); stroke-width: 2; stroke-dasharray: 8 8; }
+.fg-wheel { fill: none; stroke: var(--border); stroke-width: 7; }
+/* Emphasis when the wheel-size value is hovered/edited in the UI. */
+.fg-wheel.fg-hl { stroke: var(--diag-wheel); stroke-width: 11; filter: drop-shadow(0 0 6px var(--diag-wheel)); }
+.fg-tube { fill: none; stroke: var(--muted); stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; }
+.fg-tube.fg-hl { stroke: var(--text); stroke-width: 14; filter: drop-shadow(0 0 6px var(--accent)); }
+.fg-headtube { stroke: var(--text); stroke-width: 14; }
+.fg-seatpost { fill: none; stroke: var(--muted); stroke-width: 6; stroke-linecap: round; }
+/* Handlebar + the tops/hoods/drops hand positions (open dots); the active one is
+   drawn over them as the solid node. */
+.fg-bar { fill: none; stroke: var(--muted); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.fg-handpos { fill: var(--panel-2); stroke: var(--muted); stroke-width: 2.5; }
+/* Suspension fork: thin stanchion up top, thick lowers below. */
+.fg-fork-stanchion { fill: none; stroke: var(--muted); stroke-width: 7; stroke-linecap: round; }
+.fg-fork-lowers { fill: none; stroke: var(--muted); stroke-width: 18; stroke-linecap: round; }
+.fg-tt-actual { fill: none; stroke: var(--muted); stroke-width: 8; stroke-linecap: round; opacity: 0.65; }
+/* Two shades of green: light = effective/virtual seat tube (drawn full length,
+   underneath), dark = actual seat tube (drawn over the lower part). */
+.fg-seat-effective { fill: none; stroke: color-mix(in srgb, var(--diag-green) 42%, var(--panel-2)); stroke-width: 13; stroke-linecap: round; }
+.fg-seat-actual { fill: none; stroke: var(--diag-green); stroke-width: 13; stroke-linecap: round; }
+.fg-virtual-tt { fill: none; stroke: color-mix(in srgb, var(--diag-green) 55%, var(--panel-2)); stroke-width: 5; stroke-dasharray: 12 9; }
+.fg-crank { fill: none; stroke: var(--diag-crank); stroke-width: 9; stroke-linecap: round; }
+.fg-pedal { stroke: var(--diag-crank); stroke-width: 14; stroke-linecap: round; }
+.fg-saddle { stroke: var(--text); stroke-width: 9; stroke-linecap: round; }
+.fg-node { fill: var(--text); }
+.fg-dim-reach { color: var(--diag-red); }
+.fg-dim-stack { color: var(--diag-blue); }
+.fg-dim-body { color: var(--diag-body); }
+.fg-dim-inseam { color: var(--diag-inseam); }
+.fg-dim-arm { color: var(--diag-arm); }
+.fg-dim .fg-dim-seg { stroke: currentColor; stroke-width: 7; }
+.fg-dim polygon { fill: currentColor; }
+.fg-dim-halo { stroke: currentColor; stroke-width: 28; stroke-linecap: round; opacity: 0.22; }
+/* Emphasis when the matching measurement is hovered/edited in the UI. */
+.fg-dim.fg-hl .fg-dim-seg { stroke-width: 11; }
+.fg-dim.fg-hl { filter: drop-shadow(0 0 4px currentColor); }
+.fg-seat-actual.fg-hl, .fg-seat-effective.fg-hl { filter: drop-shadow(0 0 6px var(--diag-green)); }
+.fg-crank.fg-hl, .fg-pedal.fg-hl { filter: drop-shadow(0 0 6px var(--diag-crank)); }
+.fg-rider path { fill: var(--muted); opacity: 0.9; }
+.fg-person-leader { stroke: var(--muted); stroke-width: 2.5; stroke-dasharray: 10 8; opacity: 0.6; }
+/* Measurement labels (reach, stack, body height, inseam, arm, crank): one
+   consistent size, enlarged when the measurement is highlighted. */
+.fg-mlabel { font-size: 30px; font-weight: 700; }
+.fg-mlabel.fg-hl { font-size: 37px; }
+.fg-note { fill: var(--muted); font-size: 24px; }
+.fg-note-green { fill: var(--diag-green); }
+.fg-note-green-soft { fill: color-mix(in srgb, var(--diag-green) 60%, var(--muted)); }
+.fg-note-red { fill: var(--diag-red); }
+.fg-note-over { fill: var(--diag-red); font-weight: 700; }
+.fg-note-blue { fill: var(--diag-blue); }
+.fg-note-crank { fill: var(--diag-crank); }
+.fg-note-arm { fill: var(--diag-arm); }
+.fg-note-body { fill: var(--diag-body); }
+.fg-note-inseam { fill: var(--diag-inseam); }
+.fg-note-wheel { fill: var(--diag-wheel); }
+
+/* Seated rider posed on the bike in the frame diagram: translucent capsule limbs
+   (hips at the saddle, foot on the pedal, hands on the grip). */
+.rp-rider { opacity: 0.42; }
+.rp-far { opacity: 0.24; }
+.rp-limb { fill: none; stroke: var(--accent); stroke-width: 80; stroke-linecap: round; }
+.rp-trunk { fill: none; stroke: var(--accent); stroke-width: 140; stroke-linecap: round; }
+.rp-neck { fill: none; stroke: var(--accent); stroke-width: 70; stroke-linecap: round; }
+.rp-foot { fill: none; stroke: var(--accent); stroke-width: 60; stroke-linecap: round; }
+.rp-head { fill: var(--accent); }
+.rp-joint { fill: var(--accent); }
+/* An over-extended limb (can't reach its bar/pedal) is drawn in warning red. */
+.rp-over { stroke: var(--diag-red); }
+
+/* Stacked (narrow): the title bar sits above the stacked controls + diagram. */
 @media (max-width: 1119px) {
-  .fs-viz { width: fit-content; max-width: 100%; }
-  .fs-viz img { width: auto; height: auto; max-width: 100%; max-height: 70vh; }
+  .fs-head { margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .fs-viz { max-width: 100%; }
+  .fs-viz svg { width: 100%; max-height: 62vh; }
 }
 
-/* Wide screens: controls take a fixed reading width on the left, the explainer
-   fills the remaining space in a sticky right rail (mirrors the drivetrain /
-   wheel-building workbench). The breakpoint is set high enough that the rail
+/* Wide screens: the workbench fills the viewport height. The controls (left) take
+   a fixed reading width and scroll on their own; the diagram (right) is fixed to
+   the full height and never moves. The breakpoint is set high enough that the rail
    always has room for a decently-sized diagram; below it the layout stacks. */
 @media (min-width: 1120px) {
-  /* Use the full viewport width like the workbench pages so the diagram fills all
-     the horizontal space. Controls stay at their reading width; the rest is diagram. */
-  .main--frame-size { max-width: none; }
+  /* Pin the page: a full-width title bar on top, then only the controls column
+     scrolls beneath it so the diagram stays put. Flex column so the header takes
+     its natural height and the workbench fills the rest of the viewport. */
+  .main--frame-size {
+    max-width: none;
+    height: 100vh;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  /* The title bar spans the page edge-to-edge, above both columns. */
+  .main--frame-size .fs-head {
+    flex: none;
+    padding: 16px 32px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  /* Only horizontal padding here; each column owns its vertical spacing so the
+     controls can scroll edge-to-edge (the gap scrolls with the content instead
+     of clipping it at a fixed inset band). */
   .fs-workbench {
+    flex: 1 1 auto;
+    min-height: 0;
     display: grid;
     grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
     gap: 24px;
-    align-items: start;
+    align-items: stretch;
+    padding: 0 32px;
+  }
+  .fs-controls {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    /* Top/bottom breathing room lives inside the scroll area, so it scrolls
+       away rather than culling content at a fixed band. */
+    padding: 28px 8px 28px 0;
   }
   .fs-viz {
-    position: sticky;
-    top: 16px;
-    margin-top: 0;
-    /* Cap the whole figure (not just the image) so the box hugs the diagram
-       instead of stretching the full column, and keep it left-bound in the rail. */
-    max-width: 924px; /* 900px image + 2×12px padding */
-    justify-self: start;
+    margin: 28px 0;
+    height: calc(100% - 56px);
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
   }
-  .fs-viz img { width: 100%; max-width: 900px; height: auto; max-height: none; }
+  /* The SVG box grows to fill the space above the slider/caption; the drawing is
+     bottom-anchored (preserveAspectRatio xMidYMax), so the ground line stays put
+     and the flexible slack sits above the image as the rider scales. */
+  .fs-viz-svg { flex: 1 1 auto; min-height: 0; display: flex; }
+  .fs-viz-svg svg { width: 100%; height: 100%; max-height: none; }
 }
 
 /* Drivetrain (crankset + cassette) diagram */

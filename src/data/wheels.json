@@ -1,0 +1,15 @@
+[
+  { "label": "32\"", "isoMm": 686, "outerMm": 810, "note": "An emerging larger-than-29\" mountain wheel (ISO 686) — rolls over rough ground even better, at some cost in weight, stiffness and frame/fork availability." },
+  { "label": "29\"", "isoMm": 622, "outerMm": 742, "note": "The standard modern trail wheel — an ISO 622 rim under a fat tyre, so it rolls tall." },
+  { "label": "28\"", "isoMm": 635, "outerMm": 709, "note": "The classic roadster wheel (ISO 635)." },
+  { "label": "27\"", "isoMm": 630, "outerMm": 686, "note": "The traditional road size (ISO 630) on older steel frames — a hair larger than 700c, but a rarer tyre." },
+  { "label": "700c", "isoMm": 622, "outerMm": 700, "note": "The road/gravel standard (ISO 622), used across almost every adult frame size." },
+  { "label": "27.5\"", "isoMm": 584, "outerMm": 706, "note": "The smaller trail wheel (ISO 584), run on small frames for standover and a livelier feel." },
+  { "label": "650b", "isoMm": 584, "outerMm": 678, "note": "A smaller-diameter wheel (ISO 584) fitted to the smallest frames so the fit and handling stay right — also chosen for extra tyre volume." },
+  { "label": "26\"", "isoMm": 559, "outerMm": 666, "note": "The classic mountain-bike size (ISO 559)." },
+  { "label": "24\"", "isoMm": 507, "outerMm": 550, "note": "A junior wheel (ISO 507) — the largest kids' size, just below the adult range." },
+  { "label": "20\"", "isoMm": 406, "outerMm": 455, "note": "A kids' wheel (ISO 406, also the BMX size)." },
+  { "label": "16\"", "isoMm": 305, "outerMm": 345, "note": "A small kids' wheel (ISO 305)." },
+  { "label": "14\"", "isoMm": 254, "outerMm": 292, "note": "A very small kids' wheel (ISO 254)." },
+  { "label": "12\"", "isoMm": 203, "outerMm": 240, "note": "The smallest kids'/balance-bike wheel (ISO 203)." }
+]

@@ -46,11 +46,24 @@ P_pedal = (F_gravity + F_rolling + F_aero) · v / η
 | `ρ` | air density, kg/m³ | 1.225 at sea level, 15 °C (varies with altitude/temp) |
 | `CdA` | drag area, m² | 0.30–0.40 hoods, ~0.25 drops, ~0.22 aero/TT |
 | `v_headwind` | head/tail wind component, m/s | + head, − tail |
-| `η` | drivetrain efficiency | ~0.97–0.98 |
+| `η` | drivetrain efficiency = `η_chain · η_gearing` | ~0.82–0.99 |
 
-Each coefficient (CdA, Crr, ρ, drivetrain efficiency) is an **editable field with
+Each coefficient (CdA, Crr, ρ, drivetrain, gearing) is an **editable field with
 a preset dropdown** (combobox): pick a common value or type your own. Expose the
 assumptions so the number is interpretable.
+
+**Drivetrain efficiency is split into two factors that multiply** — so the number
+isn't quietly a best-case single-speed figure that ignores the transmission:
+
+- `η_chain` — friction in the **chain or belt** itself: clean & waxed ~0.99,
+  typical chain ~0.98, worn/dirty ~0.96, belt drive ~0.98.
+- `η_gearing` — losses in the **gear mechanism**: single speed 1.00, derailleur
+  ~0.98, internal gear hub ~0.95, CVT ~0.85 (figures in line with gearbox/hub
+  efficiency testing, e.g. [cyclingabout.com](https://www.cyclingabout.com/speed-difference-testing-gearbox-systems/),
+  which measures a CVT around 83–84 % overall — ~0.85 once the chain is factored out).
+
+A typical chain on a derailleur (0.98 × 0.98 ≈ **0.96**) is the default — a little
+lower than a naïve 0.97–0.98, because it now counts the derailleur's losses.
 
 ### Coupled speed ⇄ power ⇄ W/kg fields
 

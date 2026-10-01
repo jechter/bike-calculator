@@ -5,7 +5,8 @@ import { Power } from "./Power";
 
 afterEach(cleanup);
 
-// input order: [speed, power, wkg, rider, bike, gradient, headwind, cda, crr, rho, eff]
+// input order: [speed, power, wkg, rider, bike, gradient, headwind, cda, crr, rho,
+//               drivetrain, gearing]
 const nums = (c: HTMLElement) =>
   Array.from(c.querySelectorAll('input[type="number"]')) as HTMLInputElement[];
 
@@ -66,5 +67,15 @@ describe("Cycling power", () => {
     fireEvent.click(getByTitle("Fill CdA from a riding position"));
     fireEvent.click(getByText("Drops (0.3)"));
     expect(nums(container).some((i) => i.value === "0.3")).toBe(true);
+  });
+
+  it("combines drivetrain and gearing into the overall efficiency", () => {
+    const { container, getByTitle, getByText } = render(<Power />);
+    // Speed is the fixed input by default; a more efficient gearing (single
+    // speed, η 1.0 vs the default derailleur 0.98) needs fewer pedal watts.
+    const powerDefault = +nums(container)[1].value;
+    fireEvent.click(getByTitle("Fill the gearing type"));
+    fireEvent.click(getByText("Single speed (1)"));
+    expect(+nums(container)[1].value).toBeLessThan(powerDefault);
   });
 });

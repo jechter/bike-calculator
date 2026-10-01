@@ -231,6 +231,10 @@ body {
 .infotip-pop :last-child { margin-bottom: 0; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+/* Pin to exactly three columns (e.g. when the fields are grouped in rows of three
+   by meaning) so a wide window can't reflow them into 4+ and mix the groups. */
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 620px) { .grid-3 { grid-template-columns: 1fr; } }
 /* A fixed two-column grid mixing editable fields with read-only cells. */
 .bike-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
 @media (max-width: 520px) { .bike-grid { grid-template-columns: 1fr; } }

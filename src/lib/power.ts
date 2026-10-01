@@ -107,10 +107,30 @@ export const CRR_PRESETS = [
   { label: 'Off-road / knobbly', crr: 0.02 },
 ];
 
-export const DRIVETRAIN_EFF_PRESETS = [
-  { label: 'Clean & waxed', eff: 0.98 },
-  { label: 'Typical', eff: 0.97 },
-  { label: 'Worn / dirty', eff: 0.95 },
+// Overall drivetrain efficiency splits into two roughly independent factors that
+// multiply: friction in the chain/belt itself, and losses in the gear mechanism.
+// Keeping them separate stops the old single number from quietly assuming a
+// best-case single-speed setup and ignoring the transmission.
+
+// Chain/belt friction, independent of how many gears there are. A clean, waxed
+// chain runs best; grit and wear add drag. A toothed belt sits a touch behind a
+// fresh chain but stays consistent and sheds dirt.
+export const DRIVETRAIN_PRESETS = [
+  { label: 'Chain, clean & waxed', eff: 0.99 },
+  { label: 'Chain, typical', eff: 0.98 },
+  { label: 'Chain, worn / dirty', eff: 0.96 },
+  { label: 'Belt drive', eff: 0.98 },
+];
+
+// Losses in the gear mechanism itself. A single speed has a straight chainline
+// and no idlers; a derailleur adds two jockey wheels and cross-chaining; geared
+// hubs and CVTs add internal friction that grows away from direct drive. Figures
+// in line with gearbox/hub efficiency testing (e.g. cyclingabout.com).
+export const GEARING_PRESETS = [
+  { label: 'Single speed', eff: 1.0 },
+  { label: 'Derailleur', eff: 0.98 },
+  { label: 'Internal gear hub', eff: 0.95 },
+  { label: 'CVT (e.g. Enviolo)', eff: 0.85 },
 ];
 
 // Air density by altitude (approx, ~15 °C). Also drops with temperature/humidity.

@@ -5,7 +5,8 @@ import {
   powerBreakdown,
   CDA_PRESETS,
   CRR_PRESETS,
-  DRIVETRAIN_EFF_PRESETS,
+  DRIVETRAIN_PRESETS,
+  GEARING_PRESETS,
   AIR_DENSITY_PRESETS,
   type PowerInput,
   type PowerBreakdown,
@@ -16,7 +17,11 @@ import { Field, Note, NumberInput, PresetMenu, Result, Section } from "./ui";
 
 const CDA_OPTIONS = CDA_PRESETS.map((c) => ({ value: String(c.cda), label: `${c.label} (${c.cda})` }));
 const CRR_OPTIONS = CRR_PRESETS.map((c) => ({ value: String(c.crr), label: `${c.label} (${c.crr})` }));
-const EFF_OPTIONS = DRIVETRAIN_EFF_PRESETS.map((c) => ({
+const DRIVETRAIN_OPTIONS = DRIVETRAIN_PRESETS.map((c) => ({
+  value: String(c.eff),
+  label: `${c.label} (${c.eff})`,
+}));
+const GEARING_OPTIONS = GEARING_PRESETS.map((c) => ({
   value: String(c.eff),
   label: `${c.label} (${c.eff})`,
 }));
@@ -81,7 +86,11 @@ export function Power() {
   const [rho, setRho] = useState(1.225);
   const [cda, setCda] = useState(0.32);
   const [wind, setWind] = useState(0);
-  const [eff, setEff] = useState(0.97);
+  // Overall efficiency is chain/belt friction × gearing losses. Default: a
+  // typical chain (0.98) on a derailleur (0.98) → ~0.96.
+  const [drivetrainEff, setDrivetrainEff] = useState(0.98);
+  const [gearingEff, setGearingEff] = useState(0.98);
+  const eff = drivetrainEff * gearingEff;
 
   // Speed, power and power-to-weight (W per rider kg) are coupled: whichever was
   // edited last is the independent one and stays fixed as conditions change; the
@@ -209,7 +218,8 @@ export function Power() {
         info={
           <>
             Steady-state model: power against gravity, rolling resistance and aero
-            drag, divided by drivetrain efficiency. The breakdown above shows where
+            drag, divided by drivetrain efficiency (chain/belt friction × gearing
+            losses). The breakdown above shows where
             your watts go — against gravity, rolling and aero, plus the drivetrain
             loss — with the share of the total in each card. Aero dominates on the
             flat, gravity on climbs. Each coefficient is editable, with a ⌄ button
@@ -217,7 +227,9 @@ export function Power() {
           </>
         }
       >
-        <div className="grid">
+        {/* Grouped in rows of three by what they drive: gravity, aero, friction.
+            grid-3 pins it to three columns so the grouping survives wide windows. */}
+        <div className="grid grid-3">
           <Field label="Rider" hint={`total ${Math.round(mass)} kg`}>
             <NumberInput value={riderMass} onChange={setRiderMass} suffix="kg" min={30} max={150} />
           </Field>
@@ -227,6 +239,7 @@ export function Power() {
           <Field label="Gradient">
             <NumberInput value={gradient} onChange={setGradient} suffix="%" step={0.5} />
           </Field>
+
           <Field label="Headwind" hint="+ head, − tail">
             <NumberInput
               value={Math.round(toDisplay(msToKmh(wind)) * 10) / 10}
@@ -235,7 +248,6 @@ export function Power() {
               step={1}
             />
           </Field>
-
           <Field label="CdA (drag area, m²)" hint="riding position">
             <div className="combo">
               <NumberInput value={cda} onChange={setCda} step={0.01} min={0.15} max={0.6} />
@@ -243,16 +255,6 @@ export function Power() {
                 title="Fill CdA from a riding position"
                 options={CDA_OPTIONS}
                 onPick={(v) => setCda(parseFloat(v))}
-              />
-            </div>
-          </Field>
-          <Field label="Crr (rolling resistance)" hint="tire / surface">
-            <div className="combo">
-              <NumberInput value={crr} onChange={setCrr} step={0.001} min={0.002} max={0.03} />
-              <PresetMenu
-                title="Fill Crr from a tire / surface"
-                options={CRR_OPTIONS}
-                onPick={(v) => setCrr(parseFloat(v))}
               />
             </div>
           </Field>
@@ -266,13 +268,79 @@ export function Power() {
               />
             </div>
           </Field>
-          <Field label="Drivetrain efficiency">
+
+          <Field label="Crr (rolling resistance)" hint="tire / surface">
             <div className="combo">
-              <NumberInput value={eff} onChange={setEff} step={0.01} min={0.9} max={1} />
+              <NumberInput value={crr} onChange={setCrr} step={0.001} min={0.002} max={0.03} />
               <PresetMenu
-                title="Fill drivetrain efficiency"
-                options={EFF_OPTIONS}
-                onPick={(v) => setEff(parseFloat(v))}
+                title="Fill Crr from a tire / surface"
+                options={CRR_OPTIONS}
+                onPick={(v) => setCrr(parseFloat(v))}
+              />
+            </div>
+          </Field>
+          <Field
+            label="Drivetrain"
+            hint="chain / belt friction"
+            info={
+              <>
+                Friction in the <strong>chain or belt</strong> itself, independent
+                of the gearing. A clean, waxed chain is best; grit and wear add
+                drag. A toothed belt runs a touch behind a fresh chain but stays
+                consistent. Multiplied by the gearing factor for the overall
+                efficiency (currently η ≈ {eff.toFixed(2)}).
+              </>
+            }
+          >
+            <div className="combo">
+              <NumberInput
+                value={drivetrainEff}
+                onChange={setDrivetrainEff}
+                step={0.01}
+                min={0.9}
+                max={1}
+              />
+              <PresetMenu
+                title="Fill the chain / belt condition"
+                options={DRIVETRAIN_OPTIONS}
+                onPick={(v) => setDrivetrainEff(parseFloat(v))}
+              />
+            </div>
+          </Field>
+          <Field
+            label="Gearing"
+            hint={`overall η ≈ ${eff.toFixed(2)}`}
+            info={
+              <>
+                Losses in the <strong>gear mechanism</strong>. A single speed has a
+                straight chainline and no idlers; a derailleur adds two jockey
+                wheels and cross-chaining; internal gear hubs and CVTs add internal
+                friction (more in their extreme ratios). Figures follow gearbox/hub
+                efficiency testing — see{" "}
+                <a
+                  className="inline-link"
+                  href="https://www.cyclingabout.com/speed-difference-testing-gearbox-systems/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  cyclingabout.com
+                </a>
+                .
+              </>
+            }
+          >
+            <div className="combo">
+              <NumberInput
+                value={gearingEff}
+                onChange={setGearingEff}
+                step={0.01}
+                min={0.8}
+                max={1}
+              />
+              <PresetMenu
+                title="Fill the gearing type"
+                options={GEARING_OPTIONS}
+                onPick={(v) => setGearingEff(parseFloat(v))}
               />
             </div>
           </Field>

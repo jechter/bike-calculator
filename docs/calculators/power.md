@@ -72,8 +72,11 @@ size_scale = (height/175)^0.6 · (mass/72)^0.35
 multiplier and decides the available riding positions, which really follow the
 **handlebar**:
 
-- **Drop bar** (road, endurance, gravel) → Tops / Hoods / Drops / Drops-low. All
-  three share this list and differ only by `factor` (gravel bulkier than road).
+- **Drop bar** (road, endurance, gravel) → Tops / Hoods / Drops / Drops-low /
+  Clip-on aero bars. All three share this list and differ only by `factor` (gravel
+  bulkier than road). Clip-ons (~0.26 base, for ultra/TT setups) sit below the
+  drops but above a dedicated TT bike's tuck — the frame isn't aero and the
+  position is less optimised.
 - **Flat bar** (city, mountain) → Upright / Leaning forward. No hoods or drops.
 - **Aero bar** (TT) → Aero tuck / Base bar.
 - **Recumbent** → High-racer / Low-racer / Low-racer + tailbox.

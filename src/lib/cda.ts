@@ -27,6 +27,7 @@ export type CdaPosition =
   | 'hoods'
   | 'drops'
   | 'dropsLow'
+  | 'clipOnAero'
   // Flat bar (city / mountain)
   | 'upright'
   | 'flatForward'
@@ -60,6 +61,9 @@ export const CDA_POSITIONS: Record<CdaPosition, { label: string; base: number }>
   hoods: { label: 'Hoods', base: 0.36 },
   drops: { label: 'Drops', base: 0.31 },
   dropsLow: { label: 'Drops, low', base: 0.28 },
+  // Clip-on aero bars fitted to a drop bar — lower than the drops, but a touch
+  // higher than a dedicated TT bike (non-aero frame, less-optimised position).
+  clipOnAero: { label: 'Clip-on aero bars', base: 0.26 },
   // Flat bar: no hoods/drops — posture is just how far forward the rider leans.
   upright: { label: 'Upright', base: 0.5 },
   flatForward: { label: 'Leaning forward', base: 0.44 },
@@ -77,7 +81,7 @@ export const CDA_POSITIONS: Record<CdaPosition, { label: string; base: number }>
 // Positions available per handlebar type (shared by every bike with that bar), so
 // e.g. all drop-bar bikes offer exactly the same hand positions. Ordered most
 // upright → lowest for the dropdown.
-const DROP_BAR: CdaPosition[] = ['tops', 'hoods', 'drops', 'dropsLow'];
+const DROP_BAR: CdaPosition[] = ['tops', 'hoods', 'drops', 'dropsLow', 'clipOnAero'];
 const FLAT_BAR: CdaPosition[] = ['upright', 'flatForward'];
 const AERO_BAR: CdaPosition[] = ['aeroTuck', 'baseBar'];
 const RECUMBENT_BAR: CdaPosition[] = ['highracer', 'lowracer', 'lowracerTail'];

@@ -50,6 +50,22 @@ describe("estimateCda", () => {
     }
   });
 
+  it("offers clip-on aero bars on drop-bar bikes, lower than the drops", () => {
+    for (const b of ["road", "endurance", "gravel"] as const) {
+      expect(bikeByValue(b).positions).toContain("clipOnAero");
+    }
+    // Not applicable to flat-bar / TT / recumbent / velomobile.
+    for (const b of ["city", "mtb", "tt", "recumbent", "velomobile"] as const) {
+      expect(bikeByValue(b).positions).not.toContain("clipOnAero");
+    }
+    // Clip-ons on a gravel bike beat the drops but trail a dedicated TT tuck.
+    const gravelDrops = estimateCda({ ...DEFAULT_CDA_PARAMS, bike: "gravel", position: "drops" }, REF_MASS_KG);
+    const gravelAero = estimateCda({ ...DEFAULT_CDA_PARAMS, bike: "gravel", position: "clipOnAero" }, REF_MASS_KG);
+    const ttTuck = estimateCda({ ...DEFAULT_CDA_PARAMS, bike: "tt", position: "aeroTuck" }, REF_MASS_KG);
+    expect(gravelAero).toBeLessThan(gravelDrops);
+    expect(gravelAero).toBeGreaterThan(ttTuck);
+  });
+
   it("tighter clothing and deeper wheels reduce CdA", () => {
     const base = estimateCda(DEFAULT_CDA_PARAMS, REF_MASS_KG);
     const kit = estimateCda({ ...DEFAULT_CDA_PARAMS, clothing: "skinsuitAero" }, REF_MASS_KG);

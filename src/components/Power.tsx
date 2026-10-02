@@ -1,29 +1,32 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   powerForSpeed,
   speedForPower,
   powerBreakdown,
-  CDA_PRESETS,
   CRR_PRESETS,
-  DRIVETRAIN_EFF_PRESETS,
-  AIR_DENSITY_PRESETS,
+  combinedEfficiency,
+  DEFAULT_EFFICIENCY_PARAMS,
+  type EfficiencyParams,
   type PowerInput,
   type PowerBreakdown,
 } from "../lib/power";
+import {
+  DEFAULT_CDA_PARAMS,
+  estimateCda,
+  CDA_MIN,
+  CDA_MAX,
+  type CdaParams,
+} from "../lib/cda";
+import { airDensity, DEFAULT_AIR_PARAMS, type AirParams } from "../lib/airDensity";
 import { kmhToMs, msToKmh, kmhToMph, mphToKmh } from "../lib/units";
 import { useUnits, speedUnitLabel } from "../units-context";
 import { Field, Note, NumberInput, PresetMenu, Result, Section } from "./ui";
+import { CdaAdvancedPanel } from "./CdaAdvanced";
+import { DrivetrainEfficiencyPanel } from "./DrivetrainEfficiency";
+import { AirDensityPanel } from "./AirDensity";
+import { useOutsideClose } from "./EditorPopover";
 
-const CDA_OPTIONS = CDA_PRESETS.map((c) => ({ value: String(c.cda), label: `${c.label} (${c.cda})` }));
 const CRR_OPTIONS = CRR_PRESETS.map((c) => ({ value: String(c.crr), label: `${c.label} (${c.crr})` }));
-const EFF_OPTIONS = DRIVETRAIN_EFF_PRESETS.map((c) => ({
-  value: String(c.eff),
-  label: `${c.label} (${c.eff})`,
-}));
-const RHO_OPTIONS = AIR_DENSITY_PRESETS.map((c) => ({
-  value: String(c.rho),
-  label: `${c.label} (${c.rho})`,
-}));
 
 // Colours shared by the breakdown's number cards and the stacked bar.
 const SPLIT_COLORS = {
@@ -78,10 +81,29 @@ export function Power() {
   const mass = riderMass + bikeMass;
   const [gradient, setGradient] = useState(0);
   const [crr, setCrr] = useState(0.005);
-  const [rho, setRho] = useState(1.225);
-  const [cda, setCda] = useState(0.32);
+  // Air density: seeded from its editor (15 °C, sea level → 1.225); editor-driven
+  // until the user types a value directly.
+  const [rho, setRho] = useState(() =>
+    airDensity(DEFAULT_AIR_PARAMS.tempC, DEFAULT_AIR_PARAMS.altitudeM),
+  );
+  const [rhoAdvanced, setRhoAdvanced] = useState(false);
+  const [rhoParams, setRhoParams] = useState<AirParams>(DEFAULT_AIR_PARAMS);
+  const [rhoFromCalc, setRhoFromCalc] = useState(true);
+  // CdA starts seeded from the estimator (road / hoods / reference rider) and
+  // stays "estimator-driven": changing a factor or the rider weight re-derives it.
+  const [cda, setCda] = useState(() => estimateCda(DEFAULT_CDA_PARAMS, riderMass));
+  const [cdaAdvanced, setCdaAdvanced] = useState(false);
+  const [cdaParams, setCdaParams] = useState<CdaParams>(DEFAULT_CDA_PARAMS);
+  // True until the user types a CdA directly (then it's manual and left alone).
+  const [cdaFromEstimator, setCdaFromEstimator] = useState(true);
   const [wind, setWind] = useState(0);
-  const [eff, setEff] = useState(0.97);
+  // Overall drivetrain efficiency = chain/belt friction × gearing losses, chosen
+  // via its editor and seeded from a typical chain on a derailleur (~0.96).
+  // Editor-driven until the user types a value directly.
+  const [eff, setEff] = useState(() => combinedEfficiency(DEFAULT_EFFICIENCY_PARAMS));
+  const [effAdvanced, setEffAdvanced] = useState(false);
+  const [effParams, setEffParams] = useState<EfficiencyParams>(DEFAULT_EFFICIENCY_PARAMS);
+  const [effFromPresets, setEffFromPresets] = useState(true);
 
   // Speed, power and power-to-weight (W per rider kg) are coupled: whichever was
   // edited last is the independent one and stays fixed as conditions change; the
@@ -90,6 +112,38 @@ export function Power() {
   const [watts, setWatts] = useState(200);
   const [wkg, setWkg] = useState(200 / 70);
   const [last, setLast] = useState<"speed" | "power" | "wkg">("speed");
+
+  // Each editor-backed field (CdA, air density, drivetrain efficiency) follows the
+  // same pattern: it's seeded from its editor and re-derived whenever a factor
+  // changes, until the user types a value directly (which switches it to manual).
+  // Opening/closing a panel never recomputes. `useOutsideClose` dismisses a panel
+  // on an outside click (its anchor wraps the trigger too, so the trigger toggles).
+  useEffect(() => {
+    if (cdaFromEstimator) setCda(estimateCda(cdaParams, riderMass));
+  }, [cdaFromEstimator, cdaParams, riderMass]);
+  const onCdaParams = (next: CdaParams) => {
+    setCdaParams(next);
+    setCdaFromEstimator(true);
+  };
+  const cdaAnchorRef = useOutsideClose<HTMLDivElement>(cdaAdvanced, () => setCdaAdvanced(false));
+
+  useEffect(() => {
+    if (rhoFromCalc) setRho(airDensity(rhoParams.tempC, rhoParams.altitudeM));
+  }, [rhoFromCalc, rhoParams]);
+  const onRhoParams = (next: AirParams) => {
+    setRhoParams(next);
+    setRhoFromCalc(true);
+  };
+  const rhoAnchorRef = useOutsideClose<HTMLDivElement>(rhoAdvanced, () => setRhoAdvanced(false));
+
+  useEffect(() => {
+    if (effFromPresets) setEff(combinedEfficiency(effParams));
+  }, [effFromPresets, effParams]);
+  const onEffParams = (next: EfficiencyParams) => {
+    setEffParams(next);
+    setEffFromPresets(true);
+  };
+  const effAnchorRef = useOutsideClose<HTMLDivElement>(effAdvanced, () => setEffAdvanced(false));
 
   const p: PowerInput = {
     massKg: mass,
@@ -209,7 +263,8 @@ export function Power() {
         info={
           <>
             Steady-state model: power against gravity, rolling resistance and aero
-            drag, divided by drivetrain efficiency. The breakdown above shows where
+            drag, divided by drivetrain efficiency (chain/belt friction × gearing
+            losses). The breakdown above shows where
             your watts go — against gravity, rolling and aero, plus the drivetrain
             loss — with the share of the total in each card. Aero dominates on the
             flat, gravity on climbs. Each coefficient is editable, with a ⌄ button
@@ -217,7 +272,9 @@ export function Power() {
           </>
         }
       >
-        <div className="grid">
+        {/* Grouped in rows of three by what they drive: gravity, aero, friction.
+            grid-3 pins it to three columns so the grouping survives wide windows. */}
+        <div className="grid grid-3">
           <Field label="Rider" hint={`total ${Math.round(mass)} kg`}>
             <NumberInput value={riderMass} onChange={setRiderMass} suffix="kg" min={30} max={150} />
           </Field>
@@ -227,6 +284,7 @@ export function Power() {
           <Field label="Gradient">
             <NumberInput value={gradient} onChange={setGradient} suffix="%" step={0.5} />
           </Field>
+
           <Field label="Headwind" hint="+ head, − tail">
             <NumberInput
               value={Math.round(toDisplay(msToKmh(wind)) * 10) / 10}
@@ -235,17 +293,91 @@ export function Power() {
               step={1}
             />
           </Field>
-
-          <Field label="CdA (drag area, m²)" hint="riding position">
-            <div className="combo">
-              <NumberInput value={cda} onChange={setCda} step={0.01} min={0.15} max={0.6} />
-              <PresetMenu
-                title="Fill CdA from a riding position"
-                options={CDA_OPTIONS}
-                onPick={(v) => setCda(parseFloat(v))}
-              />
+          <Field
+            label="CdA (drag coeff × area, m²)"
+            hint={cdaAdvanced ? "estimated — see panel" : "type, position, kit"}
+            info={
+              <>
+                CdA is the <strong>drag coefficient (Cd)</strong> ×{" "}
+                <strong>frontal area (A)</strong> — an effective "drag area" that
+                captures both how big your frontal profile is and how slippery it
+                is. It reads in m² only because Cd is dimensionless. Use the ⌄
+                button to estimate it from bike, position and kit.
+              </>
+            }
+          >
+            <div className="editor-anchor" ref={cdaAnchorRef}>
+              <div className="combo">
+                <NumberInput
+                  value={cda}
+                  onChange={(v) => {
+                    setCdaAdvanced(false);
+                    setCdaFromEstimator(false);
+                    setCda(v);
+                  }}
+                  step={0.01}
+                  min={CDA_MIN}
+                  max={CDA_MAX}
+                />
+                <button
+                  type="button"
+                  className={"preset-btn" + (cdaAdvanced ? " open" : "")}
+                  title="Estimate CdA from bike, position & kit"
+                  aria-label="Estimate CdA from bike, position & kit"
+                  aria-expanded={cdaAdvanced}
+                  onClick={() => setCdaAdvanced((o) => !o)}
+                >
+                  <span className="caret">▾</span>
+                </button>
+              </div>
+              {cdaAdvanced && (
+                <CdaAdvancedPanel
+                  params={cdaParams}
+                  massKg={riderMass}
+                  onChange={onCdaParams}
+                  onClose={() => setCdaAdvanced(false)}
+                />
+              )}
             </div>
           </Field>
+          <Field
+            label="Air density ρ (kg/m³)"
+            hint={rhoAdvanced ? "from temp. & altitude" : "altitude / temperature"}
+          >
+            <div className="editor-anchor" ref={rhoAnchorRef}>
+              <div className="combo">
+                <NumberInput
+                  value={rho}
+                  onChange={(v) => {
+                    setRhoAdvanced(false);
+                    setRhoFromCalc(false);
+                    setRho(v);
+                  }}
+                  step={0.005}
+                  min={0.5}
+                  max={1.4}
+                />
+                <button
+                  type="button"
+                  className={"preset-btn" + (rhoAdvanced ? " open" : "")}
+                  title="Set air density from temperature & altitude"
+                  aria-label="Set air density from temperature & altitude"
+                  aria-expanded={rhoAdvanced}
+                  onClick={() => setRhoAdvanced((o) => !o)}
+                >
+                  <span className="caret">▾</span>
+                </button>
+              </div>
+              {rhoAdvanced && (
+                <AirDensityPanel
+                  params={rhoParams}
+                  onChange={onRhoParams}
+                  onClose={() => setRhoAdvanced(false)}
+                />
+              )}
+            </div>
+          </Field>
+
           <Field label="Crr (rolling resistance)" hint="tire / surface">
             <div className="combo">
               <NumberInput value={crr} onChange={setCrr} step={0.001} min={0.002} max={0.03} />
@@ -256,24 +388,41 @@ export function Power() {
               />
             </div>
           </Field>
-          <Field label="Air density ρ (kg/m³)" hint="altitude / temperature">
-            <div className="combo">
-              <NumberInput value={rho} onChange={setRho} step={0.005} min={0.7} max={1.3} />
-              <PresetMenu
-                title="Fill air density from altitude"
-                options={RHO_OPTIONS}
-                onPick={(v) => setRho(parseFloat(v))}
-              />
-            </div>
-          </Field>
-          <Field label="Drivetrain efficiency">
-            <div className="combo">
-              <NumberInput value={eff} onChange={setEff} step={0.01} min={0.9} max={1} />
-              <PresetMenu
-                title="Fill drivetrain efficiency"
-                options={EFF_OPTIONS}
-                onPick={(v) => setEff(parseFloat(v))}
-              />
+          <Field
+            label="Drivetrain efficiency"
+            hint={effAdvanced ? "chain/belt × gearing" : "chain, belt, gearing"}
+          >
+            <div className="editor-anchor" ref={effAnchorRef}>
+              <div className="combo">
+                <NumberInput
+                  value={eff}
+                  onChange={(v) => {
+                    setEffAdvanced(false);
+                    setEffFromPresets(false);
+                    setEff(v);
+                  }}
+                  step={0.01}
+                  min={0.8}
+                  max={1}
+                />
+                <button
+                  type="button"
+                  className={"preset-btn" + (effAdvanced ? " open" : "")}
+                  title="Choose drivetrain & gearing"
+                  aria-label="Choose drivetrain & gearing"
+                  aria-expanded={effAdvanced}
+                  onClick={() => setEffAdvanced((o) => !o)}
+                >
+                  <span className="caret">▾</span>
+                </button>
+              </div>
+              {effAdvanced && (
+                <DrivetrainEfficiencyPanel
+                  params={effParams}
+                  onChange={onEffParams}
+                  onClose={() => setEffAdvanced(false)}
+                />
+              )}
             </div>
           </Field>
         </div>

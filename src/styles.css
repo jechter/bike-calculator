@@ -231,6 +231,10 @@ body {
 .infotip-pop :last-child { margin-bottom: 0; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+/* Pin to exactly three columns (e.g. when the fields are grouped in rows of three
+   by meaning) so a wide window can't reflow them into 4+ and mix the groups. */
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 620px) { .grid-3 { grid-template-columns: 1fr; } }
 /* A fixed two-column grid mixing editable fields with read-only cells. */
 .bike-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
 @media (max-width: 520px) { .bike-grid { grid-template-columns: 1fr; } }
@@ -1030,6 +1034,42 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .cp-meta { font-size: 11px; color: var(--muted); }
 .cp-empty { padding: 12px 10px; color: var(--muted); font-size: 13px; }
 .cp-foot { font-size: 11px; color: var(--muted); padding: 0 2px; }
+
+/* "Complex editing" foldout shared by the CdA / drivetrain / air-density editors:
+   an anchored panel (reuses .cp-pop) holding a small grid of factor pickers plus a
+   live readout. */
+.editor-anchor { position: relative; }
+.editor-pop { gap: 10px; }
+.editor-pop-head { display: flex; align-items: center; justify-content: space-between; }
+.editor-pop-head strong { font-size: 13px; }
+.editor-pop-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+}
+.editor-pop-close:hover { color: var(--text); }
+.editor-pop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+.editor-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.editor-field > span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.editor-field-wide { grid-column: 1 / -1; }
+.editor-field select, .editor-field .combo { width: 100%; min-width: 0; }
+.editor-field select:disabled { opacity: 0.5; cursor: not-allowed; }
+.editor-field .combo-disabled { opacity: 0.5; }
+.editor-field .combo-disabled input:disabled { cursor: not-allowed; }
+.editor-pop-out {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  font-size: 13px;
+}
+.editor-pop-out strong { font-size: 18px; color: var(--accent); }
+.editor-pop-note { margin: 0; font-size: 11px; color: var(--muted); line-height: 1.4; }
 
 /* Fit dots on cassette rows when a derailleur is selected (green/amber/red). */
 .cp-fit-dot {

@@ -44,13 +44,77 @@ P_pedal = (F_gravity + F_rolling + F_aero) · v / η
 | `G` | gradient (rise/run) | −0.10 … 0.20 |
 | `Crr` | coefficient of rolling resistance | 0.004 (good road tire) – 0.008 (rough), 0.012+ off-road |
 | `ρ` | air density, kg/m³ | 1.225 at sea level, 15 °C (varies with altitude/temp) |
-| `CdA` | drag area, m² | 0.30–0.40 hoods, ~0.25 drops, ~0.22 aero/TT |
+| `CdA` | drag coefficient × frontal area ("drag area"), m² | 0.30–0.40 hoods, ~0.25 drops, ~0.22 aero/TT |
 | `v_headwind` | head/tail wind component, m/s | + head, − tail |
-| `η` | drivetrain efficiency | ~0.97–0.98 |
+| `η` | drivetrain efficiency = `η_chain · η_gearing` | ~0.82–0.99 |
 
 Each coefficient (CdA, Crr, ρ, drivetrain efficiency) is an **editable field with
-a preset dropdown** (combobox): pick a common value or type your own. Expose the
-assumptions so the number is interpretable.
+a ⌄ button**: pick a common value or type your own. Crr opens a simple preset
+list; CdA, air density and drivetrain efficiency open a richer **"complex editing"
+foldout** (the shared `EditorPopover` chrome in `src/components/EditorPopover.tsx`,
+with the `useOutsideClose` anchor pattern). All three editor-backed fields behave
+the same: seeded from their editor, re-derived live as you change a factor, and
+switched to *manual* (left alone) once you type a value directly; opening or
+closing a panel never recomputes.
+
+**CdA has a built-in estimator** (`src/lib/cda.ts`, `CdaAdvanced.tsx`). The CdA
+field's caret opens a foldout (there's no fixed-value dropdown — the estimator
+replaces it) that builds `CdA = Cd·A` from a position baseline for a reference
+rider (175 cm, 72 kg), scaled by body size and nudged by bike type, wheelset and
+clothing:
+
+```
+CdA = base[position] · size_scale(height, mass) · bike · clothing + wheel_delta
+size_scale = (height/175)^0.6 · (mass/72)^0.35
+```
+
+**Bike type is the primary choice** — it carries the frame/tire-bulk `bike`
+multiplier and decides the available riding positions, which really follow the
+**handlebar**:
+
+- **Drop bar** (road, endurance, gravel) → Tops / Hoods / Drops / Drops-low /
+  Clip-on aero bars. All three share this list and differ only by `factor` (gravel
+  bulkier than road). Clip-ons (~0.26 base, for ultra/TT setups) sit below the
+  drops but above a dedicated TT bike's tuck — the frame isn't aero and the
+  position is less optimised.
+- **Flat bar** (city, mountain) → Upright / Leaning forward. No hoods or drops.
+- **Aero bar** (TT) → Aero tuck / Base bar.
+- **Recumbent** → High-racer / Low-racer / Low-racer + tailbox.
+- **Velomobile** → a single enclosed shell.
+
+The drop-bar baselines are anchored so an average rider reproduces the old quick
+presets (hoods ~0.36, drops ~0.31, aero-tuck ~0.23). The two low-drag categories
+go much further: a **recumbent** is ~0.16–0.26, and a **velomobile** is ~0.055 —
+an order below a road bike. The velomobile's fairing sets the frontal area, so
+its CdA is rider-independent: wheels, clothing and rider size are all disabled and
+have no effect.
+
+Rider mass comes from the page's rider field. **CdA starts seeded from the
+estimator** (road / hoods / reference rider) and stays *estimator-driven*: changing
+any factor — or the rider weight — re-derives it. Merely opening or closing the
+panel never overwrites it. **Typing a value in the CdA field switches it to
+manual**, after which it's left alone (weight changes no longer move it). These are
+plausible estimates for comparing setups, not wind-tunnel data.
+
+**Drivetrain efficiency is one field whose editor multiplies two factors** — so the
+number isn't quietly a best-case single-speed figure that ignores the transmission
+(`combinedEfficiency` in `src/lib/power.ts`, editor `DrivetrainEfficiency.tsx`):
+
+- `η_chain` — friction in the **chain or belt** itself: clean & waxed ~0.99,
+  typical chain ~0.98, worn/dirty ~0.96, belt drive ~0.98.
+- `η_gearing` — losses in the **gear mechanism**: single speed 1.00, derailleur
+  ~0.98, internal gear hub ~0.95, CVT ~0.85 (figures in line with gearbox/hub
+  efficiency testing, e.g. [cyclingabout.com](https://www.cyclingabout.com/speed-difference-testing-gearbox-systems/),
+  which measures a CVT around 83–84 % overall — ~0.85 once the chain is factored out).
+
+A typical chain on a derailleur (0.98 × 0.98 ≈ **0.96**) is the default — a little
+lower than a naïve 0.97–0.98, because it now counts the derailleur's losses.
+
+**Air density has an editor too** (`src/lib/airDensity.ts`, `AirDensity.tsx`) that
+derives ρ from **temperature and altitude**: standard-atmosphere pressure at the
+altitude, `P(h) = 101325 · (1 − 2.25577e‑5·h)^5.25588`, then the ideal-gas law
+`ρ = P / (287.05 · (T+273.15))`. Anchored to the usual references — sea level at
+15 °C → 1.225, at 25 °C → 1.184. Humidity is ignored.
 
 ### Coupled speed ⇄ power ⇄ W/kg fields
 

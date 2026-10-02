@@ -15,9 +15,9 @@ describe("Cycling power", () => {
     const { container } = render(<Power />);
     const [speed, power] = nums(container);
     expect(+speed.value).toBe(30);
-    // ~150 W for the default flat setup
-    expect(+power.value).toBeGreaterThan(120);
-    expect(+power.value).toBeLessThan(180);
+    // ~165 W for the default flat setup (estimator-seeded CdA ~0.356)
+    expect(+power.value).toBeGreaterThan(130);
+    expect(+power.value).toBeLessThan(190);
   });
 
   it("couples the two fields and holds the last-edited one fixed", () => {
@@ -64,9 +64,38 @@ describe("Cycling power", () => {
 
   it("fills a coefficient from its preset popup", () => {
     const { container, getByTitle, getByText } = render(<Power />);
-    fireEvent.click(getByTitle("Fill CdA from a riding position"));
-    fireEvent.click(getByText("Drops (0.3)"));
-    expect(nums(container).some((i) => i.value === "0.3")).toBe(true);
+    fireEvent.click(getByTitle("Fill Crr from a tire / surface"));
+    fireEvent.click(getByText("Gravel (0.012)"));
+    expect(nums(container).some((i) => i.value === "0.012")).toBe(true);
+  });
+
+  it("re-derives CdA from rider weight while estimator-driven, but not once typed", () => {
+    const { container } = render(<Power />);
+    const cda0 = +nums(container)[7].value; // seeded from the estimator
+    // Heavier rider → larger frontal area → higher CdA.
+    fireEvent.change(nums(container)[3], { target: { value: "100" } });
+    expect(+nums(container)[7].value).toBeGreaterThan(cda0);
+    // Typing a CdA switches it to manual; weight no longer moves it.
+    fireEvent.change(nums(container)[7], { target: { value: "0.3" } });
+    fireEvent.change(nums(container)[3], { target: { value: "60" } });
+    expect(+nums(container)[7].value).toBe(0.3);
+  });
+
+  it("opens the CdA estimator from the caret and applies only on change", () => {
+    const { container, getByTitle, getByText, getByLabelText, queryByText } = render(<Power />);
+    const cdaBefore = +nums(container)[7].value; // CdA is the 8th number input
+    // The caret on the CdA field opens the estimator directly (no preset list).
+    fireEvent.click(getByTitle("Estimate CdA from bike, position & kit"));
+    expect(getByText("Estimate CdA")).toBeTruthy();
+    // Opening alone must not overwrite the current value.
+    expect(+nums(container)[7].value).toBe(cdaBefore);
+    // Switching to a velomobile (bike type is the first select) slashes the CdA.
+    const bike = container.querySelectorAll("select")[0] as HTMLSelectElement;
+    fireEvent.change(bike, { target: { value: "velomobile" } });
+    expect(+nums(container)[7].value).toBeLessThan(0.1);
+    // Closing it leaves the field editable again.
+    fireEvent.click(getByLabelText("Close estimator"));
+    expect(queryByText("Estimate CdA")).toBeNull();
   });
 
   it("combines drivetrain and gearing into the overall efficiency", () => {

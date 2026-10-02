@@ -1035,6 +1035,41 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .cp-empty { padding: 12px 10px; color: var(--muted); font-size: 13px; }
 .cp-foot { font-size: 11px; color: var(--muted); padding: 0 2px; }
 
+/* Advanced CdA estimator: an anchored foldout (reuses .cp-pop) holding a small
+   grid of factor pickers plus a live estimate readout. */
+.cda-anchor { position: relative; }
+.cda-pop { gap: 10px; }
+.cda-pop-head { display: flex; align-items: center; justify-content: space-between; }
+.cda-pop-head strong { font-size: 13px; }
+.cda-pop-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+}
+.cda-pop-close:hover { color: var(--text); }
+.cda-pop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+.cda-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.cda-field > span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.cda-field-wide { grid-column: 1 / -1; }
+.cda-field select, .cda-field .combo { width: 100%; min-width: 0; }
+.cda-field select:disabled { opacity: 0.5; cursor: not-allowed; }
+.cda-field .combo-disabled { opacity: 0.5; }
+.cda-field .combo-disabled input:disabled { cursor: not-allowed; }
+.cda-pop-out {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  font-size: 13px;
+}
+.cda-pop-out strong { font-size: 18px; color: var(--accent); }
+.cda-pop-note { margin: 0; font-size: 11px; color: var(--muted); line-height: 1.4; }
+
 /* Fit dots on cassette rows when a derailleur is selected (green/amber/red). */
 .cp-fit-dot {
   display: inline-block;

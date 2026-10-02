@@ -130,6 +130,8 @@ export function NumberInput(props: {
    * while the field holds a user value (so there's something to clear).
    */
   onClear?: () => void;
+  /** Greys the input and blocks edits (e.g. a factor that doesn't apply). */
+  disabled?: boolean;
 }) {
   const finite = Number.isFinite(props.value);
   const est = props.estimate;
@@ -207,6 +209,7 @@ export function NumberInput(props: {
         }
         value={finite ? props.value : ""}
         placeholder={props.placeholder}
+        disabled={props.disabled}
         min={props.min}
         max={props.max}
         step={props.step ?? "any"}
@@ -300,6 +303,8 @@ export function Select<T extends string | number>(props: {
   options: Array<SelectOption<T> | SelectGroup<T>>;
   onChange: (v: T) => void;
   className?: string;
+  /** Greys the control and blocks changes (e.g. a factor that doesn't apply). */
+  disabled?: boolean;
 }) {
   const isGroup = (o: SelectOption<T> | SelectGroup<T>): o is SelectGroup<T> =>
     "options" in o;
@@ -307,6 +312,7 @@ export function Select<T extends string | number>(props: {
   return (
     <select
       className={props.className}
+      disabled={props.disabled}
       value={String(props.value)}
       onChange={(e) => {
         const raw = e.target.value;

@@ -52,6 +52,42 @@ Each coefficient (CdA, Crr, ρ, drivetrain, gearing) is an **editable field with
 a preset dropdown** (combobox): pick a common value or type your own. Expose the
 assumptions so the number is interpretable.
 
+**CdA has a built-in estimator** (`src/lib/cda.ts`, `CdaAdvanced.tsx`). The CdA
+field's caret opens a foldout (there's no fixed-value dropdown — the estimator
+replaces it) that builds `CdA = Cd·A` from a position baseline for a reference
+rider (175 cm, 72 kg), scaled by body size and nudged by bike type, wheelset and
+clothing:
+
+```
+CdA = base[position] · size_scale(height, mass) · bike · clothing + wheel_delta
+size_scale = (height/175)^0.6 · (mass/72)^0.35
+```
+
+**Bike type is the primary choice** — it carries the frame/tire-bulk `bike`
+multiplier and decides the available riding positions, which really follow the
+**handlebar**:
+
+- **Drop bar** (road, endurance, gravel) → Tops / Hoods / Drops / Drops-low. All
+  three share this list and differ only by `factor` (gravel bulkier than road).
+- **Flat bar** (city, mountain) → Upright / Leaning forward. No hoods or drops.
+- **Aero bar** (TT) → Aero tuck / Base bar.
+- **Recumbent** → High-racer / Low-racer / Low-racer + tailbox.
+- **Velomobile** → a single enclosed shell.
+
+The drop-bar baselines are anchored so an average rider reproduces the old quick
+presets (hoods ~0.36, drops ~0.31, aero-tuck ~0.23). The two low-drag categories
+go much further: a **recumbent** is ~0.16–0.26, and a **velomobile** is ~0.055 —
+an order below a road bike. The velomobile's fairing sets the frontal area, so
+its CdA is rider-independent: wheels, clothing and rider size are all disabled and
+have no effect.
+
+Rider mass comes from the page's rider field. **CdA starts seeded from the
+estimator** (road / hoods / reference rider) and stays *estimator-driven*: changing
+any factor — or the rider weight — re-derives it. Merely opening or closing the
+panel never overwrites it. **Typing a value in the CdA field switches it to
+manual**, after which it's left alone (weight changes no longer move it). These are
+plausible estimates for comparing setups, not wind-tunnel data.
+
 **Drivetrain efficiency is split into two factors that multiply** — so the number
 isn't quietly a best-case single-speed figure that ignores the transmission:
 

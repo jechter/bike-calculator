@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   powerForSpeed,
   speedForPower,
   powerBreakdown,
-  CDA_PRESETS,
   CRR_PRESETS,
   DRIVETRAIN_PRESETS,
   GEARING_PRESETS,
@@ -11,11 +10,18 @@ import {
   type PowerInput,
   type PowerBreakdown,
 } from "../lib/power";
+import {
+  DEFAULT_CDA_PARAMS,
+  estimateCda,
+  CDA_MIN,
+  CDA_MAX,
+  type CdaParams,
+} from "../lib/cda";
 import { kmhToMs, msToKmh, kmhToMph, mphToKmh } from "../lib/units";
 import { useUnits, speedUnitLabel } from "../units-context";
 import { Field, Note, NumberInput, PresetMenu, Result, Section } from "./ui";
+import { CdaAdvancedPanel } from "./CdaAdvanced";
 
-const CDA_OPTIONS = CDA_PRESETS.map((c) => ({ value: String(c.cda), label: `${c.label} (${c.cda})` }));
 const CRR_OPTIONS = CRR_PRESETS.map((c) => ({ value: String(c.crr), label: `${c.label} (${c.crr})` }));
 const DRIVETRAIN_OPTIONS = DRIVETRAIN_PRESETS.map((c) => ({
   value: String(c.eff),
@@ -84,7 +90,13 @@ export function Power() {
   const [gradient, setGradient] = useState(0);
   const [crr, setCrr] = useState(0.005);
   const [rho, setRho] = useState(1.225);
-  const [cda, setCda] = useState(0.32);
+  // CdA starts seeded from the estimator (road / hoods / reference rider) and
+  // stays "estimator-driven": changing a factor or the rider weight re-derives it.
+  const [cda, setCda] = useState(() => estimateCda(DEFAULT_CDA_PARAMS, riderMass));
+  const [cdaAdvanced, setCdaAdvanced] = useState(false);
+  const [cdaParams, setCdaParams] = useState<CdaParams>(DEFAULT_CDA_PARAMS);
+  // True until the user types a CdA directly (then it's manual and left alone).
+  const [cdaFromEstimator, setCdaFromEstimator] = useState(true);
   const [wind, setWind] = useState(0);
   // Overall efficiency is chain/belt friction × gearing losses. Default: a
   // typical chain (0.98) on a derailleur (0.98) → ~0.96.
@@ -99,6 +111,33 @@ export function Power() {
   const [watts, setWatts] = useState(200);
   const [wkg, setWkg] = useState(200 / 70);
   const [last, setLast] = useState<"speed" | "power" | "wkg">("speed");
+
+  // While CdA is estimator-driven, re-derive it whenever a factor or the rider
+  // weight changes — but not merely from opening/closing the panel (that only
+  // toggles `cdaAdvanced`, which isn't a dependency here). Typing in the field
+  // switches CdA to manual (cdaFromEstimator=false), which stops this.
+  useEffect(() => {
+    if (cdaFromEstimator) setCda(estimateCda(cdaParams, riderMass));
+  }, [cdaFromEstimator, cdaParams, riderMass]);
+
+  const onEstimatorChange = (next: CdaParams) => {
+    setCdaParams(next);
+    setCdaFromEstimator(true);
+  };
+
+  // Dismiss the estimator on an outside click. The anchor wraps both the trigger
+  // button and the panel, so clicking the trigger toggles rather than re-closing.
+  const cdaAnchorRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!cdaAdvanced) return;
+    const onDoc = (e: MouseEvent) => {
+      if (cdaAnchorRef.current && !cdaAnchorRef.current.contains(e.target as Node)) {
+        setCdaAdvanced(false);
+      }
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [cdaAdvanced]);
 
   const p: PowerInput = {
     massKg: mass,
@@ -248,14 +287,39 @@ export function Power() {
               step={1}
             />
           </Field>
-          <Field label="CdA (drag area, m²)" hint="riding position">
-            <div className="combo">
-              <NumberInput value={cda} onChange={setCda} step={0.01} min={0.15} max={0.6} />
-              <PresetMenu
-                title="Fill CdA from a riding position"
-                options={CDA_OPTIONS}
-                onPick={(v) => setCda(parseFloat(v))}
-              />
+          <Field label="CdA (drag area, m²)" hint={cdaAdvanced ? "estimated — see panel" : "type, position, kit"}>
+            <div className="cda-anchor" ref={cdaAnchorRef}>
+              <div className="combo">
+                <NumberInput
+                  value={cda}
+                  onChange={(v) => {
+                    setCdaAdvanced(false);
+                    setCdaFromEstimator(false);
+                    setCda(v);
+                  }}
+                  step={0.01}
+                  min={CDA_MIN}
+                  max={CDA_MAX}
+                />
+                <button
+                  type="button"
+                  className={"preset-btn" + (cdaAdvanced ? " open" : "")}
+                  title="Estimate CdA from bike, position & kit"
+                  aria-label="Estimate CdA from bike, position & kit"
+                  aria-expanded={cdaAdvanced}
+                  onClick={() => setCdaAdvanced((o) => !o)}
+                >
+                  <span className="caret">▾</span>
+                </button>
+              </div>
+              {cdaAdvanced && (
+                <CdaAdvancedPanel
+                  params={cdaParams}
+                  massKg={riderMass}
+                  onChange={onEstimatorChange}
+                  onClose={() => setCdaAdvanced(false)}
+                />
+              )}
             </div>
           </Field>
           <Field label="Air density ρ (kg/m³)" hint="altitude / temperature">

@@ -8,7 +8,7 @@ export interface PowerInput {
   gradient: number; // rise/run, e.g. 0.05 for 5%
   crr: number; // rolling resistance coefficient
   rho: number; // air density kg/m^3
-  cda: number; // drag area m^2
+  cda: number; // Cd·A: drag coefficient × frontal area, m^2
   headwindMs: number; // + headwind, - tailwind
   drivetrainEfficiency: number; // e.g. 0.97
 }
@@ -110,34 +110,49 @@ export const CRR_PRESETS = [
 // Overall drivetrain efficiency splits into two roughly independent factors that
 // multiply: friction in the chain/belt itself, and losses in the gear mechanism.
 // Keeping them separate stops the old single number from quietly assuming a
-// best-case single-speed setup and ignoring the transmission.
+// best-case single-speed setup and ignoring the transmission. Each preset has a
+// stable `id` (used as the picker's key — some efficiencies collide, e.g. a
+// typical chain and a belt are both 0.98).
+export interface EfficiencyPreset {
+  id: string;
+  label: string;
+  eff: number;
+}
 
 // Chain/belt friction, independent of how many gears there are. A clean, waxed
 // chain runs best; grit and wear add drag. A toothed belt sits a touch behind a
 // fresh chain but stays consistent and sheds dirt.
-export const DRIVETRAIN_PRESETS = [
-  { label: 'Chain, clean & waxed', eff: 0.99 },
-  { label: 'Chain, typical', eff: 0.98 },
-  { label: 'Chain, worn / dirty', eff: 0.96 },
-  { label: 'Belt drive', eff: 0.98 },
+export const DRIVETRAIN_PRESETS: EfficiencyPreset[] = [
+  { id: 'cleanWaxed', label: 'Chain, clean & waxed', eff: 0.99 },
+  { id: 'typical', label: 'Chain, typical', eff: 0.98 },
+  { id: 'worn', label: 'Chain, worn / dirty', eff: 0.96 },
+  { id: 'belt', label: 'Belt drive', eff: 0.98 },
 ];
 
 // Losses in the gear mechanism itself. A single speed has a straight chainline
 // and no idlers; a derailleur adds two jockey wheels and cross-chaining; geared
 // hubs and CVTs add internal friction that grows away from direct drive. Figures
 // in line with gearbox/hub efficiency testing (e.g. cyclingabout.com).
-export const GEARING_PRESETS = [
-  { label: 'Single speed', eff: 1.0 },
-  { label: 'Derailleur', eff: 0.98 },
-  { label: 'Internal gear hub', eff: 0.95 },
-  { label: 'CVT (e.g. Enviolo)', eff: 0.85 },
+export const GEARING_PRESETS: EfficiencyPreset[] = [
+  { id: 'single', label: 'Single speed', eff: 1.0 },
+  { id: 'derailleur', label: 'Derailleur', eff: 0.98 },
+  { id: 'igh', label: 'Internal gear hub', eff: 0.95 },
+  { id: 'cvt', label: 'CVT (e.g. Enviolo)', eff: 0.85 },
 ];
 
-// Air density by altitude (approx, ~15 °C). Also drops with temperature/humidity.
-export const AIR_DENSITY_PRESETS = [
-  { label: 'Sea level, 15°C', rho: 1.225 },
-  { label: 'Sea level, 25°C', rho: 1.184 },
-  { label: '1000 m', rho: 1.112 },
-  { label: '2000 m', rho: 1.007 },
-  { label: '3000 m', rho: 0.909 },
-];
+export interface EfficiencyParams {
+  drivetrain: string; // DRIVETRAIN_PRESETS id
+  gearing: string; // GEARING_PRESETS id
+}
+
+export const DEFAULT_EFFICIENCY_PARAMS: EfficiencyParams = {
+  drivetrain: 'typical',
+  gearing: 'derailleur',
+};
+
+/** Overall drivetrain efficiency: chain/belt friction × gear-mechanism losses. */
+export function combinedEfficiency(p: EfficiencyParams): number {
+  const dt = DRIVETRAIN_PRESETS.find((x) => x.id === p.drivetrain)?.eff ?? 0.98;
+  const gr = GEARING_PRESETS.find((x) => x.id === p.gearing)?.eff ?? 0.98;
+  return Math.round(dt * gr * 1000) / 1000;
+}

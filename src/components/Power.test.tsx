@@ -5,8 +5,8 @@ import { Power } from "./Power";
 
 afterEach(cleanup);
 
-// input order: [speed, power, wkg, rider, bike, gradient, headwind, cda, crr, rho,
-//               drivetrain, gearing]
+// input order: [speed, power, wkg, rider, bike, gradient, headwind, cda, rho, crr,
+//               drivetrain-efficiency]
 const nums = (c: HTMLElement) =>
   Array.from(c.querySelectorAll('input[type="number"]')) as HTMLInputElement[];
 
@@ -94,17 +94,30 @@ describe("Cycling power", () => {
     fireEvent.change(bike, { target: { value: "velomobile" } });
     expect(+nums(container)[7].value).toBeLessThan(0.1);
     // Closing it leaves the field editable again.
-    fireEvent.click(getByLabelText("Close estimator"));
+    fireEvent.click(getByLabelText("Close"));
     expect(queryByText("Estimate CdA")).toBeNull();
   });
 
-  it("combines drivetrain and gearing into the overall efficiency", () => {
-    const { container, getByTitle, getByText } = render(<Power />);
+  it("combines drivetrain and gearing into one efficiency via the editor", () => {
+    const { container, getByTitle } = render(<Power />);
     // Speed is the fixed input by default; a more efficient gearing (single
     // speed, η 1.0 vs the default derailleur 0.98) needs fewer pedal watts.
     const powerDefault = +nums(container)[1].value;
-    fireEvent.click(getByTitle("Fill the gearing type"));
-    fireEvent.click(getByText("Single speed (1)"));
+    fireEvent.click(getByTitle("Choose drivetrain & gearing"));
+    // Panel selects are [drivetrain, gearing]; set gearing to single speed.
+    const gearing = container.querySelectorAll(".editor-pop select")[1] as HTMLSelectElement;
+    fireEvent.change(gearing, { target: { value: "single" } });
     expect(+nums(container)[1].value).toBeLessThan(powerDefault);
+  });
+
+  it("computes air density from temperature and altitude via the editor", () => {
+    const { container, getByTitle } = render(<Power />);
+    const rho0 = +nums(container)[8].value; // rho is the 9th number input
+    expect(rho0).toBeCloseTo(1.225, 2); // seeded: 15 °C, sea level
+    fireEvent.click(getByTitle("Set air density from temperature & altitude"));
+    // Panel number inputs are [temperature, altitude].
+    const panelNums = container.querySelectorAll('.editor-pop input[type="number"]');
+    fireEvent.change(panelNums[1] as HTMLInputElement, { target: { value: "2000" } });
+    expect(+nums(container)[8].value).toBeLessThan(rho0); // thinner air up high
   });
 });

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CALCULATORS } from "./registry";
 import { useHashRoute, useHashConfigKey } from "./useHashRoute";
+import { useIsMobile } from "./useIsMobile";
 import { UnitsProvider } from "./units-context";
 import { UnitSwitcher } from "./components/UnitSwitcher";
 import { CopyLinkButton } from "./components/CopyLinkButton";
@@ -15,6 +16,14 @@ export function App() {
   // re-read their config from the URL even without a full page reload.
   const hashKey = useHashConfigKey();
 
+  // On mobile the per-page header actions ("Load an example" / "Copy link",
+  // Frame Size's "Clear all") move up into the top bar instead of sitting in a
+  // second row under it. Pages with their own header (Frame Size) portal their
+  // action into #topbar-actions-slot.
+  const isMobile = useIsMobile();
+  const sharedActions = active.HeaderActions || active.shareable;
+  const hasTopbarActions = Boolean(sharedActions || active.ownHeader);
+
   // The sidebar can collapse to an icon rail to free up horizontal space for
   // the wider pages (e.g. wheel building's controls + visualization split).
   const [navCollapsed, setNavCollapsed] = useState(
@@ -26,9 +35,73 @@ export function App() {
       return !c;
     });
 
+  // On narrow screens the sidebar is a slide-in drawer rather than a fixed rail,
+  // so the nav doesn't push every page's content far down the screen.
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  // Close the drawer on Escape, and never leave it stuck open when the layout
+  // grows past the mobile breakpoint (the drawer only exists below it).
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMobileNavOpen(false);
+    const mq = window.matchMedia("(min-width: 721px)");
+    const onWide = () => mq.matches && setMobileNavOpen(false);
+    document.addEventListener("keydown", onKey);
+    mq.addEventListener("change", onWide);
+    document.body.classList.add("mobile-nav-lock");
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      mq.removeEventListener("change", onWide);
+      document.body.classList.remove("mobile-nav-lock");
+    };
+  }, [mobileNavOpen]);
+
   return (
     <UnitsProvider>
-      <div className={"app" + (navCollapsed ? " app--nav-collapsed" : "")}>
+      <div
+        className={
+          "app" +
+          (navCollapsed ? " app--nav-collapsed" : "") +
+          (mobileNavOpen ? " app--mobile-nav-open" : "")
+        }
+      >
+        <header className="topbar">
+          <button
+            type="button"
+            className="hamburger"
+            onClick={() => setMobileNavOpen(true)}
+            aria-label="Open navigation"
+            aria-expanded={mobileNavOpen}
+          >
+            <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" fill="currentColor">
+              <path d="M2 4h16v2H2V4zm0 5h16v2H2V9zm0 5h16v2H2v-2z" />
+            </svg>
+          </button>
+          {/* Visual copy of the page title for the top bar. The real heading is the
+              page's own <h1> (kept in the a11y tree, just visually hidden on mobile),
+              so this one is aria-hidden to avoid a screen reader reading it twice. */}
+          <span className="topbar-title" aria-hidden="true">
+            {active.title}
+          </span>
+          {/* Right side: the page's header actions, when it has any. Only rendered
+              on mobile — the top bar is hidden on wider screens, where actions live
+              in the page header. */}
+          {isMobile && hasTopbarActions && (
+            <div className="topbar-actions">
+              {active.HeaderActions && <active.HeaderActions />}
+              {active.shareable && <CopyLinkButton />}
+              {/* ownHeader pages (Frame Size) portal their action in here. */}
+              <span className="topbar-actions-slot" id="topbar-actions-slot" />
+            </div>
+          )}
+        </header>
+        {mobileNavOpen && (
+          <button
+            type="button"
+            className="nav-backdrop"
+            aria-label="Close navigation"
+            onClick={() => setMobileNavOpen(false)}
+          />
+        )}
         <aside className="sidebar">
           <div className="sidebar-head">
             <a
@@ -69,7 +142,10 @@ export function App() {
                 title={c.title}
                 // Clicking the active tab is a no-op — otherwise it would strip the
                 // config query from the hash and reset a shareable page.
-                onClick={() => c.id !== active.id && navigate(c.id)}
+                onClick={() => {
+                  if (c.id !== active.id) navigate(c.id);
+                  setMobileNavOpen(false);
+                }}
               >
                 <span className="icon">{c.icon}</span>
                 <span>{c.title}</span>
@@ -106,7 +182,8 @@ export function App() {
                 <h1>{active.title}</h1>
                 <p className="subtitle">{active.subtitle}</p>
               </div>
-              {(active.HeaderActions || active.shareable) && (
+              {/* On mobile these move up into the top bar (see above). */}
+              {!isMobile && sharedActions && (
                 <div className="main-actions">
                   {active.HeaderActions && <active.HeaderActions />}
                   {active.shareable && <CopyLinkButton />}

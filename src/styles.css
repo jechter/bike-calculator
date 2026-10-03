@@ -1546,19 +1546,152 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .lacing-errors { margin: 6px 0 0; padding-left: 18px; }
 .lacing-errors li { margin: 2px 0; }
 
+/* Mobile top bar + nav drawer: hidden above the mobile breakpoint, where the
+   sidebar is a normal fixed rail. */
+.topbar { display: none; }
 .hamburger { display: none; }
+.nav-backdrop { display: none; }
 
 /* Responsive */
 @media (max-width: 720px) {
+  /* The sidebar becomes an off-canvas drawer (position:fixed, out of flow), so
+     the page is a single column: the sticky top bar, then the main content. */
   .app { grid-template-columns: 1fr; }
-  .sidebar {
-    position: static;
-    height: auto;
-    border-right: none;
+
+  /* Sticky top bar: hamburger on the left, current page title, brand mark on the
+     right. This replaces the full nav list that used to sit above every page. */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding: 8px 14px;
+    background: var(--panel);
     border-bottom: 1px solid var(--border);
+    /* As a grid item its default min-width:auto would let the row grow to fit the
+       (nowrap) title + actions and widen the whole page; pin it so the title
+       ellipsises instead. */
+    min-width: 0;
   }
+  .topbar-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Page actions hoisted into the top bar (right side). Compact the buttons so
+     hamburger + title + actions fit one row; the title ellipsises if space runs
+     short. */
+  .topbar-actions { flex: none; display: flex; align-items: center; gap: 6px; }
+  .topbar-actions .copy-link { flex-direction: row; }
+  .topbar-actions .copy-link-btn,
+  .topbar-actions .fs-clear-all,
+  .topbar-actions .preset-labelbtn { padding: 6px 9px; font-size: 12px; }
+
+  .hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .hamburger:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* The drawer slides in from the left over the content; a backdrop dims the
+     page and closes it on tap. */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 70;
+    width: min(290px, 84vw);
+    height: 100%;
+    border-right: 1px solid var(--border);
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+  }
+  .app--mobile-nav-open .sidebar { transform: translateX(0); }
+
+  .nav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    padding: 0;
+    border: none;
+    background: rgba(0, 0, 0, 0.42);
+    cursor: pointer;
+  }
+
+  /* The collapse-to-rail toggle is a desktop space-saver; in the drawer the full
+     nav always shows, so hide it (and neutralise the collapsed-rail styling in
+     case the saved preference is "collapsed"). */
+  .nav-collapse { display: none; }
+  .app--nav-collapsed { --sidebar-w: 240px; }
+  .app--nav-collapsed .sidebar { padding: 16px 12px; align-items: stretch; }
+  .app--nav-collapsed .sidebar-head { flex-direction: row; }
+  .app--nav-collapsed .brand-logo--full { display: block; }
+  .app--nav-collapsed .brand-logo--mark { display: none; }
+  .app--nav-collapsed .nav button { justify-content: flex-start; padding: 9px 10px; gap: 10px; }
+  .app--nav-collapsed .nav button > span:not(.icon) { display: inline; }
+  .app--nav-collapsed .repo-link { justify-content: flex-start; }
+  .app--nav-collapsed .repo-link span { display: inline; }
+  .app--nav-collapsed .unit-switcher { display: block; }
+
+  /* Larger tap targets for the nav rows in the drawer. */
+  .nav button { padding: 11px 12px; }
+
   .main { padding: 20px 16px 48px; }
+  /* Let the page header (actions like "Load an example" / "Copy link") wrap
+     instead of overflowing the viewport on narrow screens. */
+  .main-head { flex-wrap: wrap; }
+
+  /* The top bar already shows the page title, so the in-content <h1> (shared
+     header + Frame Size's own) is only visually redundant — hide it visually but
+     keep it in the accessibility tree as the page's real heading. */
+  .main h1 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Drivetrain / Wheel Building: actions now live in the top bar and the title +
+     subtitle are hidden, so the header collapses to nothing — unpin it (it stacked
+     under the sticky top bar) and drop its edge-bleed margins. */
+  .main--wheel-building .main-head,
+  .main--drivetrain .main-head {
+    position: static;
+    margin: 0;
+    padding: 0;
+    border-bottom: none;
+  }
 }
+
+/* The drawer traps the page behind it; stop the body from scrolling underneath
+   while it's open. */
+body.mobile-nav-lock { overflow: hidden; }
 
 /* Embedded in an auto-resizing iframe (see main.tsx): size to content rather
    than the viewport. Without this, .app's min-height:100vh and the sidebar's
@@ -1569,7 +1702,16 @@ html.embedded .sidebar {
   position: static;
   height: auto;
   align-self: stretch;
+  /* Undo the mobile drawer transform so a narrow embed keeps the in-flow rail
+     instead of hiding the sidebar off-canvas. */
+  width: auto;
+  transform: none;
+  box-shadow: none;
 }
+/* The auto-height embed renders the in-flow sidebar, so the mobile top bar /
+   drawer (which rely on a real viewport for sticky + fixed) are redundant here. */
+html.embedded .topbar,
+html.embedded .nav-backdrop { display: none; }
 /* Standalone leaves 60px under the content so it clears the viewport edge; when
    embedded the frame is sized to fit, so trim the trailing whitespace (plus the
    last block's own margin) to a small, symmetric inset above the host's border. */

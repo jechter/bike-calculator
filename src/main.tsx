@@ -4,12 +4,6 @@ import { App } from "./App";
 import { initEmbedBridge } from "./embed";
 import "./styles.css";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
-
 // When embedded in a cross-origin iframe (e.g. the Rückenwind WordPress page)
 // there are two modes:
 //
@@ -20,19 +14,30 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 //  - Auto-height mode (default, older hosts): the host can't give us a fixed
 //    height, so we size to content and post our height out for it to resize the
 //    iframe to fit — no inner scrollbar, but the layout can't be viewport-driven.
-if (window.parent !== window) {
-  const fillViewport =
-    new URLSearchParams(window.location.search).get("embed") === "fill";
+//
+// The mode class is set BEFORE the first render so useIsMobile sees it on mount
+// (auto-height embeds can't host the fixed-position compact drawers, so they
+// always use the in-flow layout — see useIsMobile).
+const embedded = window.parent !== window;
+const fillViewport =
+  embedded && new URLSearchParams(window.location.search).get("embed") === "fill";
+if (embedded) {
+  document.documentElement.classList.add(fillViewport ? "embed-fill" : "embedded");
+}
 
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);
+
+if (embedded) {
   if (fillViewport) {
-    // The host mounts us as a fixed full-window overlay. Stop scroll momentum at
-    // our edges (see html.embed-fill in styles.css) so an overscroll bounce
-    // doesn't chain out to the host page and rubber-band the iframe.
-    document.documentElement.classList.add("embed-fill");
+    // The host mounts us as a fixed full-window overlay (class already set above);
+    // html.embed-fill in styles.css stops overscroll chaining to the host page.
   } else {
     // Size to content instead of the viewport so the iframe can shrink as well as
     // grow (see html.embedded rules in styles.css).
-    document.documentElement.classList.add("embedded");
     const postHeight = () => {
       const height = Math.ceil(
         document.documentElement.getBoundingClientRect().height,

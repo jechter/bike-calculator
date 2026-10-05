@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { CALCULATORS } from "./registry";
 import { useHashRoute, useHashConfigKey } from "./useHashRoute";
 import { useIsMobile } from "./useIsMobile";
+import { SettingsDrawerContext } from "./settingsDrawer";
 import { UnitsProvider } from "./units-context";
 import { UnitSwitcher } from "./components/UnitSwitcher";
 import { CopyLinkButton } from "./components/CopyLinkButton";
@@ -24,6 +25,14 @@ export function App() {
   const sharedActions = active.HeaderActions || active.shareable;
   const hasTopbarActions = Boolean(sharedActions || active.ownHeader);
 
+  // Workbench pages (controls + visualization) show a left-edge "Settings" tab on
+  // mobile that folds the controls drawer out over the visualization (rendered by
+  // <Workbench>). The open state is shared via context so it can be reset here on
+  // navigation.
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  // Close the drawer whenever the page changes.
+  useEffect(() => setSettingsOpen(false), [active.id]);
+
   // The sidebar can collapse to an icon rail to free up horizontal space for
   // the wider pages (e.g. wheel building's controls + visualization split).
   const [navCollapsed, setNavCollapsed] = useState(
@@ -43,7 +52,7 @@ export function App() {
   useEffect(() => {
     if (!mobileNavOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMobileNavOpen(false);
-    const mq = window.matchMedia("(min-width: 721px)");
+    const mq = window.matchMedia("(min-width: 1200px)");
     const onWide = () => mq.matches && setMobileNavOpen(false);
     document.addEventListener("keydown", onKey);
     mq.addEventListener("change", onWide);
@@ -57,25 +66,16 @@ export function App() {
 
   return (
     <UnitsProvider>
+     <SettingsDrawerContext.Provider value={{ open: settingsOpen, setOpen: setSettingsOpen }}>
       <div
         className={
           "app" +
           (navCollapsed ? " app--nav-collapsed" : "") +
-          (mobileNavOpen ? " app--mobile-nav-open" : "")
+          (mobileNavOpen ? " app--mobile-nav-open" : "") +
+          (settingsOpen ? " app--settings-open" : "")
         }
       >
         <header className="topbar">
-          <button
-            type="button"
-            className="hamburger"
-            onClick={() => setMobileNavOpen(true)}
-            aria-label="Open navigation"
-            aria-expanded={mobileNavOpen}
-          >
-            <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" fill="currentColor">
-              <path d="M2 4h16v2H2V4zm0 5h16v2H2V9zm0 5h16v2H2v-2z" />
-            </svg>
-          </button>
           {/* Visual copy of the page title for the top bar. The real heading is the
               page's own <h1> (kept in the a11y tree, just visually hidden on mobile),
               so this one is aria-hidden to avoid a screen reader reading it twice. */}
@@ -103,6 +103,35 @@ export function App() {
           />
         )}
         <aside className="sidebar">
+          {/* Compact-layout pull tab (peeks on the left edge, rides out with the
+              drawer) — the nav counterpart to the workbench Settings tab. Hidden on
+              desktop, where the sidebar is a fixed rail. */}
+          <button
+            type="button"
+            className="edge-tab nav-handle"
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileNavOpen}
+          >
+            <svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true" fill="currentColor">
+              <path d="M2 4h16v2H2V4zm0 5h16v2H2V9zm0 5h16v2H2v-2z" />
+            </svg>
+            <span className="wh-label">Menu</span>
+            <svg
+              className="wh-chevron"
+              viewBox="0 0 24 24"
+              width="15"
+              height="15"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </button>
           <div className="sidebar-head">
             <a
               className="brand"
@@ -194,6 +223,7 @@ export function App() {
           <Active key={active.shareable ? hashKey : active.id} />
         </main>
       </div>
+     </SettingsDrawerContext.Provider>
     </UnitsProvider>
   );
 }

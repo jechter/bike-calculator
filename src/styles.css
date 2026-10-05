@@ -636,7 +636,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .rp-over { stroke: var(--diag-red); }
 
 /* Stacked (narrow): the title bar sits above the stacked controls + diagram. */
-@media (max-width: 1119px) {
+@media (max-width: 1199px) {
   .fs-head { margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
   .fs-viz { max-width: 100%; }
   .fs-viz svg { width: 100%; max-height: 62vh; }
@@ -646,7 +646,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
    a fixed reading width and scroll on their own; the diagram (right) is fixed to
    the full height and never moves. The breakpoint is set high enough that the rail
    always has room for a decently-sized diagram; below it the layout stacks. */
-@media (min-width: 1120px) {
+@media (min-width: 1200px) {
   /* Pin the page: a full-width title bar on top, then only the controls column
      scrolls beneath it so the diagram stays put. Flex column so the header takes
      its natural height and the workbench fills the rest of the viewport. */
@@ -1546,20 +1546,23 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .lacing-errors { margin: 6px 0 0; padding-left: 18px; }
 .lacing-errors li { margin: 2px 0; }
 
-/* Mobile top bar + nav drawer: hidden above the mobile breakpoint, where the
-   sidebar is a normal fixed rail. */
+/* Compact-layout chrome (top bar, nav drawer, edge tabs): hidden at desktop
+   width, where the sidebar is a normal fixed rail and the workbench is two-column. */
 .topbar { display: none; }
-.hamburger { display: none; }
 .nav-backdrop { display: none; }
+.edge-tab { display: none; }
 
-/* Responsive */
-@media (max-width: 720px) {
+/* Compact layout — below the two-column workbench breakpoint. */
+@media (max-width: 1199px) {
   /* The sidebar becomes an off-canvas drawer (position:fixed, out of flow), so
      the page is a single column: the sticky top bar, then the main content. */
-  .app { grid-template-columns: 1fr; }
+  /* align-content:start keeps the top bar at its natural height — otherwise the
+     grid stretches its rows to fill min-height:100vh on short pages, inflating the
+     top bar and pushing the hamburger down over the settings tab. */
+  .app { grid-template-columns: 1fr; align-content: start; }
 
-  /* Sticky top bar: hamburger on the left, current page title, brand mark on the
-     right. This replaces the full nav list that used to sit above every page. */
+  /* Sticky top bar: page title + hoisted actions. Navigation moves to the
+     left-edge Menu tab (see .nav-handle). */
   .topbar {
     display: flex;
     align-items: center;
@@ -1594,24 +1597,9 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   .topbar-actions .fs-clear-all,
   .topbar-actions .preset-labelbtn { padding: 6px 9px; font-size: 12px; }
 
-  .hamburger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: none;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--panel);
-    color: var(--text);
-    cursor: pointer;
-  }
-  .hamburger:hover { border-color: var(--accent); color: var(--accent); }
-
   /* The drawer slides in from the left over the content; a backdrop dims the
-     page and closes it on tap. */
+     page and closes it on tap. overflow:visible so the Menu pull tab, which rides
+     just outside the drawer's right edge, isn't clipped. */
   .sidebar {
     position: fixed;
     top: 0;
@@ -1620,6 +1608,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
     z-index: 70;
     width: min(290px, 84vw);
     height: 100%;
+    overflow: visible;
     border-right: 1px solid var(--border);
     transform: translateX(-100%);
     transition: transform 0.22s ease;
@@ -1656,7 +1645,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   /* Larger tap targets for the nav rows in the drawer. */
   .nav button { padding: 11px 12px; }
 
-  .main { padding: 20px 16px 48px; }
+  /* Left padding clears the Menu pull tab on the screen edge. */
+  .main { padding: 20px 16px 48px 42px; }
   /* Let the page header (actions like "Load an example" / "Copy link") wrap
      instead of overflowing the viewport on narrow screens. */
   .main-head { flex-wrap: wrap; }
@@ -1693,6 +1683,121 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
    while it's open. */
 body.mobile-nav-lock { overflow: hidden; }
 
+/* Workbench pages in the compact layout (Drivetrain / Wheel Building / Frame
+   Size): the visualization is the base view and the controls slide out over it as
+   a drawer, opened from the left-edge Settings tab (see components/Workbench.tsx). */
+@media (max-width: 1199px) {
+  .workbench-mobile { display: block; }
+  /* Use the full width (the desktop two-column rules set this only >=1200px). */
+  .main--drivetrain,
+  .main--wheel-building,
+  .main--frame-size { max-width: none; }
+
+  .workbench-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    padding: 0;
+    border: none;
+    background: rgba(0, 0, 0, 0.42);
+    cursor: pointer;
+  }
+
+  .workbench-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 70;
+    /* Leave room on the right so the pull tab is reachable when the drawer is open. */
+    width: min(380px, 84vw);
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    border-right: 1px solid var(--border);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+  }
+  .workbench-drawer--open { transform: translateX(0); }
+
+  /* Shared left-edge pull tab (nav Menu tab + workbench Settings tab). At left:100%
+     it rides just outside its drawer's right edge, so when the drawer is parked
+     off-screen the tab peeks at the screen's left edge and slides out with it. */
+  .edge-tab {
+    position: absolute;
+    left: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 7px 14px;
+    border: none;
+    border-radius: 0 12px 12px 0;
+    background: var(--accent);
+    color: #fff;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    box-shadow: 3px 2px 12px rgba(0, 0, 0, 0.28);
+  }
+  .edge-tab .wh-icon,
+  .edge-tab svg { display: block; }
+  .edge-tab .wh-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+  .edge-tab .wh-chevron { transition: transform 0.22s ease; }
+  /* Menu tab just under the top bar; Settings tab stacked below it with a gap
+     (the Menu tab runs ~64–172px, so start the Settings tab clear of it). */
+  .nav-handle { top: 64px; }
+  .workbench-handle { top: 186px; }
+  /* Flip the chevron to point back into the panel once its drawer is open. */
+  .workbench-drawer--open .wh-chevron,
+  .app--mobile-nav-open .nav-handle .wh-chevron { transform: rotate(180deg); }
+
+  /* Only one drawer at a time: hide the other tab so it never sits over an open
+     drawer or its backdrop. */
+  .app--mobile-nav-open .workbench-handle,
+  .app--settings-open .nav-handle { display: none; }
+
+  .workbench-drawer-head {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .workbench-drawer-head strong { font-size: 15px; }
+  .workbench-drawer-close {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .workbench-drawer-close:hover { border-color: var(--accent); color: var(--accent); }
+
+  .workbench-drawer-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px;
+  }
+}
+
 /* Embedded in an auto-resizing iframe (see main.tsx): size to content rather
    than the viewport. Without this, .app's min-height:100vh and the sidebar's
    height:100vh equal the iframe's current height, so the reported height can
@@ -1708,15 +1813,34 @@ html.embedded .sidebar {
   transform: none;
   box-shadow: none;
 }
-/* The auto-height embed renders the in-flow sidebar, so the mobile top bar /
-   drawer (which rely on a real viewport for sticky + fixed) are redundant here. */
+/* The auto-height embed renders the in-flow layout (useIsMobile is false here), so
+   the compact top bar / drawer tabs — which rely on a real viewport for sticky +
+   fixed — are redundant. Neutralise the compact chrome the width-based media query
+   would otherwise apply. */
 html.embedded .topbar,
-html.embedded .nav-backdrop { display: none; }
-/* Standalone leaves 60px under the content so it clears the viewport edge; when
-   embedded the frame is sized to fit, so trim the trailing whitespace (plus the
-   last block's own margin) to a small, symmetric inset above the host's border. */
-html.embedded .main { padding-bottom: 24px; }
+html.embedded .nav-backdrop,
+html.embedded .edge-tab { display: none; }
+/* Restore the in-content title the compact layout visually hides (the top bar that
+   would have shown it is hidden here). */
+html.embedded .main h1 {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0 0 4px;
+  padding: 0;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: normal;
+}
+/* No edge tab to clear, so drop the compact left gutter; trim the trailing
+   whitespace since the frame is sized to fit (plus the last block's own margin). */
+html.embedded .main { padding: 24px 24px 24px; }
 html.embedded .main > :last-child { margin-bottom: 0; }
+/* The workbench header isn't collapsed into a top bar here, so give it back its
+   normal spacing. */
+html.embedded .main--drivetrain .main-head,
+html.embedded .main--wheel-building .main-head { margin: 0 0 18px; }
 
 /* Fill-mode embed (fixed full-window overlay, see main.tsx): keep scroll momentum
    contained so hitting the top/bottom doesn't chain out to the host page and

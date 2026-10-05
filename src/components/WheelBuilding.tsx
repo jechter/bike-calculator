@@ -15,6 +15,7 @@ import {
 import { Field, NumberInput, Select, PresetMenu, Result, Note, Section } from "./ui";
 import { WheelDiagram } from "./WheelDiagram";
 import { TensionCurveChart } from "./TensionCurveChart";
+import { Workbench } from "./Workbench";
 import { getHashQuery, useUrlConfigSync } from "../useHashRoute";
 
 const RIM_OPTIONS = RIM_PRESETS.map((p) => ({ value: String(p.erdMm), label: p.label }));
@@ -604,7 +605,7 @@ export function WheelBuilding() {
   );
 
   return (
-    <div className="wb-workbench">
+    <Workbench className="wb-workbench" label="Wheel Building">
       <div className="wb-controls">
       <Section
         title="Rim"
@@ -907,6 +908,6 @@ export function WheelBuilding() {
         </Section>
         <div className="wb-viz-diagram">{diagram}</div>
       </div>
-    </div>
+    </Workbench>
   );
 }

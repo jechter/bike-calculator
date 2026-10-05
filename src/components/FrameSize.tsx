@@ -19,6 +19,7 @@ import {
 } from "../lib/frameSize";
 import { Field, NumberInput, Select, Section } from "./ui";
 import { FrameGeometryDiagram, type HighlightKey } from "./FrameGeometryDiagram";
+import { Workbench } from "./Workbench";
 
 // Categories grouped into <optgroup>s (Road / Gravel / Mountain / …), preserving
 // the order they're declared in.
@@ -287,7 +288,7 @@ export function FrameSize() {
         {/* In the top bar on mobile (portalled), here in the header otherwise. */}
         {topbarSlot ? createPortal(clearAllButton, topbarSlot) : !isMobile && clearAllButton}
       </div>
-      <div className="fs-workbench">
+      <Workbench className="fs-workbench" label="Frame Size">
         <div className="fs-controls">
           <Section
           title="Rider"
@@ -637,7 +638,7 @@ export function FrameSize() {
           approximate riding position
         </figcaption>
       </figure>
-      </div>
+      </Workbench>
     </>
   );
 }

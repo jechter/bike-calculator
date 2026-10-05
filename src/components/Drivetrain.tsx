@@ -41,6 +41,7 @@ import { useUnits, speedUnitLabel } from "../units-context";
 import { Field, NumberInput, TextInput, Select, PresetMenu, Result, Note, Section } from "./ui";
 import { GearChart, type GearSeries } from "./GearChart";
 import { DrivetrainDiagram } from "./DrivetrainDiagram";
+import { Workbench } from "./Workbench";
 import { getHashQuery, useUrlConfigSync } from "../useHashRoute";
 
 type Mode = "cassette" | "single" | "hub";
@@ -1872,7 +1873,7 @@ export function Drivetrain() {
   }, []);
 
   return (
-    <div className="dt-workbench">
+    <Workbench className="dt-workbench" label="Drivetrain">
       <div className="dt-controls-col">
       <Section
         title="Setup"
@@ -2501,6 +2502,6 @@ export function Drivetrain() {
         </Section>
       )}
       </div>
-    </div>
+    </Workbench>
   );
 }

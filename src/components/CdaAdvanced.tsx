@@ -5,6 +5,11 @@ import {
   CDA_BIKES,
   CDA_WHEELS,
   CDA_CLOTHING,
+  CDA_FORMATIONS,
+  DRAFT_RIDERS_MAX,
+  GROUP_SIZE_MAX,
+  isDrafting,
+  isRotating,
   estimateCda,
   bikeByValue,
   defaultPositionFor,
@@ -23,7 +28,8 @@ function opts<T extends string>(
  * The CdA estimator panel. Builds CdA from bike type, position, rider size,
  * wheels and clothing, and writes the estimate live through `onChange`. Bike type
  * comes first because it decides which riding positions are possible. Rider weight
- * comes from the page's rider field.
+ * comes from the page's rider field. Drafting (a fixed spot behind N riders, or
+ * rotating through a group of N) scales the solo estimate down last.
  */
 export function CdaAdvancedPanel(props: {
   params: CdaParams;
@@ -34,6 +40,12 @@ export function CdaAdvancedPanel(props: {
   const p = props.params;
   const set = (patch: Partial<CdaParams>) => props.onChange({ ...p, ...patch });
   const cda = estimateCda(p, props.massKg);
+  const drafting = isDrafting(p);
+  const rotating = isRotating(p.formation);
+  const solo = drafting
+    ? estimateCda({ ...p, formation: "line", draftRiders: 0 }, props.massKg)
+    : cda;
+  const saving = drafting ? Math.round((1 - cda / solo) * 100) : 0;
   const faired = isFaired(p.bike);
   const recumbent = p.bike === "recumbent";
 
@@ -42,30 +54,42 @@ export function CdaAdvancedPanel(props: {
     (v) => ({ value: v, label: CDA_POSITIONS[v].label }),
   );
 
+  const draftNote = drafting && rotating && (
+    <>
+      {" "}Rotating: averaged over a full rotation, including your turns on the
+      front, so it saves less than sitting in. The saving grows with group size.
+    </>
+  );
+
   const note = faired ? (
     <>
       The fairing sets the frontal area, so the shell's drag is essentially fixed —
-      wheels, clothing and rider size don't change it.
+      wheels, clothing and rider size don't change it.{draftNote}
     </>
   ) : recumbent ? (
     <>
       A recumbent's drag comes mostly from how low and reclined the rider is. Uses
-      your rider weight ({Math.round(props.massKg)} kg) from above.
+      your rider weight ({Math.round(props.massKg)} kg) from above.{draftNote}
     </>
   ) : (
     <>
       Uses your rider weight ({Math.round(props.massKg)} kg) from above. A rough
       estimate to compare setups — not a substitute for wind-tunnel or field
-      testing.
+      testing.{draftNote}
     </>
   );
 
   return (
     <EditorPopover
       title="Estimate CdA"
+      className="cda-pop"
       onClose={props.onClose}
       readoutLabel="Estimated CdA"
-      readoutValue={`${cda.toFixed(3)} m²`}
+      readoutValue={
+        drafting
+          ? `${cda.toFixed(3)} m² (solo ${solo.toFixed(3)}, −${saving} %)`
+          : `${cda.toFixed(3)} m²`
+      }
       note={note}
     >
       <EditorField label="Bike type">
@@ -112,6 +136,41 @@ export function CdaAdvancedPanel(props: {
           disabled={faired}
         />
       </EditorField>
+      {/* Formation and its rider count share one row: a wide menu, narrow count. */}
+      <div className="editor-field-wide cda-draft-row">
+        <EditorField label="Drafting formation">
+          <Select
+            value={p.formation}
+            options={opts(CDA_FORMATIONS)}
+            onChange={(v) => set({ formation: v })}
+          />
+        </EditorField>
+        {rotating ? (
+          <EditorField label="Riders in group">
+            <div className="combo">
+              <NumberInput
+                value={p.groupSize}
+                onChange={(v) => set({ groupSize: Math.round(v) })}
+                min={1}
+                max={GROUP_SIZE_MAX}
+                step={1}
+              />
+            </div>
+          </EditorField>
+        ) : (
+          <EditorField label="Riders ahead">
+            <div className="combo">
+              <NumberInput
+                value={p.draftRiders}
+                onChange={(v) => set({ draftRiders: Math.round(v) })}
+                min={0}
+                max={DRAFT_RIDERS_MAX}
+                step={1}
+              />
+            </div>
+          </EditorField>
+        )}
+      </div>
     </EditorPopover>
   );
 }

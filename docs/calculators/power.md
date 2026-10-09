@@ -89,6 +89,52 @@ an order below a road bike. The velomobile's fairing sets the frontal area, so
 its CdA is rider-independent: wheels, clothing and rider size are all disabled and
 have no effect.
 
+**Drafting** is the last step: one *Drafting formation* menu, with a count
+field next to it, scales the solo CdA by a draft factor (`groupDraftFactor` in
+`cda.ts`). The options are single file, double file, double file (average in
+rotating group), and bunch/peloton.
+
+**Holding a spot** (single file, double file, bunch). You sit behind `n` riders
+("Riders ahead of you", 0 = alone), and `draftFactor` applies:
+
+```
+CdA = CdA_solo · draft(n, formation)
+line:   draft = 0.55 + 0.45 · 3^(−n)          (single file)
+double: draft = 0.35 + 0.65 · 0.48^(n/2)      (double file, two abreast)
+bunch:  draft = 0.10 + 0.90 / (1 + n/2)       (bunch / peloton)
+```
+
+- **Behind one wheel**, every formation gives ~0.70, a ~30 % saving, as in
+  two-rider studies. In double file that's the second row (`n = 2`), at ~0.66.
+- **Single file** levels off near 0.55. Team-pursuit riders 3–4 feel ~55–60 % of
+  the lead's drag.
+- **Double file** adds side shelter and falls row by row toward ~0.35: 4 ahead
+  → 0.50, 8 → ~0.39. That's better than single file but far from a peloton.
+  Small-formation CFD from the Blocken group (2025) shows 2-wide blocks sheltering
+  much better than a single line.
+- **Bunch:** riders on both sides shelter you, so drag keeps falling toward ~0.10
+  deep in a large peloton (Blocken et al. 2018, 121-rider CFD): 5 ahead → ~0.36,
+  20 → ~0.18, 100 → ~0.12.
+
+**Rotating double file** (through & off / Belgian tourniquet). Nobody holds one
+spot, so the count field becomes "Riders in group" (`N`, including you; 1 =
+alone). The factor is the **average over every position**, including your turns
+on the front (`rotatingDraftFactor`):
+
+- Riders sit in rows of two, and row `r` sits behind `2r` riders, at
+  `draft(2r, double)`.
+- The front pair pays a small `SIDE_BY_SIDE_PENALTY` of 1.03. Barry et al.
+  measured over +6 % for two riders exactly abreast, fading with separation, and
+  a tourniquet's front pair is staggered rather than exactly abreast.
+- **Typical averages:** 8 riders → ~0.65, 16 → ~0.51, 24 → ~0.46.
+- **Limits:** the model only captures drag. A tourniquet's real draw at club size
+  is short, steady pulls, which it doesn't capture. I found no study that
+  measures a full rotation.
+
+The two count values are stored separately, so switching formation never turns
+"riders ahead" into "group size". These are rough fits for comparing scenarios,
+not position-exact aerodynamics.
+
 Rider mass comes from the page's rider field. **CdA starts seeded from the
 estimator** (road / hoods / reference rider) and stays *estimator-driven*: changing
 any factor — or the rider weight — re-derives it. Merely opening or closing the

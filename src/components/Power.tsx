@@ -13,6 +13,8 @@ import {
 import {
   DEFAULT_CDA_PARAMS,
   estimateCda,
+  isDrafting,
+  isRotating,
   CDA_MIN,
   CDA_MAX,
   type CdaParams,
@@ -295,14 +297,23 @@ export function Power() {
           </Field>
           <Field
             label="CdA (drag coeff × area, m²)"
-            hint={cdaAdvanced ? "estimated — see panel" : "type, position, kit"}
+            hint={
+              cdaAdvanced
+                ? "estimated — see panel"
+                : cdaFromEstimator && isDrafting(cdaParams)
+                  ? isRotating(cdaParams.formation)
+                    ? `rotating in a group of ${cdaParams.groupSize}`
+                    : `drafting ${cdaParams.draftRiders} rider${cdaParams.draftRiders > 1 ? "s" : ""}`
+                  : "type, position, kit, draft"
+            }
             info={
               <>
                 CdA is the <strong>drag coefficient (Cd)</strong> ×{" "}
                 <strong>frontal area (A)</strong> — an effective "drag area" that
                 captures both how big your frontal profile is and how slippery it
                 is. It reads in m² only because Cd is dimensionless. Use the ⌄
-                button to estimate it from bike, position and kit.
+                button to estimate it from bike, position and kit — and to account for
+                drafting behind other riders, which lowers the drag you feel.
               </>
             }
           >

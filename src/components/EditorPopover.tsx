@@ -14,9 +14,11 @@ export function EditorPopover(props: {
   readoutLabel: string;
   readoutValue: React.ReactNode;
   note?: React.ReactNode;
+  /** Extra class on the panel (e.g. to widen it). */
+  className?: string;
 }) {
   return (
-    <div className="cp-pop editor-pop">
+    <div className={"cp-pop editor-pop" + (props.className ? " " + props.className : "")}>
       <div className="editor-pop-head">
         <strong>{props.title}</strong>
         <button

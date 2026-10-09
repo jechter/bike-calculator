@@ -33,6 +33,9 @@ export interface CalculatorDef {
   HeaderActions?: React.ComponentType;
   /** The page renders its own heading (App skips the shared .main-head). */
   ownHeader?: boolean;
+  /** Settings-on-the-left + visualization layout (uses <Workbench>). On mobile
+   *  App shows a "Settings" toggle in the top bar that opens the controls drawer. */
+  workbench?: boolean;
 }
 
 export const CALCULATORS: CalculatorDef[] = [
@@ -44,6 +47,7 @@ export const CALCULATORS: CalculatorDef[] = [
     icon: <DrivetrainIcon />,
     Component: Drivetrain,
     shareable: true,
+    workbench: true,
     HeaderActions: DrivetrainExamplesMenu,
   },
   {
@@ -53,6 +57,7 @@ export const CALCULATORS: CalculatorDef[] = [
     icon: <WheelIcon />,
     Component: WheelBuilding,
     shareable: true,
+    workbench: true,
     HeaderActions: WheelExamplesMenu,
   },
   {
@@ -62,6 +67,7 @@ export const CALCULATORS: CalculatorDef[] = [
     icon: <FrameIcon />,
     Component: FrameSize,
     ownHeader: true,
+    workbench: true,
   },
   {
     id: "tire",

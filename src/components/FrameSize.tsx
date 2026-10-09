@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
+import { useIsMobile } from "../useIsMobile";
 import {
   resolveFit,
   cockpitForFit,
@@ -17,6 +19,7 @@ import {
 } from "../lib/frameSize";
 import { Field, NumberInput, Select, Section } from "./ui";
 import { FrameGeometryDiagram, type HighlightKey } from "./FrameGeometryDiagram";
+import { Workbench } from "./Workbench";
 
 // Categories grouped into <optgroup>s (Road / Gravel / Mountain / …), preserving
 // the order they're declared in.
@@ -98,6 +101,25 @@ export function FrameSize() {
   const clearField = (field: FieldKey) => edit(field, NaN);
   const clearAll = () => setVals(EMPTY);
   const anySet = Object.values(vals).some((v) => Number.isFinite(v));
+
+  // This page owns its header, so on mobile it hoists "Clear all" into the shared
+  // top bar (App renders the slot) rather than a second row under it.
+  const isMobile = useIsMobile();
+  const [topbarSlot, setTopbarSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setTopbarSlot(isMobile ? document.getElementById("topbar-actions-slot") : null);
+  }, [isMobile]);
+  const clearAllButton = (
+    <button
+      type="button"
+      className="fs-clear-all"
+      onClick={clearAll}
+      disabled={!anySet}
+      title="Reset every field to its recommended value"
+    >
+      Clear all
+    </button>
+  );
 
   const num = (v: number) => (Number.isFinite(v) ? v : null);
 
@@ -263,17 +285,10 @@ export function FrameSize() {
             onto a frame. Set the values you know, the rest are recommended. <strong>Not a substitute for a professional bike fit!</strong>
           </p>
         </div>
-        <button
-          type="button"
-          className="fs-clear-all"
-          onClick={clearAll}
-          disabled={!anySet}
-          title="Reset every field to its recommended value"
-        >
-          Clear all
-        </button>
+        {/* In the top bar on mobile (portalled), here in the header otherwise. */}
+        {topbarSlot ? createPortal(clearAllButton, topbarSlot) : !isMobile && clearAllButton}
       </div>
-      <div className="fs-workbench">
+      <Workbench className="fs-workbench" label="Frame Size">
         <div className="fs-controls">
           <Section
           title="Rider"
@@ -623,7 +638,7 @@ export function FrameSize() {
           approximate riding position
         </figcaption>
       </figure>
-      </div>
+      </Workbench>
     </>
   );
 }

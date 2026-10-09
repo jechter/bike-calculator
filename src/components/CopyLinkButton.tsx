@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getShareUrl } from "../embed";
+import { useIsMobile } from "../useIsMobile";
 
 /**
  * Copies a link to the current config. The page keeps its config in the URL hash
@@ -16,6 +17,8 @@ export function CopyLinkButton() {
   const [status, setStatus] = useState<"idle" | "copied" | "manual">("idle");
   const [url, setUrl] = useState("");
   const manualRef = useRef<HTMLInputElement>(null);
+  // Icon-only in the cramped mobile top bar; labelled on wider screens.
+  const isMobile = useIsMobile();
 
   // Auto-select the fallback field so a plain Cmd/Ctrl+C works.
   useEffect(() => {
@@ -43,8 +46,15 @@ export function CopyLinkButton() {
         className={"copy-link-btn" + (status === "copied" ? " copied" : "")}
         onClick={copy}
         title="Copy a link to this configuration"
+        aria-label="Copy a link to this configuration"
       >
-        {status === "copied" ? "✓ Link copied" : "🔗 Copy link"}
+        {status === "copied"
+          ? isMobile
+            ? "✓"
+            : "✓ Link copied"
+          : isMobile
+            ? "🔗"
+            : "🔗 Copy link"}
       </button>
       {status === "manual" && (
         <input

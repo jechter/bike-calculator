@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CALCULATORS } from "./registry";
 import { useHashRoute, useHashConfigKey } from "./useHashRoute";
+import { useIsMobile } from "./useIsMobile";
+import { SettingsDrawerContext } from "./settingsDrawer";
 import { UnitsProvider } from "./units-context";
 import { UnitSwitcher } from "./components/UnitSwitcher";
 import { CopyLinkButton } from "./components/CopyLinkButton";
@@ -15,6 +17,22 @@ export function App() {
   // re-read their config from the URL even without a full page reload.
   const hashKey = useHashConfigKey();
 
+  // On mobile the per-page header actions ("Load an example" / "Copy link",
+  // Frame Size's "Clear all") move up into the top bar instead of sitting in a
+  // second row under it. Pages with their own header (Frame Size) portal their
+  // action into #topbar-actions-slot.
+  const isMobile = useIsMobile();
+  const sharedActions = active.HeaderActions || active.shareable;
+
+  // Workbench pages (controls + visualization) get a "Settings" button in the
+  // compact-mode bottom toolbar that folds the controls drawer out over the
+  // visualization (rendered by <Workbench>). The open state is shared via context
+  // so the trigger (here) and the drawer (in the page) stay in sync.
+  const isWorkbench = Boolean(active.workbench);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  // Close the drawer whenever the page changes.
+  useEffect(() => setSettingsOpen(false), [active.id]);
+
   // The sidebar can collapse to an icon rail to free up horizontal space for
   // the wider pages (e.g. wheel building's controls + visualization split).
   const [navCollapsed, setNavCollapsed] = useState(
@@ -26,9 +44,44 @@ export function App() {
       return !c;
     });
 
+  // On narrow screens the sidebar is a slide-in drawer rather than a fixed rail,
+  // so the nav doesn't push every page's content far down the screen.
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  // Close the drawer on Escape, and never leave it stuck open when the layout
+  // grows past the mobile breakpoint (the drawer only exists below it).
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMobileNavOpen(false);
+    const mq = window.matchMedia("(min-width: 1200px)");
+    const onWide = () => mq.matches && setMobileNavOpen(false);
+    document.addEventListener("keydown", onKey);
+    mq.addEventListener("change", onWide);
+    document.body.classList.add("mobile-nav-lock");
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      mq.removeEventListener("change", onWide);
+      document.body.classList.remove("mobile-nav-lock");
+    };
+  }, [mobileNavOpen]);
+
   return (
     <UnitsProvider>
-      <div className={"app" + (navCollapsed ? " app--nav-collapsed" : "")}>
+     <SettingsDrawerContext.Provider value={{ open: settingsOpen, setOpen: setSettingsOpen }}>
+      <div
+        className={
+          "app" +
+          (navCollapsed ? " app--nav-collapsed" : "") +
+          (mobileNavOpen ? " app--mobile-nav-open" : "")
+        }
+      >
+        {mobileNavOpen && (
+          <button
+            type="button"
+            className="nav-backdrop"
+            aria-label="Close navigation"
+            onClick={() => setMobileNavOpen(false)}
+          />
+        )}
         <aside className="sidebar">
           <div className="sidebar-head">
             <a
@@ -69,7 +122,10 @@ export function App() {
                 title={c.title}
                 // Clicking the active tab is a no-op — otherwise it would strip the
                 // config query from the hash and reset a shareable page.
-                onClick={() => c.id !== active.id && navigate(c.id)}
+                onClick={() => {
+                  if (c.id !== active.id) navigate(c.id);
+                  setMobileNavOpen(false);
+                }}
               >
                 <span className="icon">{c.icon}</span>
                 <span>{c.title}</span>
@@ -106,7 +162,8 @@ export function App() {
                 <h1>{active.title}</h1>
                 <p className="subtitle">{active.subtitle}</p>
               </div>
-              {(active.HeaderActions || active.shareable) && (
+              {/* On mobile these move up into the top bar (see above). */}
+              {!isMobile && sharedActions && (
                 <div className="main-actions">
                   {active.HeaderActions && <active.HeaderActions />}
                   {active.shareable && <CopyLinkButton />}
@@ -116,7 +173,63 @@ export function App() {
           )}
           <Active key={active.shareable ? hashKey : active.id} />
         </main>
+
+        {/* Compact-mode bottom bar (replaces the top bar): the global Menu on the
+            left, then the page title and the page's own actions (Settings, examples,
+            copy link) grouped on the right. Hidden on desktop (sidebar rail). */}
+        {isMobile && (
+          <div className="botbar">
+            <button
+              type="button"
+              className="botbar-menu"
+              onClick={() => setMobileNavOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={mobileNavOpen}
+            >
+              <svg viewBox="0 0 20 20" width="22" height="22" aria-hidden="true" fill="currentColor">
+                <path d="M2 4h16v2H2V4zm0 5h16v2H2V9zm0 5h16v2H2v-2z" />
+              </svg>
+            </button>
+            <span className="botbar-divider" aria-hidden="true" />
+            {/* Visual page title (the real heading is the page's own sr-only <h1>). */}
+            <span className="botbar-title" aria-hidden="true">
+              {active.title}
+            </span>
+            <div className="botbar-actions">
+              {isWorkbench && (
+                <button
+                  type="button"
+                  className={"botbar-icon-btn" + (settingsOpen ? " active" : "")}
+                  onClick={() => setSettingsOpen(!settingsOpen)}
+                  aria-label={settingsOpen ? "Close settings" : "Open settings"}
+                  aria-expanded={settingsOpen}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    aria-hidden="true"
+                  >
+                    <line x1="4" y1="8" x2="20" y2="8" />
+                    <circle cx="9" cy="8" r="2.6" fill="currentColor" />
+                    <line x1="4" y1="16" x2="20" y2="16" />
+                    <circle cx="15" cy="16" r="2.6" fill="currentColor" />
+                  </svg>
+                </button>
+              )}
+              {active.HeaderActions && <active.HeaderActions />}
+              {active.shareable && <CopyLinkButton />}
+              {/* ownHeader pages (Frame Size) portal their action in here. */}
+              <span className="topbar-actions-slot" id="topbar-actions-slot" />
+            </div>
+          </div>
+        )}
       </div>
+     </SettingsDrawerContext.Provider>
     </UnitsProvider>
   );
 }

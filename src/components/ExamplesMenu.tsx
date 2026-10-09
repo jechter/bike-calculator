@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from "react";
+import { useIsMobile } from "../useIsMobile";
 
 // A ready-made preset for a calculator, expressed as the URL params it differs
 // from the defaults by (the same encoding the "Copy link" button produces).
@@ -22,6 +23,8 @@ export interface ExampleGroup {
 export function ExamplesMenu({ route, groups }: { route: string; groups: ExampleGroup[] }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  // Space is tight in the mobile top bar, so the label shortens there.
+  const isMobile = useIsMobile();
   useEffect(() => {
     if (!open) return;
     const onDoc = (e: MouseEvent) => {
@@ -45,7 +48,7 @@ export function ExamplesMenu({ route, groups }: { route: string; groups: Example
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
-        Load an example <span className="caret">▾</span>
+        {isMobile ? "Examples" : "Load an example"} <span className="caret">▾</span>
       </button>
       {open && (
         <ul className="preset-list examples-list">

@@ -98,6 +98,26 @@ describe("Cycling power", () => {
     expect(queryByText("Estimate CdA")).toBeNull();
   });
 
+  it("follows the drafting group size into the CdA field", () => {
+    const { container, getByTitle } = render(<Power />);
+    fireEvent.click(getByTitle("Estimate CdA from bike, position & kit"));
+    const solo = +nums(container)[7].value;
+    // The drafting formation is the panel's last select; its count the last input.
+    const formation = Array.from(container.querySelectorAll(".editor-pop select")).pop()!;
+    fireEvent.change(formation, { target: { value: "doubleRotating" } });
+    const group8 = +nums(container)[7].value;
+    expect(group8).toBeLessThan(solo);
+    const count = () =>
+      Array.from(container.querySelectorAll('.editor-pop input[type="number"]')).pop()!;
+    fireEvent.change(count(), { target: { value: "16" } });
+    const group16 = +nums(container)[7].value;
+    expect(group16).toBeLessThan(group8); // bigger rotating group → more shelter
+    // The panel readout and the field agree.
+    expect(container.querySelector(".editor-pop-out strong")!.textContent).toContain(
+      group16.toFixed(3),
+    );
+  });
+
   it("combines drivetrain and gearing into one efficiency via the editor", () => {
     const { container, getByTitle } = render(<Power />);
     // Speed is the fixed input by default; a more efficient gearing (single

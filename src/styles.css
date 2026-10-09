@@ -1060,6 +1060,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .editor-field select:disabled { opacity: 0.5; cursor: not-allowed; }
 .editor-field .combo-disabled { opacity: 0.5; }
 .editor-field .combo-disabled input:disabled { cursor: not-allowed; }
+.cda-pop { width: min(480px, 88vw); }
+.cda-draft-row { display: grid; grid-template-columns: 1fr 104px; gap: 10px; }
 .editor-pop-out {
   display: flex;
   align-items: baseline;

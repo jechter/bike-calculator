@@ -10,6 +10,11 @@
 // Bike type is the primary choice: it decides which riding positions are even
 // possible (a road bike has no "sit-up aero-bar" posture; a velomobile has only
 // its shell), and carries a small frame/tire-bulk drag multiplier.
+//
+// Drafting is applied last, as a multiplier on the solo CdA: sitting behind other
+// riders cuts the drag you feel, a lot in a big bunch (see `draftFactor`). In a
+// rotating double-file group nobody keeps one spot, so the factor is averaged
+// over every position in the group instead (see `rotatingDraftFactor`).
 
 export type CdaBike =
   | 'road'
@@ -43,6 +48,10 @@ export type CdaPosition =
 
 export type CdaWheels = 'box' | 'mid' | 'deep' | 'disc';
 export type CdaClothing = 'loose' | 'club' | 'race' | 'skinsuit' | 'skinsuitAero';
+/** Formations where you hold one spot behind `n` riders. */
+export type CdaFixedFormation = 'line' | 'double' | 'bunch';
+/** …plus a rotating double file, averaged over the whole group. */
+export type CdaFormation = CdaFixedFormation | 'doubleRotating';
 
 export interface CdaParams {
   bike: CdaBike;
@@ -50,6 +59,12 @@ export interface CdaParams {
   heightCm: number;
   wheels: CdaWheels;
   clothing: CdaClothing;
+  /** How the group is arranged, and whether you hold a spot or rotate. */
+  formation: CdaFormation;
+  /** Fixed spot: riders in front of you that you're drafting behind (0 = alone). */
+  draftRiders: number;
+  /** Rotating group: riders in the group, including you (1 = alone). */
+  groupSize: number;
 }
 
 // Baseline CdA by riding position, for the reference rider in club clothing with
@@ -134,6 +149,104 @@ export const CDA_CLOTHING: ReadonlyArray<{
   { value: 'skinsuitAero', label: 'Skinsuit + aero helmet', factor: 0.88 },
 ];
 
+// Drafting: the fraction of solo drag left after `n` riders ahead, as
+// `floor + (1 − floor) · shape(n)`. Rough fits to published data:
+// - Single-file paceline: one wheel ahead gives ~0.70 (a ~30 % saving, as in
+//   two-rider wind-tunnel/CFD studies); extra riders add little, levelling off
+//   near 0.55 (team-pursuit riders 3–4 feel ~55–60 % of the lead's drag).
+// - Double file (two abreast): `n` counts both columns, so the second row is
+//   n = 2 (~0.66 — one wheel ahead plus a little side shelter) and the curve
+//   falls by rows toward ~0.35. Side shelter makes it better than single file,
+//   but far short of a peloton (small-formation CFD, Blocken group 2025). An odd
+//   n means the rider beside you is half a wheel ahead — a staggered, weaker draft.
+// - Bunch / peloton: riders to the sides shelter you too, so drag keeps falling
+//   deeper in — to ~10 % of solo in the middle/back of a large peloton (Blocken
+//   et al. 2018, 121-rider CFD). A slower, rational approach to that floor.
+// - Double file, rotating (through & off / Belgian tourniquet): see
+//   `rotatingDraftFactor` — averaged over the whole group.
+export const CDA_FORMATIONS: ReadonlyArray<{
+  value: CdaFormation;
+  label: string;
+  /** Sized by the whole group rather than the riders ahead of you. */
+  rotating?: boolean;
+}> = [
+  { value: 'line', label: 'Single file' },
+  { value: 'double', label: 'Double file' },
+  { value: 'doubleRotating', label: 'Double file (average in rotating group)', rotating: true },
+  { value: 'bunch', label: 'Bunch / peloton' },
+];
+
+// Fraction of solo drag deep in each fixed formation (the curves' asymptotes).
+const DRAFT_FLOORS: Record<CdaFixedFormation, number> = {
+  line: 0.55,
+  double: 0.35,
+  bunch: 0.1,
+};
+
+/** Whether a formation is sized by the whole (rotating) group. */
+export function isRotating(formation: CdaFormation): boolean {
+  return !!CDA_FORMATIONS.find((f) => f.value === formation)?.rotating;
+}
+
+export const DRAFT_RIDERS_MAX = 150;
+export const GROUP_SIZE_MAX = 40;
+
+// Two riders directly side by side both feel slightly *more* drag than alone
+// (Barry et al. wind-tunnel tests: over 6 %), fading as they separate. In a
+// tourniquet the front pair is staggered rather than exactly abreast, so it pays
+// about half that on top of solo drag.
+export const SIDE_BY_SIDE_PENALTY = 1.03;
+
+const clampCount = (n: number, max: number) =>
+  Number.isFinite(n) ? Math.min(max, Math.max(0, Math.round(n))) : 0;
+
+/** Fraction of solo drag felt with `n` riders ahead (1 = no draft). */
+export function draftFactor(n: number, formation: CdaFixedFormation): number {
+  const riders = clampCount(n, DRAFT_RIDERS_MAX);
+  if (riders === 0) return 1;
+  const floor = DRAFT_FLOORS[formation];
+  // Each shape is 1 at n = 0 and tuned so one wheel directly ahead gives ≈ 0.70
+  // (line: 0.55 + 0.45/3, bunch: 0.10 + 0.90·2/3, double at n = 2 rows-of-one:
+  // 0.35 + 0.65·0.48 ≈ 0.66).
+  const shape =
+    formation === 'line'
+      ? Math.pow(3, -riders)
+      : formation === 'double'
+        ? Math.pow(0.48, riders / 2)
+        : 1 / (1 + riders / 2);
+  return floor + (1 - floor) * shape;
+}
+
+/**
+ * Average fraction of solo drag over a full rotation of a `groupSize`-rider
+ * double file (through & off / Belgian tourniquet). Everyone spends equal time
+ * in each position, so this is the mean of the per-position factors: rows of
+ * two, the staggered front pair paying the side-by-side penalty and row r
+ * sitting behind 2r riders.
+ */
+export function rotatingDraftFactor(groupSize: number): number {
+  const n = clampCount(groupSize, GROUP_SIZE_MAX);
+  if (n <= 1) return 1;
+  let sum = 0;
+  for (let i = 0; i < n; i++) {
+    const row = Math.floor(i / 2);
+    sum += row === 0 ? SIDE_BY_SIDE_PENALTY : draftFactor(2 * row, 'double');
+  }
+  return sum / n;
+}
+
+/** The drafting factor for the panel's settings (fixed spot or rotating). */
+export function groupDraftFactor(p: CdaParams): number {
+  return p.formation === 'doubleRotating'
+    ? rotatingDraftFactor(p.groupSize)
+    : draftFactor(p.draftRiders, p.formation);
+}
+
+/** Whether the settings draft at all (vs riding alone). */
+export function isDrafting(p: CdaParams): boolean {
+  return isRotating(p.formation) ? p.groupSize > 1 : p.draftRiders > 0;
+}
+
 export const REF_HEIGHT_CM = 175;
 export const REF_MASS_KG = 72;
 
@@ -148,6 +261,9 @@ export const DEFAULT_CDA_PARAMS: CdaParams = {
   heightCm: REF_HEIGHT_CM,
   wheels: 'mid',
   clothing: 'club',
+  formation: 'bunch',
+  draftRiders: 0,
+  groupSize: 8,
 };
 
 /** The bike-type record for a value (falling back to the first entry). */
@@ -176,7 +292,11 @@ export function bodySizeScale(heightCm: number, massKg: number): number {
   return Math.pow(h / REF_HEIGHT_CM, 0.6) * Math.pow(m / REF_MASS_KG, 0.35);
 }
 
-/** Estimated CdA (m²) for the chosen setup and rider, clamped to a sane range. */
+/**
+ * Estimated CdA (m²) for the chosen setup and rider, clamped to a sane range.
+ * Includes the drafting reduction; pass `{ formation: 'line', draftRiders: 0 }`
+ * for the solo figure.
+ */
 export function estimateCda(p: CdaParams, massKg: number): number {
   const bike = bikeByValue(p.bike);
   const faired = !!bike.faired;
@@ -193,7 +313,8 @@ export function estimateCda(p: CdaParams, massKg: number): number {
   // open vehicles scale with the rider's body.
   const scale = faired ? 1 : bodySizeScale(p.heightCm, massKg);
 
-  const cda = base * scale * bike.factor * clothing + wheel;
+  const solo = base * scale * bike.factor * clothing + wheel;
+  const cda = solo * groupDraftFactor(p);
   const clamped = Math.min(CDA_MAX, Math.max(CDA_MIN, cda));
   return Math.round(clamped * 1000) / 1000;
 }

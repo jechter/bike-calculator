@@ -86,6 +86,16 @@ export const TireIcon = () => (
   </svg>
 );
 
+// Components — a compact crankset with chainring, crank arm, and pedal.
+export const ComponentsIcon = () => (
+  <svg {...SVG_PROPS}>
+    <circle cx="10" cy="10" r="6.6" />
+    <circle cx="10" cy="10" r="2.2" />
+    <path d="M11.7 11.7 L18.2 18.2 M17 18.2 H20.5" />
+    <circle cx="10" cy="10" r="0.8" />
+  </svg>
+);
+
 // Derailleur — two jockey wheels in a cage hung from the hanger bolt.
 export const DerailleurIcon = () => (
   <svg {...SVG_PROPS}>

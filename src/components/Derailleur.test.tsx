@@ -18,8 +18,11 @@ describe("Derailleur database page", () => {
     expect(dbTable.textContent).toContain("Eagle");
   });
 
-  it("keeps the compatibility reference section", () => {
-    const { getByRole } = render(<Derailleur />);
-    expect(getByRole("heading", { name: "Compatibility reference" })).toBeTruthy();
+  it("shows components from each database and opens a selected component's specs", () => {
+    const { getByText, container } = render(<Derailleur />);
+    fireEvent.change(container.querySelector("select")!, { target: { value: "hub" } });
+    expect(container.querySelector("tbody")?.textContent).toContain("Wheel hub");
+    fireEvent.click(getByText("R45 Front"));
+    expect(getByText("Spacing (OLD)")).toBeTruthy();
   });
 });

@@ -13,7 +13,7 @@ import {
   WheelIcon,
   FrameIcon,
   TireIcon,
-  DerailleurIcon,
+  ComponentsIcon,
   PowerIcon,
   ThreadIcon,
 } from "./icons";
@@ -78,13 +78,10 @@ export const CALCULATORS: CalculatorDef[] = [
   },
   {
     id: "derailleur",
-    title: "Derailleur",
-    subtitle: "Look up derailleur specs, plus a compatibility reference.",
-    icon: <DerailleurIcon />,
+    title: "Components",
+    subtitle: "Search component databases for derailleurs, hubs and internal gearing systems.",
+    icon: <ComponentsIcon />,
     Component: Derailleur,
-    // Derailleur specs and fit checks are now surfaced within the Drivetrain
-    // tool, so this standalone page is hidden from the sidebar.
-    hidden: true,
   },
   {
     id: "power",

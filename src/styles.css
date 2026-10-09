@@ -920,6 +920,28 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .preset-list button:hover { background: var(--accent-soft); color: var(--accent); }
 
+/* Components database search field with a quick clear affordance. */
+.component-search { position: relative; }
+.component-search input { width: 100%; padding-right: 36px; }
+.component-search-clear {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 50%; background: transparent; color: var(--muted);
+  font: inherit; font-size: 20px; line-height: 1; cursor: pointer;
+}
+.component-search-clear:hover { background: var(--accent-soft); color: var(--text); }
+
+/* Components brand picker: searchable popover anchored directly to its trigger. */
+.component-brand-filter { position: relative; }
+.component-brand-trigger {
+  width: 100%; min-height: var(--control-h); justify-content: space-between; gap: 8px;
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--panel); color: var(--text); font: inherit; font-size: inherit;
+}
+.component-brand-trigger:hover { color: var(--text); border-color: var(--accent); }
+.component-brand-trigger .caret { color: var(--muted); }
+.component-brand-pop { left: 0; right: auto; width: min(280px, 88vw); }
+
 /* Cassette browse-and-filter picker (foldout next to the cog field) */
 .cassette-picker { position: relative; flex: none; display: flex; }
 .cassette-picker .preset-btn { gap: 4px; font-weight: 500; }

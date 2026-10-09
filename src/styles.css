@@ -920,6 +920,18 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .preset-list button:hover { background: var(--accent-soft); color: var(--accent); }
 
+/* Subtle type label alongside the selected component title. */
+.component-detail-kind { margin-left: 10px; color: var(--muted); font-size: 12px; font-weight: 500; }
+
+/* Selected component row in the database list. */
+.components-list-scroll tr[aria-selected="true"] { background: var(--accent-soft); }
+.components-list-scroll tr[aria-selected="true"] .component-select { color: var(--accent); font-weight: 700; }
+.component-select { border: 0; padding: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.component-select:hover { color: var(--accent); }
+
+/* Keep the selected component details visually separate from the scrollable list. */
+.component-details { margin-top: 24px; }
+
 /* Components database search field with a quick clear affordance. */
 .component-search { position: relative; }
 .component-search input { width: 100%; padding-right: 36px; }

@@ -44,7 +44,7 @@ export const CALCULATORS: CalculatorDef[] = [
     title: "Drivetrain",
     subtitle:
       "Gear ratios, speed at cadence, chain/belt length and chain wear — cassette, single speed or geared hub.",
-    icon: <DrivetrainIcon />,
+    icon: <ComponentsIcon />,
     Component: Drivetrain,
     shareable: true,
     workbench: true,
@@ -80,7 +80,7 @@ export const CALCULATORS: CalculatorDef[] = [
     id: "derailleur",
     title: "Components",
     subtitle: "Search component databases for derailleurs, hubs and internal gearing systems.",
-    icon: <ComponentsIcon />,
+    icon: <DrivetrainIcon />,
     Component: Derailleur,
   },
   {

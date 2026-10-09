@@ -68,7 +68,7 @@ export function Derailleur() {
   const categoryName = (row: ComponentRow) => row.kind === "derailleur" ? "Derailleur" : row.kind === "hub" ? "Wheel hub" : row.kind === "cassette" ? "Cassette" : row.data.kind === "bottomBracket" ? "Gearbox" : "Internal gear hub";
   const source = selected?.data.source;
 
-  return <Section title="Components database" info={<>Browse {DERAILLEURS.length} derailleurs, {HUBS.length} wheel hubs, {HUB_PRESETS.filter((h) => h.kind === "hub").length} internal gear hubs and {HUB_PRESETS.filter((h) => h.kind === "bottomBracket").length} gearboxes. Search by name, manufacturer or specification, choose a category, then select a row to inspect its specs. Data is sourced; verify details with the manufacturer.</>}>
+  return <Section title="Components database">
     <div className="rows">
       <Field label="Search" hint={`${results.length} matching components`}>
         <div className="component-search">
@@ -125,7 +125,7 @@ export function Derailleur() {
       </tbody>
     </table></div>
     {results.length > shown.length && <div className="cp-foot">Showing first {shown.length} of {results.length} — refine to narrow.</div>}
-    {selected && <Section title={selected.title} info={<>Component specifications. Source data is provided for reference; verify before purchase or installation.</>}>
+    {selected && <div className="component-details"><Section title={<><span>{selected.brand} {selected.title}</span><span className="component-detail-kind">{categoryName(selected)}</span></>}>
       <div className="table-wrap"><table><tbody>
         {selected.kind === "derailleur" && <>
           <tr><th>Brand / model</th><td>{selected.data.brand} {selected.data.model}</td></tr><tr><th>Series</th><td>{selected.data.series ?? "—"}</td></tr><tr><th>Discipline / speeds</th><td>{selected.data.discipline} · {selected.data.speeds}-speed</td></tr><tr><th>Cage</th><td>{selected.data.cage ?? "—"}</td></tr><tr><th>Max sprocket / capacity</th><td>{selected.data.maxSprocket != null ? `${selected.data.maxSprocket}T` : "—"} / {selected.data.totalCapacity != null ? `${selected.data.totalCapacity}T` : "—"}</td></tr><tr><th>Actuation / pull ratio</th><td>{selected.data.actuation ?? "Unknown"} / {pullRatioFor(selected.data)}</td></tr><tr><th>Years</th><td>{years(selected.data)}</td></tr>
@@ -134,14 +134,14 @@ export function Derailleur() {
           <tr><th>Manufacturer / model</th><td>{selected.data.manufacturer} {selected.data.model}</td></tr><tr><th>Type</th><td>{HUB_TYPE_LABELS[selected.data.type]}</td></tr><tr><th>Spacing (OLD)</th><td>{selected.data.widthMm} mm</td></tr><tr><th>Spoke counts</th><td>{selected.data.spokeCounts.join(", ")}</td></tr><tr><th>Flange diameters</th><td>{selected.data.leftFlangeDiaMm} / {selected.data.rightFlangeDiaMm} mm</td></tr><tr><th>Flange offsets</th><td>{selected.data.leftOffsetMm} / {selected.data.rightOffsetMm} mm</td></tr><tr><th>Spoke hole</th><td>{selected.data.spokeHoleMm ?? "—"} mm</td></tr>
         </>}
         {selected.kind === "gearing" && <>
-          <tr><th>Manufacturer / model</th><td>{selected.data.manufacturer} {selected.data.label}</td></tr><tr><th>Type</th><td>{selected.data.kind === "bottomBracket" ? "Bottom-bracket gearbox" : "Internal gear hub"}</td></tr><tr><th>Gear count</th><td>{selected.data.continuouslyVariable ? "Continuously variable" : selected.data.gears.length}</td></tr><tr><th>Ratios</th><td>{selected.data.gears.map((g) => g.ratio.toFixed(3)).join(", ")}</td></tr><tr><th>Derailleur compatible</th><td>{selected.data.derailleurCompatible ? "Yes" : "No"}</td></tr>
+          <tr><th>Manufacturer / model</th><td>{selected.data.manufacturer} {selected.data.label}</td></tr>{selected.data.kind === "bottomBracket" && <tr><th>Type</th><td>Bottom-bracket gearbox</td></tr>}<tr><th>Gear count</th><td>{selected.data.continuouslyVariable ? "Continuously variable" : selected.data.gears.length}</td></tr><tr><th>Ratios</th><td>{selected.data.gears.map((g) => g.ratio.toFixed(3)).join(", ")}</td></tr><tr><th>Derailleur compatible</th><td>{selected.data.derailleurCompatible ? "Yes" : "No"}</td></tr>
         </>}
         {selected.kind === "cassette" && <>
-          <tr><th>Brand / model</th><td>{selected.data.brand} {selected.data.model}</td></tr><tr><th>Speeds</th><td>{selected.data.speeds}</td></tr><tr><th>Sprockets</th><td>{selected.data.cogs.map((cog) => `${cog}T`).join(" – ")}</td></tr><tr><th>Freehub body</th><td>{selected.data.freehub}</td></tr><tr><th>Spacing standard</th><td>{selected.data.spacing}</td></tr><tr><th>Special type</th><td>{selected.data.special ?? "—"}</td></tr><tr><th>Weight</th><td>{selected.data.weightGrams != null ? `${selected.data.weightGrams} g` : "—"}</td></tr><tr><th>Price</th><td>{selected.data.priceUsd != null ? `$${selected.data.priceUsd}` : "—"}</td></tr>
+          <tr><th>Brand / model</th><td>{selected.data.brand} {selected.data.model}</td></tr><tr><th>Speeds</th><td>{selected.data.speeds}</td></tr><tr><th>Sprockets</th><td>{selected.data.cogs.map((cog) => `${cog}T`).join(" – ")}</td></tr><tr><th>Freehub body</th><td>{selected.data.freehub}</td></tr><tr><th>Spacing standard</th><td>{selected.data.spacing}</td></tr><tr><th>Special type</th><td>{selected.data.special ?? "—"}</td></tr><tr><th>Weight</th><td>{selected.data.weightGrams != null ? `${selected.data.weightGrams} g` : "—"}</td></tr>
         </>}
         {source && <tr><th>Source</th><td><a className="inline-link" href={source.url} target="_blank" rel="noreferrer">{source.url}</a></td></tr>}
         <tr><th>Configure</th><td><a className="inline-link component-config-link" href={selected.kind === "hub" ? `#/wheel-building?hub=${encodeURIComponent(`${selected.data.manufacturer}~${selected.data.model}`)}` : selected.kind === "cassette" ? `#/drivetrain?cassette=${encodeURIComponent(`${selected.data.brand} ${selected.data.model}`)}` : selected.kind === "gearing" ? `#/drivetrain?gearing=${encodeURIComponent(selected.data.label)}` : `#/drivetrain?derailleur=${encodeURIComponent(selected.data.key)}`}>{selected.kind === "hub" ? "Configure in Wheel Building" : "Configure in Drivetrain"} →</a></td></tr>
       </tbody></table></div>
-    </Section>}
+    </Section></div>}
   </Section>;
 }

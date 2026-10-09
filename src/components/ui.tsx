@@ -601,7 +601,7 @@ export function InfoTip(props: { children: React.ReactNode; label?: string }) {
 }
 
 export function Section(props: {
-  title: string;
+  title: React.ReactNode;
   info?: React.ReactNode;
   /** Optional control rendered on the right of the section header (e.g. presets). */
   action?: React.ReactNode;
@@ -611,7 +611,7 @@ export function Section(props: {
     <section className="section">
       <div className="section-head">
         <h3>{props.title}</h3>
-        {props.info && <InfoTip label={`About: ${props.title}`}>{props.info}</InfoTip>}
+        {props.info && <InfoTip label={`About: ${typeof props.title === "string" ? props.title : "section"}`}>{props.info}</InfoTip>}
         {props.action && <div className="section-action">{props.action}</div>}
       </div>
       {props.children}

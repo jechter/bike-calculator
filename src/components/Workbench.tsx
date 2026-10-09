@@ -63,47 +63,6 @@ export function Workbench({
         aria-modal={open}
         aria-label={`${label} settings`}
       >
-        {/* Pull tab on the drawer's outer edge: always visible (peeks at the screen
-            edge when closed) and slides out with the drawer, toggling it. */}
-        <button
-          type="button"
-          className="edge-tab workbench-handle"
-          onClick={() => setOpen(!open)}
-          aria-label={open ? `Close ${label} settings` : `Open ${label} settings`}
-          aria-expanded={open}
-        >
-          <svg
-            className="wh-icon"
-            viewBox="0 0 24 24"
-            width="17"
-            height="17"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            aria-hidden="true"
-          >
-            <line x1="4" y1="8" x2="20" y2="8" />
-            <circle cx="9" cy="8" r="2.6" fill="currentColor" />
-            <line x1="4" y1="16" x2="20" y2="16" />
-            <circle cx="15" cy="16" r="2.6" fill="currentColor" />
-          </svg>
-          <span className="wh-label">{label} settings</span>
-          <svg
-            className="wh-chevron"
-            viewBox="0 0 24 24"
-            width="15"
-            height="15"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M9 6l6 6-6 6" />
-          </svg>
-        </button>
         <div className="workbench-drawer-head">
           <strong>{label} settings</strong>
           <button

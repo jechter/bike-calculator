@@ -23,12 +23,12 @@ export function App() {
   // action into #topbar-actions-slot.
   const isMobile = useIsMobile();
   const sharedActions = active.HeaderActions || active.shareable;
-  const hasTopbarActions = Boolean(sharedActions || active.ownHeader);
 
-  // Workbench pages (controls + visualization) show a left-edge "Settings" tab on
-  // mobile that folds the controls drawer out over the visualization (rendered by
-  // <Workbench>). The open state is shared via context so it can be reset here on
-  // navigation.
+  // Workbench pages (controls + visualization) get a "Settings" button in the
+  // compact-mode bottom toolbar that folds the controls drawer out over the
+  // visualization (rendered by <Workbench>). The open state is shared via context
+  // so the trigger (here) and the drawer (in the page) stay in sync.
+  const isWorkbench = Boolean(active.workbench);
   const [settingsOpen, setSettingsOpen] = useState(false);
   // Close the drawer whenever the page changes.
   useEffect(() => setSettingsOpen(false), [active.id]);
@@ -71,29 +71,9 @@ export function App() {
         className={
           "app" +
           (navCollapsed ? " app--nav-collapsed" : "") +
-          (mobileNavOpen ? " app--mobile-nav-open" : "") +
-          (settingsOpen ? " app--settings-open" : "")
+          (mobileNavOpen ? " app--mobile-nav-open" : "")
         }
       >
-        <header className="topbar">
-          {/* Visual copy of the page title for the top bar. The real heading is the
-              page's own <h1> (kept in the a11y tree, just visually hidden on mobile),
-              so this one is aria-hidden to avoid a screen reader reading it twice. */}
-          <span className="topbar-title" aria-hidden="true">
-            {active.title}
-          </span>
-          {/* Right side: the page's header actions, when it has any. Only rendered
-              on mobile — the top bar is hidden on wider screens, where actions live
-              in the page header. */}
-          {isMobile && hasTopbarActions && (
-            <div className="topbar-actions">
-              {active.HeaderActions && <active.HeaderActions />}
-              {active.shareable && <CopyLinkButton />}
-              {/* ownHeader pages (Frame Size) portal their action in here. */}
-              <span className="topbar-actions-slot" id="topbar-actions-slot" />
-            </div>
-          )}
-        </header>
         {mobileNavOpen && (
           <button
             type="button"
@@ -103,35 +83,6 @@ export function App() {
           />
         )}
         <aside className="sidebar">
-          {/* Compact-layout pull tab (peeks on the left edge, rides out with the
-              drawer) — the nav counterpart to the workbench Settings tab. Hidden on
-              desktop, where the sidebar is a fixed rail. */}
-          <button
-            type="button"
-            className="edge-tab nav-handle"
-            onClick={() => setMobileNavOpen(!mobileNavOpen)}
-            aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileNavOpen}
-          >
-            <svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true" fill="currentColor">
-              <path d="M2 4h16v2H2V4zm0 5h16v2H2V9zm0 5h16v2H2v-2z" />
-            </svg>
-            <span className="wh-label">Menu</span>
-            <svg
-              className="wh-chevron"
-              viewBox="0 0 24 24"
-              width="15"
-              height="15"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M9 6l6 6-6 6" />
-            </svg>
-          </button>
           <div className="sidebar-head">
             <a
               className="brand"
@@ -222,6 +173,61 @@ export function App() {
           )}
           <Active key={active.shareable ? hashKey : active.id} />
         </main>
+
+        {/* Compact-mode bottom bar (replaces the top bar): the global Menu on the
+            left, then the page title and the page's own actions (Settings, examples,
+            copy link) grouped on the right. Hidden on desktop (sidebar rail). */}
+        {isMobile && (
+          <div className="botbar">
+            <button
+              type="button"
+              className="botbar-menu"
+              onClick={() => setMobileNavOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={mobileNavOpen}
+            >
+              <svg viewBox="0 0 20 20" width="22" height="22" aria-hidden="true" fill="currentColor">
+                <path d="M2 4h16v2H2V4zm0 5h16v2H2V9zm0 5h16v2H2v-2z" />
+              </svg>
+            </button>
+            <span className="botbar-divider" aria-hidden="true" />
+            {/* Visual page title (the real heading is the page's own sr-only <h1>). */}
+            <span className="botbar-title" aria-hidden="true">
+              {active.title}
+            </span>
+            <div className="botbar-actions">
+              {isWorkbench && (
+                <button
+                  type="button"
+                  className={"botbar-icon-btn" + (settingsOpen ? " active" : "")}
+                  onClick={() => setSettingsOpen(!settingsOpen)}
+                  aria-label={settingsOpen ? "Close settings" : "Open settings"}
+                  aria-expanded={settingsOpen}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    aria-hidden="true"
+                  >
+                    <line x1="4" y1="8" x2="20" y2="8" />
+                    <circle cx="9" cy="8" r="2.6" fill="currentColor" />
+                    <line x1="4" y1="16" x2="20" y2="16" />
+                    <circle cx="15" cy="16" r="2.6" fill="currentColor" />
+                  </svg>
+                </button>
+              )}
+              {active.HeaderActions && <active.HeaderActions />}
+              {active.shareable && <CopyLinkButton />}
+              {/* ownHeader pages (Frame Size) portal their action in here. */}
+              <span className="topbar-actions-slot" id="topbar-actions-slot" />
+            </div>
+          </div>
+        )}
       </div>
      </SettingsDrawerContext.Provider>
     </UnitsProvider>

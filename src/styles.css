@@ -1546,60 +1546,27 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .lacing-errors { margin: 6px 0 0; padding-left: 18px; }
 .lacing-errors li { margin: 2px 0; }
 
-/* Compact-layout chrome (top bar, nav drawer, edge tabs): hidden at desktop
-   width, where the sidebar is a normal fixed rail and the workbench is two-column. */
-.topbar { display: none; }
+/* Compact-layout chrome (bottom bar, nav drawer): hidden at desktop width, where
+   the sidebar is a normal fixed rail and the workbench is two-column. */
 .nav-backdrop { display: none; }
-.edge-tab { display: none; }
+.botbar { display: none; }
 
 /* Compact layout — below the two-column workbench breakpoint. */
 @media (max-width: 1199px) {
   /* The sidebar becomes an off-canvas drawer (position:fixed, out of flow), so
      the page is a single column: the sticky top bar, then the main content. */
-  /* align-content:start keeps the top bar at its natural height — otherwise the
-     grid stretches its rows to fill min-height:100vh on short pages, inflating the
-     top bar and pushing the hamburger down over the settings tab. */
   .app { grid-template-columns: 1fr; align-content: start; }
-
-  /* Sticky top bar: page title + hoisted actions. Navigation moves to the
-     left-edge Menu tab (see .nav-handle). */
-  .topbar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    padding: 8px 14px;
-    background: var(--panel);
-    border-bottom: 1px solid var(--border);
-    /* As a grid item its default min-width:auto would let the row grow to fit the
-       (nowrap) title + actions and widen the whole page; pin it so the title
-       ellipsises instead. */
-    min-width: 0;
-  }
-  .topbar-title {
-    flex: 1 1 auto;
-    min-width: 0;
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  /* Page actions hoisted into the top bar (right side). Compact the buttons so
-     hamburger + title + actions fit one row; the title ellipsises if space runs
-     short. */
-  .topbar-actions { flex: none; display: flex; align-items: center; gap: 6px; }
-  .topbar-actions .copy-link { flex-direction: row; }
-  .topbar-actions .copy-link-btn,
-  .topbar-actions .fs-clear-all,
-  .topbar-actions .preset-labelbtn { padding: 6px 9px; font-size: 12px; }
+  /* Size to the *visual* viewport (dvh), not 100vh. On mobile 100vh is the larger
+     viewport behind the browser chrome, so min-height:100vh left phantom scroll
+     space below short pages (you could scroll the content up under the top edge).
+     overscroll-behavior:none stops the rubber-band bounce past the fixed bottom
+     bar. */
+  .app { min-height: 100dvh; }
+  html,
+  body { overscroll-behavior: none; }
 
   /* The drawer slides in from the left over the content; a backdrop dims the
-     page and closes it on tap. overflow:visible so the Menu pull tab, which rides
-     just outside the drawer's right edge, isn't clipped. */
+     page and closes it on tap. */
   .sidebar {
     position: fixed;
     top: 0;
@@ -1608,13 +1575,13 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
     z-index: 70;
     width: min(290px, 84vw);
     height: 100%;
-    overflow: visible;
     border-right: 1px solid var(--border);
     transform: translateX(-100%);
     transition: transform 0.22s ease;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
   }
-  .app--mobile-nav-open .sidebar { transform: translateX(0); }
+  /* Shadow only while open — otherwise the off-screen drawer's shadow bleeds onto
+     the left edge of the page. */
+  .app--mobile-nav-open .sidebar { transform: translateX(0); box-shadow: 0 0 40px rgba(0, 0, 0, 0.3); }
 
   .nav-backdrop {
     display: block;
@@ -1645,8 +1612,80 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   /* Larger tap targets for the nav rows in the drawer. */
   .nav button { padding: 11px 12px; }
 
-  /* Left padding clears the Menu pull tab on the screen edge. */
-  .main { padding: 20px 16px 48px 42px; }
+  /* Fixed bottom bar (replaces the top bar): global Menu on the left, a divider,
+     the page title, then the page's own actions grouped on the right. Sits below
+     the drawers' backdrop, so it's covered while a drawer is open. */
+  .botbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    padding: 8px 12px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    /* Elevate the bar so it reads as a distinct layer above the content. */
+    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.1);
+  }
+  /* The Menu button is the primary (global) navigation, so it's emphasised with
+     the accent — distinct from the page-action buttons — and the bar's elevation
+     makes the whole thing read as a nav bar rather than page chrome. */
+  .botbar-menu {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+  }
+  .botbar-menu:hover { filter: brightness(1.05); }
+  .botbar-divider { flex: none; width: 1px; height: 28px; background: var(--border); }
+  .botbar-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Page action group (Settings + examples + copy link); compacted to fit. */
+  .botbar-actions { flex: none; display: flex; align-items: center; gap: 6px; }
+  .botbar-actions .copy-link { flex-direction: row; }
+  .botbar-actions .copy-link-btn,
+  .botbar-actions .fs-clear-all,
+  .botbar-actions .preset-labelbtn { padding: 7px 9px; font-size: 12px; }
+  .botbar-icon-btn {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--panel-2);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .botbar-icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .botbar-icon-btn.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  /* The bar is at the bottom, so its popovers (examples list) open upward. */
+  .botbar-actions .preset-list { top: auto; bottom: calc(100% + 6px); }
+
+  /* Bottom padding clears the fixed bottom bar (its height + the safe-area inset). */
+  .main { padding: 20px 16px calc(66px + env(safe-area-inset-bottom, 0px)); }
   /* Let the page header (actions like "Load an example" / "Copy link") wrap
      instead of overflowing the viewport on narrow screens. */
   .main-head { flex-wrap: wrap; }
@@ -1715,53 +1754,11 @@ body.mobile-nav-lock { overflow: hidden; }
     flex-direction: column;
     background: var(--bg);
     border-right: 1px solid var(--border);
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
     transform: translateX(-100%);
     transition: transform 0.22s ease;
   }
-  .workbench-drawer--open { transform: translateX(0); }
-
-  /* Shared left-edge pull tab (nav Menu tab + workbench Settings tab). At left:100%
-     it rides just outside its drawer's right edge, so when the drawer is parked
-     off-screen the tab peeks at the screen's left edge and slides out with it. */
-  .edge-tab {
-    position: absolute;
-    left: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 7px 14px;
-    border: none;
-    border-radius: 0 12px 12px 0;
-    background: var(--accent);
-    color: #fff;
-    font: inherit;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    cursor: pointer;
-    box-shadow: 3px 2px 12px rgba(0, 0, 0, 0.28);
-  }
-  .edge-tab .wh-icon,
-  .edge-tab svg { display: block; }
-  .edge-tab .wh-label {
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-  }
-  .edge-tab .wh-chevron { transition: transform 0.22s ease; }
-  /* Menu tab just under the top bar; Settings tab stacked below it with a gap
-     (the Menu tab runs ~64–172px, so start the Settings tab clear of it). */
-  .nav-handle { top: 64px; }
-  .workbench-handle { top: 186px; }
-  /* Flip the chevron to point back into the panel once its drawer is open. */
-  .workbench-drawer--open .wh-chevron,
-  .app--mobile-nav-open .nav-handle .wh-chevron { transform: rotate(180deg); }
-
-  /* Only one drawer at a time: hide the other tab so it never sits over an open
-     drawer or its backdrop. */
-  .app--mobile-nav-open .workbench-handle,
-  .app--settings-open .nav-handle { display: none; }
+  /* Shadow only while open (see .sidebar). */
+  .workbench-drawer--open { transform: translateX(0); box-shadow: 0 0 40px rgba(0, 0, 0, 0.3); }
 
   .workbench-drawer-head {
     flex: none;
@@ -1817,11 +1814,10 @@ html.embedded .sidebar {
    the compact top bar / drawer tabs — which rely on a real viewport for sticky +
    fixed — are redundant. Neutralise the compact chrome the width-based media query
    would otherwise apply. */
-html.embedded .topbar,
 html.embedded .nav-backdrop,
-html.embedded .edge-tab { display: none; }
-/* Restore the in-content title the compact layout visually hides (the top bar that
-   would have shown it is hidden here). */
+html.embedded .botbar { display: none; }
+/* Restore the in-content title the compact layout visually hides (the bottom bar
+   that would have shown it is hidden here). */
 html.embedded .main h1 {
   position: static;
   width: auto;

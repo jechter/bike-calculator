@@ -357,6 +357,8 @@ export const CASSETTE_SPACING_LABELS: Record<CassetteSpacing, string> = {
 export interface CassettePreset {
   brand: string;
   model: string;
+  /** Product family / groupset (e.g. Ultegra, GX Eagle), when identifiable. */
+  series?: string;
   freehub: string;
   speeds: number;
   cogs: number[]; // sprocket tooth counts, smallest first
@@ -373,6 +375,7 @@ export interface CassettePreset {
 interface RawCassette {
   brand: string;
   model: string;
+  series?: string;
   freehub: string;
   speeds: number;
   sprockets: number[];
@@ -407,6 +410,7 @@ export const CASSETTE_PRESETS: CassettePreset[] = (
 ).map((c) => ({
   brand: c.brand,
   model: c.model,
+  series: c.series,
   freehub: c.freehub,
   speeds: c.speeds,
   cogs: c.sprockets,

@@ -86,6 +86,7 @@ next to the cog field that opens a searchable cassette picker with **brand /
 speeds / range** filters. Picking one fills the editable cog field:
 - `brand` — maker name; the picker's first dropdown.
 - `model` — model designation (`"-"` when the source lists none).
+- `series` — optional product family / groupset name (e.g. Shimano `Ultegra`, `Deore XT`, or SRAM `GX Eagle`); only set when identifiable from the manufacturer's model designation or source.
 - `freehub` — freehub-body standard(s) the cassette fits (e.g. `"HG 11"`,
   `"XD"`, `"Micro Spline"`).
 - `speeds` — number of sprockets (equals `sprockets.length`).

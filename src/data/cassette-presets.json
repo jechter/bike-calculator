@@ -4045,7 +4045,7 @@
     {
       "brand": "FSA",
       "model": "Vision Metron",
-      "freehub": "FSA",
+      "freehub": "HG 8",
       "speeds": 10,
       "sprockets": [
         11,
@@ -12462,7 +12462,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -12489,7 +12490,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -12516,7 +12518,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -12543,7 +12546,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -12570,7 +12574,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -12597,7 +12602,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -12624,7 +12630,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -12651,7 +12658,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -12678,7 +12686,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -12705,7 +12714,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -12731,7 +12741,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore"
     },
     {
       "brand": "Shimano",
@@ -12757,7 +12768,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore"
     },
     {
       "brand": "Shimano",
@@ -12782,7 +12794,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore"
     },
     {
       "brand": "Shimano",
@@ -12807,7 +12820,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore"
     },
     {
       "brand": "Shimano",
@@ -12834,7 +12848,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore"
     },
     {
       "brand": "Shimano",
@@ -12861,7 +12876,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "SLX"
     },
     {
       "brand": "Shimano",
@@ -12888,7 +12904,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -12915,7 +12932,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -12942,7 +12960,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "SLX"
     },
     {
       "brand": "Shimano",
@@ -12969,7 +12988,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -12996,7 +13016,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -13022,7 +13043,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -13048,7 +13070,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "SLX"
     },
     {
       "brand": "Shimano",
@@ -13074,7 +13097,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -13100,7 +13124,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "SLX"
     },
     {
       "brand": "Shimano",
@@ -13126,7 +13151,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -13177,7 +13203,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "SLX"
     },
     {
       "brand": "Shimano",
@@ -13203,7 +13230,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -13229,7 +13257,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -13304,7 +13333,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -13329,7 +13359,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -13456,7 +13487,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -13481,7 +13513,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -13601,7 +13634,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore LX"
     },
     {
       "brand": "Shimano",
@@ -13649,7 +13683,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -13673,7 +13708,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -13697,7 +13733,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -13721,7 +13758,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -13745,7 +13783,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -13795,7 +13834,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -13821,7 +13861,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -13847,7 +13888,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -13873,7 +13915,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -13923,7 +13966,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -14043,7 +14087,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore LX"
     },
     {
       "brand": "Shimano",
@@ -14091,7 +14136,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -14115,7 +14161,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -14139,7 +14186,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -14163,7 +14211,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -14211,7 +14260,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -14235,7 +14285,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -14259,7 +14310,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -14285,7 +14337,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -14311,7 +14364,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -14337,7 +14391,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -14363,7 +14418,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -14389,7 +14445,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -14415,7 +14472,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -14441,7 +14499,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -14467,7 +14526,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -14493,7 +14553,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -14518,7 +14579,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -14543,7 +14605,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -14568,7 +14631,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -14641,7 +14705,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Tiagra"
     },
     {
       "brand": "Shimano",
@@ -14666,7 +14731,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -14691,7 +14757,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -14717,7 +14784,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -14742,7 +14810,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -14768,7 +14837,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -14793,7 +14863,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Tiagra"
     },
     {
       "brand": "Shimano",
@@ -14844,7 +14915,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -14870,7 +14942,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -14896,7 +14969,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -14922,7 +14996,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -14948,7 +15023,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -14973,7 +15049,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Tiagra"
     },
     {
       "brand": "Shimano",
@@ -14998,7 +15075,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -15023,7 +15101,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -15048,7 +15127,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -15073,7 +15153,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -15097,7 +15178,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -15170,7 +15252,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -15195,7 +15278,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -15220,7 +15304,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -15245,7 +15330,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -15270,7 +15356,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -15294,7 +15381,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -15318,7 +15406,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -15344,7 +15433,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -15370,7 +15460,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -15396,7 +15487,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -15422,7 +15514,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -15447,7 +15540,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -15472,7 +15566,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -15497,7 +15592,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -15522,7 +15618,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -15547,7 +15644,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -15571,7 +15669,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -15595,7 +15694,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -15621,7 +15721,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -15647,7 +15748,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -15673,7 +15775,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -15698,7 +15801,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -15723,7 +15827,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -15748,7 +15853,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -15774,7 +15880,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -15800,7 +15907,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -15826,7 +15934,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -15851,7 +15960,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -15876,7 +15986,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -15901,7 +16012,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -15925,7 +16037,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -15949,7 +16062,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -15973,7 +16087,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -16047,7 +16162,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -16073,7 +16189,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -16098,7 +16215,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -16122,7 +16240,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -16146,7 +16265,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -16219,7 +16339,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -16244,7 +16365,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -16269,7 +16391,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -16294,7 +16417,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -16318,7 +16442,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -16342,7 +16467,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -16366,7 +16492,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -16439,7 +16566,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -16464,7 +16592,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -16512,7 +16641,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -16536,7 +16666,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -16561,7 +16692,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -16585,7 +16717,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -16633,7 +16766,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "105"
     },
     {
       "brand": "Shimano",
@@ -16657,7 +16791,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -16706,7 +16841,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -16730,7 +16866,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -16754,7 +16891,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -16779,7 +16917,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -16804,7 +16943,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Ultegra"
     },
     {
       "brand": "Shimano",
@@ -17080,7 +17220,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -17103,7 +17244,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -17126,7 +17268,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -17149,7 +17292,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -17172,7 +17316,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -17195,7 +17340,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "XTR"
     },
     {
       "brand": "Shimano",
@@ -17218,7 +17364,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -17241,7 +17388,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -17264,7 +17412,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -17287,7 +17436,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Deore XT"
     },
     {
       "brand": "Shimano",
@@ -17310,7 +17460,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -17402,7 +17553,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -17494,7 +17646,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -17586,7 +17739,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -17678,7 +17832,8 @@
         "url": "https://si.shimano.com/en/pdfs/dm/RACS001/DM-RACS001-03-ENG.pdf",
         "sourceType": "primary",
         "note": "Shimano Dealer's Manual (DM-RACS001): official per-sprocket tooth-count tables covering many road/MTB cassettes (e.g. CS-R9100/R8000/R7000, HG800/HG700). Model-specific EV/spec sheets on dassets.shimano.com cover other models; si.shimano.com 403s bots but the URL is live/indexed."
-      }
+      },
+      "series": "Dura-Ace"
     },
     {
       "brand": "Shimano",
@@ -17961,7 +18116,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Apex"
     },
     {
       "brand": "SRAM",
@@ -18183,7 +18339,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival XPLR"
     },
     {
       "brand": "SRAM",
@@ -18463,7 +18620,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "XX1 Eagle"
     },
     {
       "brand": "SRAM",
@@ -18490,7 +18648,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "X01 Eagle"
     },
     {
       "brand": "SRAM",
@@ -18517,7 +18676,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "GX Eagle"
     },
     {
       "brand": "SRAM",
@@ -18544,7 +18704,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "GX Eagle"
     },
     {
       "brand": "SRAM",
@@ -18571,7 +18732,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "X01 Eagle"
     },
     {
       "brand": "SRAM",
@@ -18598,7 +18760,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "XX1 Eagle"
     },
     {
       "brand": "SRAM",
@@ -18625,7 +18788,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "SX Eagle"
     },
     {
       "brand": "SRAM",
@@ -18652,7 +18816,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "NX Eagle"
     },
     {
       "brand": "SRAM",
@@ -18701,7 +18866,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "GX"
     },
     {
       "brand": "SRAM",
@@ -18727,7 +18893,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "GX"
     },
     {
       "brand": "SRAM",
@@ -18753,7 +18920,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "X0"
     },
     {
       "brand": "SRAM",
@@ -18779,7 +18947,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "GX"
     },
     {
       "brand": "SRAM",
@@ -18805,7 +18974,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "XX1"
     },
     {
       "brand": "SRAM",
@@ -18831,7 +19001,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Apex"
     },
     {
       "brand": "SRAM",
@@ -18858,7 +19029,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "RED"
     },
     {
       "brand": "SRAM",
@@ -18885,7 +19057,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "RED"
     },
     {
       "brand": "SRAM",
@@ -18912,7 +19085,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "RED"
     },
     {
       "brand": "SRAM",
@@ -18939,7 +19113,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "RED"
     },
     {
       "brand": "SRAM",
@@ -18966,7 +19141,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -18993,7 +19169,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -19020,7 +19197,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -19047,7 +19225,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -19074,7 +19253,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -19101,7 +19281,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "RED"
     },
     {
       "brand": "SRAM",
@@ -19127,7 +19308,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Apex"
     },
     {
       "brand": "SRAM",
@@ -19153,7 +19335,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -19178,7 +19361,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "X5"
     },
     {
       "brand": "SRAM",
@@ -19203,7 +19387,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Apex"
     },
     {
       "brand": "SRAM",
@@ -19228,7 +19413,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -19253,7 +19439,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -19424,7 +19611,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -19449,7 +19637,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -19474,7 +19663,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -19500,7 +19690,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Apex"
     },
     {
       "brand": "SRAM",
@@ -19526,7 +19717,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -19552,7 +19744,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "XX1"
     },
     {
       "brand": "SRAM",
@@ -19577,7 +19770,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -19602,7 +19796,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -19627,7 +19822,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -19652,7 +19848,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -19874,7 +20071,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -19901,7 +20099,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "RED"
     },
     {
       "brand": "SRAM",
@@ -19927,7 +20126,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "XX1"
     },
     {
       "brand": "SRAM",
@@ -20048,7 +20248,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -20073,7 +20274,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -20100,7 +20302,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -20127,7 +20330,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "RED"
     },
     {
       "brand": "SRAM",
@@ -20153,7 +20357,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Apex"
     },
     {
       "brand": "SRAM",
@@ -20179,7 +20384,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -20205,7 +20411,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "XX1"
     },
     {
       "brand": "SRAM",
@@ -20255,7 +20462,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -20280,7 +20488,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -20305,7 +20514,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -20380,7 +20590,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Apex"
     },
     {
       "brand": "SRAM",
@@ -20406,7 +20617,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -20432,7 +20644,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "XX1"
     },
     {
       "brand": "SRAM",
@@ -20507,7 +20720,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -20532,7 +20746,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -20605,7 +20820,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -20631,7 +20847,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -20657,7 +20874,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "XX1"
     },
     {
       "brand": "SRAM",
@@ -20707,7 +20925,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -20757,7 +20976,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -20782,7 +21002,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -20857,7 +21078,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -20882,7 +21104,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -21005,7 +21228,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -21030,7 +21254,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -21129,7 +21354,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Rival"
     },
     {
       "brand": "SRAM",
@@ -21154,7 +21380,8 @@
         "url": "https://www.sram.com/en/service/models/cs-xg-1290-d1",
         "sourceType": "primary",
         "note": "SRAM model pages publish the full per-sprocket cog sequence for each cassette variant (road under /service/models, Eagle/MTB under /sram/models); discontinued OG/PG models are in SRAM's archived Spare Parts Catalog PDFs."
-      }
+      },
+      "series": "Force"
     },
     {
       "brand": "SRAM",
@@ -22040,7 +22267,7 @@
     {
       "brand": "Sunrace",
       "model": "CSMZ91 WT5",
-      "freehub": "Sunrace",
+      "freehub": "XD",
       "speeds": 12,
       "sprockets": [
         10,
@@ -22061,7 +22288,7 @@
       "source": {
         "url": "https://sunrace.com/products",
         "sourceType": "primary",
-        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34)."
+        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34). Freehub compatibility: XD driver (SRAM XD standard), required for the listed 9T/10T smallest sprocket."
       }
     },
     {
@@ -22201,7 +22428,7 @@
     {
       "brand": "Sunrace",
       "model": "CSMX9 ETY",
-      "freehub": "Sunrace",
+      "freehub": "XD",
       "speeds": 11,
       "sprockets": [
         10,
@@ -22221,13 +22448,13 @@
       "source": {
         "url": "https://sunrace.com/products",
         "sourceType": "primary",
-        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34)."
+        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34). Freehub compatibility: XD driver (SRAM XD standard), required for the listed 9T/10T smallest sprocket."
       }
     },
     {
       "brand": "Sunrace",
       "model": "CSSX0 ENW",
-      "freehub": "Sunrace",
+      "freehub": "XD",
       "speeds": 11,
       "sprockets": [
         9,
@@ -22247,13 +22474,13 @@
       "source": {
         "url": "https://sunrace.com/products",
         "sourceType": "primary",
-        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34)."
+        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34). Freehub compatibility: XD driver (SRAM XD standard), required for the listed 9T/10T smallest sprocket."
       }
     },
     {
       "brand": "Sunrace",
       "model": "CSSX0 ENU",
-      "freehub": "Sunrace",
+      "freehub": "XD",
       "speeds": 11,
       "sprockets": [
         9,
@@ -22273,13 +22500,13 @@
       "source": {
         "url": "https://sunrace.com/products",
         "sourceType": "primary",
-        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34)."
+        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34). Freehub compatibility: XD driver (SRAM XD standard), required for the listed 9T/10T smallest sprocket."
       }
     },
     {
       "brand": "Sunrace",
       "model": "CSSS0 TNU",
-      "freehub": "Sunrace",
+      "freehub": "XD",
       "speeds": 10,
       "sprockets": [
         9,
@@ -22298,13 +22525,13 @@
       "source": {
         "url": "https://sunrace.com/products",
         "sourceType": "primary",
-        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34)."
+        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34). Freehub compatibility: XD driver (SRAM XD standard), required for the listed 9T/10T smallest sprocket."
       }
     },
     {
       "brand": "Sunrace",
       "model": "CSSS0 TNS",
-      "freehub": "Sunrace",
+      "freehub": "XD",
       "speeds": 10,
       "sprockets": [
         9,
@@ -22323,13 +22550,13 @@
       "source": {
         "url": "https://sunrace.com/products",
         "sourceType": "primary",
-        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34)."
+        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34). Freehub compatibility: XD driver (SRAM XD standard), required for the listed 9T/10T smallest sprocket."
       }
     },
     {
       "brand": "Sunrace",
       "model": "CSS90 TNU",
-      "freehub": "Sunrace",
+      "freehub": "XD",
       "speeds": 9,
       "sprockets": [
         9,
@@ -22347,13 +22574,13 @@
       "source": {
         "url": "https://sunrace.com/products",
         "sourceType": "primary",
-        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34)."
+        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34). Freehub compatibility: XD driver (SRAM XD standard), required for the listed 9T/10T smallest sprocket."
       }
     },
     {
       "brand": "Sunrace",
       "model": "CSS90 TNS",
-      "freehub": "Sunrace",
+      "freehub": "XD",
       "speeds": 9,
       "sprockets": [
         9,
@@ -22371,13 +22598,13 @@
       "source": {
         "url": "https://sunrace.com/products",
         "sourceType": "primary",
-        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34)."
+        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34). Freehub compatibility: XD driver (SRAM XD standard), required for the listed 9T/10T smallest sprocket."
       }
     },
     {
       "brand": "Sunrace",
       "model": "CSSX6 ETU",
-      "freehub": "Sunrace",
+      "freehub": "XD",
       "speeds": 11,
       "sprockets": [
         10,
@@ -22397,13 +22624,13 @@
       "source": {
         "url": "https://sunrace.com/products",
         "sourceType": "primary",
-        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34)."
+        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34). Freehub compatibility: XD driver (SRAM XD standard), required for the listed 9T/10T smallest sprocket."
       }
     },
     {
       "brand": "Sunrace",
       "model": "CSSX6 ETS",
-      "freehub": "Sunrace",
+      "freehub": "XD",
       "speeds": 11,
       "sprockets": [
         10,
@@ -22423,7 +22650,7 @@
       "source": {
         "url": "https://sunrace.com/products",
         "sourceType": "primary",
-        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34)."
+        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34). Freehub compatibility: XD driver (SRAM XD standard), required for the listed 9T/10T smallest sprocket."
       }
     },
     {
@@ -24127,7 +24354,7 @@
     {
       "brand": "Sunrace",
       "model": "CSMZ913 WT1",
-      "freehub": "Sunrace",
+      "freehub": "XD",
       "speeds": 12,
       "sprockets": [
         10,
@@ -24148,7 +24375,7 @@
       "source": {
         "url": "https://sunrace.com/products",
         "sourceType": "primary",
-        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34)."
+        "note": "SunRace official product listing (Cassette category); individual model pages list full per-sprocket sequences (e.g. CSRX11: 11-13-15-17-19-21-23-25-27-30-34). Freehub compatibility: XD driver (SRAM XD standard), required for the listed 9T/10T smallest sprocket."
       }
     },
     {

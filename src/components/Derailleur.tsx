@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { HUBS, HUB_TYPE_LABELS, type Hub } from "../lib/spokes";
 import { CASSETTE_PRESETS, HUB_PRESETS, type CassettePreset, type HubPreset } from "../lib/drivetrain";
 import { DERAILLEURS, searchDerailleurs, pullRatioFor, type DerailleurSpec } from "../lib/derailleur";
@@ -18,6 +18,7 @@ function years(d: DerailleurSpec): string {
   return "—";
 }
 const hubName = (h: Hub) => `${h.manufacturer} ${h.model}`;
+const freehubOptions = (freehub: string) => freehub.split(",").map((option) => option.trim()).filter(Boolean);
 
 export function Derailleur() {
   const [query, setQuery] = useState("");
@@ -31,12 +32,13 @@ export function Derailleur() {
   const [spokeCount, setSpokeCount] = useState("all");
   const [hubWidth, setHubWidth] = useState("all");
   const [cassetteRange, setCassetteRange] = useState("all");
+  const [cassetteFreehub, setCassetteFreehub] = useState("all");
   const [gearCount, setGearCount] = useState("all");
   const [visibleCount, setVisibleCount] = useState(80);
-  const derailleurRows: ComponentRow[] = DERAILLEURS.map((d) => ({ kind: "derailleur", key: `rd:${d.key}`, title: `${d.series ? `${d.series} ` : ""}${d.model}`, brand: d.brand, data: d }));
+  const derailleurRows: ComponentRow[] = DERAILLEURS.map((d) => ({ kind: "derailleur", key: `rd:${d.key}`, title: `${d.series ? `${d.series} ` : ""}${d.model}${d.cage ? ` ${d.cage}` : ""}`, brand: d.brand, data: d }));
   const hubRows: ComponentRow[] = HUBS.map((h) => ({ kind: "hub", key: `hub:${hubName(h)}`, title: h.model, brand: h.manufacturer, data: h }));
   const gearRows: ComponentRow[] = HUB_PRESETS.map((h) => ({ kind: "gearing", key: `gear:${h.label}`, title: h.label.replace(new RegExp(`^${h.manufacturer}\\s+`, "i"), ""), brand: h.manufacturer, data: h }));
-  const cassetteRows: ComponentRow[] = CASSETTE_PRESETS.map((c, index) => ({ kind: "cassette", key: `cassette:${c.brand}:${c.model}:${index}`, title: c.model, brand: c.brand, data: c }));
+  const cassetteRows: ComponentRow[] = CASSETTE_PRESETS.map((c, index) => ({ kind: "cassette", key: `cassette:${c.brand}:${c.model}:${index}`, title: `${c.series ? `${c.series} ` : ""}${c.model}`, brand: c.brand, data: c }));
   const allRows = [...derailleurRows, ...hubRows, ...gearRows, ...cassetteRows].sort((a, b) => a.brand.localeCompare(b.brand, undefined, { sensitivity: "base" }) || a.title.localeCompare(b.title, undefined, { sensitivity: "base" }));
   const brands = useMemo(() => Array.from(new Set(allRows.map((row) => row.brand))).sort((a, b) => a.localeCompare(b)), []);
   const filteredBrands = brands.filter((b) => b.toLowerCase().includes(brandSearch.trim().toLowerCase()));
@@ -44,7 +46,9 @@ export function Derailleur() {
   const scopedDiscipline = scopedDerailleurs.filter((d) => discipline === "all" || d.discipline === discipline);
   const speedFacet = Array.from(new Set(scopedDiscipline.map((d) => d.speeds))).sort((a, b) => a - b);
   const cassetteSpeeds = Array.from(new Set(CASSETTE_PRESETS.filter((c) => brand === "all" || c.brand === brand).map((c) => c.speeds))).sort((a, b) => a - b);
-  const cassetteCogs = CASSETTE_PRESETS.filter((c) => (brand === "all" || c.brand === brand) && (speeds === "all" || c.speeds === Number(speeds))).map((c) => `${c.cogs[0]}–${c.cogs[c.cogs.length - 1]}T`);
+  const cassetteScoped = CASSETTE_PRESETS.filter((c) => (brand === "all" || c.brand === brand) && (speeds === "all" || c.speeds === Number(speeds)));
+  const cassetteCogs = cassetteScoped.map((c) => `${c.cogs[0]}–${c.cogs[c.cogs.length - 1]}T`);
+  const cassetteFreehubs = Array.from(new Set(cassetteScoped.flatMap((c) => freehubOptions(c.freehub)))).sort((a, b) => a.localeCompare(b));
   const hubCounts = Array.from(new Set(HUBS.filter((h) => brand === "all" || h.manufacturer === brand).flatMap((h) => h.spokeCounts))).sort((a, b) => a - b);
   const hubWidths = Array.from(new Set(HUBS.filter((h) => (brand === "all" || h.manufacturer === brand) && (spokeCount === "all" || h.spokeCounts.includes(Number(spokeCount)))).map((h) => h.widthMm))).sort((a, b) => a - b);
   const matchingDerailleurs = searchDerailleurs(query).filter((d) => (brand === "all" || d.brand === brand) && (kind !== "derailleur" || discipline === "all" || d.discipline === discipline) && (kind !== "derailleur" || speeds === "all" || d.speeds === Number(speeds)));
@@ -56,7 +60,7 @@ export function Derailleur() {
     if (row.kind === "derailleur") return matchingDerailleurs.some((d) => d.key === row.data.key);
     if (kind === "hub" && row.kind === "hub" && ((discipline !== "all" && row.data.type !== discipline) || (spokeCount !== "all" && !row.data.spokeCounts.includes(Number(spokeCount))) || (hubWidth !== "all" && row.data.widthMm !== Number(hubWidth)))) return false;
     if ((kind === "internal-hub" || kind === "gearbox") && row.kind === "gearing" && ((gearCount === "cvt" && !row.data.continuouslyVariable) || (gearCount !== "all" && gearCount !== "cvt" && (row.data.continuouslyVariable || row.data.gears.length !== Number(gearCount))))) return false;
-    if (row.kind === "cassette" && ((speeds !== "all" && row.data.speeds !== Number(speeds)) || (cassetteRange !== "all" && `${row.data.cogs[0]}–${row.data.cogs[row.data.cogs.length - 1]}T` !== cassetteRange))) return false;
+    if (row.kind === "cassette" && ((speeds !== "all" && row.data.speeds !== Number(speeds)) || (cassetteRange !== "all" && `${row.data.cogs[0]}–${row.data.cogs[row.data.cogs.length - 1]}T` !== cassetteRange) || (cassetteFreehub !== "all" && !freehubOptions(row.data.freehub).includes(cassetteFreehub)))) return false;
     if (row.kind === "cassette" && normQuery && !(`${row.title} ${row.brand} ${row.data.freehub} ${row.data.speeds} ${row.data.cogs.join(" ")}`.toLowerCase().includes(normQuery))) return false;
     if (row.kind === "hub" && normQuery && !(`${row.title} ${row.brand} ${row.data.type} ${row.data.widthMm}mm ${row.data.spokeCounts.join(" ")}`.toLowerCase().includes(normQuery))) return false;
     if (row.kind === "gearing" && normQuery && !(`${row.title} ${row.brand} ${row.data.kind} ${row.data.gears.length} speed`.toLowerCase().includes(normQuery))) return false;
@@ -64,6 +68,25 @@ export function Derailleur() {
   });
   const shown = results.slice(0, visibleCount);
   const selected = allRows.find((row) => row.key === selectedKey) ?? null;
+
+  // Capture arrow navigation at the document level so it works after a row click
+  // even when focus remains on the page (rather than inside the scrollable table).
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+      if ((event.target as HTMLElement | null)?.closest("input, textarea, select, [contenteditable=true]")) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const currentIndex = results.findIndex((row) => row.key === selectedKey);
+      const nextIndex = currentIndex < 0
+        ? (event.key === "ArrowDown" ? 0 : results.length - 1)
+        : Math.max(0, Math.min(results.length - 1, currentIndex + (event.key === "ArrowDown" ? 1 : -1)));
+      if (results[nextIndex]) setSelectedKey(results[nextIndex].key);
+    };
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => document.removeEventListener("keydown", onKeyDown, true);
+  }, [results, selectedKey]);
+
   const opt = (value: string, label: string) => ({ value, label });
   const categoryName = (row: ComponentRow) => row.kind === "derailleur" ? "Derailleur" : row.kind === "hub" ? "Wheel hub" : row.kind === "cassette" ? "Cassette" : row.data.kind === "bottomBracket" ? "Gearbox" : "Internal gear hub";
   const source = selected?.data.source;
@@ -78,15 +101,15 @@ export function Derailleur() {
       </Field>
     </div>
     <div className="cp-filters" style={{ marginTop: 8 }}>
-      <Field label="Component type"><Select value={kind} onChange={(v) => { setKind(v as ComponentKind); setDiscipline("all"); setSpeeds("all"); setSpokeCount("all"); setHubWidth("all"); setCassetteRange("all"); setGearCount("all"); }} options={[opt("all", "All components"), opt("derailleur", "Derailleurs"), opt("hub", "Wheel hubs"), opt("internal-hub", "Internal gear hubs"), opt("gearbox", "Gearboxes"), opt("cassette", "Cassettes")]} /></Field>
+      <Field label="Component type"><Select value={kind} onChange={(v) => { setKind(v as ComponentKind); setDiscipline("all"); setSpeeds("all"); setSpokeCount("all"); setHubWidth("all"); setCassetteRange("all"); setCassetteFreehub("all"); setGearCount("all"); }} options={[opt("all", "All components"), opt("derailleur", "Derailleurs"), opt("hub", "Wheel hubs"), opt("internal-hub", "Internal gear hubs"), opt("gearbox", "Gearboxes"), opt("cassette", "Cassettes")]} /></Field>
       <Field label="Brand">
       <div className="component-brand-filter">
         <button type="button" className="preset-btn component-brand-trigger" aria-expanded={brandOpen} onClick={() => setBrandOpen((open) => !open)}>{brand === "all" ? "All brands" : brand} <span className="caret">▾</span></button>
         {brandOpen && <div className="cp-pop component-brand-pop">
           <input className="cp-search" type="text" autoFocus placeholder="Filter brands…" aria-label="Filter brands" value={brandSearch} onChange={(e) => setBrandSearch(e.target.value)} />
           <ul className="cp-list">
-            <li><button type="button" onClick={() => { setBrand("all"); setBrandOpen(false); }}>All brands</button></li>
-            {filteredBrands.map((b) => <li key={b}><button type="button" onClick={() => { setBrand(b); setBrandOpen(false); }}>{b}</button></li>)}
+            <li><button type="button" onClick={() => { setBrand("all"); setSpeeds("all"); setCassetteRange("all"); setCassetteFreehub("all"); setBrandOpen(false); }}>All brands</button></li>
+            {filteredBrands.map((b) => <li key={b}><button type="button" onClick={() => { setBrand(b); setSpeeds("all"); setCassetteRange("all"); setCassetteFreehub("all"); setBrandOpen(false); }}>{b}</button></li>)}
             {filteredBrands.length === 0 && <li className="cp-empty">No brands match.</li>}
           </ul>
         </div>}
@@ -103,8 +126,9 @@ export function Derailleur() {
       </>}
       {(kind === "internal-hub" || kind === "gearbox") && <Field label="Gears"><Select value={gearCount} onChange={setGearCount} options={[opt("all", "Any count"), ...Array.from(new Set(HUB_PRESETS.filter((h) => h.kind === (kind === "gearbox" ? "bottomBracket" : "hub") && !h.continuouslyVariable).map((h) => h.gears.length))).sort((a, b) => a - b).map((n) => opt(String(n), `${n} gears`)), opt("cvt", "Continuously variable")]} /></Field>}
       {kind === "cassette" && <>
-        <Field label="Speeds"><Select value={speeds} onChange={(v) => { setSpeeds(v); setCassetteRange("all"); }} options={[opt("all", "All speeds"), ...cassetteSpeeds.map((n) => opt(String(n), `${n}-speed`))]} /></Field>
+        <Field label="Speeds"><Select value={speeds} onChange={(v) => { setSpeeds(v); setCassetteRange("all"); setCassetteFreehub("all"); }} options={[opt("all", "All speeds"), ...cassetteSpeeds.map((n) => opt(String(n), `${n}-speed`))]} /></Field>
         <Field label="Range"><Select value={cassetteRange} onChange={setCassetteRange} options={[opt("all", "All ranges"), ...Array.from(new Set(cassetteCogs)).sort().map((r) => opt(r, r))]} /></Field>
+        <Field label="Freehub body"><Select value={cassetteFreehub} onChange={setCassetteFreehub} options={[opt("all", "All bodies"), ...cassetteFreehubs.map((f) => opt(f, f))]} /></Field>
       </>}
     </div>
     <div className="components-list-scroll table-wrap" onScroll={(event) => {
@@ -137,7 +161,7 @@ export function Derailleur() {
           <tr><th>Manufacturer / model</th><td>{selected.data.manufacturer} {selected.data.label}</td></tr>{selected.data.kind === "bottomBracket" && <tr><th>Type</th><td>Bottom-bracket gearbox</td></tr>}<tr><th>Gear count</th><td>{selected.data.continuouslyVariable ? "Continuously variable" : selected.data.gears.length}</td></tr><tr><th>Ratios</th><td>{selected.data.gears.map((g) => g.ratio.toFixed(3)).join(", ")}</td></tr><tr><th>Derailleur compatible</th><td>{selected.data.derailleurCompatible ? "Yes" : "No"}</td></tr>
         </>}
         {selected.kind === "cassette" && <>
-          <tr><th>Brand / model</th><td>{selected.data.brand} {selected.data.model}</td></tr><tr><th>Speeds</th><td>{selected.data.speeds}</td></tr><tr><th>Sprockets</th><td>{selected.data.cogs.map((cog) => `${cog}T`).join(" – ")}</td></tr><tr><th>Freehub body</th><td>{selected.data.freehub}</td></tr><tr><th>Spacing standard</th><td>{selected.data.spacing}</td></tr><tr><th>Special type</th><td>{selected.data.special ?? "—"}</td></tr><tr><th>Weight</th><td>{selected.data.weightGrams != null ? `${selected.data.weightGrams} g` : "—"}</td></tr>
+          <tr><th>Brand / model</th><td>{selected.data.brand} {selected.data.model}</td></tr>{selected.data.series && <tr><th>Series</th><td>{selected.data.series}</td></tr>}<tr><th>Speeds</th><td>{selected.data.speeds}</td></tr><tr><th>Sprockets</th><td>{selected.data.cogs.map((cog) => `${cog}T`).join(" – ")}</td></tr><tr><th>Freehub body</th><td>{selected.data.freehub}</td></tr><tr><th>Spacing standard</th><td>{selected.data.spacing}</td></tr><tr><th>Special type</th><td>{selected.data.special ?? "—"}</td></tr><tr><th>Weight</th><td>{selected.data.weightGrams != null ? `${selected.data.weightGrams} g` : "—"}</td></tr>
         </>}
         {source && <tr><th>Source</th><td><a className="inline-link" href={source.url} target="_blank" rel="noreferrer">{source.url}</a></td></tr>}
         <tr><th>Configure</th><td><a className="inline-link component-config-link" href={selected.kind === "hub" ? `#/wheel-building?hub=${encodeURIComponent(`${selected.data.manufacturer}~${selected.data.model}`)}` : selected.kind === "cassette" ? `#/drivetrain?cassette=${encodeURIComponent(`${selected.data.brand} ${selected.data.model}`)}` : selected.kind === "gearing" ? `#/drivetrain?gearing=${encodeURIComponent(selected.data.label)}` : `#/drivetrain?derailleur=${encodeURIComponent(selected.data.key)}`}>{selected.kind === "hub" ? "Configure in Wheel Building" : "Configure in Drivetrain"} →</a></td></tr>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { HUBS, HUB_TYPE_LABELS, type Hub } from "../lib/spokes";
-import { CASSETTE_PRESETS, HUB_PRESETS, type CassettePreset, type HubPreset } from "../lib/drivetrain";
+import { CASSETTE_PRESETS, CASSETTE_SPACING_LABELS, HUB_PRESETS, type CassettePreset, type HubPreset } from "../lib/drivetrain";
 import { DERAILLEURS, searchDerailleurs, pullRatioFor, type DerailleurSpec } from "../lib/derailleur";
 import { Field, TextInput, Select, Section } from "./ui";
 
@@ -161,7 +161,7 @@ export function Derailleur() {
           <tr><th>Manufacturer / model</th><td>{selected.data.manufacturer} {selected.data.label}</td></tr>{selected.data.kind === "bottomBracket" && <tr><th>Type</th><td>Bottom-bracket gearbox</td></tr>}<tr><th>Gear count</th><td>{selected.data.continuouslyVariable ? "Continuously variable" : selected.data.gears.length}</td></tr><tr><th>Ratios</th><td>{selected.data.gears.map((g) => g.ratio.toFixed(3)).join(", ")}</td></tr><tr><th>Derailleur compatible</th><td>{selected.data.derailleurCompatible ? "Yes" : "No"}</td></tr>
         </>}
         {selected.kind === "cassette" && <>
-          <tr><th>Brand / model</th><td>{selected.data.brand} {selected.data.model}</td></tr>{selected.data.series && <tr><th>Series</th><td>{selected.data.series}</td></tr>}<tr><th>Speeds</th><td>{selected.data.speeds}</td></tr><tr><th>Sprockets</th><td>{selected.data.cogs.map((cog) => `${cog}T`).join(" – ")}</td></tr><tr><th>Freehub body</th><td>{selected.data.freehub}</td></tr><tr><th>Spacing standard</th><td>{selected.data.spacing}</td></tr><tr><th>Special type</th><td>{selected.data.special ?? "—"}</td></tr><tr><th>Weight</th><td>{selected.data.weightGrams != null ? `${selected.data.weightGrams} g` : "—"}</td></tr>
+          <tr><th>Brand / model</th><td>{selected.data.brand} {selected.data.model}</td></tr>{selected.data.series && <tr><th>Series</th><td>{selected.data.series}</td></tr>}<tr><th>Speeds</th><td>{selected.data.speeds}</td></tr><tr><th>Sprockets</th><td>{selected.data.cogs.map((cog) => `${cog}T`).join(" – ")}</td></tr><tr><th>Freehub body</th><td>{selected.data.freehub}</td></tr><tr><th>Spacing standard</th><td>{CASSETTE_SPACING_LABELS[selected.data.spacing]}</td></tr><tr><th>Special type</th><td>{selected.data.special ?? "—"}</td></tr><tr><th>Weight</th><td>{selected.data.weightGrams != null ? `${selected.data.weightGrams} g` : "—"}</td></tr>
         </>}
         {source && <tr><th>Source</th><td><a className="inline-link" href={source.url} target="_blank" rel="noreferrer">{source.url}</a></td></tr>}
         <tr><th>Configure</th><td><a className="inline-link component-config-link" href={selected.kind === "hub" ? `#/wheel-building?hub=${encodeURIComponent(`${selected.data.manufacturer}~${selected.data.model}`)}` : selected.kind === "cassette" ? `#/drivetrain?cassette=${encodeURIComponent(`${selected.data.brand} ${selected.data.model}`)}` : selected.kind === "gearing" ? `#/drivetrain?gearing=${encodeURIComponent(selected.data.label)}` : `#/drivetrain?derailleur=${encodeURIComponent(selected.data.key)}`}>{selected.kind === "hub" ? "Configure in Wheel Building" : "Configure in Drivetrain"} →</a></td></tr>

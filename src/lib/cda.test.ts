@@ -14,6 +14,7 @@ import {
   SIDE_BY_SIDE_PENALTY,
   bikeByValue,
   type CdaParams,
+  SHAVED_LEGS_FACTOR,
 } from "./cda";
 
 describe("estimateCda", () => {
@@ -79,6 +80,15 @@ describe("estimateCda", () => {
     expect(wheels).toBeLessThan(base);
   });
 
+  it("shaved legs trim the solo CdA by the shaved-legs factor", () => {
+    const solo = { ...DEFAULT_CDA_PARAMS, wheels: "box" as const };
+    const hairy = estimateCda(solo, REF_MASS_KG);
+    const shaved = estimateCda({ ...solo, shavedLegs: true }, REF_MASS_KG);
+    // Wheel delta is additive, so compare the body part: (cda − delta) scales.
+    const delta = 0.005;
+    expect((shaved - delta) / (hairy - delta)).toBeCloseTo(SHAVED_LEGS_FACTOR, 2);
+  });
+
   it("gives recumbents and velomobiles dramatically lower CdA", () => {
     const road = estimateCda(DEFAULT_CDA_PARAMS, REF_MASS_KG);
     const recumbent = estimateCda(
@@ -99,7 +109,7 @@ describe("estimateCda", () => {
       estimateCda({ ...DEFAULT_CDA_PARAMS, bike: "velomobile", position: "shell", ...patch }, mass);
     // Wheels + clothing don't matter inside the fairing.
     expect(velo({ wheels: "box", clothing: "loose" })).toBe(
-      velo({ wheels: "disc", clothing: "skinsuitAero" }),
+      velo({ wheels: "disc", clothing: "skinsuitAero", shavedLegs: true }),
     );
     // Rider height and weight don't change the shell's drag.
     expect(velo({ heightCm: 160 }, 55)).toBe(velo({ heightCm: 200 }, 95));
@@ -124,6 +134,7 @@ describe("estimateCda", () => {
       heightCm: 210,
       wheels: "box",
       clothing: "loose",
+      shavedLegs: false,
       formation: "bunch",
       draftRiders: 0,
       groupSize: 1,
@@ -137,6 +148,7 @@ describe("estimateCda", () => {
       heightCm: 120,
       wheels: "disc",
       clothing: "skinsuitAero",
+      shavedLegs: true,
       formation: "bunch",
       draftRiders: 0,
       groupSize: 1,

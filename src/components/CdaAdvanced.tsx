@@ -24,9 +24,14 @@ function opts<T extends string>(
   return table.map((o) => ({ value: o.value, label: o.label }));
 }
 
+const LEG_OPTIONS: SelectOption<string>[] = [
+  { value: "unshaved", label: "Unshaved" },
+  { value: "shaved", label: "Shaved" },
+];
+
 /**
  * The CdA estimator panel. Builds CdA from bike type, position, rider size,
- * wheels and clothing, and writes the estimate live through `onChange`. Bike type
+ * wheels, clothing and legs, and writes the estimate live through `onChange`. Bike type
  * comes first because it decides which riding positions are possible. Rider weight
  * comes from the page's rider field. Drafting (a fixed spot behind N riders, or
  * rotating through a group of N) scales the solo estimate down last.
@@ -64,7 +69,7 @@ export function CdaAdvancedPanel(props: {
   const note = faired ? (
     <>
       The fairing sets the frontal area, so the shell's drag is essentially fixed —
-      wheels, clothing and rider size don't change it.{draftNote}
+      wheels, clothing, legs and rider size don't change it.{draftNote}
     </>
   ) : recumbent ? (
     <>
@@ -128,11 +133,19 @@ export function CdaAdvancedPanel(props: {
           disabled={faired}
         />
       </EditorField>
-      <EditorField label="Clothing" wide>
+      <EditorField label="Clothing">
         <Select
           value={p.clothing}
           options={opts(CDA_CLOTHING)}
           onChange={(v) => set({ clothing: v })}
+          disabled={faired}
+        />
+      </EditorField>
+      <EditorField label="Legs">
+        <Select
+          value={p.shavedLegs ? "shaved" : "unshaved"}
+          options={LEG_OPTIONS}
+          onChange={(v) => set({ shavedLegs: v === "shaved" })}
           disabled={faired}
         />
       </EditorField>

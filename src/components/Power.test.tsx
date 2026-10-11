@@ -98,6 +98,17 @@ describe("Cycling power", () => {
     expect(queryByText("Estimate CdA")).toBeNull();
   });
 
+  it("lowers CdA with shaved legs", () => {
+    const { container, getByTitle } = render(<Power />);
+    const before = +nums(container)[7].value;
+    fireEvent.click(getByTitle("Estimate CdA from bike, position & kit"));
+    const legs = Array.from(container.querySelectorAll<HTMLSelectElement>(".editor-pop select")).find(
+      (s) => Array.from(s.options).some((o) => o.value === "shaved"),
+    )!;
+    fireEvent.change(legs, { target: { value: "shaved" } });
+    expect(+nums(container)[7].value).toBeLessThan(before);
+  });
+
   it("follows the drafting group size into the CdA field", () => {
     const { container, getByTitle } = render(<Power />);
     fireEvent.click(getByTitle("Estimate CdA from bike, position & kit"));

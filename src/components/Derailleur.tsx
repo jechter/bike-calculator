@@ -42,7 +42,7 @@ const PROPOSAL_FIELDS: Record<NewCategory, string[]> = {
   hub: ["manufacturer", "model", "type", "widthMm", "spokeCounts", "leftFlangeDiaMm", "rightFlangeDiaMm", "leftOffsetMm", "rightOffsetMm", "spokeHoleMm", "source"],
   "internal-hub": ["manufacturer", "label", "continuouslyVariable", "gears", "derailleurCompatible", "source"],
   gearbox: ["manufacturer", "label", "continuouslyVariable", "gears", "derailleurCompatible", "source"],
-  cassette: ["brand", "model", "series", "speeds", "cogs", "freehub", "spacing", "special", "weightGrams", "source"],
+  cassette: ["brand", "model", "series", "cogs", "freehub", "spacing", "special", "weightGrams", "source"],
 };
 const FIELD_LABELS: Record<string, string> = {
   brand: "Brand", manufacturer: "Brand", model: "Model", label: "Model", series: "Series", discipline: "Discipline", speeds: "Speeds", cage: "Cage",

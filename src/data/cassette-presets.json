@@ -1,5 +1,5 @@
 {
-  "description": "Cassette / sprocket sets keyed by brand and model, with cog (sprocket) tooth counts, freehub body, speeds, weight and a per-entry source. The drivetrain calculator groups models under a brand picker; picking one fills the cassette cog field. Reference data — verify against the manufacturer before relying on it.",
+  "description": "Cassette / sprocket sets keyed by brand and model, with cog (sprocket) tooth counts, freehub body, weight and a per-entry source. The drivetrain calculator groups models under a brand picker; picking one fills the cassette cog field. Reference data — verify against the manufacturer before relying on it.",
   "count": 1015,
   "sources": [
     {
@@ -196,7 +196,6 @@
       "brand": "3T",
       "model": "Bailout",
       "freehub": "XDR",
-      "speeds": 11,
       "sprockets": [
         9,
         10,
@@ -221,7 +220,6 @@
       "brand": "3T",
       "model": "Overdrive",
       "freehub": "XDR",
-      "speeds": 11,
       "sprockets": [
         9,
         11,
@@ -246,7 +244,6 @@
       "brand": "Bolany",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -272,7 +269,6 @@
       "brand": "Bolany",
       "model": "K7 12V",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -298,7 +294,6 @@
       "brand": "Bolany",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -323,7 +318,6 @@
       "brand": "Bolany",
       "model": "9M42",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -346,7 +340,6 @@
       "brand": "Box",
       "model": "Two",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -371,7 +364,6 @@
       "brand": "Box",
       "model": "One Prime 9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -394,7 +386,6 @@
       "brand": "Box",
       "model": "Two Prime 9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -417,7 +408,6 @@
       "brand": "Box",
       "model": "Two",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -442,7 +432,6 @@
       "brand": "Box",
       "model": "Three-E / Prime 9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         14,
@@ -465,7 +454,6 @@
       "brand": "Box",
       "model": "Three-E / Prime 9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         14,
@@ -488,7 +476,6 @@
       "brand": "Box",
       "model": "Three Prime 9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -511,7 +498,6 @@
       "brand": "Box",
       "model": "Three Prime 9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -534,7 +520,6 @@
       "brand": "Box",
       "model": "Four-E / Prime 9",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         14,
@@ -556,7 +541,6 @@
       "brand": "Box",
       "model": "Four Prime 9",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -578,7 +562,6 @@
       "brand": "Campagnolo",
       "model": "Chorus",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -604,7 +587,6 @@
       "brand": "Campagnolo",
       "model": "Chorus",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -630,7 +612,6 @@
       "brand": "Campagnolo",
       "model": "Super Record",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -656,7 +637,6 @@
       "brand": "Campagnolo",
       "model": "Centaur",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -681,7 +661,6 @@
       "brand": "Campagnolo",
       "model": "Pontenza",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -706,7 +685,6 @@
       "brand": "Campagnolo",
       "model": "Centaur",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -731,7 +709,6 @@
       "brand": "Campagnolo",
       "model": "Chorus",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -757,7 +734,6 @@
       "brand": "Campagnolo",
       "model": "Super Record",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -783,7 +759,6 @@
       "brand": "Campagnolo",
       "model": "Centaur",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -808,7 +783,6 @@
       "brand": "Campagnolo",
       "model": "Chorus",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -833,7 +807,6 @@
       "brand": "Campagnolo",
       "model": "Pontenza",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -858,7 +831,6 @@
       "brand": "Campagnolo",
       "model": "Record",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -883,7 +855,6 @@
       "brand": "Campagnolo",
       "model": "Super Record",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -908,7 +879,6 @@
       "brand": "Campagnolo",
       "model": "Chorus",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -933,7 +903,6 @@
       "brand": "Campagnolo",
       "model": "Pontenza",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -958,7 +927,6 @@
       "brand": "Campagnolo",
       "model": "Record",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -983,7 +951,6 @@
       "brand": "Campagnolo",
       "model": "Super Record",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -1008,7 +975,6 @@
       "brand": "Campagnolo",
       "model": "Centaur",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -1033,7 +999,6 @@
       "brand": "Campagnolo",
       "model": "Chorus",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -1058,7 +1023,6 @@
       "brand": "Campagnolo",
       "model": "Record",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -1083,7 +1047,6 @@
       "brand": "Campagnolo",
       "model": "Super Record",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -1108,7 +1071,6 @@
       "brand": "Campagnolo",
       "model": "Chorus",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -1133,7 +1095,6 @@
       "brand": "Campagnolo",
       "model": "Pontenza",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -1158,7 +1119,6 @@
       "brand": "Campagnolo",
       "model": "Record",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -1183,7 +1143,6 @@
       "brand": "Campagnolo",
       "model": "Super Record",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -1208,7 +1167,6 @@
       "brand": "Campagnolo",
       "model": "Chorus",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -1233,7 +1191,6 @@
       "brand": "Campagnolo",
       "model": "Pontenza",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -1258,7 +1215,6 @@
       "brand": "Campagnolo",
       "model": "Record",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -1283,7 +1239,6 @@
       "brand": "Campagnolo",
       "model": "Super Record",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -1308,7 +1263,6 @@
       "brand": "Campagnolo",
       "model": "Chorus",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -1333,7 +1287,6 @@
       "brand": "Campagnolo",
       "model": "Record",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -1358,7 +1311,6 @@
       "brand": "Campagnolo",
       "model": "Super Record",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -1383,7 +1335,6 @@
       "brand": "Campagnolo",
       "model": "Chorus",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -1408,7 +1359,6 @@
       "brand": "Campagnolo",
       "model": "Record",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -1433,7 +1383,6 @@
       "brand": "Campagnolo",
       "model": "Super Record",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -1458,7 +1407,6 @@
       "brand": "Campagnolo",
       "model": "Ekar GT",
       "freehub": "Campagnolo",
-      "speeds": 13,
       "sprockets": [
         9,
         10,
@@ -1485,7 +1433,6 @@
       "brand": "Campagnolo",
       "model": "Ekar GT",
       "freehub": "Campagnolo",
-      "speeds": 13,
       "sprockets": [
         9,
         10,
@@ -1512,7 +1459,6 @@
       "brand": "Campagnolo",
       "model": "Ekar GT",
       "freehub": "Campagnolo",
-      "speeds": 13,
       "sprockets": [
         10,
         11,
@@ -1539,7 +1485,6 @@
       "brand": "Campagnolo",
       "model": "Ekar GT",
       "freehub": "Campagnolo",
-      "speeds": 13,
       "sprockets": [
         10,
         11,
@@ -1566,7 +1511,6 @@
       "brand": "Campagnolo",
       "model": "Ekar",
       "freehub": "Campagnolo",
-      "speeds": 13,
       "sprockets": [
         9,
         10,
@@ -1593,7 +1537,6 @@
       "brand": "Campagnolo",
       "model": "Ekar",
       "freehub": "Campagnolo",
-      "speeds": 13,
       "sprockets": [
         9,
         10,
@@ -1620,7 +1563,6 @@
       "brand": "Campagnolo",
       "model": "Ekar",
       "freehub": "Campagnolo",
-      "speeds": 13,
       "sprockets": [
         10,
         11,
@@ -1647,7 +1589,6 @@
       "brand": "Classified",
       "model": "CAS27",
       "freehub": "Classified",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -1672,7 +1613,6 @@
       "brand": "Classified",
       "model": "CAS30",
       "freehub": "Classified",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -1697,7 +1637,6 @@
       "brand": "Classified",
       "model": "CAS32",
       "freehub": "Classified",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -1722,7 +1661,6 @@
       "brand": "Classified",
       "model": "CAS34",
       "freehub": "Classified",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -1747,7 +1685,6 @@
       "brand": "Classified",
       "model": "-",
       "freehub": "Classified",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -1773,7 +1710,6 @@
       "brand": "Classified",
       "model": "CAS34-1",
       "freehub": "Classified",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -1799,7 +1735,6 @@
       "brand": "Classified",
       "model": "CAS32-1",
       "freehub": "Classified",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -1825,7 +1760,6 @@
       "brand": "Classified",
       "model": "CAS30-1",
       "freehub": "Classified",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -1851,7 +1785,6 @@
       "brand": "Classified",
       "model": "CAS27-1",
       "freehub": "Classified",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -1877,7 +1810,6 @@
       "brand": "Classified",
       "model": "-",
       "freehub": "Classified",
-      "speeds": 13,
       "sprockets": [
         11,
         12,
@@ -1904,7 +1836,6 @@
       "brand": "Classified",
       "model": "-",
       "freehub": "Classified",
-      "speeds": 13,
       "sprockets": [
         10,
         11,
@@ -1932,7 +1863,6 @@
       "brand": "Classified",
       "model": "-",
       "freehub": "Classified",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -1959,7 +1889,6 @@
       "brand": "Dimension",
       "model": "LY-1110CKVN",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -1983,7 +1912,6 @@
       "brand": "Dimension",
       "model": "LY-1109CKMN",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -2006,7 +1934,6 @@
       "brand": "Dimension",
       "model": "LY-1109CKHJ",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -2029,7 +1956,6 @@
       "brand": "Dimension",
       "model": "LY-1110CKN",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -2053,7 +1979,6 @@
       "brand": "Dimension",
       "model": "LY-1109CKJ",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -2076,7 +2001,6 @@
       "brand": "Dimension",
       "model": "FW7210",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -2098,7 +2022,6 @@
       "brand": "Dimension",
       "model": "FW7209",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -2120,7 +2043,6 @@
       "brand": "Dimension",
       "model": "FW7208",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -2142,7 +2064,6 @@
       "brand": "Dimension",
       "model": "FW7211",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -2165,7 +2086,6 @@
       "brand": "E*Thirteen",
       "model": "FW2HRA-118",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         9,
         11,
@@ -2191,7 +2111,6 @@
       "brand": "E*Thirteen",
       "model": "FW2HRA-110",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         13,
         15,
@@ -2217,7 +2136,6 @@
       "brand": "E*Thirteen",
       "model": "FW2HPA-100",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         9,
         11,
@@ -2243,7 +2161,6 @@
       "brand": "E*Thirteen",
       "model": "FW2HRA-103",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         9,
         11,
@@ -2269,7 +2186,6 @@
       "brand": "E*Thirteen",
       "model": "FW2HRA-101",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         9,
         11,
@@ -2295,7 +2211,6 @@
       "brand": "E*Thirteen",
       "model": "KFW2RA-102",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         9,
         11,
@@ -2321,7 +2236,6 @@
       "brand": "E*Thirteen",
       "model": "FW2TPA-102",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         9,
         11,
@@ -2347,7 +2261,6 @@
       "brand": "E*Thirteen",
       "model": "FW2TPA-103",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         9,
         10,
@@ -2373,7 +2286,6 @@
       "brand": "E*Thirteen",
       "model": "KFW2RA-108",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         9,
         11,
@@ -2398,7 +2310,6 @@
       "brand": "E*Thirteen",
       "model": "FW1TPA-102",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         9,
         10,
@@ -2423,7 +2334,6 @@
       "brand": "E*Thirteen",
       "model": "FW2TPA-101",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         9,
         10,
@@ -2448,7 +2358,6 @@
       "brand": "E*Thirteen",
       "model": "FW1TRA-100",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         9,
         10,
@@ -2473,7 +2382,6 @@
       "brand": "E*Thirteen",
       "model": "FW1TPA-101",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         9,
         10,
@@ -2498,7 +2406,6 @@
       "brand": "E*Thirteen",
       "model": "FW2XPA-102",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         9,
         11,
@@ -2523,7 +2430,6 @@
       "brand": "E*Thirteen",
       "model": "FW2XPA-101",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         9,
         11,
@@ -2548,7 +2454,6 @@
       "brand": "E*Thirteen",
       "model": "FW2XPA-100",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         9,
         11,
@@ -2573,7 +2478,6 @@
       "brand": "E*Thirteen",
       "model": "TRS+ 10",
       "freehub": "XDR, XD",
-      "speeds": 10,
       "sprockets": [
         9,
         10,
@@ -2597,7 +2501,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -2622,7 +2525,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -2648,7 +2550,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -2674,7 +2575,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -2700,7 +2600,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         14,
         15,
@@ -2726,7 +2625,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -2752,7 +2650,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -2778,7 +2675,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         12,
         13,
@@ -2804,7 +2700,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -2830,7 +2725,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -2856,7 +2750,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         14,
         15,
@@ -2882,7 +2775,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -2908,7 +2800,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -2934,7 +2825,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         12,
         13,
@@ -2960,7 +2850,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -2986,7 +2875,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -3012,7 +2900,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -3038,7 +2925,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -3064,7 +2950,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         14,
         15,
@@ -3090,7 +2975,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         14,
         15,
@@ -3116,7 +3000,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -3142,7 +3025,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         12,
         13,
@@ -3168,7 +3050,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -3194,7 +3075,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -3220,7 +3100,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -3246,7 +3125,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -3272,7 +3150,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         14,
         15,
@@ -3298,7 +3175,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         14,
         15,
@@ -3324,7 +3200,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -3349,7 +3224,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -3374,7 +3248,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -3399,7 +3272,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -3424,7 +3296,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -3449,7 +3320,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -3474,7 +3344,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -3499,7 +3368,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -3524,7 +3392,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -3549,7 +3416,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -3574,7 +3440,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -3599,7 +3464,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -3624,7 +3488,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -3649,7 +3512,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -3674,7 +3536,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -3699,7 +3560,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -3724,7 +3584,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -3749,7 +3608,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -3774,7 +3632,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -3799,7 +3656,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -3824,7 +3680,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         14,
         15,
@@ -3849,7 +3704,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         14,
         15,
@@ -3874,7 +3728,6 @@
       "brand": "Edco",
       "model": "Monoblock",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         16,
         17,
@@ -3899,7 +3752,6 @@
       "brand": "FSA",
       "model": "Vision Metron",
       "freehub": "HG 8",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -3923,7 +3775,6 @@
       "brand": "FSA",
       "model": "K-Force WE 12S",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -3949,7 +3800,6 @@
       "brand": "FSA",
       "model": "K-Force WE 12S",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -3975,7 +3825,6 @@
       "brand": "FSA",
       "model": "K-Force WE 12S",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -4001,7 +3850,6 @@
       "brand": "FSA",
       "model": "K-Force WE 11S",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -4026,7 +3874,6 @@
       "brand": "FSA",
       "model": "K-Force WE 11S",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -4051,7 +3898,6 @@
       "brand": "FSA",
       "model": "K-Force WE 11S",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -4076,7 +3922,6 @@
       "brand": "Garbaruk",
       "model": "-",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -4102,7 +3947,6 @@
       "brand": "Garbaruk",
       "model": "-",
       "freehub": "Micro Spline",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -4128,7 +3972,6 @@
       "brand": "Garbaruk",
       "model": "-",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -4154,7 +3997,6 @@
       "brand": "Garbaruk",
       "model": "-",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -4180,7 +4022,6 @@
       "brand": "Garbaruk",
       "model": "-",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -4206,7 +4047,6 @@
       "brand": "Garbaruk",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -4232,7 +4072,6 @@
       "brand": "Garbaruk",
       "model": "-",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -4257,7 +4096,6 @@
       "brand": "Garbaruk",
       "model": "-",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -4282,7 +4120,6 @@
       "brand": "Garbaruk",
       "model": "-",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -4307,7 +4144,6 @@
       "brand": "Garbaruk",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -4332,7 +4168,6 @@
       "brand": "Garbaruk",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -4357,7 +4192,6 @@
       "brand": "Garbaruk",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -4382,7 +4216,6 @@
       "brand": "Garbaruk",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -4406,7 +4239,6 @@
       "brand": "Garbaruk",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -4430,7 +4262,6 @@
       "brand": "Hope",
       "model": "-",
       "freehub": "Hope",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -4455,7 +4286,6 @@
       "brand": "Hope",
       "model": "-",
       "freehub": "Hope",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -4480,7 +4310,6 @@
       "brand": "Hope",
       "model": "-",
       "freehub": "Hope",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -4505,7 +4334,6 @@
       "brand": "Ingrid",
       "model": "48T10",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -4531,7 +4359,6 @@
       "brand": "Ingrid",
       "model": "46T10",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -4556,7 +4383,6 @@
       "brand": "Ingrid",
       "model": "44T11",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -4582,7 +4408,6 @@
       "brand": "Ingrid",
       "model": "44T11",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -4608,7 +4433,6 @@
       "brand": "IRD",
       "model": "Interloc Elite 11S",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -4633,7 +4457,6 @@
       "brand": "IRD",
       "model": "Interloc Elite 10S",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -4657,7 +4480,6 @@
       "brand": "IRD",
       "model": "Interloc Elite 11S",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -4682,7 +4504,6 @@
       "brand": "IRD",
       "model": "Interloc Elite 10S",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -4706,7 +4527,6 @@
       "brand": "IRD",
       "model": "Elite 11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -4731,7 +4551,6 @@
       "brand": "IRD",
       "model": "Elite 11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -4756,7 +4575,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -4780,7 +4598,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -4804,7 +4621,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -4828,7 +4644,6 @@
       "brand": "IRD",
       "model": "Elite 11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -4853,7 +4668,6 @@
       "brand": "IRD",
       "model": "Elite 11",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -4878,7 +4692,6 @@
       "brand": "IRD",
       "model": "Elite 11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -4903,7 +4716,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -4927,7 +4739,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -4951,7 +4762,6 @@
       "brand": "IRD",
       "model": "Elite 11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -4976,7 +4786,6 @@
       "brand": "IRD",
       "model": "Elite 11",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -5001,7 +4810,6 @@
       "brand": "IRD",
       "model": "Elite 11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -5026,7 +4834,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -5050,7 +4857,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -5074,7 +4880,6 @@
       "brand": "IRD",
       "model": "Elite 11",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -5099,7 +4904,6 @@
       "brand": "IRD",
       "model": "Elite 11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -5124,7 +4928,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5148,7 +4951,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5172,7 +4974,6 @@
       "brand": "IRD",
       "model": "Comp 10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -5196,7 +4997,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -5220,7 +5020,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -5244,7 +5043,6 @@
       "brand": "IRD",
       "model": "Elite 11",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -5269,7 +5067,6 @@
       "brand": "IRD",
       "model": "Elite 11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -5294,7 +5091,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5318,7 +5114,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5342,7 +5137,6 @@
       "brand": "IRD",
       "model": "Comp 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5366,7 +5160,6 @@
       "brand": "IRD",
       "model": "Comp 10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5390,7 +5183,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5414,7 +5206,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5438,7 +5229,6 @@
       "brand": "IRD",
       "model": "Comp 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -5462,7 +5252,6 @@
       "brand": "IRD",
       "model": "Comp 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5486,7 +5275,6 @@
       "brand": "IRD",
       "model": "Comp 10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5510,7 +5298,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5534,7 +5321,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         14,
         15,
@@ -5558,7 +5344,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         13,
         14,
@@ -5582,7 +5367,6 @@
       "brand": "IRD",
       "model": "Comp 10",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5606,7 +5390,6 @@
       "brand": "IRD",
       "model": "Comp 10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5630,7 +5413,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -5655,7 +5437,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -5680,7 +5461,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -5705,7 +5485,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -5730,7 +5509,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -5755,7 +5533,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -5779,7 +5556,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -5803,7 +5579,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -5827,7 +5602,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -5851,7 +5625,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -5876,7 +5649,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -5901,7 +5673,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5925,7 +5696,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -5949,7 +5719,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -5973,7 +5742,6 @@
       "brand": "KCNC",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -5999,7 +5767,6 @@
       "brand": "KMC",
       "model": "REACT",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -6023,7 +5790,6 @@
       "brand": "KMC",
       "model": "REACT",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -6047,7 +5813,6 @@
       "brand": "KMC",
       "model": "REACT",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -6072,7 +5837,6 @@
       "brand": "KMC",
       "model": "REACT",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -6097,7 +5861,6 @@
       "brand": "Leonardi",
       "model": "General Lee 12SP NPU",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         9,
         11,
@@ -6123,7 +5886,6 @@
       "brand": "Leonardi",
       "model": "General Lee 12SP NPU",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         9,
         11,
@@ -6149,7 +5911,6 @@
       "brand": "Leonardi",
       "model": "General Lee 12V XL",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         9,
         11,
@@ -6175,7 +5936,6 @@
       "brand": "Leonardi",
       "model": "General Lee 12V NPU",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         9,
         11,
@@ -6201,7 +5961,6 @@
       "brand": "Leonardi",
       "model": "General Lee 12V",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         9,
         11,
@@ -6227,7 +5986,6 @@
       "brand": "Leonardi",
       "model": "General Lee 12V",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         9,
         11,
@@ -6253,7 +6011,6 @@
       "brand": "Leonardi",
       "model": "General Lee 11V",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         9,
         11,
@@ -6278,7 +6035,6 @@
       "brand": "Leonardi",
       "model": "General Lee 11V",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -6303,7 +6059,6 @@
       "brand": "Leonardi",
       "model": "General Lee 11V",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         9,
         11,
@@ -6328,7 +6083,6 @@
       "brand": "Leonardi",
       "model": "General Lee",
       "freehub": "XDR, XD",
-      "speeds": 10,
       "sprockets": [
         9,
         11,
@@ -6352,7 +6106,6 @@
       "brand": "Leonardi",
       "model": "General Lee 11V CX9",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         9,
         10,
@@ -6377,7 +6130,6 @@
       "brand": "Miche",
       "model": "XM 12",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -6403,7 +6155,6 @@
       "brand": "Miche",
       "model": "XM 11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -6428,7 +6179,6 @@
       "brand": "Microshift",
       "model": "CS-G113",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -6453,7 +6203,6 @@
       "brand": "Microshift",
       "model": "CS-H113",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -6478,7 +6227,6 @@
       "brand": "Microshift",
       "model": "CS-G110",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -6503,7 +6251,6 @@
       "brand": "Microshift",
       "model": "CS-H110",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -6528,7 +6275,6 @@
       "brand": "Microshift",
       "model": "CS-G100",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -6552,7 +6298,6 @@
       "brand": "Microshift",
       "model": "CS-H100",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -6576,7 +6321,6 @@
       "brand": "Microshift",
       "model": "CS-H093",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -6599,7 +6343,6 @@
       "brand": "Microshift",
       "model": "CS-H093",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -6622,7 +6365,6 @@
       "brand": "Microshift",
       "model": "CS-H093",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -6645,7 +6387,6 @@
       "brand": "Microshift",
       "model": "CS-H093A",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -6668,7 +6409,6 @@
       "brand": "Microshift",
       "model": "CS-G110",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -6693,7 +6433,6 @@
       "brand": "Microshift",
       "model": "CS-H110",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -6718,7 +6457,6 @@
       "brand": "Microshift",
       "model": "CS-G100",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -6742,7 +6480,6 @@
       "brand": "Microshift",
       "model": "CS-H100",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -6766,7 +6503,6 @@
       "brand": "Microshift",
       "model": "CS-H104",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -6790,7 +6526,6 @@
       "brand": "Microshift",
       "model": "CS-G104",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -6814,7 +6549,6 @@
       "brand": "Microshift",
       "model": "CS-G105",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -6838,7 +6572,6 @@
       "brand": "Microshift",
       "model": "CS-H105",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -6862,7 +6595,6 @@
       "brand": "Microshift",
       "model": "CS-H083",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -6884,7 +6616,6 @@
       "brand": "Microshift",
       "model": "CS-H083",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         15,
@@ -6906,7 +6637,6 @@
       "brand": "Microshift",
       "model": "CS-H083",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         15,
@@ -6928,7 +6658,6 @@
       "brand": "Microshift",
       "model": "CS-H081",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         15,
@@ -6950,7 +6679,6 @@
       "brand": "Microshift",
       "model": "CS-G110",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -6975,7 +6703,6 @@
       "brand": "Microshift",
       "model": "CS-G110",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -7000,7 +6727,6 @@
       "brand": "Microshift",
       "model": "CS-G110",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -7025,7 +6751,6 @@
       "brand": "Microshift",
       "model": "CS-H110",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -7050,7 +6775,6 @@
       "brand": "Microshift",
       "model": "CS-H110",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -7075,7 +6799,6 @@
       "brand": "Microshift",
       "model": "CS-H110",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -7100,7 +6823,6 @@
       "brand": "Microshift",
       "model": "CS-G100",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -7124,7 +6846,6 @@
       "brand": "Microshift",
       "model": "CS-G100",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -7148,7 +6869,6 @@
       "brand": "Microshift",
       "model": "CS-G100",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -7172,7 +6892,6 @@
       "brand": "Microshift",
       "model": "CS-H100",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -7196,7 +6915,6 @@
       "brand": "Microshift",
       "model": "CS-H100",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -7220,7 +6938,6 @@
       "brand": "Microshift",
       "model": "CS-H100",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -7244,7 +6961,6 @@
       "brand": "Microshift",
       "model": "CS-H100",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -7268,7 +6984,6 @@
       "brand": "Microshift",
       "model": "CS-H100",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -7292,7 +7007,6 @@
       "brand": "Microshift",
       "model": "CS-H092",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -7315,7 +7029,6 @@
       "brand": "Microshift",
       "model": "CS-H092",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -7338,7 +7051,6 @@
       "brand": "Microshift",
       "model": "CS-H092",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -7361,7 +7073,6 @@
       "brand": "Microshift",
       "model": "CS-H092",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -7384,7 +7095,6 @@
       "brand": "Microshift",
       "model": "CS-H092",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -7407,7 +7117,6 @@
       "brand": "Microshift",
       "model": "CS-H092",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -7430,7 +7139,6 @@
       "brand": "Now8",
       "model": "Facile",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         9,
         10,
@@ -7455,7 +7163,6 @@
       "brand": "Now8",
       "model": "Facile",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -7481,7 +7188,6 @@
       "brand": "OMNI Racer",
       "model": "RACE-Lite",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -7507,7 +7213,6 @@
       "brand": "OMNI Racer",
       "model": "RACE-Lite",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -7533,7 +7238,6 @@
       "brand": "OMNI Racer",
       "model": "RACE-Lite",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -7558,7 +7262,6 @@
       "brand": "OMNI Racer",
       "model": "RACE-Lite",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -7583,7 +7286,6 @@
       "brand": "OMNI Racer",
       "model": "RACE-Lite",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -7607,7 +7309,6 @@
       "brand": "OMNI Racer",
       "model": "RACE-Lite",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -7631,7 +7332,6 @@
       "brand": "OMNI Racer",
       "model": "RACE-Lite",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -7655,7 +7355,6 @@
       "brand": "OMNI Racer",
       "model": "RACE-Lite",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -7680,7 +7379,6 @@
       "brand": "OMNI Racer",
       "model": "RACE-Lite",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -7705,7 +7403,6 @@
       "brand": "OMNI Racer",
       "model": "RACE-Lite",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -7729,7 +7426,6 @@
       "brand": "OMNI Racer",
       "model": "RACE-Lite",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -7753,7 +7449,6 @@
       "brand": "OMNI Racer",
       "model": "RACE-Lite",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -7777,7 +7472,6 @@
       "brand": "OMNI Racer",
       "model": "RACE-Lite",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -7801,7 +7495,6 @@
       "brand": "Praxis Works",
       "model": "CS-1140",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -7825,7 +7518,6 @@
       "brand": "Prestacycle",
       "model": "93183",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -7851,7 +7543,6 @@
       "brand": "Prestacycle",
       "model": "93185",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -7877,7 +7568,6 @@
       "brand": "Prestacycle",
       "model": "93187",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -7903,7 +7593,6 @@
       "brand": "Prestacycle",
       "model": "93188",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -7929,7 +7618,6 @@
       "brand": "Prestacycle",
       "model": "93153",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -7955,7 +7643,6 @@
       "brand": "Prestacycle",
       "model": "93155",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -7981,7 +7668,6 @@
       "brand": "Prestacycle",
       "model": "93156",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -8007,7 +7693,6 @@
       "brand": "Prestacycle",
       "model": "93157",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -8033,7 +7718,6 @@
       "brand": "Prestacycle",
       "model": "93104",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -8057,7 +7741,6 @@
       "brand": "Prestacycle",
       "model": "93129",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8082,7 +7765,6 @@
       "brand": "Prestacycle",
       "model": "93127",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8107,7 +7789,6 @@
       "brand": "Prestacycle",
       "model": "93124",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8132,7 +7813,6 @@
       "brand": "Prestacycle",
       "model": "93122",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8157,7 +7837,6 @@
       "brand": "Prestacycle",
       "model": "93121",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8182,7 +7861,6 @@
       "brand": "Prestacycle",
       "model": "93133",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -8208,7 +7886,6 @@
       "brand": "Prestacycle",
       "model": "93134",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -8234,7 +7911,6 @@
       "brand": "Prestacycle",
       "model": "93132",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -8260,7 +7936,6 @@
       "brand": "Prestacycle",
       "model": "93118",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8285,7 +7960,6 @@
       "brand": "Prestacycle",
       "model": "93120",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -8310,7 +7984,6 @@
       "brand": "Prestacycle",
       "model": "93119",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8335,7 +8008,6 @@
       "brand": "Prestacycle",
       "model": "93117",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8360,7 +8032,6 @@
       "brand": "Prestacycle",
       "model": "93116",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         14,
@@ -8385,7 +8056,6 @@
       "brand": "Prestacycle",
       "model": "93115",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8410,7 +8080,6 @@
       "brand": "Prestacycle",
       "model": "93113",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8435,7 +8104,6 @@
       "brand": "Prestacycle",
       "model": "93112",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -8460,7 +8128,6 @@
       "brand": "Prestacycle",
       "model": "93111",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8485,7 +8152,6 @@
       "brand": "Prestacycle",
       "model": "93110",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8510,7 +8176,6 @@
       "brand": "Recon",
       "model": "JR12-14-28T",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         14,
         15,
@@ -8536,7 +8201,6 @@
       "brand": "Recon",
       "model": "JR12-14-32T",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         14,
         15,
@@ -8562,7 +8226,6 @@
       "brand": "Recon",
       "model": "JR12-14-34T",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         14,
         15,
@@ -8588,7 +8251,6 @@
       "brand": "Recon",
       "model": "JR12-16-28T",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         16,
         17,
@@ -8614,7 +8276,6 @@
       "brand": "Recon",
       "model": "JR11-14-25T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         14,
         15,
@@ -8639,7 +8300,6 @@
       "brand": "Recon",
       "model": "JR11-14-27T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         14,
         15,
@@ -8664,7 +8324,6 @@
       "brand": "Recon",
       "model": "JR11AL-14-25T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         14,
         15,
@@ -8689,7 +8348,6 @@
       "brand": "Recon",
       "model": "JR11AL-14-27T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         14,
         15,
@@ -8714,7 +8372,6 @@
       "brand": "Recon",
       "model": "SHI12AL-11-28T",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -8740,7 +8397,6 @@
       "brand": "Recon",
       "model": "SHI12AL-11-30T",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -8766,7 +8422,6 @@
       "brand": "Recon",
       "model": "SHI12AL-11-32T",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -8792,7 +8447,6 @@
       "brand": "Recon",
       "model": "SHI12AL-11-34T",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -8818,7 +8472,6 @@
       "brand": "Recon",
       "model": "SHI11AL-11-23T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8843,7 +8496,6 @@
       "brand": "Recon",
       "model": "SHI11AL-11-25T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8868,7 +8520,6 @@
       "brand": "Recon",
       "model": "SHI11AL-12-25T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -8893,7 +8544,6 @@
       "brand": "Recon",
       "model": "SHI11AL-11-27T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8918,7 +8568,6 @@
       "brand": "Recon",
       "model": "SHI11AL-12-27T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -8943,7 +8592,6 @@
       "brand": "Recon",
       "model": "SHI11AL-11-28T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -8968,7 +8616,6 @@
       "brand": "Recon",
       "model": "SHI11AL-12-28T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -8993,7 +8640,6 @@
       "brand": "Recon",
       "model": "SHI11AL-11-29T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9018,7 +8664,6 @@
       "brand": "Recon",
       "model": "SHI11AL-11-30T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9043,7 +8688,6 @@
       "brand": "Recon",
       "model": "SHI11AL-11-32T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9068,7 +8712,6 @@
       "brand": "Recon",
       "model": "SHI11AL-11-36T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9093,7 +8736,6 @@
       "brand": "Recon",
       "model": "CAM11AL11-23T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9118,7 +8760,6 @@
       "brand": "Recon",
       "model": "CAM11AL11-25T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9143,7 +8784,6 @@
       "brand": "Recon",
       "model": "CAM11AL12-25T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -9168,7 +8808,6 @@
       "brand": "Recon",
       "model": "CAM11AL11-27T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9193,7 +8832,6 @@
       "brand": "Recon",
       "model": "CAM11AL12-27T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -9218,7 +8856,6 @@
       "brand": "Recon",
       "model": "CAM11AL11-29T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9243,7 +8880,6 @@
       "brand": "Recon",
       "model": "CAM11AL12-29T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -9268,7 +8904,6 @@
       "brand": "Recon",
       "model": "CAM11AL11-32T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9293,7 +8928,6 @@
       "brand": "Recon",
       "model": "SHI12-11-25T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -9319,7 +8953,6 @@
       "brand": "Recon",
       "model": "SHI12-11-26T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -9345,7 +8978,6 @@
       "brand": "Recon",
       "model": "SHI12-11-28T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -9371,7 +9003,6 @@
       "brand": "Recon",
       "model": "SHI12-11-29T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -9397,7 +9028,6 @@
       "brand": "Recon",
       "model": "SHI12-12-29T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         12,
         13,
@@ -9423,7 +9053,6 @@
       "brand": "Recon",
       "model": "SHI12-11-30T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -9449,7 +9078,6 @@
       "brand": "Recon",
       "model": "SHI12-11-32T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -9475,7 +9103,6 @@
       "brand": "Recon",
       "model": "SHI12-11-34T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -9501,7 +9128,6 @@
       "brand": "Recon",
       "model": "SHI12-11-36T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -9527,7 +9153,6 @@
       "brand": "Recon",
       "model": "SHI12-12-32T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         12,
         13,
@@ -9553,7 +9178,6 @@
       "brand": "Recon",
       "model": "SHI12-12-36T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         12,
         13,
@@ -9579,7 +9203,6 @@
       "brand": "Recon",
       "model": "SHI12-13-34T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         13,
         14,
@@ -9605,7 +9228,6 @@
       "brand": "Recon",
       "model": "CAM12-11-25T",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -9631,7 +9253,6 @@
       "brand": "Recon",
       "model": "CAM12-11-27T",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -9657,7 +9278,6 @@
       "brand": "Recon",
       "model": "CAM12-11-29T",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -9683,7 +9303,6 @@
       "brand": "Recon",
       "model": "CAM12-11-32T",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -9709,7 +9328,6 @@
       "brand": "Recon",
       "model": "CAM12-11-34T",
       "freehub": "Campagnolo",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -9735,7 +9353,6 @@
       "brand": "Recon",
       "model": "SHI11-11-23T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9760,7 +9377,6 @@
       "brand": "Recon",
       "model": "SHI11-11-25T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9785,7 +9401,6 @@
       "brand": "Recon",
       "model": "SHI11-12-25T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -9810,7 +9425,6 @@
       "brand": "Recon",
       "model": "SHI11-11-27T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9835,7 +9449,6 @@
       "brand": "Recon",
       "model": "SHI11-12-27T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -9860,7 +9473,6 @@
       "brand": "Recon",
       "model": "SHI11-11-28T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9885,7 +9497,6 @@
       "brand": "Recon",
       "model": "SHI11-12-28T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -9910,7 +9521,6 @@
       "brand": "Recon",
       "model": "SHI11-11-29T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9935,7 +9545,6 @@
       "brand": "Recon",
       "model": "SHI11-11-30T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9960,7 +9569,6 @@
       "brand": "Recon",
       "model": "SHI11-11-32T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -9985,7 +9593,6 @@
       "brand": "Recon",
       "model": "SHI11-11-34T",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -10010,7 +9617,6 @@
       "brand": "Recon",
       "model": "CAM11-11-23T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -10035,7 +9641,6 @@
       "brand": "Recon",
       "model": "CAM11-11-25T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -10060,7 +9665,6 @@
       "brand": "Recon",
       "model": "CAM11-11-27T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -10085,7 +9689,6 @@
       "brand": "Recon",
       "model": "CAM11-12-27T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -10110,7 +9713,6 @@
       "brand": "Recon",
       "model": "CAM11-11-28T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -10135,7 +9737,6 @@
       "brand": "Recon",
       "model": "CAM11-11-29T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -10160,7 +9761,6 @@
       "brand": "Recon",
       "model": "CAM11-12-29T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -10185,7 +9785,6 @@
       "brand": "Recon",
       "model": "CAM11-11-32T",
       "freehub": "Campagnolo",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -10210,7 +9809,6 @@
       "brand": "Recon",
       "model": "SHI-TI12-11-25T",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -10236,7 +9834,6 @@
       "brand": "Recon",
       "model": "SHI-TI12-11-27T",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -10262,7 +9859,6 @@
       "brand": "Recon",
       "model": "SHI-TI12-11-28T",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -10288,7 +9884,6 @@
       "brand": "Recon",
       "model": "JR12-SR14-28T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         14,
         15,
@@ -10314,7 +9909,6 @@
       "brand": "Recon",
       "model": "JR12-SR14-32T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         14,
         15,
@@ -10340,7 +9934,6 @@
       "brand": "Recon",
       "model": "JR12-SR14-34T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         14,
         15,
@@ -10366,7 +9959,6 @@
       "brand": "Recon",
       "model": "JR12-SR16-28T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         16,
         17,
@@ -10392,7 +9984,6 @@
       "brand": "Recon",
       "model": "JR11-SR14-25T",
       "freehub": "HG 11, XDR",
-      "speeds": 11,
       "sprockets": [
         14,
         15,
@@ -10417,7 +10008,6 @@
       "brand": "Recon",
       "model": "JR11-SR14-27T",
       "freehub": "HG 11, XDR",
-      "speeds": 11,
       "sprockets": [
         14,
         15,
@@ -10442,7 +10032,6 @@
       "brand": "Recon",
       "model": "SR11-11-23T",
       "freehub": "HG 11, XDR",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -10467,7 +10056,6 @@
       "brand": "Recon",
       "model": "SR11-11-25T",
       "freehub": "HG 11, XDR",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -10492,7 +10080,6 @@
       "brand": "Recon",
       "model": "SR11-12-25T",
       "freehub": "HG 11, XDR",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -10517,7 +10104,6 @@
       "brand": "Recon",
       "model": "SR11-11-27T",
       "freehub": "HG 11, XDR",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -10542,7 +10128,6 @@
       "brand": "Recon",
       "model": "SR11-12-27T",
       "freehub": "HG 11, XDR",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -10567,7 +10152,6 @@
       "brand": "Recon",
       "model": "SR11-11-28T",
       "freehub": "HG 11, XDR",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -10592,7 +10176,6 @@
       "brand": "Recon",
       "model": "SR11-12-28T",
       "freehub": "HG 11, XDR",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -10617,7 +10200,6 @@
       "brand": "Recon",
       "model": "SR11-11-29T",
       "freehub": "HG 11, XDR",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -10642,7 +10224,6 @@
       "brand": "Recon",
       "model": "SR11-11-30T",
       "freehub": "HG 11, XDR",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -10667,7 +10248,6 @@
       "brand": "Recon",
       "model": "SR11-11-32T",
       "freehub": "HG 11, XDR",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -10692,7 +10272,6 @@
       "brand": "Recon",
       "model": "SR11-11-34T",
       "freehub": "HG 11, XDR",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -10717,7 +10296,6 @@
       "brand": "Recon",
       "model": "SR12AL-11-28T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -10743,7 +10321,6 @@
       "brand": "Recon",
       "model": "SR12AL-11-30T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -10769,7 +10346,6 @@
       "brand": "Recon",
       "model": "SR12AL-11-32T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -10795,7 +10371,6 @@
       "brand": "Recon",
       "model": "SR12AL-11-34T",
       "freehub": "HG 11, XDR",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -10821,7 +10396,6 @@
       "brand": "Recon",
       "model": "Capreo",
       "freehub": "Capreo",
-      "speeds": 10,
       "sprockets": [
         9,
         11,
@@ -10845,7 +10419,6 @@
       "brand": "Recon",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -10870,7 +10443,6 @@
       "brand": "Recon",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -10894,7 +10466,6 @@
       "brand": "Recon",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -10918,7 +10489,6 @@
       "brand": "Recon",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -10942,7 +10512,6 @@
       "brand": "Response",
       "model": "Free Ranger 421",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -10967,7 +10536,6 @@
       "brand": "Response",
       "model": "Free Ranger 42",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -10991,7 +10559,6 @@
       "brand": "Response",
       "model": "Free Ranger",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -11015,7 +10582,6 @@
       "brand": "Rotor",
       "model": "-",
       "freehub": "Rotor",
-      "speeds": 13,
       "sprockets": [
         10,
         11,
@@ -11042,7 +10608,6 @@
       "brand": "Rotor",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -11068,7 +10633,6 @@
       "brand": "Rotor",
       "model": "-",
       "freehub": "Rotor",
-      "speeds": 13,
       "sprockets": [
         10,
         11,
@@ -11095,7 +10659,6 @@
       "brand": "Rotor",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -11121,7 +10684,6 @@
       "brand": "Rotor",
       "model": "-",
       "freehub": "Rotor",
-      "speeds": 13,
       "sprockets": [
         10,
         11,
@@ -11148,7 +10710,6 @@
       "brand": "Rotor",
       "model": "-",
       "freehub": "Rotor",
-      "speeds": 13,
       "sprockets": [
         10,
         11,
@@ -11175,7 +10736,6 @@
       "brand": "Rotor",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -11201,7 +10761,6 @@
       "brand": "Rotor",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -11227,7 +10786,6 @@
       "brand": "Rotor",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -11252,7 +10810,6 @@
       "brand": "Rotor",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -11277,7 +10834,6 @@
       "brand": "Rotor",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -11302,7 +10858,6 @@
       "brand": "S-Ride",
       "model": "CS-12S",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -11328,7 +10883,6 @@
       "brand": "S-Ride",
       "model": "CS-M500",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -11354,7 +10908,6 @@
       "brand": "Sampson",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -11378,7 +10931,6 @@
       "brand": "Sampson",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -11403,7 +10955,6 @@
       "brand": "Sampson",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -11427,7 +10978,6 @@
       "brand": "Sampson",
       "model": "-",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -11452,7 +11002,6 @@
       "brand": "Sampson",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -11476,7 +11025,6 @@
       "brand": "Sampson",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -11500,7 +11048,6 @@
       "brand": "Sampson",
       "model": "-",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -11524,7 +11071,6 @@
       "brand": "Shimano",
       "model": "CS-HG400-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -11546,7 +11092,6 @@
       "brand": "Shimano",
       "model": "CS-LG300-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -11570,7 +11115,6 @@
       "brand": "Shimano",
       "model": "CS-LG300-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -11594,7 +11138,6 @@
       "brand": "Shimano",
       "model": "CS-LG300-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -11618,7 +11161,6 @@
       "brand": "Shimano",
       "model": "CS-LG300-10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -11643,7 +11185,6 @@
       "brand": "Shimano",
       "model": "CS-LG300-10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -11668,7 +11209,6 @@
       "brand": "Shimano",
       "model": "CS-LG400-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -11692,7 +11232,6 @@
       "brand": "Shimano",
       "model": "CS-LG400-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -11716,7 +11255,6 @@
       "brand": "Shimano",
       "model": "CS-LG400-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -11740,7 +11278,6 @@
       "brand": "Shimano",
       "model": "CS-LG400-10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -11765,7 +11302,6 @@
       "brand": "Shimano",
       "model": "CS-LG400-10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -11790,7 +11326,6 @@
       "brand": "Shimano",
       "model": "CS-LG400-10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -11815,7 +11350,6 @@
       "brand": "Shimano",
       "model": "CS-LG400-11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -11841,7 +11375,6 @@
       "brand": "Shimano",
       "model": "CS-LG400-11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -11867,7 +11400,6 @@
       "brand": "Shimano",
       "model": "CS-LG600-11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -11893,7 +11425,6 @@
       "brand": "Shimano",
       "model": "CS-LG600-10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -11918,7 +11449,6 @@
       "brand": "Shimano",
       "model": "CS-LG700-11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -11944,7 +11474,6 @@
       "brand": "Shimano",
       "model": "CS-HG710-12",
       "freehub": "HG 11, HG L2",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -11970,7 +11499,6 @@
       "brand": "Shimano",
       "model": "CS-R7101-12",
       "freehub": "HG 11, HG L2",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -11997,7 +11525,6 @@
       "brand": "Shimano",
       "model": "CS-R7100-12",
       "freehub": "HG 11, HG L2",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -12024,7 +11551,6 @@
       "brand": "Shimano",
       "model": "CS-R8101-12",
       "freehub": "HG 11, HG L2",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -12051,7 +11577,6 @@
       "brand": "Shimano",
       "model": "CS-R8101-12",
       "freehub": "HG 11, HG L2",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -12078,7 +11603,6 @@
       "brand": "Shimano",
       "model": "CS-R8100-12",
       "freehub": "HG 11, HG L2",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -12105,7 +11629,6 @@
       "brand": "Shimano",
       "model": "CS-R9200-12",
       "freehub": "HG 11, HG L2",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -12132,7 +11655,6 @@
       "brand": "Shimano",
       "model": "CS-R8100-12",
       "freehub": "HG 11, HG L2",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -12159,7 +11681,6 @@
       "brand": "Shimano",
       "model": "CS-R8100-12",
       "freehub": "HG 11, HG L2",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -12186,7 +11707,6 @@
       "brand": "Shimano",
       "model": "CS-R9200-12",
       "freehub": "HG 11, HG L2",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -12213,7 +11733,6 @@
       "brand": "Shimano",
       "model": "CS-R9200-12",
       "freehub": "HG 11, HG L2",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -12240,7 +11759,6 @@
       "brand": "Shimano",
       "model": "CS-M5100-11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -12266,7 +11784,6 @@
       "brand": "Shimano",
       "model": "CS-M5100-11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -12292,7 +11809,6 @@
       "brand": "Shimano",
       "model": "CS-M4100-10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -12317,7 +11833,6 @@
       "brand": "Shimano",
       "model": "CS-M4100-10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -12342,7 +11857,6 @@
       "brand": "Shimano",
       "model": "CS-M6100-12",
       "freehub": "Micro Spline",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -12369,7 +11883,6 @@
       "brand": "Shimano",
       "model": "CS-M7100-12",
       "freehub": "Micro Spline",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -12396,7 +11909,6 @@
       "brand": "Shimano",
       "model": "CS-M8100-12",
       "freehub": "Micro Spline",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -12423,7 +11935,6 @@
       "brand": "Shimano",
       "model": "CS-M9100-12",
       "freehub": "Micro Spline",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -12450,7 +11961,6 @@
       "brand": "Shimano",
       "model": "CS-M7100-12",
       "freehub": "Micro Spline",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -12477,7 +11987,6 @@
       "brand": "Shimano",
       "model": "CS-M8100-12",
       "freehub": "Micro Spline",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -12504,7 +12013,6 @@
       "brand": "Shimano",
       "model": "CS-M9100-12",
       "freehub": "Micro Spline",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -12531,7 +12039,6 @@
       "brand": "Shimano",
       "model": "CS-M9110-11",
       "freehub": "Micro Spline",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -12557,7 +12064,6 @@
       "brand": "Shimano",
       "model": "CS-M7000-11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -12583,7 +12089,6 @@
       "brand": "Shimano",
       "model": "CS-M8000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -12609,7 +12114,6 @@
       "brand": "Shimano",
       "model": "CS-M7000-11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -12635,7 +12139,6 @@
       "brand": "Shimano",
       "model": "CS-M8000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -12661,7 +12164,6 @@
       "brand": "Shimano",
       "model": "HG500",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -12685,7 +12187,6 @@
       "brand": "Shimano",
       "model": "CS-M7000-11",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -12711,7 +12212,6 @@
       "brand": "Shimano",
       "model": "CS-M8000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -12737,7 +12237,6 @@
       "brand": "Shimano",
       "model": "CS-M9000/1",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -12763,7 +12262,6 @@
       "brand": "Shimano",
       "model": "CS-HG50",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -12787,7 +12285,6 @@
       "brand": "Shimano",
       "model": "CS-HG81",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -12811,7 +12308,6 @@
       "brand": "Shimano",
       "model": "CS-M771",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -12836,7 +12332,6 @@
       "brand": "Shimano",
       "model": "CS-M980",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -12861,7 +12356,6 @@
       "brand": "Shimano",
       "model": "CS-HG700",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -12886,7 +12380,6 @@
       "brand": "Shimano",
       "model": "CS-HG800",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -12911,7 +12404,6 @@
       "brand": "Shimano",
       "model": "CS-HG500",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -12935,7 +12427,6 @@
       "brand": "Shimano",
       "model": "CS-HG81",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -12959,7 +12450,6 @@
       "brand": "Shimano",
       "model": "CS-M771",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -12984,7 +12474,6 @@
       "brand": "Shimano",
       "model": "CS-M980",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -13009,7 +12498,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -13032,7 +12520,6 @@
       "brand": "Shimano",
       "model": "CS-HG61",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -13055,7 +12542,6 @@
       "brand": "Shimano",
       "model": "CS-HG70-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -13078,7 +12564,6 @@
       "brand": "Shimano",
       "model": "CS-HG80",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -13101,7 +12586,6 @@
       "brand": "Shimano",
       "model": "CS-M580",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -13125,7 +12609,6 @@
       "brand": "Shimano",
       "model": "CS-M750",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -13148,7 +12631,6 @@
       "brand": "Shimano",
       "model": "CS-M760",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -13172,7 +12654,6 @@
       "brand": "Shimano",
       "model": "CS-M770",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -13196,7 +12677,6 @@
       "brand": "Shimano",
       "model": "CS-M960",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -13220,7 +12700,6 @@
       "brand": "Shimano",
       "model": "CS-M970",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -13244,7 +12723,6 @@
       "brand": "Shimano",
       "model": "CS-M970",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         14,
@@ -13268,7 +12746,6 @@
       "brand": "Shimano",
       "model": "CS-HG61",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         14,
@@ -13291,7 +12768,6 @@
       "brand": "Shimano",
       "model": "CS-5800",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -13317,7 +12793,6 @@
       "brand": "Shimano",
       "model": "CS-R8000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -13343,7 +12818,6 @@
       "brand": "Shimano",
       "model": "CS-R7000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -13369,7 +12843,6 @@
       "brand": "Shimano",
       "model": "CS-6800",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -13395,7 +12868,6 @@
       "brand": "Shimano",
       "model": "CS-HG500",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -13419,7 +12891,6 @@
       "brand": "Shimano",
       "model": "CS-M771",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -13444,7 +12915,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -13467,7 +12937,6 @@
       "brand": "Shimano",
       "model": "CS-HG61",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -13490,7 +12959,6 @@
       "brand": "Shimano",
       "model": "CS-HG70-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -13513,7 +12981,6 @@
       "brand": "Shimano",
       "model": "CS-HG80",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -13536,7 +13003,6 @@
       "brand": "Shimano",
       "model": "CS-M580",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -13560,7 +13026,6 @@
       "brand": "Shimano",
       "model": "CS-M750",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -13583,7 +13048,6 @@
       "brand": "Shimano",
       "model": "CS-M760",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -13607,7 +13071,6 @@
       "brand": "Shimano",
       "model": "CS-M770",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -13631,7 +13094,6 @@
       "brand": "Shimano",
       "model": "CS-M960",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -13655,7 +13117,6 @@
       "brand": "Shimano",
       "model": "CS-M970",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -13679,7 +13140,6 @@
       "brand": "Shimano",
       "model": "CS-M750",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         14,
@@ -13702,7 +13162,6 @@
       "brand": "Shimano",
       "model": "CS-M952",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         14,
@@ -13726,7 +13185,6 @@
       "brand": "Shimano",
       "model": "CS-M953",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         14,
@@ -13750,7 +13208,6 @@
       "brand": "Shimano",
       "model": "CS-M960",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         14,
@@ -13774,7 +13231,6 @@
       "brand": "Shimano",
       "model": "CS-R7000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -13800,7 +13256,6 @@
       "brand": "Shimano",
       "model": "CS-R8000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -13826,7 +13281,6 @@
       "brand": "Shimano",
       "model": "CS-R9100",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -13852,7 +13306,6 @@
       "brand": "Shimano",
       "model": "CS-5800",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -13878,7 +13331,6 @@
       "brand": "Shimano",
       "model": "CS-R8000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -13904,7 +13356,6 @@
       "brand": "Shimano",
       "model": "CS-R9100",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -13930,7 +13381,6 @@
       "brand": "Shimano",
       "model": "CS-R7000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -13956,7 +13406,6 @@
       "brand": "Shimano",
       "model": "CS-6800",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -13982,7 +13431,6 @@
       "brand": "Shimano",
       "model": "CS-9000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -14008,7 +13456,6 @@
       "brand": "Shimano",
       "model": "CS-5700",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -14033,7 +13480,6 @@
       "brand": "Shimano",
       "model": "CS-6700",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -14058,7 +13504,6 @@
       "brand": "Shimano",
       "model": "CS-7900",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -14083,7 +13528,6 @@
       "brand": "Shimano",
       "model": "CS-HG61",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -14106,7 +13550,6 @@
       "brand": "Shimano",
       "model": "CS-HG80",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -14129,7 +13572,6 @@
       "brand": "Shimano",
       "model": "CS-4600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -14154,7 +13596,6 @@
       "brand": "Shimano",
       "model": "CS-6700",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -14179,7 +13620,6 @@
       "brand": "Shimano",
       "model": "CS-7800",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -14204,7 +13644,6 @@
       "brand": "Shimano",
       "model": "CS-R9100",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -14230,7 +13669,6 @@
       "brand": "Shimano",
       "model": "CS-7900",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -14255,7 +13693,6 @@
       "brand": "Shimano",
       "model": "CS-9000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -14281,7 +13718,6 @@
       "brand": "Shimano",
       "model": "CS-4600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -14306,7 +13742,6 @@
       "brand": "Shimano",
       "model": "CS-HG500",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -14330,7 +13765,6 @@
       "brand": "Shimano",
       "model": "CS-5800",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -14356,7 +13790,6 @@
       "brand": "Shimano",
       "model": "CS-6800",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -14382,7 +13815,6 @@
       "brand": "Shimano",
       "model": "CS-9000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -14408,7 +13840,6 @@
       "brand": "Shimano",
       "model": "CS-R8000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -14434,7 +13865,6 @@
       "brand": "Shimano",
       "model": "CS-R9100",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -14460,7 +13890,6 @@
       "brand": "Shimano",
       "model": "CS-4600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -14485,7 +13914,6 @@
       "brand": "Shimano",
       "model": "CS-5600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -14510,7 +13938,6 @@
       "brand": "Shimano",
       "model": "CS-5700",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -14535,7 +13962,6 @@
       "brand": "Shimano",
       "model": "CS-6700",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -14560,7 +13986,6 @@
       "brand": "Shimano",
       "model": "CS-7900",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -14585,7 +14010,6 @@
       "brand": "Shimano",
       "model": "CS-5500",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -14609,7 +14033,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -14632,7 +14055,6 @@
       "brand": "Shimano",
       "model": "CS-HG70",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -14655,7 +14077,6 @@
       "brand": "Shimano",
       "model": "CS-5600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -14680,7 +14101,6 @@
       "brand": "Shimano",
       "model": "CS-5700",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -14705,7 +14125,6 @@
       "brand": "Shimano",
       "model": "CS-6600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -14730,7 +14149,6 @@
       "brand": "Shimano",
       "model": "CS-7800",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -14755,7 +14173,6 @@
       "brand": "Shimano",
       "model": "CS-7900",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -14780,7 +14197,6 @@
       "brand": "Shimano",
       "model": "CS-6500",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -14804,7 +14220,6 @@
       "brand": "Shimano",
       "model": "CS-7700",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -14828,7 +14243,6 @@
       "brand": "Shimano",
       "model": "CS-5800",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -14854,7 +14268,6 @@
       "brand": "Shimano",
       "model": "CS-9000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -14880,7 +14293,6 @@
       "brand": "Shimano",
       "model": "CS-R8000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -14906,7 +14318,6 @@
       "brand": "Shimano",
       "model": "CS-6800",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -14932,7 +14343,6 @@
       "brand": "Shimano",
       "model": "CS-5600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -14957,7 +14367,6 @@
       "brand": "Shimano",
       "model": "CS-6600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -14982,7 +14391,6 @@
       "brand": "Shimano",
       "model": "CS-7800",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -15007,7 +14415,6 @@
       "brand": "Shimano",
       "model": "CS-6700",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -15032,7 +14439,6 @@
       "brand": "Shimano",
       "model": "CS-7900",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -15057,7 +14463,6 @@
       "brand": "Shimano",
       "model": "CS-6500",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -15081,7 +14486,6 @@
       "brand": "Shimano",
       "model": "CS-7700",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -15105,7 +14509,6 @@
       "brand": "Shimano",
       "model": "CS-5800",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -15131,7 +14534,6 @@
       "brand": "Shimano",
       "model": "CS-R8000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -15157,7 +14559,6 @@
       "brand": "Shimano",
       "model": "CS-R9100",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -15183,7 +14584,6 @@
       "brand": "Shimano",
       "model": "CS-5600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -15208,7 +14608,6 @@
       "brand": "Shimano",
       "model": "CS-6600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -15233,7 +14632,6 @@
       "brand": "Shimano",
       "model": "CS-7800",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -15258,7 +14656,6 @@
       "brand": "Shimano",
       "model": "CS-R7000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -15284,7 +14681,6 @@
       "brand": "Shimano",
       "model": "CS-6800",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -15310,7 +14706,6 @@
       "brand": "Shimano",
       "model": "CS-9000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -15336,7 +14731,6 @@
       "brand": "Shimano",
       "model": "CS-5700",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -15361,7 +14755,6 @@
       "brand": "Shimano",
       "model": "CS-6700",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -15386,7 +14779,6 @@
       "brand": "Shimano",
       "model": "CS-7900",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -15411,7 +14803,6 @@
       "brand": "Shimano",
       "model": "CS-5500",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -15435,7 +14826,6 @@
       "brand": "Shimano",
       "model": "CS-6500",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -15459,7 +14849,6 @@
       "brand": "Shimano",
       "model": "CS-7700",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -15483,7 +14872,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -15506,7 +14894,6 @@
       "brand": "Shimano",
       "model": "CS-HG70",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -15529,7 +14916,6 @@
       "brand": "Shimano",
       "model": "CS-R8000",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         14,
         15,
@@ -15555,7 +14941,6 @@
       "brand": "Shimano",
       "model": "CS-6800",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         14,
         15,
@@ -15581,7 +14966,6 @@
       "brand": "Shimano",
       "model": "CS-6600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         13,
         14,
@@ -15606,7 +14990,6 @@
       "brand": "Shimano",
       "model": "CS-5500",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         13,
         14,
@@ -15630,7 +15013,6 @@
       "brand": "Shimano",
       "model": "CS-6500",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         13,
         14,
@@ -15654,7 +15036,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         13,
         14,
@@ -15677,7 +15058,6 @@
       "brand": "Shimano",
       "model": "CS-HG70",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         13,
         14,
@@ -15700,7 +15080,6 @@
       "brand": "Shimano",
       "model": "CS-6600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -15725,7 +15104,6 @@
       "brand": "Shimano",
       "model": "CS-7800",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -15750,7 +15128,6 @@
       "brand": "Shimano",
       "model": "CS-6700",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -15775,7 +15152,6 @@
       "brand": "Shimano",
       "model": "CS-7900",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -15800,7 +15176,6 @@
       "brand": "Shimano",
       "model": "CS-5500",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -15824,7 +15199,6 @@
       "brand": "Shimano",
       "model": "CS-6500",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -15848,7 +15222,6 @@
       "brand": "Shimano",
       "model": "CS-7700",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -15872,7 +15245,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -15895,7 +15267,6 @@
       "brand": "Shimano",
       "model": "CS-HG70",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -15918,7 +15289,6 @@
       "brand": "Shimano",
       "model": "CS-7800",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -15943,7 +15313,6 @@
       "brand": "Shimano",
       "model": "CS-7900",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -15968,7 +15337,6 @@
       "brand": "Shimano",
       "model": "CS-HG70-S",
       "freehub": "Capreo",
-      "speeds": 9,
       "sprockets": [
         9,
         10,
@@ -15991,7 +15359,6 @@
       "brand": "Shimano",
       "model": "CS-6500",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -16015,7 +15382,6 @@
       "brand": "Shimano",
       "model": "CS-7700",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -16039,7 +15405,6 @@
       "brand": "Shimano",
       "model": "CS-6600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         14,
         15,
@@ -16064,7 +15429,6 @@
       "brand": "Shimano",
       "model": "CS-6500",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         14,
         15,
@@ -16088,7 +15452,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         14,
         15,
@@ -16111,7 +15474,6 @@
       "brand": "Shimano",
       "model": "CS-5500",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         13,
         14,
@@ -16135,7 +15497,6 @@
       "brand": "Shimano",
       "model": "CS-6500",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         13,
         14,
@@ -16159,7 +15520,6 @@
       "brand": "Shimano",
       "model": "CS-HG70",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         13,
         14,
@@ -16182,7 +15542,6 @@
       "brand": "Shimano",
       "model": "CS-7800",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -16207,7 +15566,6 @@
       "brand": "Shimano",
       "model": "CS-6500",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -16231,7 +15589,6 @@
       "brand": "Shimano",
       "model": "CS-7700",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -16255,7 +15612,6 @@
       "brand": "Shimano",
       "model": "CS-6600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         16,
         17,
@@ -16280,7 +15636,6 @@
       "brand": "Shimano",
       "model": "CS-6600",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         15,
         16,
@@ -16305,7 +15660,6 @@
       "brand": "Shimano",
       "model": "CS-HG41",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -16327,7 +15681,6 @@
       "brand": "Shimano",
       "model": "CS-HG41",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -16349,7 +15702,6 @@
       "brand": "Shimano",
       "model": "CS-HG41",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -16371,7 +15723,6 @@
       "brand": "Shimano",
       "model": "CS-HG50",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -16393,7 +15744,6 @@
       "brand": "Shimano",
       "model": "CS-HG50",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -16415,7 +15765,6 @@
       "brand": "Shimano",
       "model": "CS-HG50",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         13,
         14,
@@ -16437,7 +15786,6 @@
       "brand": "Shimano",
       "model": "CS-HG50",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -16459,7 +15807,6 @@
       "brand": "Shimano",
       "model": "CS-HG50",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -16481,7 +15828,6 @@
       "brand": "Shimano",
       "model": "CS-HG51",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -16503,7 +15849,6 @@
       "brand": "Shimano",
       "model": "CS-HG51",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -16525,7 +15870,6 @@
       "brand": "Shimano",
       "model": "CS-HG51",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -16547,7 +15891,6 @@
       "brand": "Shimano",
       "model": "CS-M900",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -16570,7 +15913,6 @@
       "brand": "Shimano",
       "model": "CS-M900",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         14,
@@ -16593,7 +15935,6 @@
       "brand": "Shimano",
       "model": "CS-M900",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -16616,7 +15957,6 @@
       "brand": "Shimano",
       "model": "CS-M900",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -16639,7 +15979,6 @@
       "brand": "Shimano",
       "model": "CS-M950",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -16662,7 +16001,6 @@
       "brand": "Shimano",
       "model": "CS-M950",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         14,
@@ -16685,7 +16023,6 @@
       "brand": "Shimano",
       "model": "CS-M737",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -16708,7 +16045,6 @@
       "brand": "Shimano",
       "model": "CS-M737",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -16731,7 +16067,6 @@
       "brand": "Shimano",
       "model": "CS-M737",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -16754,7 +16089,6 @@
       "brand": "Shimano",
       "model": "CS-M737",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         14,
@@ -16777,7 +16111,6 @@
       "brand": "Shimano",
       "model": "CS-7401",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -16800,7 +16133,6 @@
       "brand": "Shimano",
       "model": "CS-HG90-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -16822,7 +16154,6 @@
       "brand": "Shimano",
       "model": "CS-HG70-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -16844,7 +16175,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -16866,7 +16196,6 @@
       "brand": "Shimano",
       "model": "CS-7401",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -16889,7 +16218,6 @@
       "brand": "Shimano",
       "model": "CS-HG90-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -16911,7 +16239,6 @@
       "brand": "Shimano",
       "model": "CS-HG70-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -16933,7 +16260,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -16955,7 +16281,6 @@
       "brand": "Shimano",
       "model": "CS-7401",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -16978,7 +16303,6 @@
       "brand": "Shimano",
       "model": "CS-HG90-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -17000,7 +16324,6 @@
       "brand": "Shimano",
       "model": "CS-HG70-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -17022,7 +16345,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -17044,7 +16366,6 @@
       "brand": "Shimano",
       "model": "CS-7401",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         13,
         14,
@@ -17067,7 +16388,6 @@
       "brand": "Shimano",
       "model": "CS-HG90-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         13,
         14,
@@ -17089,7 +16409,6 @@
       "brand": "Shimano",
       "model": "CS-HG70-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         13,
         14,
@@ -17111,7 +16430,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         13,
         14,
@@ -17133,7 +16451,6 @@
       "brand": "Shimano",
       "model": "CS-7401",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         13,
         14,
@@ -17156,7 +16473,6 @@
       "brand": "Shimano",
       "model": "CS-HG90-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         13,
         14,
@@ -17178,7 +16494,6 @@
       "brand": "Shimano",
       "model": "CS-HG70-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         13,
         14,
@@ -17200,7 +16515,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         13,
         14,
@@ -17222,7 +16536,6 @@
       "brand": "Shimano",
       "model": "CS-HG30-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -17244,7 +16557,6 @@
       "brand": "Shimano",
       "model": "CS-HG60-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -17266,7 +16578,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -17288,7 +16599,6 @@
       "brand": "Shimano",
       "model": "CS-HG30-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -17310,7 +16620,6 @@
       "brand": "Shimano",
       "model": "CS-HG200-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         14,
@@ -17332,7 +16641,6 @@
       "brand": "Shimano",
       "model": "CS-HG200-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -17355,7 +16663,6 @@
       "brand": "Shimano",
       "model": "CS-HG200-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -17378,7 +16685,6 @@
       "brand": "Shimano",
       "model": "CS-HG200-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -17401,7 +16707,6 @@
       "brand": "SRAM",
       "model": "PG-1231",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -17428,7 +16733,6 @@
       "brand": "SRAM",
       "model": "XG-1391",
       "freehub": "XDR",
-      "speeds": 13,
       "sprockets": [
         10,
         11,
@@ -17455,7 +16759,6 @@
       "brand": "SRAM",
       "model": "XS-1270",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -17482,7 +16785,6 @@
       "brand": "SRAM",
       "model": "XS-1275",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -17509,7 +16811,6 @@
       "brand": "SRAM",
       "model": "XS-1295",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -17536,7 +16837,6 @@
       "brand": "SRAM",
       "model": "XS-1297",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -17563,7 +16863,6 @@
       "brand": "SRAM",
       "model": "XS-1299",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -17590,7 +16889,6 @@
       "brand": "SRAM",
       "model": "XG-1271",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -17616,7 +16914,6 @@
       "brand": "SRAM",
       "model": "XG-1251",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -17643,7 +16940,6 @@
       "brand": "SRAM",
       "model": "PG-850",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         12,
@@ -17665,7 +16961,6 @@
       "brand": "SRAM",
       "model": "PG-850",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         12,
@@ -17687,7 +16982,6 @@
       "brand": "SRAM",
       "model": "PG-850",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -17709,7 +17003,6 @@
       "brand": "SRAM",
       "model": "PG-850",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -17731,7 +17024,6 @@
       "brand": "SRAM",
       "model": "PG-850",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         12,
@@ -17753,7 +17045,6 @@
       "brand": "SRAM",
       "model": "PG-830",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         12,
@@ -17775,7 +17066,6 @@
       "brand": "SRAM",
       "model": "PG-830",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         12,
@@ -17797,7 +17087,6 @@
       "brand": "SRAM",
       "model": "PG-830",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         12,
@@ -17819,7 +17108,6 @@
       "brand": "SRAM",
       "model": "PG-820",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         12,
@@ -17841,7 +17129,6 @@
       "brand": "SRAM",
       "model": "PG-820",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         12,
@@ -17863,7 +17150,6 @@
       "brand": "SRAM",
       "model": "PG-820",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         12,
@@ -17885,7 +17171,6 @@
       "brand": "SRAM",
       "model": "XG-1299",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -17912,7 +17197,6 @@
       "brand": "SRAM",
       "model": "XG-1295",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -17939,7 +17223,6 @@
       "brand": "SRAM",
       "model": "XG-1275",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -17966,7 +17249,6 @@
       "brand": "SRAM",
       "model": "XG-1275",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -17993,7 +17275,6 @@
       "brand": "SRAM",
       "model": "XG-1295",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -18020,7 +17301,6 @@
       "brand": "SRAM",
       "model": "XG-1299",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -18047,7 +17327,6 @@
       "brand": "SRAM",
       "model": "PG-1210",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -18074,7 +17353,6 @@
       "brand": "SRAM",
       "model": "PG-1230",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -18101,7 +17379,6 @@
       "brand": "SRAM",
       "model": "XG-899",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -18123,7 +17400,6 @@
       "brand": "SRAM",
       "model": "XG-1150",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -18149,7 +17425,6 @@
       "brand": "SRAM",
       "model": "XG-1175",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -18175,7 +17450,6 @@
       "brand": "SRAM",
       "model": "XG-1180",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -18201,7 +17475,6 @@
       "brand": "SRAM",
       "model": "XG-1195",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -18227,7 +17500,6 @@
       "brand": "SRAM",
       "model": "XG-1199",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -18253,7 +17525,6 @@
       "brand": "SRAM",
       "model": "PG-1130",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -18279,7 +17550,6 @@
       "brand": "SRAM",
       "model": "XG-1290-E1",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -18306,7 +17576,6 @@
       "brand": "SRAM",
       "model": "XG-1290-E1",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -18333,7 +17602,6 @@
       "brand": "SRAM",
       "model": "XG-1290-E1",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -18360,7 +17628,6 @@
       "brand": "SRAM",
       "model": "XG-1290-E1",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -18387,7 +17654,6 @@
       "brand": "SRAM",
       "model": "XG-1270-D1",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -18414,7 +17680,6 @@
       "brand": "SRAM",
       "model": "XG-1250-D1",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -18441,7 +17706,6 @@
       "brand": "SRAM",
       "model": "XG-1250-D1",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -18468,7 +17732,6 @@
       "brand": "SRAM",
       "model": "XG-1270-D1",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -18495,7 +17758,6 @@
       "brand": "SRAM",
       "model": "XG-1270-D1",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -18522,7 +17784,6 @@
       "brand": "SRAM",
       "model": "XG-1290-D1",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -18549,7 +17810,6 @@
       "brand": "SRAM",
       "model": "PG-1130",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -18575,7 +17835,6 @@
       "brand": "SRAM",
       "model": "PG-1170",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -18601,7 +17860,6 @@
       "brand": "SRAM",
       "model": "PG-1020",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -18626,7 +17884,6 @@
       "brand": "SRAM",
       "model": "PG‑1030",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -18651,7 +17908,6 @@
       "brand": "SRAM",
       "model": "PG‑1050",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -18676,7 +17932,6 @@
       "brand": "SRAM",
       "model": "PG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -18701,7 +17956,6 @@
       "brand": "SRAM",
       "model": "XG‑1080",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -18725,7 +17979,6 @@
       "brand": "SRAM",
       "model": "XG‑1099",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -18749,7 +18002,6 @@
       "brand": "SRAM",
       "model": "PG-950",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -18772,7 +18024,6 @@
       "brand": "SRAM",
       "model": "PG-970",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -18795,7 +18046,6 @@
       "brand": "SRAM",
       "model": "PG-980",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -18818,7 +18068,6 @@
       "brand": "SRAM",
       "model": "PG-990",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -18841,7 +18090,6 @@
       "brand": "SRAM",
       "model": "PG‑1050",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -18866,7 +18114,6 @@
       "brand": "SRAM",
       "model": "PG‑1050",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -18891,7 +18138,6 @@
       "brand": "SRAM",
       "model": "PG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -18916,7 +18162,6 @@
       "brand": "SRAM",
       "model": "PG-1130",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -18942,7 +18187,6 @@
       "brand": "SRAM",
       "model": "PG-1170",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -18968,7 +18212,6 @@
       "brand": "SRAM",
       "model": "XG-1190",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -18994,7 +18237,6 @@
       "brand": "SRAM",
       "model": "PG‑1050",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19019,7 +18261,6 @@
       "brand": "SRAM",
       "model": "PG‑1050",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19044,7 +18285,6 @@
       "brand": "SRAM",
       "model": "PG‑1050",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19069,7 +18309,6 @@
       "brand": "SRAM",
       "model": "PG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19094,7 +18333,6 @@
       "brand": "SRAM",
       "model": "XG‑1080",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19118,7 +18356,6 @@
       "brand": "SRAM",
       "model": "XG‑1099",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19142,7 +18379,6 @@
       "brand": "SRAM",
       "model": "XG‑1099",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19166,7 +18402,6 @@
       "brand": "SRAM",
       "model": "PG-950",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -19189,7 +18424,6 @@
       "brand": "SRAM",
       "model": "PG-970",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -19212,7 +18446,6 @@
       "brand": "SRAM",
       "model": "PG-980",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -19235,7 +18468,6 @@
       "brand": "SRAM",
       "model": "PG-990",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -19258,7 +18490,6 @@
       "brand": "SRAM",
       "model": "XG-999",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -19281,7 +18512,6 @@
       "brand": "SRAM",
       "model": "XG-1270-D1",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -19308,7 +18538,6 @@
       "brand": "SRAM",
       "model": "XG-1290-D1",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -19335,7 +18564,6 @@
       "brand": "SRAM",
       "model": "XG-1190",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -19361,7 +18589,6 @@
       "brand": "SRAM",
       "model": "PG-950",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -19384,7 +18611,6 @@
       "brand": "SRAM",
       "model": "PG-970",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -19407,7 +18633,6 @@
       "brand": "SRAM",
       "model": "PG-980",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -19430,7 +18655,6 @@
       "brand": "SRAM",
       "model": "PG-990",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -19453,7 +18677,6 @@
       "brand": "SRAM",
       "model": "PG‑1050",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -19478,7 +18701,6 @@
       "brand": "SRAM",
       "model": "PG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -19503,7 +18725,6 @@
       "brand": "SRAM",
       "model": "XG-1270-D1",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -19530,7 +18751,6 @@
       "brand": "SRAM",
       "model": "XG-1290-D1",
       "freehub": "XDR",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -19557,7 +18777,6 @@
       "brand": "SRAM",
       "model": "PG-1130",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -19583,7 +18802,6 @@
       "brand": "SRAM",
       "model": "PG-1170",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -19609,7 +18827,6 @@
       "brand": "SRAM",
       "model": "XG-1190",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -19635,7 +18852,6 @@
       "brand": "SRAM",
       "model": "OG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19659,7 +18875,6 @@
       "brand": "SRAM",
       "model": "PG‑1050",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19684,7 +18899,6 @@
       "brand": "SRAM",
       "model": "PG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19709,7 +18923,6 @@
       "brand": "SRAM",
       "model": "PG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19734,7 +18947,6 @@
       "brand": "SRAM",
       "model": "XG‑1090",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19758,7 +18970,6 @@
       "brand": "SRAM",
       "model": "PG-950",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -19781,7 +18992,6 @@
       "brand": "SRAM",
       "model": "PG-1130",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -19807,7 +19017,6 @@
       "brand": "SRAM",
       "model": "PG-1170",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -19833,7 +19042,6 @@
       "brand": "SRAM",
       "model": "XG-1190",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -19859,7 +19067,6 @@
       "brand": "SRAM",
       "model": "OG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19883,7 +19090,6 @@
       "brand": "SRAM",
       "model": "OG‑1090",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19907,7 +19113,6 @@
       "brand": "SRAM",
       "model": "PG‑1050",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19932,7 +19137,6 @@
       "brand": "SRAM",
       "model": "PG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -19957,7 +19161,6 @@
       "brand": "SRAM",
       "model": "PG-950",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -19980,7 +19183,6 @@
       "brand": "SRAM",
       "model": "PG-970",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -20003,7 +19205,6 @@
       "brand": "SRAM",
       "model": "PG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -20028,7 +19229,6 @@
       "brand": "SRAM",
       "model": "PG-1170",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -20054,7 +19254,6 @@
       "brand": "SRAM",
       "model": "XG-1190",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -20080,7 +19279,6 @@
       "brand": "SRAM",
       "model": "OG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -20104,7 +19302,6 @@
       "brand": "SRAM",
       "model": "PG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -20129,7 +19326,6 @@
       "brand": "SRAM",
       "model": "OG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -20153,7 +19349,6 @@
       "brand": "SRAM",
       "model": "PG‑1050",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -20178,7 +19373,6 @@
       "brand": "SRAM",
       "model": "PG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -20203,7 +19397,6 @@
       "brand": "SRAM",
       "model": "XG-1090",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -20227,7 +19420,6 @@
       "brand": "SRAM",
       "model": "OG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -20251,7 +19443,6 @@
       "brand": "SRAM",
       "model": "PG‑1050",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -20276,7 +19467,6 @@
       "brand": "SRAM",
       "model": "PG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -20301,7 +19491,6 @@
       "brand": "SRAM",
       "model": "PG-950",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -20324,7 +19513,6 @@
       "brand": "SRAM",
       "model": "PG-970",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -20347,7 +19535,6 @@
       "brand": "SRAM",
       "model": "OG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -20371,7 +19558,6 @@
       "brand": "SRAM",
       "model": "OG‑1090",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -20395,7 +19581,6 @@
       "brand": "SRAM",
       "model": "PG‑1050",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -20420,7 +19605,6 @@
       "brand": "SRAM",
       "model": "PG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -20445,7 +19629,6 @@
       "brand": "SRAM",
       "model": "XG‑1090",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -20469,7 +19652,6 @@
       "brand": "SRAM",
       "model": "PG-970",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -20492,7 +19674,6 @@
       "brand": "SRAM",
       "model": "OG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -20516,7 +19697,6 @@
       "brand": "SRAM",
       "model": "PG‑1050",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -20541,7 +19721,6 @@
       "brand": "SRAM",
       "model": "PG‑1070",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -20566,7 +19745,6 @@
       "brand": "SRAM",
       "model": "PG-950",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -20589,7 +19767,6 @@
       "brand": "SRAM",
       "model": "PG-970",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -20612,7 +19789,6 @@
       "brand": "SRAM",
       "model": "PG-970",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -20635,7 +19811,6 @@
       "brand": "Sunrace",
       "model": "CSUX700 EA5",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -20661,7 +19836,6 @@
       "brand": "Sunrace",
       "model": "CSUX400 EA5",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -20687,7 +19861,6 @@
       "brand": "Sunrace",
       "model": "CSUS700 TA3",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -20712,7 +19885,6 @@
       "brand": "Sunrace",
       "model": "CSUS400 TA3",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -20737,7 +19909,6 @@
       "brand": "Sunrace",
       "model": "CSU980 9AZ",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -20761,7 +19932,6 @@
       "brand": "Sunrace",
       "model": "CSU980 9AY",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -20785,7 +19955,6 @@
       "brand": "Sunrace",
       "model": "CSU9300 9AW",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -20809,7 +19978,6 @@
       "brand": "Sunrace",
       "model": "CSU98 9AW",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -20833,7 +20001,6 @@
       "brand": "Sunrace",
       "model": "CSMZ930",
       "freehub": "Micro Spline",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -20859,7 +20026,6 @@
       "brand": "Sunrace",
       "model": "CSMZ932",
       "freehub": "Micro Spline",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -20885,7 +20051,6 @@
       "brand": "Sunrace",
       "model": "CSMZ933",
       "freehub": "Micro Spline",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -20911,7 +20076,6 @@
       "brand": "Sunrace",
       "model": "CSMS7 EA1",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -20936,7 +20100,6 @@
       "brand": "Sunrace",
       "model": "CSMX9X ETY",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -20961,7 +20124,6 @@
       "brand": "Sunrace",
       "model": "CSRS3 EAS",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -20986,7 +20148,6 @@
       "brand": "Sunrace",
       "model": "CSRX1 EAQ",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -21011,7 +20172,6 @@
       "brand": "Sunrace",
       "model": "CSRX11 EAT",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -21036,7 +20196,6 @@
       "brand": "Sunrace",
       "model": "CSRZ800 WAT",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -21062,7 +20221,6 @@
       "brand": "Sunrace",
       "model": "CSRZ800 WAV",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -21088,7 +20246,6 @@
       "brand": "Sunrace",
       "model": "CSRZ800 WAW",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -21114,7 +20271,6 @@
       "brand": "Sunrace",
       "model": "CSRZ800 WAY",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -21140,7 +20296,6 @@
       "brand": "Sunrace",
       "model": "CSRZ800 WAZ",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         12,
@@ -21166,7 +20321,6 @@
       "brand": "Sunrace",
       "model": "CSM66 8AV",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -21188,7 +20342,6 @@
       "brand": "Sunrace",
       "model": "CSM66 8AU",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -21210,7 +20363,6 @@
       "brand": "Sunrace",
       "model": "CSM66 8BV",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         14,
@@ -21232,7 +20384,6 @@
       "brand": "Sunrace",
       "model": "CSM66 8BU",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         14,
@@ -21254,7 +20405,6 @@
       "brand": "Sunrace",
       "model": "CSM55 8AV",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -21276,7 +20426,6 @@
       "brand": "Sunrace",
       "model": "CSM55 8AU",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -21298,7 +20447,6 @@
       "brand": "Sunrace",
       "model": "CSM400 8BU",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         14,
@@ -21320,7 +20468,6 @@
       "brand": "Sunrace",
       "model": "CSR86 8AO",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         12,
@@ -21342,7 +20489,6 @@
       "brand": "Sunrace",
       "model": "CSR86 8AS",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         12,
@@ -21364,7 +20510,6 @@
       "brand": "Sunrace",
       "model": "CSR86 8BQ",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -21386,7 +20531,6 @@
       "brand": "Sunrace",
       "model": "CSMZ91X WT2",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -21412,7 +20556,6 @@
       "brand": "Sunrace",
       "model": "CSMZ91 WT5",
       "freehub": "XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -21438,7 +20581,6 @@
       "brand": "Sunrace",
       "model": "CSMZ91X WT5",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -21464,7 +20606,6 @@
       "brand": "Sunrace",
       "model": "CSMZX1X WT5",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -21490,7 +20631,6 @@
       "brand": "Sunrace",
       "model": "CSMX9X ETZ",
       "freehub": "XDR, XD",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -21515,7 +20655,6 @@
       "brand": "Sunrace",
       "model": "CSMZX0 WA5",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -21541,7 +20680,6 @@
       "brand": "Sunrace",
       "model": "CSMZX0 WA5",
       "freehub": "XDR, XD",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -21567,7 +20705,6 @@
       "brand": "Sunrace",
       "model": "CSMX9 ETY",
       "freehub": "XD",
-      "speeds": 11,
       "sprockets": [
         10,
         12,
@@ -21592,7 +20729,6 @@
       "brand": "Sunrace",
       "model": "CSSX0 ENW",
       "freehub": "XD",
-      "speeds": 11,
       "sprockets": [
         9,
         10,
@@ -21617,7 +20753,6 @@
       "brand": "Sunrace",
       "model": "CSSX0 ENU",
       "freehub": "XD",
-      "speeds": 11,
       "sprockets": [
         9,
         10,
@@ -21642,7 +20777,6 @@
       "brand": "Sunrace",
       "model": "CSSS0 TNU",
       "freehub": "XD",
-      "speeds": 10,
       "sprockets": [
         9,
         10,
@@ -21666,7 +20800,6 @@
       "brand": "Sunrace",
       "model": "CSSS0 TNS",
       "freehub": "XD",
-      "speeds": 10,
       "sprockets": [
         9,
         10,
@@ -21690,7 +20823,6 @@
       "brand": "Sunrace",
       "model": "CSS90 TNU",
       "freehub": "XD",
-      "speeds": 9,
       "sprockets": [
         9,
         10,
@@ -21713,7 +20845,6 @@
       "brand": "Sunrace",
       "model": "CSS90 TNS",
       "freehub": "XD",
-      "speeds": 9,
       "sprockets": [
         9,
         11,
@@ -21736,7 +20867,6 @@
       "brand": "Sunrace",
       "model": "CSSX6 ETU",
       "freehub": "XD",
-      "speeds": 11,
       "sprockets": [
         10,
         11,
@@ -21761,7 +20891,6 @@
       "brand": "Sunrace",
       "model": "CSSX6 ETS",
       "freehub": "XD",
-      "speeds": 11,
       "sprockets": [
         10,
         11,
@@ -21786,7 +20915,6 @@
       "brand": "Sunrace",
       "model": "CSMS2 TA1",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -21810,7 +20938,6 @@
       "brand": "Sunrace",
       "model": "CSMS3 TA1",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -21834,7 +20961,6 @@
       "brand": "Sunrace",
       "model": "CSMS3 TBY",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -21858,7 +20984,6 @@
       "brand": "Sunrace",
       "model": "CSMS3 TBX",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -21882,7 +21007,6 @@
       "brand": "Sunrace",
       "model": "CSMS2 TAZ",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -21906,7 +21030,6 @@
       "brand": "Sunrace",
       "model": "CSMS3 TAZ",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -21930,7 +21053,6 @@
       "brand": "Sunrace",
       "model": "CSMX3 TAZ",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -21954,7 +21076,6 @@
       "brand": "Sunrace",
       "model": "CSRX8 EAY",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -21979,7 +21100,6 @@
       "brand": "Sunrace",
       "model": "CSMS2 TAX",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -22003,7 +21123,6 @@
       "brand": "Sunrace",
       "model": "CSMS3 TAY",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -22027,7 +21146,6 @@
       "brand": "Sunrace",
       "model": "CSMX3 TAY",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -22051,7 +21169,6 @@
       "brand": "Sunrace",
       "model": "CSRX8 EAX",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -22076,7 +21193,6 @@
       "brand": "Sunrace",
       "model": "CSMS2 TAZ",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -22100,7 +21216,6 @@
       "brand": "Sunrace",
       "model": "CSMS3 TAX",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -22124,7 +21239,6 @@
       "brand": "Sunrace",
       "model": "CSMX3 TAX",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -22148,7 +21262,6 @@
       "brand": "Sunrace",
       "model": "CSM993 9A5",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -22171,7 +21284,6 @@
       "brand": "Sunrace",
       "model": "CSM993 9AZ",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -22194,7 +21306,6 @@
       "brand": "Sunrace",
       "model": "CSM983 9A5",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -22217,7 +21328,6 @@
       "brand": "Sunrace",
       "model": "CSM983 9AZ",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -22240,7 +21350,6 @@
       "brand": "Sunrace",
       "model": "CSM983 9B5",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -22263,7 +21372,6 @@
       "brand": "Sunrace",
       "model": "CSM980 9AY",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -22286,7 +21394,6 @@
       "brand": "Sunrace",
       "model": "CSM980 9BX",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -22309,7 +21416,6 @@
       "brand": "Sunrace",
       "model": "CSM980 9AX",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -22332,7 +21438,6 @@
       "brand": "Sunrace",
       "model": "CSM980 9AZ",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -22355,7 +21460,6 @@
       "brand": "Sunrace",
       "model": "CSM990 9AX",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -22378,7 +21482,6 @@
       "brand": "Sunrace",
       "model": "CSM680 8AY",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -22400,7 +21503,6 @@
       "brand": "Sunrace",
       "model": "CSM680 8BX",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         12,
         13,
@@ -22422,7 +21524,6 @@
       "brand": "Sunrace",
       "model": "CSM680 8AX",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -22444,7 +21545,6 @@
       "brand": "Sunrace",
       "model": "CSRX1 EAW",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -22469,7 +21569,6 @@
       "brand": "Sunrace",
       "model": "CSMS0 TAW",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -22493,7 +21592,6 @@
       "brand": "Sunrace",
       "model": "CSMS0 TBW",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -22517,7 +21615,6 @@
       "brand": "Sunrace",
       "model": "CSMS1 TAW",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -22541,7 +21638,6 @@
       "brand": "Sunrace",
       "model": "CSMX0 TAW",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -22565,7 +21661,6 @@
       "brand": "Sunrace",
       "model": "CSM98 9AW",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -22588,7 +21683,6 @@
       "brand": "Sunrace",
       "model": "CSMS0 TAV",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -22612,7 +21706,6 @@
       "brand": "Sunrace",
       "model": "CSMS1 TAV",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -22636,7 +21729,6 @@
       "brand": "Sunrace",
       "model": "CSM90 9AW",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -22659,7 +21751,6 @@
       "brand": "Sunrace",
       "model": "CSM90 9AV",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -22682,7 +21773,6 @@
       "brand": "Sunrace",
       "model": "CSM96 9AV",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -22705,7 +21795,6 @@
       "brand": "Sunrace",
       "model": "CSMX5 9AV",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -22728,7 +21817,6 @@
       "brand": "Sunrace",
       "model": "CSMX7 9AV",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -22751,7 +21839,6 @@
       "brand": "Sunrace",
       "model": "CSMZ7 9AV",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -22774,7 +21861,6 @@
       "brand": "Sunrace",
       "model": "CSM98 9BW",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         14,
@@ -22797,7 +21883,6 @@
       "brand": "Sunrace",
       "model": "CSRS3 EAU",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -22822,7 +21907,6 @@
       "brand": "Sunrace",
       "model": "CSRX1 EAU",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -22847,7 +21931,6 @@
       "brand": "Sunrace",
       "model": "CSRZ1 EAU",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -22872,7 +21955,6 @@
       "brand": "Sunrace",
       "model": "CSRS0 TAU",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -22896,7 +21978,6 @@
       "brand": "Sunrace",
       "model": "CSRS1 TAU",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -22920,7 +22001,6 @@
       "brand": "Sunrace",
       "model": "CSRX0 TAU",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -22944,7 +22024,6 @@
       "brand": "Sunrace",
       "model": "CSM90 9AU",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -22967,7 +22046,6 @@
       "brand": "Sunrace",
       "model": "CSM96 9AU",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -22990,7 +22068,6 @@
       "brand": "Sunrace",
       "model": "CSM9S 9AU",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -23013,7 +22090,6 @@
       "brand": "Sunrace",
       "model": "CSMX5 9AU",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -23036,7 +22112,6 @@
       "brand": "Sunrace",
       "model": "CSMX7 9AU",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -23059,7 +22134,6 @@
       "brand": "Sunrace",
       "model": "CSMZ7 9AU",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -23082,7 +22156,6 @@
       "brand": "Sunrace",
       "model": "CSRX0",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -23106,7 +22179,6 @@
       "brand": "Sunrace",
       "model": "CSRX1 EAS",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -23131,7 +22203,6 @@
       "brand": "Sunrace",
       "model": "CSRZ1 EAS",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -23156,7 +22227,6 @@
       "brand": "Sunrace",
       "model": "CSRS0 TAS",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -23180,7 +22250,6 @@
       "brand": "Sunrace",
       "model": "CSRS1 TAS",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -23204,7 +22273,6 @@
       "brand": "Sunrace",
       "model": "CSRX0 TAS",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -23228,7 +22296,6 @@
       "brand": "Sunrace",
       "model": "CSM96 9AS",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -23251,7 +22318,6 @@
       "brand": "Sunrace",
       "model": "CSMX5 9AS",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -23274,7 +22340,6 @@
       "brand": "Sunrace",
       "model": "CSR91 9AS",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -23297,7 +22362,6 @@
       "brand": "Sunrace",
       "model": "CSRX0 TBS",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         12,
         13,
@@ -23321,7 +22385,6 @@
       "brand": "Sunrace",
       "model": "CSRX0 TAQ",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -23345,7 +22408,6 @@
       "brand": "Sunrace",
       "model": "CSRS0 TAQ",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -23369,7 +22431,6 @@
       "brand": "Sunrace",
       "model": "CSR91 9AQ",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -23392,7 +22453,6 @@
       "brand": "Sunrace",
       "model": "CSR91 9BQ",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         12,
         13,
@@ -23415,7 +22475,6 @@
       "brand": "Sunrace",
       "model": "CSMZ913 WT1",
       "freehub": "XD",
-      "speeds": 12,
       "sprockets": [
         10,
         12,
@@ -23441,7 +22500,6 @@
       "brand": "Sunrace",
       "model": "CSMZ903 WA1",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -23467,7 +22525,6 @@
       "brand": "Sunrace",
       "model": "CSMZ902 WA1",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -23493,7 +22550,6 @@
       "brand": "Sunrace",
       "model": "CSMZ901 WA1",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -23519,7 +22575,6 @@
       "brand": "Sunrace",
       "model": "CSMZ90 WA5",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -23545,7 +22600,6 @@
       "brand": "Sunrace",
       "model": "CSMZ800 WA1",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -23571,7 +22625,6 @@
       "brand": "Sunrace",
       "model": "CSMZ700 WA1",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -23597,7 +22650,6 @@
       "brand": "Sunrace",
       "model": "CSMZ603 WA1",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -23623,7 +22675,6 @@
       "brand": "Sunrace",
       "model": "CSMZ602 WA1",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -23649,7 +22700,6 @@
       "brand": "Sunrace",
       "model": "CSMZ601 WA1",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -23675,7 +22725,6 @@
       "brand": "Sunrace",
       "model": "CSMZ600 WA1",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -23701,7 +22750,6 @@
       "brand": "Sunrace",
       "model": "CSMZ80 WA5",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -23727,7 +22775,6 @@
       "brand": "Sunrace",
       "model": "CSMX8 EA1",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -23752,7 +22799,6 @@
       "brand": "Sunrace",
       "model": "CSMX8 EA5",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -23777,7 +22823,6 @@
       "brand": "Sunrace",
       "model": "CSMX8 EA5",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -23802,7 +22847,6 @@
       "brand": "Sunrace",
       "model": "CSMX80 EA5",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -23827,7 +22871,6 @@
       "brand": "Sunrace",
       "model": "CSMS8 EA1",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -23852,7 +22895,6 @@
       "brand": "Sunrace",
       "model": "CSMS8 EB1",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -23877,7 +22919,6 @@
       "brand": "Sunrace",
       "model": "CSMS8 EA5",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -23902,7 +22943,6 @@
       "brand": "Sunrace",
       "model": "CSMS8 EAW",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -23927,7 +22967,6 @@
       "brand": "Sunrace",
       "model": "CSMS8 EAZ",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -23952,7 +22991,6 @@
       "brand": "Sunrace",
       "model": "CSMX8 EAZ",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -23977,7 +23015,6 @@
       "brand": "Sunrace",
       "model": "CSMX80 EAZ",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -24002,7 +23039,6 @@
       "brand": "Sunrace",
       "model": "CSMS7 EAZ",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -24027,7 +23063,6 @@
       "brand": "Sunrace",
       "model": "CSMS7 EA1",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -24052,7 +23087,6 @@
       "brand": "Sunrace",
       "model": "CSMS7 EAY",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -24077,7 +23111,6 @@
       "brand": "Sunrace",
       "model": "CSMS8 EAY",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -24102,7 +23135,6 @@
       "brand": "Sunrace",
       "model": "CSMX8 EAY",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -24127,7 +23159,6 @@
       "brand": "Sunrace",
       "model": "CSMS7 EAX",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -24152,7 +23183,6 @@
       "brand": "Sunrace",
       "model": "CSMS8 EAX",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -24177,7 +23207,6 @@
       "brand": "Sunrace",
       "model": "CSMX8 EAX",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -24202,7 +23231,6 @@
       "brand": "Sunrace",
       "model": "CSMZ800",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -24228,7 +23256,6 @@
       "brand": "Tektro",
       "model": "CS-M350-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         13,
@@ -24251,7 +23278,6 @@
       "brand": "Token",
       "model": "TK1128",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -24276,7 +23302,6 @@
       "brand": "Token",
       "model": "-",
       "freehub": "Campagnolo",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -24300,7 +23325,6 @@
       "brand": "Token",
       "model": "TK1228",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         12,
         13,
@@ -24325,7 +23349,6 @@
       "brand": "Token",
       "model": "TK1125",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -24350,7 +23373,6 @@
       "brand": "Token",
       "model": "TK1123",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         12,
@@ -24375,7 +23397,6 @@
       "brand": "Trickstuff",
       "model": "KA4111",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,
@@ -24399,7 +23420,6 @@
       "brand": "TRP",
       "model": "DTCS1202",
       "freehub": "Micro Spline",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -24425,7 +23445,6 @@
       "brand": "TRP",
       "model": "DTCS1201",
       "freehub": "Micro Spline",
-      "speeds": 12,
       "sprockets": [
         10,
         11,
@@ -24451,7 +23470,6 @@
       "brand": "TRP",
       "model": "EVO 7 DH CS-M8070-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         11,
         13,
@@ -24472,7 +23490,6 @@
       "brand": "TRW Active",
       "model": "Rocket 3",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -24498,7 +23515,6 @@
       "brand": "TRW Active",
       "model": "TRW2",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -24523,7 +23539,6 @@
       "brand": "TRW Active",
       "model": "TRW3",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -24548,7 +23563,6 @@
       "brand": "TRW Active",
       "model": "Rocket 2",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -24574,7 +23588,6 @@
       "brand": "TRW Active",
       "model": "Rocket 3",
       "freehub": "HG 11",
-      "speeds": 12,
       "sprockets": [
         11,
         13,
@@ -24600,7 +23613,6 @@
       "brand": "TRW Active",
       "model": "TRW2",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -24625,7 +23637,6 @@
       "brand": "TRW Active",
       "model": "TRW3",
       "freehub": "HG 11",
-      "speeds": 11,
       "sprockets": [
         11,
         13,
@@ -24650,7 +23661,6 @@
       "brand": "Shimano",
       "model": "MF-TZ500-6",
       "freehub": "Freewheel (screw-on)",
-      "speeds": 6,
       "sprockets": [
         14,
         16,
@@ -24670,7 +23680,6 @@
       "brand": "Shimano",
       "model": "MF-TZ30-6",
       "freehub": "Freewheel (screw-on)",
-      "speeds": 6,
       "sprockets": [
         14,
         16,
@@ -24690,7 +23699,6 @@
       "brand": "Shimano",
       "model": "CS-HG41-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         11,
         13,
@@ -24711,7 +23719,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         12,
         14,
@@ -24732,7 +23739,6 @@
       "brand": "Shimano",
       "model": "CS-HG20-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         12,
         14,
@@ -24753,7 +23759,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         13,
         14,
@@ -24774,7 +23779,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         13,
         15,
@@ -24795,7 +23799,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         13,
         15,
@@ -24816,7 +23819,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         13,
         15,
@@ -24837,7 +23839,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         13,
         15,
@@ -24858,7 +23859,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         14,
         16,
@@ -24879,7 +23879,6 @@
       "brand": "Shimano",
       "model": "CS-HG200-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         12,
         14,
@@ -24900,7 +23899,6 @@
       "brand": "Shimano",
       "model": "CS-HG200-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         12,
         14,
@@ -24921,7 +23919,6 @@
       "brand": "Shimano",
       "model": "CS-HG210-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         12,
         14,
@@ -24942,7 +23939,6 @@
       "brand": "Shimano",
       "model": "CS-HG210-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         12,
         14,
@@ -24963,7 +23959,6 @@
       "brand": "Shimano",
       "model": "CS-HG400-7",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         11,
         13,
@@ -24984,7 +23979,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-8",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -25006,7 +24000,6 @@
       "brand": "Shimano",
       "model": "CS-HG50-9",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -25029,7 +24022,6 @@
       "brand": "SRAM",
       "model": "PG-730",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         12,
         14,
@@ -25050,7 +24042,6 @@
       "brand": "SRAM",
       "model": "XS-797 T-Type XD 7-speed",
       "freehub": "XD",
-      "speeds": 7,
       "sprockets": [
         10,
         12,
@@ -25071,7 +24062,6 @@
       "brand": "SRAM",
       "model": "XS-797 T-Type XD Slim 7-Speed",
       "freehub": "XD Slim",
-      "speeds": 7,
       "sprockets": [
         10,
         12,
@@ -25092,7 +24082,6 @@
       "brand": "SRAM",
       "model": "PG 720 Downhill",
       "freehub": "HG 7",
-      "speeds": 7,
       "sprockets": [
         11,
         13,
@@ -25113,7 +24102,6 @@
       "brand": "SRAM",
       "model": "PG-850",
       "freehub": "HG 8, HG 11",
-      "speeds": 8,
       "sprockets": [
         11,
         13,
@@ -25135,7 +24123,6 @@
       "brand": "SRAM",
       "model": "PG-950",
       "freehub": "HG 8, HG 11",
-      "speeds": 9,
       "sprockets": [
         11,
         12,
@@ -25158,7 +24145,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         12,
@@ -25182,7 +24168,6 @@
       "brand": "IRD",
       "model": "Elite 10",
       "freehub": "HG 8, HG 11",
-      "speeds": 10,
       "sprockets": [
         11,
         13,

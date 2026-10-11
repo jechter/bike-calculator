@@ -360,6 +360,7 @@ export interface CassettePreset {
   /** Product family / groupset (e.g. Ultegra, GX Eagle), when identifiable. */
   series?: string;
   freehub: string;
+  /** Number of sprockets (derived from `cogs`; not stored in the data). */
   speeds: number;
   cogs: number[]; // sprocket tooth counts, smallest first
   weightGrams: number | null;
@@ -376,7 +377,6 @@ interface RawCassette {
   model: string;
   series?: string;
   freehub: string;
-  speeds: number;
   sprockets: number[];
   weightGrams?: number | null;
   special?: string;
@@ -410,7 +410,7 @@ export const CASSETTE_PRESETS: CassettePreset[] = (
   model: c.model,
   series: c.series,
   freehub: c.freehub,
-  speeds: c.speeds,
+  speeds: c.sprockets.length, // derived: one speed per sprocket
   cogs: c.sprockets,
   weightGrams: c.weightGrams ?? null,
   special: c.special,

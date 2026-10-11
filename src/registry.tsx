@@ -79,7 +79,7 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: "derailleur",
     title: "Components",
-    subtitle: "Search component databases for derailleurs, hubs and internal gearing systems.",
+    subtitle: "",
     icon: <DrivetrainIcon />,
     Component: Derailleur,
     HeaderActions: ComponentProposalButton,

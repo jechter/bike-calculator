@@ -157,10 +157,10 @@ export function App() {
 
         <main className={`main main--${active.id}`}>
           {!active.ownHeader && (
-            <div className="main-head">
+            <div className={"main-head" + (active.subtitle ? "" : " main-head--plain")}>
               <div>
                 <h1>{active.title}</h1>
-                <p className="subtitle">{active.subtitle}</p>
+                {active.subtitle && <p className="subtitle">{active.subtitle}</p>}
               </div>
               {/* On mobile these move up into the top bar (see above). */}
               {!isMobile && sharedActions && (

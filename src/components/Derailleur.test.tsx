@@ -58,6 +58,18 @@ describe("Derailleur database page", () => {
     expect(getByText("Spacing (OLD)")).toBeTruthy();
   });
 
+  it("deselects the component when the filters hide it", () => {
+    const { getByText, queryByText, container } = render(<Derailleur />);
+    fireEvent.change(container.querySelector("select")!, { target: { value: "hub" } });
+    fireEvent.click(getByText("R45 Front"));
+    expect(getByText("Spacing (OLD)")).toBeTruthy();
+    fireEvent.change(container.querySelector("select")!, { target: { value: "cassette" } });
+    expect(queryByText("Spacing (OLD)")).toBeNull();
+    expect(container.querySelector(".component-details")).toBeNull();
+    fireEvent.change(container.querySelector("select")!, { target: { value: "all" } });
+    expect(container.querySelector('.components-list-scroll tr[aria-selected="true"]')).toBeNull();
+  });
+
   it("blocks a new-component proposal until the required fields are filled", () => {
     const { container, getByText, getByRole } = render(<Derailleur />);
     act(() => { window.dispatchEvent(new Event("components:propose-new")); });

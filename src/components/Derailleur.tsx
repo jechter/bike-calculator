@@ -217,6 +217,9 @@ export function Derailleur() {
   });
   const shown = results.slice(0, visibleCount);
   const selected = allRows.find((row) => row.key === selectedKey) ?? null;
+  // Deselect a component once the filters no longer match it (closing its details).
+  const selectionFiltered = selectedKey !== null && !results.some((row) => row.key === selectedKey);
+  useEffect(() => { if (selectionFiltered) setSelectedKey(null); }, [selectionFiltered]);
 
   // Capture arrow navigation at the document level so it works after a row click
   // even when focus remains on the page (rather than inside the scrollable table).
@@ -259,7 +262,7 @@ export function Derailleur() {
     window.location.href = `mailto:${proposalMailbox()}?subject=${encodeURIComponent("Component database proposal")}&body=${encodeURIComponent(body)}`;
     setSubmitted(true);
   };
-  return <Section title="Components database">
+  return <div className="component-db">
     <div className="rows">
       <Field label="Search" hint={`${results.length} matching components`}>
         <div className="component-search">
@@ -304,7 +307,7 @@ export function Derailleur() {
       if (el.scrollTop + el.clientHeight >= el.scrollHeight - 32 && visibleCount < results.length) {
         setVisibleCount((count) => Math.min(count + 80, results.length));
       }
-    }} style={{ marginTop: 12, maxHeight: 340, overflowY: "auto" }}><table>
+    }}><table>
       <thead><tr><th>Brand</th><th>Component</th><th>Category</th><th>Details</th></tr></thead>
       <tbody>
         {shown.map((row) => <tr key={row.key} className="component-row" onClick={() => setSelectedKey(row.key)} aria-selected={selectedKey === row.key}>
@@ -339,5 +342,5 @@ export function Derailleur() {
     {isNew && <div className="component-details" ref={newEditorRef}><Section title={<><span>New component</span><span className="component-detail-kind">{NEW_CATEGORY_LABELS[draft.category as NewCategory]}</span></>}>
       <ProposalEditor isNew draft={draft} setDraft={setDraft} submitted={submitted} onCancel={cancelEdit} onSubmit={submitDraft} />
     </Section></div>}
-  </Section>;
+  </div>;
 }

@@ -5,7 +5,7 @@ import { WheelExamplesMenu } from "./components/WheelExamplesMenu";
 import { DrivetrainExamplesMenu } from "./components/DrivetrainExamplesMenu";
 import { FrameSize } from "./components/FrameSize";
 import { Tire } from "./components/Tire";
-import { Derailleur } from "./components/Derailleur";
+import { Derailleur, ComponentProposalButton } from "./components/Derailleur";
 import { Power } from "./components/Power";
 import { ThreadDirection } from "./components/ThreadDirection";
 import {
@@ -13,7 +13,7 @@ import {
   WheelIcon,
   FrameIcon,
   TireIcon,
-  DerailleurIcon,
+  ComponentsIcon,
   PowerIcon,
   ThreadIcon,
 } from "./icons";
@@ -44,7 +44,7 @@ export const CALCULATORS: CalculatorDef[] = [
     title: "Drivetrain",
     subtitle:
       "Gear ratios, speed at cadence, chain/belt length and chain wear — cassette, single speed or geared hub.",
-    icon: <DrivetrainIcon />,
+    icon: <ComponentsIcon />,
     Component: Drivetrain,
     shareable: true,
     workbench: true,
@@ -78,13 +78,11 @@ export const CALCULATORS: CalculatorDef[] = [
   },
   {
     id: "derailleur",
-    title: "Derailleur",
-    subtitle: "Look up derailleur specs, plus a compatibility reference.",
-    icon: <DerailleurIcon />,
+    title: "Components",
+    subtitle: "",
+    icon: <DrivetrainIcon />,
     Component: Derailleur,
-    // Derailleur specs and fit checks are now surfaced within the Drivetrain
-    // tool, so this standalone page is hidden from the sidebar.
-    hidden: true,
+    HeaderActions: ComponentProposalButton,
   },
   {
     id: "power",

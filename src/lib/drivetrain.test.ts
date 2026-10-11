@@ -93,6 +93,19 @@ describe('CASSETTE_PRESETS (loaded from data/cassette-presets.json)', () => {
     }
   });
 
+  it('uses real freehub standards for Vision Metron and SunRace cassettes', () => {
+    expect(CASSETTE_PRESETS.find((p) => p.brand === 'FSA' && p.model === 'Vision Metron')?.freehub).toBe('HG 8');
+    expect(CASSETTE_PRESETS.filter((p) => p.brand === 'Sunrace').every((p) => p.freehub !== 'Sunrace')).toBe(true);
+  });
+
+  it('does not list HG 8 freehub compatibility for 11+ speed cassettes', () => {
+    for (const cassette of CASSETTE_PRESETS) {
+      if (cassette.speeds > 10) {
+        expect(cassette.freehub.split(",").map((body) => body.trim())).not.toContain("HG 8");
+      }
+    }
+  });
+
   it('every Campagnolo-branded cassette is Campagnolo spacing', () => {
     for (const p of CASSETTE_PRESETS) {
       if (p.brand === 'Campagnolo') expect(p.spacing).toBe('campagnolo');

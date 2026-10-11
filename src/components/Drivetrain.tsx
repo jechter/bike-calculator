@@ -1377,16 +1377,22 @@ function configFromParams(q: URLSearchParams, p: string, d: ConfigInit): ConfigI
   }
   const mode = q.get(p + "mode");
   const transmission = q.get(p + "tx");
+  const targetCassette = q.get(p + "cassette");
+  const targetDerailleur = q.get(p + "derailleur");
+  const targetHub = q.get(p + "gearing");
+  const cassetteIdx = targetCassette ? CASSETTE_PRESETS.findIndex((c) => `${c.brand} ${c.model}` === targetCassette) : -1;
+  const derailleur = targetDerailleur ? derailleurByKey(targetDerailleur) : undefined;
+  const hubIdx = targetHub ? HUB_PRESETS.findIndex((h) => h.label === targetHub) : -1;
   return {
-    mode: isMode(mode) ? mode : d.mode,
+    mode: isMode(mode) ? mode : targetHub ? "hub" : targetCassette || targetDerailleur ? "cassette" : d.mode,
     transmission: isTransmission(transmission) ? transmission : d.transmission,
     chainringStr: q.get(p + "cr") ?? d.chainringStr,
-    cogStr: q.get(p + "cog") ?? d.cogStr,
-    cassetteIdx: paramNum(q.get(p + "cix"), d.cassetteIdx),
+    cogStr: cassetteIdx >= 0 ? CASSETTE_PRESETS[cassetteIdx].cogs.join(", ") : hubIdx >= 0 ? HUB_PRESETS[hubIdx].gears.map((g) => g.ratio.toFixed(3)).join(", ") : q.get(p + "cog") ?? d.cogStr,
+    cassetteIdx: cassetteIdx >= 0 ? cassetteIdx : paramNum(q.get(p + "cix"), d.cassetteIdx),
     singleRing: paramNum(q.get(p + "sr"), d.singleRing),
     singleCog: paramNum(q.get(p + "sc"), d.singleCog),
-    hubIdx: paramNum(q.get(p + "hub"), d.hubIdx),
-    derailleurId: q.get(p + "der") ?? d.derailleurId,
+    hubIdx: hubIdx >= 0 ? hubIdx : paramNum(q.get(p + "hub"), d.hubIdx),
+    derailleurId: derailleur?.key ?? q.get(p + "der") ?? d.derailleurId,
     shifter,
     circ: paramNum(q.get(p + "circ"), d.circ),
     tireSize: q.get(p + "tire") ?? d.tireSize,

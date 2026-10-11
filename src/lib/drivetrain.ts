@@ -318,7 +318,7 @@ export interface ChainringPreset {
 export const CHAINRING_PRESETS: ChainringPreset[] = chainringPresetsData as ChainringPreset[];
 
 // Cassette / sprocket sets. The rows live in data/cassette-presets.json — add or
-// edit there (no code change). Each carries brand/model/freehub/weight/price and
+// edit there (no code change). Each carries brand/model/freehub/weight and
 // a source, so the drivetrain picker can group models under a brand.
 export interface CassetteSource {
   url: string;
@@ -357,11 +357,13 @@ export const CASSETTE_SPACING_LABELS: Record<CassetteSpacing, string> = {
 export interface CassettePreset {
   brand: string;
   model: string;
+  /** Product family / groupset (e.g. Ultegra, GX Eagle), when identifiable. */
+  series?: string;
   freehub: string;
+  /** Number of sprockets (derived from `cogs`; not stored in the data). */
   speeds: number;
   cogs: number[]; // sprocket tooth counts, smallest first
   weightGrams: number | null;
-  priceUsd: number | null;
   /** Special drivetrain family, e.g. "LinkGlide" or "T-Type", if any. */
   special?: string;
   /** Cog-pitch standard this cassette indexes to (derived; see deriveCassetteSpacing). */
@@ -373,11 +375,10 @@ export interface CassettePreset {
 interface RawCassette {
   brand: string;
   model: string;
+  series?: string;
   freehub: string;
-  speeds: number;
   sprockets: number[];
   weightGrams?: number | null;
-  priceUsd?: number | null;
   special?: string;
   /** Explicit cog-pitch standard, when the derivation below would be wrong
    *  (e.g. a Shimano-spaced cassette sold on a Campagnolo freehub body). */
@@ -407,11 +408,11 @@ export const CASSETTE_PRESETS: CassettePreset[] = (
 ).map((c) => ({
   brand: c.brand,
   model: c.model,
+  series: c.series,
   freehub: c.freehub,
-  speeds: c.speeds,
+  speeds: c.sprockets.length, // derived: one speed per sprocket
   cogs: c.sprockets,
   weightGrams: c.weightGrams ?? null,
-  priceUsd: c.priceUsd ?? null,
   special: c.special,
   spacing: deriveCassetteSpacing(c),
   source: c.source,

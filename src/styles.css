@@ -161,6 +161,8 @@ body {
 .main h1 { margin: 0 0 4px; font-size: 24px; }
 .main .subtitle { color: var(--muted); margin: 0 0 24px; }
 .main-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+/* Without a subtitle, keep the same gap between the header and the content. */
+.main-head--plain { margin-bottom: 20px; }
 /* Header actions (e.g. "Load an example" + "Copy link"), aligned as a row. */
 .main-actions { display: flex; align-items: flex-start; gap: 8px; margin-top: 4px; flex: none; }
 
@@ -920,6 +922,40 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .preset-list button:hover { background: var(--accent-soft); color: var(--accent); }
 
+/* Subtle type label alongside the selected component title. */
+.component-detail-kind { margin-left: 10px; color: var(--muted); font-size: 12px; font-weight: 500; }
+
+/* Selected component row in the database list. */
+.components-list-scroll tr[aria-selected="true"] { background: var(--accent-soft); }
+.components-list-scroll tr[aria-selected="true"] .component-select { color: var(--accent); font-weight: 700; }
+.component-select { border: 0; padding: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.component-select:hover { color: var(--accent); }
+
+/* Keep the selected component details visually separate from the scrollable list. */
+.component-details { margin-top: 24px; }
+
+/* Components database search field with a quick clear affordance. */
+.component-search { position: relative; }
+.component-search input { width: 100%; padding-right: 36px; }
+.component-search-clear {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 50%; background: transparent; color: var(--muted);
+  font: inherit; font-size: 20px; line-height: 1; cursor: pointer;
+}
+.component-search-clear:hover { background: var(--accent-soft); color: var(--text); }
+
+/* Components brand picker: searchable popover anchored directly to its trigger. */
+.component-brand-filter { position: relative; }
+.component-brand-trigger {
+  width: 100%; min-height: var(--control-h); justify-content: space-between; gap: 8px;
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--panel); color: var(--text); font: inherit; font-size: inherit;
+}
+.component-brand-trigger:hover { color: var(--text); border-color: var(--accent); }
+.component-brand-trigger .caret { color: var(--muted); }
+.component-brand-pop { left: 0; right: auto; width: min(280px, 88vw); }
+
 /* Cassette browse-and-filter picker (foldout next to the cog field) */
 .cassette-picker { position: relative; flex: none; display: flex; }
 .cassette-picker .preset-btn { gap: 4px; font-weight: 500; }
@@ -1343,14 +1379,15 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
    results + wheel diagram pinned in a sticky rail so they stay in view while you
    tune the controls. Below the breakpoint it collapses to a single stacked
    column (results + viz last). */
-/* Workbench pages (wheel building, drivetrain): keep the title + header actions
+/* Workbench pages (wheel building, drivetrain) and the components database: keep the title + header actions
    ("Load an example", "Copy link") pinned to the top while the controls scroll
    beneath. The negative margins bleed the bar over .main's padding so it spans
    edge-to-edge. */
 .main--wheel-building,
 .main--drivetrain { --wb-header-h: 62px; }
 .main--wheel-building .main-head,
-.main--drivetrain .main-head {
+.main--drivetrain .main-head,
+.main--derailleur .main-head {
   position: sticky;
   top: 0;
   z-index: 30;
@@ -1712,7 +1749,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
      subtitle are hidden, so the header collapses to nothing — unpin it (it stacked
      under the sticky top bar) and drop its edge-bleed margins. */
   .main--wheel-building .main-head,
-  .main--drivetrain .main-head {
+  .main--drivetrain .main-head,
+  .main--derailleur .main-head {
     position: static;
     margin: 0;
     padding: 0;
@@ -1871,4 +1909,54 @@ html.embed-fill body { overscroll-behavior: none; }
   html.embedded .wb-viz { position: static; height: auto; }
   html.embedded .wb-viz-diagram { flex: none; }
   html.embedded .wb-viz .wheel-diagram { height: min(520px, 86vw); }
+}
+
+/* Component database proposals: the editor reuses the spec-table look. */
+.component-action { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:32px; padding:5px 12px; border:1px solid var(--border); border-radius:8px; background:var(--panel, var(--surface)); color:var(--text); font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+.component-action:hover { border-color:var(--accent); color:var(--accent); }
+.component-action--submit { background:var(--accent); border-color:var(--accent); color:white; }
+.component-action--submit:hover { color:white; filter:brightness(.94); }
+.component-edit-table th { width:1%; white-space:nowrap; }
+.component-edit-table th label { font:inherit; color:inherit; }
+.component-edit-table td { padding-top:4px; padding-bottom:4px; }
+.component-edit-table input,.component-edit-table select,.component-edit-table textarea { width:100%; box-sizing:border-box; min-height:30px; padding:4px 8px; border:1px solid var(--border); border-radius:6px; background:var(--panel, var(--surface)); color:var(--text); font:inherit; }
+.component-edit-table input:focus,.component-edit-table select:focus,.component-edit-table textarea:focus { outline:none; border-color:var(--accent); }
+.component-edit-footer { display:flex; align-items:center; justify-content:flex-end; gap:8px; margin-top:12px; }
+.component-edit-footer .cp-foot { margin:0 auto 0 0; }
+@media(max-width:600px) { .component-edit-footer { flex-wrap:wrap; } .component-edit-footer .cp-foot { flex-basis:100%; } }
+.component-edit-table select { appearance:auto; -webkit-appearance:menulist; cursor:pointer; }
+.component-edit-table .combo { min-height:30px; border-radius:6px; background:var(--panel); }
+.component-edit-table .combo > input[type="text"] { border:0; min-height:28px; background:transparent; }
+.component-edit-table .combo:focus-within { border-color:var(--accent); }
+.component-edit-table .preset-list { max-height:240px; }
+.component-edit-required { color:var(--accent); font-weight:700; }
+.component-edit-invalid input,.component-edit-invalid .combo { border-color:var(--danger); }
+.component-edit-invalid th { color:var(--danger); }
+.component-edit-error { color:var(--danger); font-weight:600; }
+.component-editor .table-wrap { overflow:visible; }
+.component-edit-table input.component-edit-example { color:var(--muted); font-style:italic; }
+.component-edit-table input[type="checkbox"] { width:auto; min-height:0; margin:7px 0; accent-color:var(--accent); }
+.component-edit-table textarea { display:block; resize:vertical; min-height:64px; line-height:1.4; }
+.component-edit-table th { vertical-align:top; padding-top:11px; }
+.component-edit-footer .component-action { flex:none; white-space:nowrap; }
+
+/* Components database: the header bar spans the full width like the workbench
+   pages, while the database itself keeps a reading width. */
+.main--derailleur { max-width: none; }
+.component-db { max-width: 900px; }
+.components-list-scroll { margin-top: 12px; max-height: 340px; overflow-y: auto; }
+/* Desktop: pin the page to the viewport. The list takes all the height left over,
+   the selected component's details (or a proposal) sit below it and scroll on
+   their own when they're taller than their share. */
+@media (min-width: 1200px) {
+  html:not(.embedded) .main--derailleur { height: 100vh; display: flex; flex-direction: column; overflow: hidden; padding-top: 0; padding-bottom: 20px; }
+  /* Nothing scrolls past the header any more, so it needn't be sticky (sticky +
+     negative margins misfire in a flex column — see the drivetrain workbench). */
+  html:not(.embedded) .main--derailleur .main-head { position: static; margin: 0 -32px 20px; flex: none; }
+  html:not(.embedded) .component-db { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  html:not(.embedded) .component-db > * { flex: none; }
+  html:not(.embedded) .component-db > .rows:first-child { margin-top: 0; }
+  html:not(.embedded) .components-list-scroll { flex: 1 1 0; min-height: 200px; max-height: none; }
+  html:not(.embedded) .component-db > .component-details { flex: 0 1 auto; min-height: 0; max-height: 60%; display: flex; flex-direction: column; margin-top: 16px; }
+  html:not(.embedded) .component-details > .section { min-height: 0; overflow-y: auto; }
 }

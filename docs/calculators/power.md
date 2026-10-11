@@ -206,8 +206,33 @@ Direct substitution — plug `v` into the model above.
   a descent. If gravity overcomes rolling and drag on its own (pedal power ≤ 0),
   there's nothing to pedal against — the breakdown is replaced by a note that you'd
   coast or brake.
+- **Work & energy** over a ride: pedal work (kJ), food energy (kcal) and
+  elevation change — see above.
 - Optionally a small table: power at a range of speeds, or speed at a range of
   powers.
+
+## Work & energy
+
+A **Work & energy** section turns the steady effort into totals for a ride
+(`metabolicKcal`, `elevationChange` in `src/lib/power.ts`):
+
+- **Duration ⇄ distance** are coupled through the speed above, like the
+  speed/power fields: edit either, the other follows, and the one edited last is
+  held fixed when speed or conditions change. Distance is in km or mi, following
+  the speed unit.
+- **Pedal work** `W = P_pedal · t` (kJ).
+- **Food energy** `E = W / η_gross` (kcal, 1 kcal = 4184 J). `η_gross` is the
+  rider's gross metabolic efficiency (a % field with rider-level presets), ~18 % untrained to ~25 % elite; the 24 %
+  default is where the "1 kJ of work ≈ 1 kcal eaten" rule comes from. It excludes
+  resting metabolism.
+- **Elevation change** `h = d · sin(atan G)`. Over a climb the gravity work equals
+  the potential energy gained, `m · g · h`.
+
+If pedal power is ≤ 0 (you'd coast), there's no work to add up and a note shows
+the descent instead.
+
+Example: the flat worked example below (~150 W) for 1 h is ~540 kJ, ≈ 540 kcal at
+24 %. A 10 km climb at 6 % gains ~599 m.
 
 ## Worked example (sanity check)
 

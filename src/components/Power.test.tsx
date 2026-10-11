@@ -6,7 +6,7 @@ import { Power } from "./Power";
 afterEach(cleanup);
 
 // input order: [speed, power, wkg, rider, bike, gradient, headwind, cda, rho, crr,
-//               drivetrain-efficiency]
+//               drivetrain-efficiency, duration, distance, gross-efficiency]
 const nums = (c: HTMLElement) =>
   Array.from(c.querySelectorAll('input[type="number"]')) as HTMLInputElement[];
 
@@ -139,5 +139,41 @@ describe("Cycling power", () => {
     const panelNums = container.querySelectorAll('.editor-pop input[type="number"]');
     fireEvent.change(panelNums[1] as HTMLInputElement, { target: { value: "2000" } });
     expect(+nums(container)[8].value).toBeLessThan(rho0); // thinner air up high
+  });
+
+  it("adds up work and food energy over the ride", () => {
+    const { container, getByText } = render(<Power />);
+    const n = nums(container);
+    const [duration, distance] = [n[11], n[12]];
+    // Defaults: 60 min at 30 km/h → 30 km.
+    expect(+duration.value).toBe(60);
+    expect(+distance.value).toBe(30);
+    const watts = +n[1].value;
+    // Pedal work = power × time; at 24 % gross efficiency ≈ 1 kcal per kJ.
+    // (the shown watts are rounded: ±0.5 W × 1 h ≈ ±1.8 kJ)
+    const work = +getByText("Pedal work").nextElementSibling!.textContent!.replace(/\D/g, "");
+    expect(Math.abs(work - (watts * 3600) / 1000)).toBeLessThan(2.5);
+
+    // Editing distance holds it fixed; duration follows the speed.
+    fireEvent.change(nums(container)[12], { target: { value: "45" } });
+    expect(+nums(container)[11].value).toBe(90);
+    fireEvent.change(nums(container)[0], { target: { value: "45" } });
+    expect(+nums(container)[12].value).toBe(45); // distance held
+    expect(+nums(container)[11].value).toBe(60); // faster → shorter
+
+    // A lower gross efficiency burns more food energy for the same work.
+    const kcalAt = () => +getByText(/kcal$/).textContent!.replace(/\D/g, "");
+    const kcal24 = kcalAt();
+    fireEvent.change(nums(container)[13], { target: { value: "20" } });
+    expect(kcalAt()).toBeGreaterThan(kcal24);
+  });
+
+  it("reports elevation gained on a climb", () => {
+    const { container, getByText } = render(<Power />);
+    fireEvent.change(nums(container)[5], { target: { value: "5" } }); // 5 % gradient
+    fireEvent.change(nums(container)[12], { target: { value: "10" } }); // 10 km
+    // 10 km × sin(atan 0.05) ≈ 499 m
+    expect(getByText("Elevation gained")).toBeTruthy();
+    expect(getByText("499 m")).toBeTruthy();
   });
 });

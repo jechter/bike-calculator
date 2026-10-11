@@ -1906,3 +1906,32 @@ html.embed-fill body { overscroll-behavior: none; }
   html.embedded .wb-viz-diagram { flex: none; }
   html.embedded .wb-viz .wheel-diagram { height: min(520px, 86vw); }
 }
+
+/* Component database proposals: the editor reuses the spec-table look. */
+.component-action { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:32px; padding:5px 12px; border:1px solid var(--border); border-radius:8px; background:var(--panel, var(--surface)); color:var(--text); font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+.component-action:hover { border-color:var(--accent); color:var(--accent); }
+.component-action--submit { background:var(--accent); border-color:var(--accent); color:white; }
+.component-action--submit:hover { color:white; filter:brightness(.94); }
+.component-edit-table th { width:1%; white-space:nowrap; }
+.component-edit-table th label { font:inherit; color:inherit; }
+.component-edit-table td { padding-top:4px; padding-bottom:4px; }
+.component-edit-table input,.component-edit-table select,.component-edit-table textarea { width:100%; box-sizing:border-box; min-height:30px; padding:4px 8px; border:1px solid var(--border); border-radius:6px; background:var(--panel, var(--surface)); color:var(--text); font:inherit; }
+.component-edit-table input:focus,.component-edit-table select:focus,.component-edit-table textarea:focus { outline:none; border-color:var(--accent); }
+.component-edit-footer { display:flex; align-items:center; justify-content:flex-end; gap:8px; margin-top:12px; }
+.component-edit-footer .cp-foot { margin:0 auto 0 0; }
+@media(max-width:600px) { .component-edit-footer { flex-wrap:wrap; } .component-edit-footer .cp-foot { flex-basis:100%; } }
+.component-edit-table select { appearance:auto; -webkit-appearance:menulist; cursor:pointer; }
+.component-edit-table .combo { min-height:30px; border-radius:6px; background:var(--panel); }
+.component-edit-table .combo > input[type="text"] { border:0; min-height:28px; background:transparent; }
+.component-edit-table .combo:focus-within { border-color:var(--accent); }
+.component-edit-table .preset-list { max-height:240px; }
+.component-edit-required { color:var(--accent); font-weight:700; }
+.component-edit-invalid input,.component-edit-invalid .combo { border-color:var(--danger); }
+.component-edit-invalid th { color:var(--danger); }
+.component-edit-error { color:var(--danger); font-weight:600; }
+.component-editor .table-wrap { overflow:visible; }
+.component-edit-table input.component-edit-example { color:var(--muted); font-style:italic; }
+.component-edit-table input[type="checkbox"] { width:auto; min-height:0; margin:7px 0; accent-color:var(--accent); }
+.component-edit-table textarea { display:block; resize:vertical; min-height:64px; line-height:1.4; }
+.component-edit-table th { vertical-align:top; padding-top:11px; }
+.component-edit-footer .component-action { flex:none; white-space:nowrap; }

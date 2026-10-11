@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { HUBS, HUB_TYPE_LABELS, type Hub } from "../lib/spokes";
 import { CASSETTE_PRESETS, CASSETTE_SPACING_LABELS, HUB_PRESETS, type CassettePreset, type HubPreset } from "../lib/drivetrain";
 import { DERAILLEURS, searchDerailleurs, pullRatioFor, type DerailleurSpec } from "../lib/derailleur";
-import { Field, TextInput, Select, Section } from "./ui";
+import { Field, TextInput, Select, Section, PresetMenu } from "./ui";
 
 type ComponentKind = "all" | "derailleur" | "hub" | "internal-hub" | "gearbox" | "cassette";
 type ComponentRow =
@@ -20,6 +20,151 @@ function years(d: DerailleurSpec): string {
 const hubName = (h: Hub) => `${h.manufacturer} ${h.model}`;
 const freehubOptions = (freehub: string) => freehub.split(",").map((option) => option.trim()).filter(Boolean);
 
+const NEW_COMPONENT_EVENT = "components:propose-new";
+
+// Address proposals are mailed to. Stored as shifted character codes so the plain
+// address never appears in the source or bundle (keeps it from address-harvesting
+// crawlers); it's only assembled when someone submits.
+const PROPOSAL_MAILBOX = [99, 106, 108, 102, 46, 100, 112, 110, 113, 112, 111, 102, 111, 117, 46, 101, 98, 117, 98, 99, 98, 116, 102, 65, 107, 112, 111, 98, 116, 102, 100, 105, 117, 102, 115, 105, 112, 103, 103, 47, 100, 112, 110];
+const proposalMailbox = () => String.fromCharCode(...PROPOSAL_MAILBOX.map((code) => code - 1));
+
+/** Page-header button that opens the "New component" proposal form. */
+export function ComponentProposalButton() {
+  return <button type="button" className="copy-link-btn" onClick={() => window.dispatchEvent(new Event(NEW_COMPONENT_EVENT))}>＋ Propose new component</button>;
+}
+
+// Proposal types match the categories shown in the database list.
+type NewCategory = "derailleur" | "hub" | "internal-hub" | "gearbox" | "cassette";
+const NEW_CATEGORY_LABELS: Record<NewCategory, string> = { derailleur: "Derailleur", hub: "Wheel hub", "internal-hub": "Internal gear hub", gearbox: "Gearbox", cassette: "Cassette" };
+// Editable fields per type, in the same order as the details table shows them.
+const PROPOSAL_FIELDS: Record<NewCategory, string[]> = {
+  derailleur: ["brand", "model", "series", "discipline", "speeds", "cage", "maxSprocket", "totalCapacity", "actuation", "pullRatio", "introduced", "discontinued", "source"],
+  hub: ["manufacturer", "model", "type", "widthMm", "spokeCounts", "leftFlangeDiaMm", "rightFlangeDiaMm", "leftOffsetMm", "rightOffsetMm", "spokeHoleMm", "source"],
+  "internal-hub": ["manufacturer", "label", "continuouslyVariable", "gears", "derailleurCompatible", "source"],
+  gearbox: ["manufacturer", "label", "continuouslyVariable", "gears", "derailleurCompatible", "source"],
+  cassette: ["brand", "model", "series", "speeds", "cogs", "freehub", "spacing", "special", "weightGrams", "source"],
+};
+const FIELD_LABELS: Record<string, string> = {
+  brand: "Brand", manufacturer: "Brand", model: "Model", label: "Model", series: "Series", discipline: "Discipline", speeds: "Speeds", cage: "Cage",
+  maxSprocket: "Max sprocket (T)", totalCapacity: "Total capacity (T)", actuation: "Actuation", pullRatio: "Pull ratio", introduced: "Introduced (year)", discontinued: "Discontinued (year)",
+  type: "Type", widthMm: "Spacing (OLD, mm)", spokeCounts: "Spoke counts", leftFlangeDiaMm: "Left flange diameter (mm)", rightFlangeDiaMm: "Right flange diameter (mm)",
+  leftOffsetMm: "Left flange offset (mm)", rightOffsetMm: "Right flange offset (mm)", spokeHoleMm: "Spoke hole (mm)",
+  continuouslyVariable: "Continuously variable", gears: "Ratios", derailleurCompatible: "Derailleur compatible",
+  cogs: "Sprockets", freehub: "Freehub body", spacing: "Spacing standard", special: "Special type", weightGrams: "Weight (g)", source: "Source URL",
+};
+const fieldLabel = (key: string) => FIELD_LABELS[key] ?? key;
+const BOOLEAN_FIELDS = new Set(["continuouslyVariable", "derailleurCompatible"]);
+// Example values pre-filled into a new proposal to show the expected list format.
+// They read as placeholders: muted, selected on focus, and not accepted as an answer.
+const NEW_EXAMPLES: Partial<Record<NewCategory, Record<string, string>>> = {
+  "internal-hub": { gears: "0.527, 0.644, 0.748, 0.851, 1.000, 1.223, 1.419, 1.615" },
+  gearbox: { gears: "0.549, 0.682, 0.843, 1.056, 1.313, 1.621, 2.030, 2.524, 3.117" },
+  cassette: { cogs: "11, 12, 13, 14, 15, 17, 19, 21, 24, 28, 32" },
+};
+/** Proposal draft for a type — from an existing entry's data, or blank (with examples) for a new one. */
+function proposalDraft(category: NewCategory, data?: object): Record<string, unknown> {
+  const raw = (data ?? {}) as Record<string, unknown>;
+  const draft: Record<string, unknown> = { category };
+  for (const key of PROPOSAL_FIELDS[category]) {
+    let value = raw[key];
+    // Sources are stored as { url, … }; propose just the URL.
+    if (key === "source" && value && typeof value === "object") value = (value as { url?: string }).url;
+    // Lists use the same comma-separated format a new proposal starts with.
+    if (key === "gears" && Array.isArray(value)) value = (value as HubPreset["gears"]).map((gear) => gear.ratio);
+    if (Array.isArray(value)) value = value.join(", ");
+    draft[key] = BOOLEAN_FIELDS.has(key) ? Boolean(value) : value == null ? (data ? "" : NEW_EXAMPLES[category]?.[key] ?? "") : String(value);
+  }
+  return draft;
+}
+// List fields must be comma-separated numbers.
+const LIST_FIELDS = new Set(["cogs", "gears", "spokeCounts"]);
+const isNumberList = (value: unknown) => typeof value !== "string" || value.split(",").every((part) => part.trim() !== "" && Number.isFinite(Number(part)));
+
+// Fields that must be filled before a proposal can be submitted (when the type has them).
+const REQUIRED_FIELDS = new Set(["brand", "manufacturer", "model", "label", "speeds", "maxSprocket", "totalCapacity", "source", "gears", "cogs", "freehub", "spacing"]);
+const isBlank = (value: unknown) => value == null || (typeof value === "string" && value.trim() === "");
+
+// Existing database entries per proposal type — the source of each field's suggestions.
+const CATEGORY_ITEMS: Record<NewCategory, object[]> = {
+  derailleur: DERAILLEURS,
+  hub: HUBS,
+  "internal-hub": HUB_PRESETS.filter((h) => h.kind === "hub"),
+  gearbox: HUB_PRESETS.filter((h) => h.kind === "bottomBracket"),
+  cassette: CASSETTE_PRESETS,
+};
+// Per-product names (and free text) aren't worth suggesting.
+const UNSUGGESTED_FIELDS = new Set(["model", "label", "source"]);
+const VALUE_LABELS: Record<string, Record<string, string>> = { spacing: CASSETTE_SPACING_LABELS, type: HUB_TYPE_LABELS };
+const suggestionCache = new Map<string, string[]>();
+/** Distinct existing text values of a field, for the editor's pick-list. */
+function fieldSuggestions(category: NewCategory, key: string): string[] {
+  if (UNSUGGESTED_FIELDS.has(key)) return [];
+  const cacheKey = `${category}:${key}`;
+  let values = suggestionCache.get(cacheKey);
+  if (!values) {
+    const raw = CATEGORY_ITEMS[category].map((item) => (item as Record<string, unknown>)[key]).filter((v): v is string => typeof v === "string" && v.trim() !== "" && v !== "-");
+    values = Array.from(new Set(key === "freehub" ? raw.flatMap(freehubOptions) : raw)).sort((x, y) => x.localeCompare(y, undefined, { sensitivity: "base" }));
+    suggestionCache.set(cacheKey, values);
+  }
+  return values;
+}
+
+/** Plain-text email body for a proposal: free-text comments first, then the data as JSON. */
+export function proposalEmailBody(draft: Record<string, unknown>, comments: string, existingEntry?: string): string {
+  return [
+    `Component ${existingEntry ? "change" : "addition"} proposal`,
+    existingEntry && `Existing entry: ${existingEntry}`,
+    comments && `Comments:\n${comments}`,
+    `Proposed data:\n${JSON.stringify(draft, null, 2)}`,
+  ].filter(Boolean).join("\n\n");
+}
+
+/** Editable version of the component spec table, for proposing additions/changes. */
+function ProposalEditor(props: { isNew: boolean; draft: Record<string, unknown>; setDraft: React.Dispatch<React.SetStateAction<Record<string, unknown>>>; submitted: boolean; onCancel: () => void; onSubmit: (comments: string) => void }) {
+  const { draft, setDraft } = props;
+  const category = draft.category as NewCategory;
+  const [attempted, setAttempted] = useState(false);
+  const [comments, setComments] = useState("");
+  const examples = (props.isNew && NEW_EXAMPLES[category]) || {};
+  const isExample = (key: string) => examples[key] !== undefined && draft[key] === examples[key];
+  const fields = PROPOSAL_FIELDS[category];
+  const missing = fields.filter((key) => REQUIRED_FIELDS.has(key) && (isBlank(draft[key]) || isExample(key)));
+  const malformed = fields.filter((key) => LIST_FIELDS.has(key) && !missing.includes(key) && !isBlank(draft[key]) && !isNumberList(draft[key]));
+  const submit = () => { setAttempted(true); if (missing.length === 0 && malformed.length === 0) props.onSubmit(comments.trim()); };
+  const setField = (key: string, value: unknown) => setDraft((current) => ({ ...current, [key]: value }));
+  // Switching type keeps whatever was entered for fields both types share.
+  const changeCategory = (next: NewCategory) => setDraft((current) => {
+    const fresh = proposalDraft(next, props.isNew ? undefined : {});
+    for (const key of PROPOSAL_FIELDS[next]) if (key in current && !isBlank(current[key]) && current[key] !== examples[key]) fresh[key] = current[key];
+    return fresh;
+  });
+  return <div className="component-editor" aria-label="Edit component details">
+    <div className="table-wrap"><table className="component-edit-table"><tbody>
+      <tr><th><label htmlFor="proposal-category">Component type</label></th><td><select id="proposal-category" value={category} onChange={(event) => changeCategory(event.target.value as NewCategory)}>{(Object.keys(NEW_CATEGORY_LABELS) as NewCategory[]).map((key) => <option key={key} value={key}>{NEW_CATEGORY_LABELS[key]}</option>)}</select></td></tr>
+      {fields.map((key) => {
+        const value = draft[key];
+        const required = REQUIRED_FIELDS.has(key);
+        const invalid = attempted && (missing.includes(key) || malformed.includes(key));
+        const label = <th><label htmlFor={`proposal-${key}`}>{fieldLabel(key)}{required && <span className="component-edit-required" aria-hidden="true"> *</span>}</label></th>;
+        if (BOOLEAN_FIELDS.has(key)) return <tr key={key}>{label}<td><input type="checkbox" id={`proposal-${key}`} checked={Boolean(value)} onChange={(event) => setField(key, event.target.checked)} /></td></tr>;
+        const text = String(value ?? "");
+        const suggestions = fieldSuggestions(category, key);
+        // Narrow long lists to what's typed, unless the field already holds a listed value.
+        const typed = text.trim().toLowerCase();
+        const narrowed = typed && !suggestions.some((v) => v.toLowerCase() === typed) ? suggestions.filter((v) => v.toLowerCase().includes(typed) || (VALUE_LABELS[key]?.[v] ?? "").toLowerCase().includes(typed)) : [];
+        const options = (narrowed.length ? narrowed : suggestions).map((v) => ({ value: v, label: VALUE_LABELS[key]?.[v] ? `${VALUE_LABELS[key][v]} (${v})` : v }));
+        const input = <input type="text" id={`proposal-${key}`} className={isExample(key) ? "component-edit-example" : undefined} value={text} required={required} aria-invalid={invalid || undefined} onFocus={(event) => { if (isExample(key)) event.target.select(); }} placeholder={key === "source" ? "https://" : undefined} onChange={(event) => setField(key, event.target.value)} />;
+        return <tr key={key} className={invalid ? "component-edit-invalid" : undefined}>{label}<td>
+          {suggestions.length ? <div className="combo">{input}<PresetMenu title={`Pick an existing ${fieldLabel(key).toLowerCase()}`} options={options} onPick={(v) => setField(key, v)} /></div> : input}
+        </td></tr>;
+      })}
+      <tr><th><label htmlFor="proposal-comments">Comments</label></th><td><textarea id="proposal-comments" rows={3} value={comments} placeholder="Any additional comments to explain the proposed changes to the database (optional)" onChange={(event) => setComments(event.target.value)} /></td></tr>
+    </tbody></table></div>
+    <div className="component-edit-footer"><p className="cp-foot">{attempted && (missing.length || malformed.length) ? <span className="component-edit-error" role="alert">{[missing.length ? `Fill in the required fields: ${missing.map(fieldLabel).join(", ")}.` : "", malformed.length ? `Use comma-separated numbers for: ${malformed.map(fieldLabel).join(", ")}.` : ""].filter(Boolean).join(" ")}</span> : <><span className="component-edit-required">*</span> Required. Your proposal is sent as an email for review; it won’t change the live database. By submitting, you agree that it may be included in the project’s data and distributed under the <a className="inline-link" href="https://github.com/jechter/bike-calculator/blob/master/LICENSE" target="_blank" rel="noreferrer">MIT License</a>.</>}</p><button type="button" className="component-action" onClick={props.onCancel}>Cancel</button><button type="button" className="component-action component-action--submit" onClick={submit}>Submit for review</button></div>
+    {props.submitted && <p role="status" className="cp-foot">Email draft opened for your review.</p>}
+  </div>;
+}
+
 export function Derailleur() {
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState<ComponentKind>("all");
@@ -35,6 +180,10 @@ export function Derailleur() {
   const [cassetteFreehub, setCassetteFreehub] = useState("all");
   const [gearCount, setGearCount] = useState("all");
   const [visibleCount, setVisibleCount] = useState(80);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<Record<string, unknown>>({});
+  const [isNew, setIsNew] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const derailleurRows: ComponentRow[] = DERAILLEURS.map((d) => ({ kind: "derailleur", key: `rd:${d.key}`, title: `${d.series ? `${d.series} ` : ""}${d.model}${d.cage ? ` ${d.cage}` : ""}`, brand: d.brand, data: d }));
   const hubRows: ComponentRow[] = HUBS.map((h) => ({ kind: "hub", key: `hub:${hubName(h)}`, title: h.model, brand: h.manufacturer, data: h }));
   const gearRows: ComponentRow[] = HUB_PRESETS.map((h) => ({ kind: "gearing", key: `gear:${h.label}`, title: h.label.replace(new RegExp(`^${h.manufacturer}\\s+`, "i"), ""), brand: h.manufacturer, data: h }));
@@ -88,9 +237,28 @@ export function Derailleur() {
   }, [results, selectedKey]);
 
   const opt = (value: string, label: string) => ({ value, label });
+  const rowCategory = (row: ComponentRow): NewCategory => row.kind === "gearing" ? (row.data.kind === "bottomBracket" ? "gearbox" : "internal-hub") : row.kind;
   const categoryName = (row: ComponentRow) => row.kind === "derailleur" ? "Derailleur" : row.kind === "hub" ? "Wheel hub" : row.kind === "cassette" ? "Cassette" : row.data.kind === "bottomBracket" ? "Gearbox" : "Internal gear hub";
   const source = selected?.data.source;
 
+  const beginEdit = (draft: Record<string, unknown>, fresh = false) => { setDraft(draft); setEditing(!fresh); setIsNew(fresh); setSubmitted(false); };
+  const cancelEdit = () => { setEditing(false); setIsNew(false); };
+  // Selecting a component discards any open proposal (a change or a new component).
+  // Opening a new proposal clears the selection, so only a real selection closes it.
+  useEffect(() => { setEditing(false); if (selectedKey) setIsNew(false); }, [selectedKey]);
+  // "Propose new component" lives in the page header (ComponentProposalButton).
+  const newEditorRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const onNew = () => { setSelectedKey(null); beginEdit(proposalDraft("derailleur"), true); };
+    window.addEventListener(NEW_COMPONENT_EVENT, onNew);
+    return () => window.removeEventListener(NEW_COMPONENT_EVENT, onNew);
+  }, []);
+  useEffect(() => { if (isNew) newEditorRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" }); }, [isNew]);
+  const submitDraft = (comments: string) => {
+    const body = proposalEmailBody(draft, comments, !isNew && selected ? `${selected.brand} ${selected.title} (${categoryName(selected)})` : undefined);
+    window.location.href = `mailto:${proposalMailbox()}?subject=${encodeURIComponent("Component database proposal")}&body=${encodeURIComponent(body)}`;
+    setSubmitted(true);
+  };
   return <Section title="Components database">
     <div className="rows">
       <Field label="Search" hint={`${results.length} matching components`}>
@@ -149,8 +317,9 @@ export function Derailleur() {
       </tbody>
     </table></div>
     {results.length > shown.length && <div className="cp-foot">Showing first {shown.length} of {results.length} — refine to narrow.</div>}
-    {selected && <div className="component-details"><Section title={<><span>{selected.brand} {selected.title}</span><span className="component-detail-kind">{categoryName(selected)}</span></>}>
-      <div className="table-wrap"><table><tbody>
+    {selected && <div className="component-details"><Section title={<><span>{selected.brand} {selected.title}</span><span className="component-detail-kind">{categoryName(selected)}</span></>} action={!editing && <button type="button" className="component-action" onClick={() => beginEdit(proposalDraft(rowCategory(selected), selected.data))}><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M11.7 1.3a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L5.1 14H1v-4.1L11.7 1.3zM2.5 10.5v2h2L12.9 4 11 2.1z"/></svg> Propose changes</button>}>
+      {editing && <ProposalEditor key={selected.key} isNew={false} draft={draft} setDraft={setDraft} submitted={submitted} onCancel={cancelEdit} onSubmit={submitDraft} />}
+      {!editing && <div className="table-wrap"><table><tbody>
         {selected.kind === "derailleur" && <>
           <tr><th>Brand / model</th><td>{selected.data.brand} {selected.data.model}</td></tr><tr><th>Series</th><td>{selected.data.series ?? "—"}</td></tr><tr><th>Discipline / speeds</th><td>{selected.data.discipline} · {selected.data.speeds}-speed</td></tr><tr><th>Cage</th><td>{selected.data.cage ?? "—"}</td></tr><tr><th>Max sprocket / capacity</th><td>{selected.data.maxSprocket != null ? `${selected.data.maxSprocket}T` : "—"} / {selected.data.totalCapacity != null ? `${selected.data.totalCapacity}T` : "—"}</td></tr><tr><th>Actuation / pull ratio</th><td>{selected.data.actuation ?? "Unknown"} / {pullRatioFor(selected.data)}</td></tr><tr><th>Years</th><td>{years(selected.data)}</td></tr>
         </>}
@@ -158,14 +327,17 @@ export function Derailleur() {
           <tr><th>Manufacturer / model</th><td>{selected.data.manufacturer} {selected.data.model}</td></tr><tr><th>Type</th><td>{HUB_TYPE_LABELS[selected.data.type]}</td></tr><tr><th>Spacing (OLD)</th><td>{selected.data.widthMm} mm</td></tr><tr><th>Spoke counts</th><td>{selected.data.spokeCounts.join(", ")}</td></tr><tr><th>Flange diameters</th><td>{selected.data.leftFlangeDiaMm} / {selected.data.rightFlangeDiaMm} mm</td></tr><tr><th>Flange offsets</th><td>{selected.data.leftOffsetMm} / {selected.data.rightOffsetMm} mm</td></tr><tr><th>Spoke hole</th><td>{selected.data.spokeHoleMm ?? "—"} mm</td></tr>
         </>}
         {selected.kind === "gearing" && <>
-          <tr><th>Manufacturer / model</th><td>{selected.data.manufacturer} {selected.data.label}</td></tr>{selected.data.kind === "bottomBracket" && <tr><th>Type</th><td>Bottom-bracket gearbox</td></tr>}<tr><th>Gear count</th><td>{selected.data.continuouslyVariable ? "Continuously variable" : selected.data.gears.length}</td></tr><tr><th>Ratios</th><td>{selected.data.gears.map((g) => g.ratio.toFixed(3)).join(", ")}</td></tr><tr><th>Derailleur compatible</th><td>{selected.data.derailleurCompatible ? "Yes" : "No"}</td></tr>
+          <tr><th>Manufacturer / model</th><td>{selected.brand} {selected.title}</td></tr>{selected.data.kind === "bottomBracket" && <tr><th>Type</th><td>Bottom-bracket gearbox</td></tr>}<tr><th>Gear count</th><td>{selected.data.continuouslyVariable ? "Continuously variable" : selected.data.gears.length}</td></tr><tr><th>Ratios</th><td>{selected.data.gears.map((g) => g.ratio.toFixed(3)).join(", ")}</td></tr><tr><th>Derailleur compatible</th><td>{selected.data.derailleurCompatible ? "Yes" : "No"}</td></tr>
         </>}
         {selected.kind === "cassette" && <>
           <tr><th>Brand / model</th><td>{selected.data.brand} {selected.data.model}</td></tr>{selected.data.series && <tr><th>Series</th><td>{selected.data.series}</td></tr>}<tr><th>Speeds</th><td>{selected.data.speeds}</td></tr><tr><th>Sprockets</th><td>{selected.data.cogs.map((cog) => `${cog}T`).join(" – ")}</td></tr><tr><th>Freehub body</th><td>{selected.data.freehub}</td></tr><tr><th>Spacing standard</th><td>{CASSETTE_SPACING_LABELS[selected.data.spacing]}</td></tr><tr><th>Special type</th><td>{selected.data.special ?? "—"}</td></tr><tr><th>Weight</th><td>{selected.data.weightGrams != null ? `${selected.data.weightGrams} g` : "—"}</td></tr>
         </>}
         {source && <tr><th>Source</th><td><a className="inline-link" href={source.url} target="_blank" rel="noreferrer">{source.url}</a></td></tr>}
         <tr><th>Configure</th><td><a className="inline-link component-config-link" href={selected.kind === "hub" ? `#/wheel-building?hub=${encodeURIComponent(`${selected.data.manufacturer}~${selected.data.model}`)}` : selected.kind === "cassette" ? `#/drivetrain?cassette=${encodeURIComponent(`${selected.data.brand} ${selected.data.model}`)}` : selected.kind === "gearing" ? `#/drivetrain?gearing=${encodeURIComponent(selected.data.label)}` : `#/drivetrain?derailleur=${encodeURIComponent(selected.data.key)}`}>{selected.kind === "hub" ? "Configure in Wheel Building" : "Configure in Drivetrain"} →</a></td></tr>
-      </tbody></table></div>
+      </tbody></table></div>}
+    </Section></div>}
+    {isNew && <div className="component-details" ref={newEditorRef}><Section title={<><span>New component</span><span className="component-detail-kind">{NEW_CATEGORY_LABELS[draft.category as NewCategory]}</span></>}>
+      <ProposalEditor isNew draft={draft} setDraft={setDraft} submitted={submitted} onCancel={cancelEdit} onSubmit={submitDraft} />
     </Section></div>}
   </Section>;
 }

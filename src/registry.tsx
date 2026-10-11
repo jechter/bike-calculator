@@ -5,7 +5,7 @@ import { WheelExamplesMenu } from "./components/WheelExamplesMenu";
 import { DrivetrainExamplesMenu } from "./components/DrivetrainExamplesMenu";
 import { FrameSize } from "./components/FrameSize";
 import { Tire } from "./components/Tire";
-import { Derailleur } from "./components/Derailleur";
+import { Derailleur, ComponentProposalButton } from "./components/Derailleur";
 import { Power } from "./components/Power";
 import { ThreadDirection } from "./components/ThreadDirection";
 import {
@@ -82,6 +82,7 @@ export const CALCULATORS: CalculatorDef[] = [
     subtitle: "Search component databases for derailleurs, hubs and internal gearing systems.",
     icon: <DrivetrainIcon />,
     Component: Derailleur,
+    HeaderActions: ComponentProposalButton,
   },
   {
     id: "power",

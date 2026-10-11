@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach } from "vitest";
-import { render, cleanup, fireEvent } from "@testing-library/react";
-import { Derailleur } from "./Derailleur";
+import { render, cleanup, fireEvent, act } from "@testing-library/react";
+import { Derailleur, proposalEmailBody } from "./Derailleur";
 
 afterEach(cleanup);
 
@@ -56,5 +56,60 @@ describe("Derailleur database page", () => {
     expect(container.querySelector("tbody")?.textContent).toContain("Wheel hub");
     fireEvent.click(getByText("R45 Front"));
     expect(getByText("Spacing (OLD)")).toBeTruthy();
+  });
+
+  it("blocks a new-component proposal until the required fields are filled", () => {
+    const { container, getByText, getByRole } = render(<Derailleur />);
+    act(() => { window.dispatchEvent(new Event("components:propose-new")); });
+    fireEvent.change(getByRole("combobox", { name: "Component type" }), { target: { value: "gearbox" } });
+    expect(container.querySelector("#proposal-label")).toBeTruthy();
+    fireEvent.click(getByText("Submit for review"));
+    expect(getByRole("alert").textContent).toBe("Fill in the required fields: Brand, Model, Ratios, Source URL.");
+    expect(container.querySelector("#proposal-priceUsd")).toBeNull();
+  });
+
+  it("pre-fills list fields with an example that must be replaced by real numbers", () => {
+    const { container, getByText, getByRole } = render(<Derailleur />);
+    act(() => { window.dispatchEvent(new Event("components:propose-new")); });
+    fireEvent.change(getByRole("combobox", { name: "Component type" }), { target: { value: "cassette" } });
+    const cogs = container.querySelector<HTMLInputElement>("#proposal-cogs")!;
+    expect(cogs.value).toBe("11, 12, 13, 14, 15, 17, 19, 21, 24, 28, 32");
+    fireEvent.click(getByText("Submit for review"));
+    expect(getByRole("alert").textContent).toContain("Sprockets");
+    fireEvent.change(cogs, { target: { value: "11, 13, x" } });
+    expect(getByRole("alert").textContent).toContain("Use comma-separated numbers for: Sprockets.");
+  });
+
+  it("edits an existing gear hub with the same fields and order as a new one", () => {
+    const { container, getByText } = render(<Derailleur />);
+    fireEvent.click(getByText("NINE"));
+    fireEvent.click(getByText("Propose changes"));
+    const labels = () => Array.from(container.querySelectorAll(".component-edit-table th")).map((th) => th.textContent?.replace(" *", ""));
+    const expected = ["Component type", "Brand", "Model", "Continuously variable", "Ratios", "Derailleur compatible", "Source URL", "Comments"];
+    expect(labels()).toEqual(expected);
+    const flag = container.querySelector<HTMLInputElement>("#proposal-derailleurCompatible")!;
+    expect(flag.type).toBe("checkbox");
+    fireEvent.click(flag);
+    expect(flag.checked).toBe(true);
+    fireEvent.click(getByText("Cancel"));
+    act(() => { window.dispatchEvent(new Event("components:propose-new")); });
+    fireEvent.change(container.querySelector("#proposal-category")!, { target: { value: "internal-hub" } });
+    expect(labels()).toEqual(expected);
+  });
+
+  it("discards a new-component proposal when a component is selected", () => {
+    const { container, getByText, queryByText } = render(<Derailleur />);
+    act(() => { window.dispatchEvent(new Event("components:propose-new")); });
+    expect(getByText("New component")).toBeTruthy();
+    fireEvent.click(getByText("NINE"));
+    expect(queryByText("New component")).toBeNull();
+    expect(container.querySelectorAll(".component-details")).toHaveLength(1);
+    expect(getByText("Propose changes")).toBeTruthy();
+  });
+
+  it("puts proposal comments in the email outside the JSON", () => {
+    const body = proposalEmailBody({ category: "cassette", brand: "3T" }, "Weight per 3T's site.", "3T Bailout (Cassette)");
+    expect(body).toBe('Component change proposal\n\nExisting entry: 3T Bailout (Cassette)\n\nComments:\nWeight per 3T\'s site.\n\nProposed data:\n{\n  "category": "cassette",\n  "brand": "3T"\n}');
+    expect(proposalEmailBody({ brand: "X" }, "")).not.toContain("Comments");
   });
 });

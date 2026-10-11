@@ -91,8 +91,7 @@ speeds / range** filters. Picking one fills the editable cog field:
   `"XD"`, `"Micro Spline"`).
 - `speeds` — number of sprockets (equals `sprockets.length`).
 - `sprockets` — cog tooth counts, **smallest first** (e.g. `[11, 13, 15, …]`).
-- `weightGrams`, `priceUsd` — approximate weight (g) and price (USD); either may
-  be `null`.
+- `weightGrams` — approximate weight (g); may be `null`.
 - `special` — special drivetrain family if any, e.g. `"LinkGlide"` or `"T-Type"`.
 - `source` — `{ url, sourceType: "primary" | "secondary", note }` citing where
   the tooth counts came from.

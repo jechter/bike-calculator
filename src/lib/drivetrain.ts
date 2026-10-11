@@ -318,7 +318,7 @@ export interface ChainringPreset {
 export const CHAINRING_PRESETS: ChainringPreset[] = chainringPresetsData as ChainringPreset[];
 
 // Cassette / sprocket sets. The rows live in data/cassette-presets.json — add or
-// edit there (no code change). Each carries brand/model/freehub/weight/price and
+// edit there (no code change). Each carries brand/model/freehub/weight and
 // a source, so the drivetrain picker can group models under a brand.
 export interface CassetteSource {
   url: string;
@@ -363,7 +363,6 @@ export interface CassettePreset {
   speeds: number;
   cogs: number[]; // sprocket tooth counts, smallest first
   weightGrams: number | null;
-  priceUsd: number | null;
   /** Special drivetrain family, e.g. "LinkGlide" or "T-Type", if any. */
   special?: string;
   /** Cog-pitch standard this cassette indexes to (derived; see deriveCassetteSpacing). */
@@ -380,7 +379,6 @@ interface RawCassette {
   speeds: number;
   sprockets: number[];
   weightGrams?: number | null;
-  priceUsd?: number | null;
   special?: string;
   /** Explicit cog-pitch standard, when the derivation below would be wrong
    *  (e.g. a Shimano-spaced cassette sold on a Campagnolo freehub body). */
@@ -415,7 +413,6 @@ export const CASSETTE_PRESETS: CassettePreset[] = (
   speeds: c.speeds,
   cogs: c.sprockets,
   weightGrams: c.weightGrams ?? null,
-  priceUsd: c.priceUsd ?? null,
   special: c.special,
   spacing: deriveCassetteSpacing(c),
   source: c.source,

@@ -303,7 +303,12 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   let vbMinY = minY;
   let vbH = H;
   let naturalMinHeight: number | undefined;
-  if (box && box.w > 0 && box.h > 0) {
+  // On phones the playback/shift controls sit in flow under the drawing (see
+  // styles.css), so the box's height includes them — stretching to it would grow
+  // the SVG, which grows the box, and so on. There's no tall rail to fill there.
+  const stacked =
+    typeof window !== "undefined" && window.matchMedia?.("(max-width: 600px)").matches;
+  if (box && box.w > 0 && box.h > 0 && !stacked) {
     naturalMinHeight = (box.w * H) / W + VPAD;
     const target = (box.h / box.w) * W;
     if (target > H) {

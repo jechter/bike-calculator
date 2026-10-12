@@ -104,7 +104,7 @@ function SpokeSpecs({ specs }: { specs: SpokeSpec[] }) {
     <>
       {specs.map((s) => (
         <span className="spoke-spec-line" key={s.kind}>
-          {s.count} × {s.lengthMm.toFixed(1)} mm
+          {s.count} × {s.lengthMm.toFixed(1)}<span className="result-unit"> mm</span>
           {s.kind !== "all" && <span className="spoke-spec-kind"> · {s.kind}</span>}
         </span>
       ))}

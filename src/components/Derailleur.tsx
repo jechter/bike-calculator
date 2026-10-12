@@ -3,6 +3,7 @@ import { HUBS, HUB_TYPE_LABELS, type Hub } from "../lib/spokes";
 import { CASSETTE_PRESETS, CASSETTE_SPACING_LABELS, HUB_PRESETS, type CassettePreset, type HubPreset } from "../lib/drivetrain";
 import { DERAILLEURS, searchDerailleurs, pullRatioFor, type DerailleurSpec } from "../lib/derailleur";
 import { Field, TextInput, Select, Section, PresetMenu } from "./ui";
+import { useIsMobile } from "../useIsMobile";
 
 type ComponentKind = "all" | "derailleur" | "hub" | "internal-hub" | "gearbox" | "cassette";
 type ComponentRow =
@@ -257,6 +258,11 @@ export function Derailleur() {
     return () => window.removeEventListener(NEW_COMPONENT_EVENT, onNew);
   }, []);
   useEffect(() => { if (isNew) newEditorRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" }); }, [isNew]);
+  // In the compact layout the details render below a long list, off-screen, so a
+  // tap on a row would seem to do nothing — bring them into view.
+  const isMobile = useIsMobile();
+  const detailsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (isMobile && selectedKey) detailsRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" }); }, [selectedKey]);
   const submitDraft = (comments: string) => {
     const body = proposalEmailBody(draft, comments, !isNew && selected ? `${selected.brand} ${selected.title} (${categoryName(selected)})` : undefined);
     window.location.href = `mailto:${proposalMailbox()}?subject=${encodeURIComponent("Component database proposal")}&body=${encodeURIComponent(body)}`;
@@ -308,19 +314,19 @@ export function Derailleur() {
         setVisibleCount((count) => Math.min(count + 80, results.length));
       }
     }}><table>
-      <thead><tr><th>Brand</th><th>Component</th><th>Category</th><th>Details</th></tr></thead>
+      <thead><tr><th>Brand</th><th>Component</th><th className="component-col-cat">Category</th><th>Details</th></tr></thead>
       <tbody>
         {shown.map((row) => <tr key={row.key} className="component-row" onClick={() => setSelectedKey(row.key)} aria-selected={selectedKey === row.key}>
           <td>{row.brand}</td>
           <td><button type="button" className="component-select" onClick={() => setSelectedKey(row.key)}>{row.title}</button></td>
-          <td>{categoryName(row)}</td>
+          <td className="component-col-cat">{categoryName(row)}</td>
           <td>{row.kind === "derailleur" ? `${row.data.discipline} · ${row.data.speeds}-speed` : row.kind === "hub" ? `${HUB_TYPE_LABELS[row.data.type]} · ${row.data.widthMm}mm · ${row.data.spokeCounts.join(", ")}h` : row.kind === "gearing" ? row.data.continuouslyVariable ? `CVT · ${row.data.gears[0].ratio.toFixed(2)}–${row.data.gears[1].ratio.toFixed(2)} ratio` : `${row.data.gears.length} gears` : `${row.data.speeds}-speed · ${row.data.cogs[0]}–${row.data.cogs[row.data.cogs.length - 1]}T`}</td>
         </tr>)}
         {shown.length === 0 && <tr><td colSpan={4} style={{ color: "var(--muted)" }}>No components match — try a different search or category.</td></tr>}
       </tbody>
     </table></div>
     {results.length > shown.length && <div className="cp-foot">Showing first {shown.length} of {results.length} — refine to narrow.</div>}
-    {selected && <div className="component-details"><Section title={<><span>{selected.brand} {selected.title}</span><span className="component-detail-kind">{categoryName(selected)}</span></>} action={!editing && <button type="button" className="component-action" onClick={() => beginEdit(proposalDraft(rowCategory(selected), selected.data))}><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M11.7 1.3a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L5.1 14H1v-4.1L11.7 1.3zM2.5 10.5v2h2L12.9 4 11 2.1z"/></svg> Propose changes</button>}>
+    {selected && <div className="component-details" ref={detailsRef}><Section title={<><span>{selected.brand} {selected.title}</span><span className="component-detail-kind">{categoryName(selected)}</span></>} action={!editing && <button type="button" className="component-action" onClick={() => beginEdit(proposalDraft(rowCategory(selected), selected.data))}><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M11.7 1.3a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L5.1 14H1v-4.1L11.7 1.3zM2.5 10.5v2h2L12.9 4 11 2.1z"/></svg> Propose changes</button>}>
       {editing && <ProposalEditor key={selected.key} isNew={false} draft={draft} setDraft={setDraft} submitted={submitted} onCancel={cancelEdit} onSubmit={submitDraft} />}
       {!editing && <div className="table-wrap"><table><tbody>
         {selected.kind === "derailleur" && <>

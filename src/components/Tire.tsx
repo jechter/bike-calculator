@@ -175,12 +175,28 @@ export function Tire() {
         <div className="results" style={{ marginTop: 8 }}>
           <Result
             label="Front"
-            value={`${pressure.frontBar.toFixed(1)} bar · ${pressure.frontPsi.toFixed(0)} psi`}
+            value={
+              <>
+                {pressure.frontBar.toFixed(1)} bar
+                <span className="result-alt">
+                  <span className="result-alt-sep"> · </span>
+                  {pressure.frontPsi.toFixed(0)} psi
+                </span>
+              </>
+            }
             big
           />
           <Result
             label="Rear"
-            value={`${pressure.rearBar.toFixed(1)} bar · ${pressure.rearPsi.toFixed(0)} psi`}
+            value={
+              <>
+                {pressure.rearBar.toFixed(1)} bar
+                <span className="result-alt">
+                  <span className="result-alt-sep"> · </span>
+                  {pressure.rearPsi.toFixed(0)} psi
+                </span>
+              </>
+            }
             big
           />
         </div>

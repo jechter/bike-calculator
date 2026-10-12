@@ -18,6 +18,16 @@ describe("Derailleur database page", () => {
     expect(dbTable.textContent).toContain("Eagle");
   });
 
+  it("closes the details with the X button, deselecting the component", () => {
+    const { container } = render(<Derailleur />);
+    const buttons = container.querySelectorAll(".components-list-scroll .component-select");
+    fireEvent.click(buttons[0]);
+    expect(container.querySelector(".component-details")).not.toBeNull();
+    fireEvent.click(container.querySelector(".component-details .component-close")!);
+    expect(container.querySelector(".component-details")).toBeNull();
+    expect(container.querySelectorAll('.components-list-scroll tr[aria-selected="true"]')).toHaveLength(0);
+  });
+
   it("moves the component selection with arrow keys without default scrolling", () => {
     const { container } = render(<Derailleur />);
     const buttons = container.querySelectorAll(".components-list-scroll .component-select");

@@ -1960,3 +1960,128 @@ html.embed-fill body { overscroll-behavior: none; }
   html:not(.embedded) .component-db > .component-details { flex: 0 1 auto; min-height: 0; max-height: 60%; display: flex; flex-direction: column; margin-top: 16px; }
   html:not(.embedded) .component-details > .section { min-height: 0; overflow-y: auto; }
 }
+
+/* ---------------------------------------------------------------------------
+   Phones and touch devices
+   ------------------------------------------------------------------------- */
+
+/* iOS Safari zooms the page in when a focused field's text is under 16px (and
+   leaves it zoomed), so form controls get 16px wherever a phone/tablet keyboard
+   can come up. Range/checkbox inputs have no text and keep their sizing. */
+@media (max-width: 1199px), (pointer: coarse) {
+  input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea { font-size: 16px; }
+}
+
+/* Tire pressure: the psi alternate drops under the bar value on narrow tiles
+   instead of wrapping mid-way ("4.2 bar ·" / "61 psi"). */
+.result-alt { white-space: nowrap; }
+.result-unit { white-space: nowrap; }
+
+@media (max-width: 600px) {
+  .result-big .result-value { font-size: 22px; line-height: 1.2; }
+  .result-alt { display: block; font-size: 15px; font-weight: 500; color: var(--muted); }
+  .result-alt-sep { display: none; }
+  /* "16 × 292.9 mm": a lighter unit keeps a spoke length on one line. */
+  .result-unit { font-size: 0.7em; font-weight: 500; color: var(--muted); }
+  .result-big .spoke-spec-line { white-space: nowrap; font-size: 19px; }
+  .result { padding: 10px 12px; }
+
+  /* Drivetrain diagram: the playback group and the shift bar float over the
+     drawing on wide screens, but on a phone the caption alone is wider than the
+     diagram. Stack them under the drawing instead: shift bar (‹ caption ›) on
+     one row, playback modes on the next, with finger-sized buttons. */
+  .dt-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+  }
+  .dt-diagram > svg { order: 1; flex: none; height: auto; }
+  .dt-shift {
+    order: 2;
+    position: static;
+    transform: none;
+    padding: 0;
+    background: none;
+    backdrop-filter: none;
+    justify-content: space-between;
+  }
+  .dt-shift .dt-cap { white-space: normal; font-size: 12.5px; line-height: 1.35; }
+  .dt-shift-btn { width: 44px; height: 40px; font-size: 22px; }
+  .dt-playmode {
+    order: 3;
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .dt-playmode-label { order: 2; background: none; backdrop-filter: none; padding: 0; }
+  .dt-playmode-btn { width: 44px; height: 36px; }
+
+  /* Wheel 3D view: the lacing scrubber, legend, zoom slider and view buttons all
+     overlay the canvas corners, which on a phone collide with each other and the
+     wheel. Give the canvas its own square-ish box and move the scrubber + legend
+     into a row beneath it. */
+  .wheel-diagram {
+    height: auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 12px;
+    align-items: start;
+  }
+  .wd-view { position: relative; inset: auto; grid-column: 1 / -1; height: min(96vw, 460px); }
+  .wd-lacing,
+  .wd-legend { position: static; }
+  .wd-lacing { padding: 6px 0 12px 12px; min-width: 0; align-self: stretch; }
+  .wd-build { width: 100%; }
+  .wd-play { width: 40px; height: 36px; font-size: 13px; }
+  .wd-legend { margin: 6px 12px 12px 0; padding: 0; background: none; backdrop-filter: none; }
+  .wd-align-btn { padding: 7px 14px; font-size: 13px; }
+
+  /* Components database: two filters per row, and drop the Category column (the
+     type filter and the details panel both name it) so the rest isn't squeezed. */
+  .cp-filters { grid-template-columns: 1fr 1fr; }
+  .component-col-cat { display: none; }
+  .components-list-scroll { max-height: 55vh; max-height: 55dvh; }
+
+  /* Settings drawer: the drawer body and each section card both pad, which on a
+     phone leaves the fields noticeably narrower than they need to be. */
+  .workbench-drawer-body { padding: 10px; }
+  .workbench-drawer-body .section { padding: 14px; }
+
+  /* Thread direction: the turn diagram spans the width under the table. */
+  .td-table { flex: 1 1 100%; }
+  .td-diagram { flex: 1 1 100%; width: auto; position: static; }
+}
+
+/* Components database: close (deselect) button in the details header, next to
+   "Propose changes". */
+.component-details .section-action { display: flex; align-items: center; gap: 8px; }
+.component-close {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; padding: 0;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--panel); color: var(--muted); cursor: pointer;
+}
+.component-close:hover { border-color: var(--accent); color: var(--accent); }
+/* Long source URLs (no spaces to break at) must wrap rather than widen the page. */
+.component-details td { overflow-wrap: anywhere; }
+
+@media (max-width: 600px) {
+  /* Bottom bar: "+ Propose new" — the full label crowds out the page title. */
+  .component-propose-long { display: none; }
+  /* Details header: title with the close button top-right; "Propose changes"
+     moves to its own row below instead of squeezing the title. */
+  .component-details .section-head {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 10px 12px;
+  }
+  .component-details .section-action { display: contents; }
+  .component-details .section-head h3 { grid-column: 1; grid-row: 1; align-self: center; }
+  .component-details .component-close { grid-column: 2; grid-row: 1; }
+  .component-details .component-action { grid-column: 1 / -1; grid-row: 2; justify-self: start; white-space: nowrap; }
+}
+/* Details-only view (compact, short screens): the details sit at the top. */
+.component-db--details-only > .component-details:first-child { margin-top: 0; }

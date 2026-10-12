@@ -127,6 +127,18 @@ export function GearChart({
     return () => document.removeEventListener("mousedown", onDoc);
   }, [menuOpen]);
 
+  // Lay the chart out at the width it's actually shown at (up to the desktop
+  // design width), so its text stays at its nominal size on a phone instead of
+  // being scaled down with the whole 820-unit drawing.
+  const [boxW, setBoxW] = useState(0);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => setBoxW(el.clientWidth));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const allGears = series.flatMap((s) => s.gears);
   if (allGears.length === 0) return <p className="field-hint">No gears to show.</p>;
 
@@ -178,12 +190,13 @@ export function GearChart({
     max += 1;
   }
 
-  const W = 820;
-  const mL = comparing ? 74 : 66;
-  const mR = 48;
+  const W = boxW > 0 ? Math.max(320, Math.min(820, boxW - 8)) : 820;
+  const narrow = W < 560;
+  const mL = comparing ? (narrow ? 64 : 74) : narrow ? 44 : 66;
+  const mR = narrow ? 20 : 48;
   const mT = 16;
   const mB = 34;
-  const rowH = 50;
+  const rowH = narrow ? 40 : 50;
   const plotW = W - mL - mR;
   const H = mT + rows.length * rowH + mB;
   const axisY = mT + rows.length * rowH;
@@ -194,7 +207,7 @@ export function GearChart({
   // numbers on a "nice" step (e.g. 20, 25, 30, …), skipping any that fall too
   // close to the extremes.
   const niceStep = (range: number) => {
-    const raw = range / 6;
+    const raw = range / (narrow ? 4 : 6);
     const mag = 10 ** Math.floor(Math.log10(raw));
     const n = raw / mag;
     return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * mag;

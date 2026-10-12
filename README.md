@@ -41,6 +41,25 @@ npm run preview  # preview the production build
 npm test         # run the calculation unit tests (Vitest)
 ```
 
+## Deployment
+
+The project can be deployed from a local checkout with `scripts/deploy.sh`.
+It pushes the current branch (best-effort), builds the site, uploads `dist/`
+over SFTP, prunes obsolete hashed assets, and checks the live page. From this
+workspace, install `expect` if needed, then provide the host settings only in
+the current shell and run the script:
+
+```bash
+export DEPLOY_USER='your-sftp-user' DEPLOY_HOST='your-sftp-host'
+export PASSWORD='your-sftp-password' REMOTE_DIR='/remote/path/to/site'
+./scripts/deploy.sh
+```
+
+Do not commit credentials or put them in a tracked `.env` file. The script
+also pushes `HEAD`, so make sure you intend to publish the current checkout
+before running it. `dist/` is built locally; the site is static and can be
+hosted from any subdirectory.
+
 For a quick visual check of a page (headless Chrome via `puppeteer-core`; set
 `CHROME_PATH` to override the browser):
 

@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { HUBS, HUB_TYPE_LABELS, type Hub } from "../lib/spokes";
 import { CASSETTE_PRESETS, CASSETTE_SPACING_LABELS, HUB_PRESETS, type CassettePreset, type HubPreset } from "../lib/drivetrain";
 import { DERAILLEURS, searchDerailleurs, pullRatioFor, type DerailleurSpec } from "../lib/derailleur";
 import { Field, TextInput, Select, Section, PresetMenu } from "./ui";
-import { useIsMobile } from "../useIsMobile";
+import { useIsMobile, useMediaQuery } from "../useIsMobile";
 
 type ComponentKind = "all" | "derailleur" | "hub" | "internal-hub" | "gearbox" | "cassette";
 type ComponentRow =
@@ -31,7 +31,7 @@ const proposalMailbox = () => String.fromCharCode(...PROPOSAL_MAILBOX.map((code)
 
 /** Page-header button that opens the "New component" proposal form. */
 export function ComponentProposalButton() {
-  return <button type="button" className="copy-link-btn" onClick={() => window.dispatchEvent(new Event(NEW_COMPONENT_EVENT))}>＋ Propose new component</button>;
+  return <button type="button" className="copy-link-btn" onClick={() => window.dispatchEvent(new Event(NEW_COMPONENT_EVENT))}>＋ Propose new<span className="component-propose-long"> component</span></button>;
 }
 
 // Proposal types match the categories shown in the database list.
@@ -252,23 +252,56 @@ export function Derailleur() {
   useEffect(() => { setEditing(false); if (selectedKey) setIsNew(false); }, [selectedKey]);
   // "Propose new component" lives in the page header (ComponentProposalButton).
   const newEditorRef = useRef<HTMLDivElement>(null);
+  // (The details-only view below shows the editor at the top already.)
+  const detailsOnlyRef = useRef(false);
   useEffect(() => {
     const onNew = () => { setSelectedKey(null); beginEdit(proposalDraft("derailleur"), true); };
     window.addEventListener(NEW_COMPONENT_EVENT, onNew);
     return () => window.removeEventListener(NEW_COMPONENT_EVENT, onNew);
   }, []);
-  useEffect(() => { if (isNew) newEditorRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" }); }, [isNew]);
-  // In the compact layout the details render below a long list, off-screen, so a
-  // tap on a row would seem to do nothing — bring them into view.
+  useEffect(() => { if (isNew && !detailsOnlyRef.current) newEditorRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" }); }, [isNew]);
+  // In the compact layout on a short screen (phones, small tablets in landscape)
+  // the list and the details don't both fit — the details would land off-screen
+  // below a long list. There the details (or a new proposal) replace the list
+  // until closed; the list's scroll position is restored on the way back.
   const isMobile = useIsMobile();
-  const detailsRef = useRef<HTMLDivElement>(null);
-  useEffect(() => { if (isMobile && selectedKey) detailsRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" }); }, [selectedKey]);
+  const shortScreen = useMediaQuery("(max-height: 1000px)");
+  const detailsOnly = isMobile && shortScreen && (selected !== null || isNew);
+  detailsOnlyRef.current = detailsOnly;
+  const listRef = useRef<HTMLDivElement>(null);
+  const savedScroll = useRef({ page: 0, list: 0 });
+  const closeDetails = () => { setSelectedKey(null); cancelEdit(); };
+  useLayoutEffect(() => {
+    if (detailsOnly) {
+      window.scrollTo?.(0, 0);
+    } else {
+      if (listRef.current) listRef.current.scrollTop = savedScroll.current.list;
+      window.scrollTo?.(0, savedScroll.current.page);
+    }
+  }, [detailsOnly]);
+  // Remember where the list was just before it's swapped out for the details.
+  const rememberScroll = () => {
+    if (detailsOnly) return;
+    savedScroll.current = { page: window.scrollY, list: listRef.current?.scrollTop ?? 0 };
+  };
+  const select = (key: string) => { rememberScroll(); setSelectedKey(key); };
+  useEffect(() => {
+    // React applies the editor-opening state change after the event, so this
+    // still sees the list in place.
+    const onNew = () => rememberScroll();
+    window.addEventListener(NEW_COMPONENT_EVENT, onNew);
+    return () => window.removeEventListener(NEW_COMPONENT_EVENT, onNew);
+  });
+  const closeButton = (label: string) => <button type="button" className="component-close" aria-label={label} title={label} onClick={closeDetails}>
+    <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" /></svg>
+  </button>;
   const submitDraft = (comments: string) => {
     const body = proposalEmailBody(draft, comments, !isNew && selected ? `${selected.brand} ${selected.title} (${categoryName(selected)})` : undefined);
     window.location.href = `mailto:${proposalMailbox()}?subject=${encodeURIComponent("Component database proposal")}&body=${encodeURIComponent(body)}`;
     setSubmitted(true);
   };
-  return <div className="component-db">
+  return <div className={"component-db" + (detailsOnly ? " component-db--details-only" : "")}>
+    {!detailsOnly && <>
     <div className="rows">
       <Field label="Search" hint={`${results.length} matching components`}>
         <div className="component-search">
@@ -308,7 +341,7 @@ export function Derailleur() {
         <Field label="Freehub body"><Select value={cassetteFreehub} onChange={setCassetteFreehub} options={[opt("all", "All bodies"), ...cassetteFreehubs.map((f) => opt(f, f))]} /></Field>
       </>}
     </div>
-    <div className="components-list-scroll table-wrap" onScroll={(event) => {
+    <div className="components-list-scroll table-wrap" ref={listRef} onScroll={(event) => {
       const el = event.currentTarget;
       if (el.scrollTop + el.clientHeight >= el.scrollHeight - 32 && visibleCount < results.length) {
         setVisibleCount((count) => Math.min(count + 80, results.length));
@@ -316,9 +349,9 @@ export function Derailleur() {
     }}><table>
       <thead><tr><th>Brand</th><th>Component</th><th className="component-col-cat">Category</th><th>Details</th></tr></thead>
       <tbody>
-        {shown.map((row) => <tr key={row.key} className="component-row" onClick={() => setSelectedKey(row.key)} aria-selected={selectedKey === row.key}>
+        {shown.map((row) => <tr key={row.key} className="component-row" onClick={() => select(row.key)} aria-selected={selectedKey === row.key}>
           <td>{row.brand}</td>
-          <td><button type="button" className="component-select" onClick={() => setSelectedKey(row.key)}>{row.title}</button></td>
+          <td><button type="button" className="component-select" onClick={() => select(row.key)}>{row.title}</button></td>
           <td className="component-col-cat">{categoryName(row)}</td>
           <td>{row.kind === "derailleur" ? `${row.data.discipline} · ${row.data.speeds}-speed` : row.kind === "hub" ? `${HUB_TYPE_LABELS[row.data.type]} · ${row.data.widthMm}mm · ${row.data.spokeCounts.join(", ")}h` : row.kind === "gearing" ? row.data.continuouslyVariable ? `CVT · ${row.data.gears[0].ratio.toFixed(2)}–${row.data.gears[1].ratio.toFixed(2)} ratio` : `${row.data.gears.length} gears` : `${row.data.speeds}-speed · ${row.data.cogs[0]}–${row.data.cogs[row.data.cogs.length - 1]}T`}</td>
         </tr>)}
@@ -326,7 +359,8 @@ export function Derailleur() {
       </tbody>
     </table></div>
     {results.length > shown.length && <div className="cp-foot">Showing first {shown.length} of {results.length} — refine to narrow.</div>}
-    {selected && <div className="component-details" ref={detailsRef}><Section title={<><span>{selected.brand} {selected.title}</span><span className="component-detail-kind">{categoryName(selected)}</span></>} action={!editing && <button type="button" className="component-action" onClick={() => beginEdit(proposalDraft(rowCategory(selected), selected.data))}><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M11.7 1.3a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L5.1 14H1v-4.1L11.7 1.3zM2.5 10.5v2h2L12.9 4 11 2.1z"/></svg> Propose changes</button>}>
+    </>}
+    {selected && <div className="component-details"><Section title={<><span>{selected.brand} {selected.title}</span><span className="component-detail-kind">{categoryName(selected)}</span></>} action={<>{!editing && <button type="button" className="component-action" onClick={() => beginEdit(proposalDraft(rowCategory(selected), selected.data))}><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M11.7 1.3a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L5.1 14H1v-4.1L11.7 1.3zM2.5 10.5v2h2L12.9 4 11 2.1z"/></svg> Propose changes</button>}{closeButton("Close details")}</>}>
       {editing && <ProposalEditor key={selected.key} isNew={false} draft={draft} setDraft={setDraft} submitted={submitted} onCancel={cancelEdit} onSubmit={submitDraft} />}
       {!editing && <div className="table-wrap"><table><tbody>
         {selected.kind === "derailleur" && <>
@@ -345,7 +379,7 @@ export function Derailleur() {
         <tr><th>Configure</th><td><a className="inline-link component-config-link" href={selected.kind === "hub" ? `#/wheel-building?hub=${encodeURIComponent(`${selected.data.manufacturer}~${selected.data.model}`)}` : selected.kind === "cassette" ? `#/drivetrain?cassette=${encodeURIComponent(`${selected.data.brand} ${selected.data.model}`)}` : selected.kind === "gearing" ? `#/drivetrain?gearing=${encodeURIComponent(selected.data.label)}` : `#/drivetrain?derailleur=${encodeURIComponent(selected.data.key)}`}>{selected.kind === "hub" ? "Configure in Wheel Building" : "Configure in Drivetrain"} →</a></td></tr>
       </tbody></table></div>}
     </Section></div>}
-    {isNew && <div className="component-details" ref={newEditorRef}><Section title={<><span>New component</span><span className="component-detail-kind">{NEW_CATEGORY_LABELS[draft.category as NewCategory]}</span></>}>
+    {isNew && <div className="component-details" ref={newEditorRef}><Section title={<><span>New component</span><span className="component-detail-kind">{NEW_CATEGORY_LABELS[draft.category as NewCategory]}</span></>} action={closeButton("Close proposal")}>
       <ProposalEditor isNew draft={draft} setDraft={setDraft} submitted={submitted} onCancel={cancelEdit} onSubmit={submitDraft} />
     </Section></div>}
   </div>;

@@ -2056,3 +2056,32 @@ html.embed-fill body { overscroll-behavior: none; }
   .td-table { flex: 1 1 100%; }
   .td-diagram { flex: 1 1 100%; width: auto; position: static; }
 }
+
+/* Components database: close (deselect) button in the details header, next to
+   "Propose changes". */
+.component-details .section-action { display: flex; align-items: center; gap: 8px; }
+.component-close {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; padding: 0;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--panel); color: var(--muted); cursor: pointer;
+}
+.component-close:hover { border-color: var(--accent); color: var(--accent); }
+/* Long source URLs (no spaces to break at) must wrap rather than widen the page. */
+.component-details td { overflow-wrap: anywhere; }
+
+@media (max-width: 600px) {
+  /* Bottom bar: "+ Propose new" — the full label crowds out the page title. */
+  .component-propose-long { display: none; }
+  /* Details header: title with the close button top-right; "Propose changes"
+     moves to its own row below instead of squeezing the title. */
+  .component-details .section-head {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 10px 12px;
+  }
+  .component-details .section-action { display: contents; }
+  .component-details .section-head h3 { grid-column: 1; grid-row: 1; align-self: center; }
+  .component-details .component-close { grid-column: 2; grid-row: 1; }
+  .component-details .component-action { grid-column: 1 / -1; grid-row: 2; justify-self: start; white-space: nowrap; }
+}
+/* Details-only view (compact, short screens): the details sit at the top. */
+.component-db--details-only > .component-details:first-child { margin-top: 0; }

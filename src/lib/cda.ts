@@ -2,7 +2,7 @@
 //
 // CdA = Cd·A — the rider+bike frontal area times the drag coefficient. We build
 // it up from a *position* baseline for a reference rider, scaled by body size and
-// nudged by bike type, wheelset and clothing. These are plausible engineering
+// nudged by bike type, wheelset, clothing and shaved legs. These are plausible engineering
 // estimates to show how the knobs trade off, not wind-tunnel truth. The upright
 // position baselines are anchored so an average rider reproduces the page's old
 // quick presets (hoods ~0.36, drops ~0.31, aero ~0.24, MTB upright ~0.45).
@@ -59,6 +59,8 @@ export interface CdaParams {
   heightCm: number;
   wheels: CdaWheels;
   clothing: CdaClothing;
+  /** Shaved legs: smoother skin than hairy legs sheds a little drag. */
+  shavedLegs: boolean;
   /** How the group is arranged, and whether you hold a spot or rotate. */
   formation: CdaFormation;
   /** Fixed spot: riders in front of you that you're drafting behind (0 = alone). */
@@ -148,6 +150,11 @@ export const CDA_CLOTHING: ReadonlyArray<{
   { value: 'skinsuit', label: 'Skinsuit', factor: 0.91 },
   { value: 'skinsuitAero', label: 'Skinsuit + aero helmet', factor: 0.88 },
 ];
+
+// Shaved legs: a drag multiplier on top of clothing. Specialized's Win Tunnel
+// (2014) measured ~7 % less drag for riders after shaving their legs; other
+// tests found less, so we take a more conservative 5 %.
+export const SHAVED_LEGS_FACTOR = 0.95;
 
 // Drafting: the fraction of solo drag left after `n` riders ahead, as
 // `floor + (1 − floor) · shape(n)`. Rough fits to published data:
@@ -261,6 +268,7 @@ export const DEFAULT_CDA_PARAMS: CdaParams = {
   heightCm: REF_HEIGHT_CM,
   wheels: 'mid',
   clothing: 'club',
+  shavedLegs: false,
   formation: 'bunch',
   draftRiders: 0,
   groupSize: 8,
@@ -307,13 +315,14 @@ export function estimateCda(p: CdaParams, massKg: number): number {
   const clothing = faired
     ? 1
     : CDA_CLOTHING.find((x) => x.value === p.clothing)?.factor ?? 1;
+  const legs = !faired && p.shavedLegs ? SHAVED_LEGS_FACTOR : 1;
   const wheel = faired ? 0 : CDA_WHEELS.find((x) => x.value === p.wheels)?.delta ?? 0;
 
   // A fairing sets the frontal area, so the shell's CdA is rider-independent;
   // open vehicles scale with the rider's body.
   const scale = faired ? 1 : bodySizeScale(p.heightCm, massKg);
 
-  const solo = base * scale * bike.factor * clothing + wheel;
+  const solo = base * scale * bike.factor * clothing * legs + wheel;
   const cda = solo * groupDraftFactor(p);
   const clamped = Math.min(CDA_MAX, Math.max(CDA_MIN, cda));
   return Math.round(clamped * 1000) / 1000;

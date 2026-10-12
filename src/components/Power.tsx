@@ -3,7 +3,10 @@ import {
   powerForSpeed,
   speedForPower,
   powerBreakdown,
+  metabolicKcal,
+  elevationChange,
   CRR_PRESETS,
+  GROSS_EFFICIENCY_PRESETS,
   combinedEfficiency,
   DEFAULT_EFFICIENCY_PARAMS,
   type EfficiencyParams,
@@ -29,6 +32,18 @@ import { AirDensityPanel } from "./AirDensity";
 import { useOutsideClose } from "./EditorPopover";
 
 const CRR_OPTIONS = CRR_PRESETS.map((c) => ({ value: String(c.crr), label: `${c.label} (${c.crr})` }));
+const GROSS_EFF_OPTIONS = GROSS_EFFICIENCY_PRESETS.map((g) => ({
+  value: String(g.eff * 100),
+  label: `${g.label} (${Math.round(g.eff * 100)} %)`,
+}));
+
+// "1 h 05 min" style readout for a duration in minutes.
+function formatDuration(min: number): string {
+  const total = Math.round(min);
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  return h > 0 ? `${h} h ${String(m).padStart(2, "0")} min` : `${m} min`;
+}
 
 // Colours shared by the breakdown's number cards and the stacked bar.
 const SPLIT_COLORS = {
@@ -115,6 +130,14 @@ export function Power() {
   const [wkg, setWkg] = useState(200 / 70);
   const [last, setLast] = useState<"speed" | "power" | "wkg">("speed");
 
+  // Ride length for the work & energy section: duration and distance are coupled
+  // through the speed above, and the one edited last is held fixed.
+  const [durationMin, setDurationMin] = useState(60);
+  const [distanceKm, setDistanceKm] = useState(30);
+  const [rideLast, setRideLast] = useState<"duration" | "distance">("duration");
+  // Gross metabolic efficiency (%): pedal work ÷ food energy burned.
+  const [grossEffPct, setGrossEffPct] = useState(24);
+
   // Each editor-backed field (CdA, air density, drivetrain efficiency) follows the
   // same pattern: it's seeded from its editor and re-derived whenever a factor
   // changes, until the user types a value directly (which switches it to manual).
@@ -174,6 +197,20 @@ export function Power() {
   // Percentages are shares of the resisting (positive) power, so an assisting
   // part reads as "assist" rather than a confusing negative %.
   const resistingW = parts.reduce((s, p) => s + Math.max(0, p.watts), 0);
+
+  // Work & energy over the ride, at the steady speed/power above.
+  const speedMs = kmhToMs(shownSpeedKmh);
+  const shownDurationMin =
+    rideLast === "duration" ? durationMin : speedMs > 0 ? (distanceKm * 1000) / speedMs / 60 : 0;
+  const shownDistanceKm =
+    rideLast === "distance" ? distanceKm : (speedMs * durationMin * 60) / 1000;
+  const workJ = shownWatts * shownDurationMin * 60;
+  const workKj = workJ / 1000;
+  const kcal = metabolicKcal(workJ, grossEffPct / 100);
+  const elevationM = elevationChange(shownDistanceKm * 1000, gradient / 100);
+  const distUnit = units.speed === "mph" ? "mi" : "km";
+  const toDistDisplay = (km: number) => (units.speed === "mph" ? kmhToMph(km) : km);
+  const fromDistDisplay = (v: number) => (units.speed === "mph" ? mphToKmh(v) : v);
 
   return (
     <>
@@ -437,6 +474,62 @@ export function Power() {
             </div>
           </Field>
         </div>
+      </Section>
+
+      <Section title="Work & energy">
+        <div className="grid grid-3">
+          <Field label="Duration" hint={formatDuration(shownDurationMin)} highlight={rideLast === "duration"}>
+            <NumberInput
+              value={Math.round(shownDurationMin)}
+              onChange={(v) => {
+                setDurationMin(v);
+                setRideLast("duration");
+              }}
+              suffix="min"
+              min={1}
+            />
+          </Field>
+          <Field label="Distance" highlight={rideLast === "distance"}>
+            <NumberInput
+              value={Math.round(toDistDisplay(shownDistanceKm) * 10) / 10}
+              onChange={(v) => {
+                setDistanceKm(fromDistDisplay(v));
+                setRideLast("distance");
+              }}
+              suffix={distUnit}
+              min={0.1}
+              step={1}
+            />
+          </Field>
+          <Field label="Gross efficiency" hint="pedal work ÷ food energy">
+            <div className="number-input">
+              <div className="combo">
+                <NumberInput value={grossEffPct} onChange={setGrossEffPct} min={10} max={30} step={1} />
+                <PresetMenu
+                  title="Fill gross efficiency from a rider level"
+                  options={GROSS_EFF_OPTIONS}
+                  onPick={(v) => setGrossEffPct(parseFloat(v))}
+                />
+              </div>
+              <span className="suffix">%</span>
+            </div>
+          </Field>
+        </div>
+        {workKj > 0 ? (
+          <div className="results" style={{ marginTop: 8 }}>
+            <Result label="Pedal work" value={`${Math.round(workKj)} kJ`} big />
+            <Result label="Food energy" value={`${Math.round(kcal)} kcal`} big />
+            <Result
+              label={elevationM < 0 ? "Elevation lost" : "Elevation gained"}
+              value={`${Math.round(Math.abs(elevationM))} m`}
+            />
+          </div>
+        ) : (
+          <Note>
+            You'd coast this descent, so there's no pedalling work to add up — gravity
+            supplies the energy ({Math.round(Math.abs(elevationM))} m of descent).
+          </Note>
+        )}
       </Section>
     </>
   );

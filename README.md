@@ -19,7 +19,7 @@ You can try the calculator live on the [Rückenwind web site](https://rueckenwin
 | 2 | Wheel building | Spoke lengths for a given hub + rim + lacing, plus spoke tension converter | [wheel-building.md](docs/calculators/wheel-building.md) |
 | 3 | Frame size | Frame size / saddle height / crank length from inseam or body height | [frame-size.md](docs/calculators/frame-size.md) |
 | 4 | Tire | Convert tire size formats; recommend pressure | [tire.md](docs/calculators/tire.md) |
-| 5 | Cycling power | Watts needed for a speed/gradient, and speed from watts | [power.md](docs/calculators/power.md) |
+| 5 | Cycling power | Watts needed for a speed/gradient, speed from watts, and work / food energy over a ride | [power.md](docs/calculators/power.md) |
 | 6 | Thread direction | Reference: which parts are left-hand threaded, and which way to turn to loosen/tighten | [thread-direction.md](docs/calculators/thread-direction.md) |
 
 ## Documentation

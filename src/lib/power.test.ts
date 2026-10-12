@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { powerForSpeed, speedForPower, powerBreakdown } from './power';
-import { kmhToMs } from './units';
+import {
+  powerForSpeed,
+  speedForPower,
+  powerBreakdown,
+  metabolicKcal,
+  elevationChange,
+} from './power';
+import { kmhToMs, G } from './units';
 
 const flat = {
   massKg: 80,
@@ -62,5 +68,23 @@ describe('powerBreakdown', () => {
     const b = powerBreakdown(kmhToMs(30), flat);
     const road = b.gravity + b.rolling + b.aero;
     expect(b.drivetrain).toBeCloseTo(road * (1 / flat.drivetrainEfficiency - 1), 6);
+  });
+});
+
+describe('work & energy', () => {
+  it('converts work to food energy at the gross efficiency (~1 kcal per kJ at 24 %)', () => {
+    expect(metabolicKcal(1000_000, 0.24)).toBeCloseTo(995.9, 1);
+    expect(metabolicKcal(-5000, 0.24)).toBe(0); // coasting burns nothing extra here
+  });
+
+  it('elevation change follows the slope angle', () => {
+    expect(elevationChange(10_000, 0.06)).toBeCloseTo(598.9, 1);
+    expect(elevationChange(1000, -0.05)).toBeLessThan(0);
+    // potential energy over a climb matches the gravity work (power × time)
+    const v = kmhToMs(12);
+    const climb = { ...flat, gradient: 0.06 };
+    const t = 1800;
+    const h = elevationChange(v * t, 0.06);
+    expect(powerBreakdown(v, climb).gravity * t).toBeCloseTo(climb.massKg * G * h, 3);
   });
 });

@@ -156,3 +156,27 @@ export function combinedEfficiency(p: EfficiencyParams): number {
   const gr = GEARING_PRESETS.find((x) => x.id === p.gearing)?.eff ?? 0.98;
   return Math.round(dt * gr * 1000) / 1000;
 }
+
+// --- Work & energy over a ride -------------------------------------------------
+
+export const J_PER_KCAL = 4184;
+
+// Gross metabolic efficiency: the share of food energy burned that ends up as
+// work at the pedals. Trained cyclists sit around 20–25 %; ~24 % is the
+// figure behind the "1 kJ of work ≈ 1 kcal eaten" rule of thumb.
+export const GROSS_EFFICIENCY_PRESETS = [
+  { label: 'Untrained', eff: 0.18 },
+  { label: 'Recreational', eff: 0.21 },
+  { label: 'Trained', eff: 0.24 },
+  { label: 'Elite', eff: 0.25 },
+];
+
+/** Food energy (kcal) burned to do `workJ` at the pedals, at a gross efficiency. */
+export function metabolicKcal(workJ: number, grossEfficiency: number): number {
+  return Math.max(0, workJ) / grossEfficiency / J_PER_KCAL;
+}
+
+/** Height (m) climbed (negative: descended) over `distanceM` along a gradient. */
+export function elevationChange(distanceM: number, gradient: number): number {
+  return distanceM * Math.sin(Math.atan(gradient));
+}

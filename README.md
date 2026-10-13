@@ -52,6 +52,7 @@ the current shell and run the script:
 ```bash
 export DEPLOY_USER='your-sftp-user' DEPLOY_HOST='your-sftp-host'
 export PASSWORD='your-sftp-password' REMOTE_DIR='/remote/path/to/site'
+export DEPLOY_URL='https://rueckenwind.berlin/bikeworkshopcalc/'
 ./scripts/deploy.sh
 ```
 
@@ -117,7 +118,8 @@ or SPA rewrite is needed: the server only needs to serve directory index files
 and let existing files/directories bypass WordPress (the normal WordPress setup).
 Do not overwrite WordPress's root files or `.htaccess`. The deployment script
 uploads these entry points too; verify its host and remote directory before use.
-`DEPLOY_URL` overrides the live verification URL if deploying elsewhere.
+`DEPLOY_URL` is required and specifies the public page URL used for live
+verification; it is independent of the SFTP host and remote directory.
 
 Production canonical URLs and the sitemap target
 `https://rueckenwind.berlin/bikeworkshopcalc/` (configured in

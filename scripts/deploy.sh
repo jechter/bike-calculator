@@ -14,7 +14,7 @@ REPO="$PWD"
 
 command -v expect >/dev/null || { echo "error: 'expect' is required (brew install expect)"; exit 1; }
 
-for v in DEPLOY_USER DEPLOY_HOST PASSWORD REMOTE_DIR; do
+for v in DEPLOY_USER DEPLOY_HOST PASSWORD REMOTE_DIR DEPLOY_URL; do
   [ -n "${!v:-}" ] || { echo "error: $v must be set"; exit 1; }
 done
 
@@ -103,7 +103,7 @@ fi
 
 # 5. Verify the live site references the freshly-built files.
 echo "==> Verifying live site"
-LIVE="$(curl -s "${DEPLOY_URL:-https://rueckenwind.berlin/bikeworkshopcalc/}" \
+LIVE="$(curl -s "$DEPLOY_URL" \
   | grep -oE 'index-[A-Za-z0-9_-]+\.(js|css)' | sort -u || true)"
 echo "    live references: $LIVE"
 for f in $LOCAL_ASSETS; do

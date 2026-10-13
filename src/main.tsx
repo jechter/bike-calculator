@@ -25,6 +25,16 @@ if (embedded) {
   document.documentElement.classList.add(fillViewport ? "embed-fill" : "embedded");
 }
 
+// Launched from the home screen as a fullscreen web app: the bottom bar needs
+// extra room for the rounded screen corners and the home indicator / gesture
+// bar (see html.standalone in styles.css). `navigator.standalone` is iOS-only.
+if (
+  window.matchMedia("(display-mode: standalone), (display-mode: fullscreen)").matches ||
+  (navigator as Navigator & { standalone?: boolean }).standalone
+) {
+  document.documentElement.classList.add("standalone");
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />

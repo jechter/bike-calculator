@@ -1725,6 +1725,13 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
   /* Bottom padding clears the fixed bottom bar (its height + the safe-area inset). */
   .main { padding: 20px 16px calc(66px + env(safe-area-inset-bottom, 0px)); }
+  /* Fullscreen home-screen web app: the bar reaches the physical screen edge, so
+     pad it further in from the rounded corners and above the home indicator /
+     gesture bar. The minimum covers devices that report no safe-area inset. */
+  html.standalone .botbar {
+    padding: 10px 22px calc(12px + max(env(safe-area-inset-bottom, 0px), 22px));
+  }
+  html.standalone .main { padding-bottom: calc(90px + max(env(safe-area-inset-bottom, 0px), 22px)); }
   /* Let the page header (actions like "Load an example" / "Copy link") wrap
      instead of overflowing the viewport on narrow screens. */
   .main-head { flex-wrap: wrap; }

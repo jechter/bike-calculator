@@ -20,7 +20,8 @@ let parentUrl: string | null = null; // host page URL, without its own hash
 let parentOrigin = "*";
 
 export function isEmbedded(): boolean {
-  return typeof window !== "undefined" && window.parent !== window;
+  return typeof window !== "undefined" && window.parent !== window
+    && new URLSearchParams(window.location.search).has("embed");
 }
 
 /**

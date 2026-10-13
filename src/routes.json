@@ -1,0 +1,9 @@
+[
+  {"id":"drivetrain","slug":"gear-ratio-chain-length-calculator","title":"Bicycle Gear Ratio & Chain Length Calculator","description":"Calculate bicycle gear ratios, speed at cadence, gear inches, chain length and chain wear. Compare cassette, single-speed and internally geared hub setups with an interactive drivetrain visualization."},
+  {"id":"wheel-building","slug":"spoke-length-calculator","title":"Bicycle Spoke Length & Tension Calculator","description":"Calculate spoke lengths for your hub, rim and lacing pattern, convert spoke tension readings, and explore an interactive wheel-building visualization."},
+  {"id":"frame-size","slug":"bike-frame-size-calculator","title":"Bike Frame Size Calculator","description":"Estimate bicycle frame size, saddle height and crank length from your height or inseam, with an interactive frame geometry diagram."},
+  {"id":"tire","slug":"tire-pressure-calculator","title":"Bicycle Tire Pressure & Size Calculator","description":"Find a recommended bicycle tire pressure and convert between common tire size formats. Explore starting pressures for your bike and riding setup."},
+  {"id":"derailleur","slug":"bicycle-component-compatibility","title":"Bicycle Component Compatibility","description":"Explore bicycle drivetrain component specifications and compatibility, including derailleurs, shifters and cassettes."},
+  {"id":"power","slug":"cycling-power-calculator","title":"Cycling Power Calculator","description":"Calculate cycling power for a given speed and gradient, estimate speed from watts, and explore ride energy requirements."},
+  {"id":"thread-direction","slug":"bicycle-thread-direction","title":"Bicycle Thread Direction Guide","description":"Check which bicycle parts have left-hand threads and which way to turn them to tighten or loosen them."}
+]

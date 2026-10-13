@@ -24,9 +24,9 @@ export interface CalculatorDef {
   subtitle: string;
   icon: React.ReactNode;
   Component: React.ComponentType;
-  /** Hidden from the sidebar nav, but still reachable directly by hash route. */
+  /** Hidden from the sidebar nav, but still reachable directly by URL. */
   hidden?: boolean;
-  /** Encodes its config in the URL hash — show a "Copy link" button (see
+  /** Encodes its config in the URL query — show a "Copy link" button (see
    *  useUrlConfigSync in the page component). */
   shareable?: boolean;
   /** Optional extra control(s) rendered in the page header, left of "Copy link". */

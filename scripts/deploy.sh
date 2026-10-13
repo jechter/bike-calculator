@@ -31,7 +31,14 @@ npm run build
 LOCAL_ASSETS="$(cd dist/assets && printf '%s ' *)"
 echo "==> Built assets: $LOCAL_ASSETS"
 
-# 3. Upload index.html + all new assets, then list the remote assets dir.
+# 3. Upload all generated HTML entry points as well as assets.
+PAGE_CMDS=""
+for page in dist/*/index.html; do
+  dir="$(basename "$(dirname "$page")")"
+  PAGE_CMDS="$PAGE_CMDS
+send -- \"mkdir $dir\r\"; expect \"sftp>\"
+send -- \"put $dir/index.html $dir/index.html\r\"; expect \"sftp>\""
+done
 echo "==> Uploading"
 OUT="$(expect <<EOF
 log_user 1
@@ -45,6 +52,8 @@ send -- "put *\r"; expect "sftp>"
 send -- "lcd $REPO/dist\r"; expect "sftp>"
 send -- "cd $REMOTE_DIR\r"; expect "sftp>"
 send -- "put index.html\r"; expect "sftp>"
+send -- "put sitemap.xml\r"; expect "sftp>"
+$PAGE_CMDS
 send -- "ls -1 assets\r"; expect "sftp>"
 send -- "bye\r"
 expect eof
@@ -94,7 +103,7 @@ fi
 
 # 5. Verify the live site references the freshly-built files.
 echo "==> Verifying live site"
-LIVE="$(curl -s "https://jonasechterhoff.com/Rueckenwind/bikecalc/index.html" \
+LIVE="$(curl -s "${DEPLOY_URL:-https://rueckenwind.berlin/bikeworkshopcalc/}" \
   | grep -oE 'index-[A-Za-z0-9_-]+\.(js|css)' | sort -u || true)"
 echo "    live references: $LIVE"
 for f in $LOCAL_ASSETS; do

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CALCULATORS } from "./registry";
-import { useHashRoute, useHashConfigKey } from "./useHashRoute";
+import { useHashRoute, useHashConfigKey, routeHref, updatePageMetadata } from "./useHashRoute";
 import { useIsMobile } from "./useIsMobile";
 import { SettingsDrawerContext } from "./settingsDrawer";
 import { UnitsProvider } from "./units-context";
@@ -13,6 +13,7 @@ export function App() {
   const [route, navigate] = useHashRoute(CALCULATORS[0].id);
   const active = CALCULATORS.find((c) => c.id === route) ?? CALCULATORS[0];
   const Active = active.Component;
+  useEffect(() => updatePageMetadata(active.id), [active.id]);
   // Shareable pages remount when a new link arrives (see useHashConfigKey) so they
   // re-read their config from the URL even without a full page reload.
   const hashKey = useHashConfigKey();
@@ -116,20 +117,24 @@ export function App() {
           </div>
           <nav className="nav">
             {CALCULATORS.filter((c) => !c.hidden).map((c) => (
-              <button
+              <a
+                href={routeHref(c.id)}
+                aria-current={c.id === active.id ? "page" : undefined}
                 key={c.id}
                 className={c.id === active.id ? "active" : ""}
                 title={c.title}
                 // Clicking the active tab is a no-op — otherwise it would strip the
                 // config query from the hash and reset a shareable page.
-                onClick={() => {
+                onClick={(event) => {
+                  if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+                  event.preventDefault();
                   if (c.id !== active.id) navigate(c.id);
                   setMobileNavOpen(false);
                 }}
               >
                 <span className="icon">{c.icon}</span>
                 <span>{c.title}</span>
-              </button>
+              </a>
             ))}
           </nav>
           <div className="sidebar-footer">

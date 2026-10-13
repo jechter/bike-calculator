@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from "react";
+import { navigateTo } from "../useHashRoute";
 import { useIsMobile } from "../useIsMobile";
 
 // A ready-made preset for a calculator, expressed as the URL params it differs
@@ -35,8 +36,7 @@ export function ExamplesMenu({ route, groups }: { route: string; groups: Example
   }, [open]);
 
   const applyExample = (p: ExamplePreset) => {
-    const query = new URLSearchParams(p.params).toString();
-    window.location.hash = query ? `/${route}?${query}` : `/${route}`;
+    navigateTo(route, p.params);
     setOpen(false);
   };
 

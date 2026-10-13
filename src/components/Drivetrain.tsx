@@ -42,7 +42,7 @@ import { Field, NumberInput, TextInput, Select, PresetMenu, Result, Note, Sectio
 import { GearChart, type GearSeries } from "./GearChart";
 import { DrivetrainDiagram } from "./DrivetrainDiagram";
 import { Workbench } from "./Workbench";
-import { getHashQuery, useUrlConfigSync } from "../useHashRoute";
+import { getHashQuery, useUrlConfigSync, routeHref, handleRouteLinkClick } from "../useHashRoute";
 
 type Mode = "cassette" | "single" | "hub";
 // Single-speed / plain-hub drives can run either a chain or a Gates carbon belt;
@@ -253,7 +253,7 @@ function DerailleurFieldHint({ d }: { d: DerailleurSpec | undefined }) {
     );
   }
   return (
-    <a className="inline-link" href="#/derailleur">
+    <a onClick={handleRouteLinkClick} className="inline-link" href={routeHref("derailleur")}>
       open the derailleur database →
     </a>
   );
@@ -1271,7 +1271,7 @@ function TirePicker({ onPick }: { onPick: (circumferenceMm: number, sizeLabel: s
 // the Tire calculator.
 function CircumferenceField({ cfg }: { cfg: DrivetrainConfig }) {
   // Carry the selected tire size across to the Tire calculator when one is set.
-  const tireHref = cfg.tireSize ? `#/tire?size=${encodeURIComponent(cfg.tireSize)}` : "#/tire";
+  const tireHref = cfg.tireSize ? `${routeHref("tire")}?size=${encodeURIComponent(cfg.tireSize)}` : routeHref("tire");
   return (
     <div className="rows">
       <Field
@@ -1279,7 +1279,7 @@ function CircumferenceField({ cfg }: { cfg: DrivetrainConfig }) {
         hint={
           <>
             measured roll-out is most accurate ·{" "}
-            <a className="inline-link" href={tireHref}>
+            <a onClick={handleRouteLinkClick} className="inline-link" href={tireHref}>
               {cfg.tireSize
                 ? `open ${cfg.tireSize} in the Tire calculator →`
                 : "open the Tire calculator for sizes & conversion →"}
@@ -2324,7 +2324,7 @@ export function Drivetrain() {
 
         <p className="dt-hint">
           Want to know if this gearing will get you up a mountain? The{" "}
-          <a className="inline-link" href="#/power">
+          <a onClick={handleRouteLinkClick} className="inline-link" href={routeHref("power")}>
             cycling power calculator
           </a>{" "}
           turns a speed and gradient into the watts you'd need — pair it with your
@@ -2341,7 +2341,7 @@ export function Drivetrain() {
               cassette/crankset. Needs capacity ≥ (big ring − small ring) + (big cog
               − small cog), and its max sprocket ≥ your largest cog. Specs are
               approximate — see the{" "}
-              <a className="inline-link" href="#/derailleur">
+              <a onClick={handleRouteLinkClick} className="inline-link" href={routeHref("derailleur")}>
                 derailleur database
               </a>
               .

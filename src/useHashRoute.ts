@@ -1,102 +1,148 @@
-import { useEffect, useState } from "react";
-import { notifyConfigChanged } from "./embed";
+import { useEffect, useState, type MouseEvent } from "react";
+import { isEmbedded, notifyConfigChanged } from "./embed";
+import routes from "./routes.json";
 
-/** Read a query param from the hash, e.g. "size" from `#/tire?size=700x28C`. */
+const NAVIGATION = "bikecalc:navigate";
+const legacyRoute = () => {
+  const match = window.location.hash.match(/^#\/?([^?]+)(?:\?(.*))?$/);
+  return match && routes.some(r => r.id === match[1]) ? match : null;
+};
+
+/** Infer the installation directory, including when opened on a nested page. */
+export function getBasePath(): string {
+  const path = window.location.pathname.replace(/index\.html$/, "");
+  const page = routes.find(r => path.endsWith(`/${r.slug}/`) || path.endsWith(`/${r.slug}`));
+  if (page) return path.slice(0, path.lastIndexOf(`/${page.slug}`) + 1);
+  return path.endsWith("/") ? path : path + "/";
+}
+
+export function routeHref(id: string): string {
+  if (isEmbedded()) return `#/${id}`;
+  const page = routes.find(r => r.id === id) ?? routes[0];
+  return `${getBasePath()}${page.slug}/`;
+}
+
+function currentRoute(): string {
+  const legacy = legacyRoute();
+  if (legacy) return legacy[1];
+  const path = window.location.pathname.replace(/\/index\.html$/, "/").replace(/\/$/, "");
+  return routes.find(r => path.endsWith(`/${r.slug}`))?.id ?? routes[0].id;
+}
+
+/** Retain the old function names for calculator consumers and legacy links. */
 export function getHashQueryParam(name: string): string | null {
   return getHashQuery().get(name);
 }
-
-/** All query params from the current hash (empty when there's no `?…`). */
 export function getHashQuery(): URLSearchParams {
-  const hash = window.location.hash;
-  const qi = hash.indexOf("?");
-  return new URLSearchParams(qi < 0 ? "" : hash.slice(qi + 1));
+  const legacy = legacyRoute();
+  return new URLSearchParams(legacy ? legacy[2] ?? "" : window.location.search);
 }
-
-/**
- * Build a `#/route?…` hash from a params object, dropping null/undefined/empty
- * values (so a shared link only carries what differs from the defaults the page
- * seeds itself with). Values are stringified; order follows insertion order.
- */
 export function buildHash(routeId: string, params: Record<string, unknown>): string {
   const usp = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
-    if (v === null || v === undefined || v === "") continue;
-    usp.set(k, String(v));
+    if (v !== null && v !== undefined && v !== "") usp.set(k, String(v));
   }
   const q = usp.toString();
   return `#/${routeId}${q ? "?" + q : ""}`;
 }
 
-/**
- * Keep the address-bar hash in sync with a page's current config, so the URL is
- * always a shareable/bookmarkable link to what's on screen. Uses replaceState
- * (no history spam, and no hashchange event, so the router isn't disturbed).
- * Only writes while we're actually on `routeId`, to avoid clobbering an
- * in-flight navigation to another page.
- *
- * The write is debounced: dragging a slider changes the config every few ms, and
- * browsers cap replaceState (Safari throws after 100 calls / 10 s). Coalescing a
- * burst into one write after the value settles keeps the URL fresh without
- * tripping that limit.
- */
+/** Migrate old bookmarks without losing their configuration or adding history. */
+export function normalizeRoute(): void {
+  if (isEmbedded()) return;
+  const id = currentRoute();
+  const query = getHashQuery().toString();
+  const anchor = legacyRoute() ? "" : window.location.hash;
+  history.replaceState(null, "", routeHref(id) + (query ? `?${query}` : "") + anchor);
+}
+
+export function navigateTo(id: string, params?: Record<string, unknown>): void {
+  const hash = buildHash(id, params ?? {});
+  if (isEmbedded()) {
+    window.location.hash = hash;
+    return;
+  }
+  const qi = hash.indexOf("?");
+  history.pushState(null, "", routeHref(id) + (qi < 0 ? "" : hash.slice(qi)));
+  window.dispatchEvent(new Event(NAVIGATION));
+}
+
+/** Enhance ordinary internal-link clicks without breaking native link behavior. */
+export function handleRouteLinkClick(event: MouseEvent<HTMLAnchorElement>): void {
+  const link = event.currentTarget;
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey ||
+      event.shiftKey || event.altKey || link.hasAttribute("download") ||
+      (link.target && link.target !== "_self")) return;
+  const url = new URL(link.href, window.location.href);
+  if (url.origin !== window.location.origin) return;
+  // Embedded links already use native hash navigation and need no interception.
+  if (isEmbedded()) return;
+  if (!routes.some(r => url.pathname === `${getBasePath()}${r.slug}/`)) return;
+  event.preventDefault();
+  if (url.href === window.location.href) return;
+  history.pushState(null, "", url.pathname + url.search + url.hash);
+  window.dispatchEvent(new Event(NAVIGATION));
+}
+
+function subscribe(onChange: () => void): () => void {
+  const handle = () => { normalizeRoute(); onChange(); };
+  window.addEventListener("hashchange", handle);
+  window.addEventListener("popstate", handle);
+  window.addEventListener(NAVIGATION, handle);
+  return () => {
+    window.removeEventListener("hashchange", handle);
+    window.removeEventListener("popstate", handle);
+    window.removeEventListener(NAVIGATION, handle);
+  };
+}
+
+/** Debounced replaceState keeps shared settings current without history spam. */
 export function useUrlConfigSync(routeId: string, params: Record<string, unknown>): void {
   const hash = buildHash(routeId, params);
   useEffect(() => {
-    // An empty hash means the app is showing its default route (which is the page
-    // mounting this hook), so writing is safe. A non-empty, non-matching hash
-    // means we're mid-navigation to another page — don't clobber it.
-    const onRoute = () => {
-      const current = window.location.hash.replace(/^#\/?/, "").split("?")[0];
-      return current === "" || current === routeId;
-    };
-    if (!onRoute() || window.location.hash === hash) return;
     const id = window.setTimeout(() => {
-      // Re-check at write time — a navigation may have started during the delay.
-      if (!onRoute() || window.location.hash === hash) return;
-      history.replaceState(null, "", hash);
-      // replaceState doesn't fire hashchange; let the embed bridge (if any) mirror
-      // the new config up to a host page.
+      if (currentRoute() !== routeId) return;
+      if (isEmbedded()) history.replaceState(null, "", hash);
+      else {
+        const qi = hash.indexOf("?");
+        history.replaceState(null, "", routeHref(routeId) + (qi < 0 ? "" : hash.slice(qi)) + window.location.hash);
+      }
       notifyConfigChanged();
     }, 200);
     return () => window.clearTimeout(id);
   }, [hash, routeId]);
 }
 
-/**
- * A value that changes whenever the hash changes via a real hashchange event —
- * back/forward, or pasting a shared link into the address bar on the route that's
- * already open. Config sync uses replaceState, which does NOT fire hashchange, so
- * editing a page never trips this. Use it in a component `key` so a shareable page
- * remounts and re-reads its config when a new link arrives without a full reload.
- */
+/** Only navigation remounts a configured page; editing inputs does not. */
 export function useHashConfigKey(): string {
-  const [key, setKey] = useState(() => window.location.hash);
-  useEffect(() => {
-    const onChange = () => setKey(window.location.hash);
-    window.addEventListener("hashchange", onChange);
-    return () => window.removeEventListener("hashchange", onChange);
-  }, []);
+  const [key, setKey] = useState(() => window.location.href);
+  useEffect(() => subscribe(() => setKey(window.location.href)), []);
   return key;
 }
 
-/** Minimal hash router: returns the current route id and a setter. */
-export function useHashRoute(defaultId: string): [string, (id: string) => void] {
-  // The route is the path portion of the hash; a `?query` (see getHashQueryParam)
-  // is ignored here so `#/tire?size=…` still resolves to the "tire" route.
-  const read = () => window.location.hash.replace(/^#\/?/, "").split("?")[0] || defaultId;
-  const [route, setRoute] = useState(read);
-
+export function useHashRoute(_defaultId: string): [string, (id: string) => void] {
+  const [route, setRoute] = useState(currentRoute);
   useEffect(() => {
-    const onChange = () => setRoute(read());
-    window.addEventListener("hashchange", onChange);
-    return () => window.removeEventListener("hashchange", onChange);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    normalizeRoute();
+    return subscribe(() => setRoute(currentRoute()));
   }, []);
+  return [route, navigateTo];
+}
 
-  const navigate = (id: string) => {
-    window.location.hash = `/${id}`;
-  };
-
-  return [route, navigate];
+export function updatePageMetadata(id: string): void {
+  const page = routes.find(r => r.id === id) ?? routes[0];
+  document.title = `${page.title} | Rückenwind`;
+  let description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+  if (!description) {
+    description = document.createElement("meta");
+    description.name = "description";
+    document.head.append(description);
+  }
+  description.content = page.description;
+  let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement("link");
+    canonical.rel = "canonical";
+    document.head.append(canonical);
+  }
+  canonical.href = `https://rueckenwind.berlin/bikeworkshopcalc/${page.slug}/`;
 }

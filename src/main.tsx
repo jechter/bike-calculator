@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { App } from "./App";
-import { initEmbedBridge } from "./embed";
+import { initEmbedBridge, isEmbedded } from "./embed";
 import "./styles.css";
 
 // When embedded in a cross-origin iframe (e.g. the Rückenwind WordPress page)
@@ -18,7 +18,8 @@ import "./styles.css";
 // The mode class is set BEFORE the first render so useIsMobile sees it on mount
 // (auto-height embeds can't host the fixed-position compact drawers, so they
 // always use the in-flow layout — see useIsMobile).
-const embedded = window.parent !== window;
+// Embedding is opt-in; an ordinary preview iframe must still use real URLs.
+const embedded = isEmbedded();
 const fillViewport =
   embedded && new URLSearchParams(window.location.search).get("embed") === "fill";
 if (embedded) {

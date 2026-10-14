@@ -339,8 +339,10 @@ export function Power() {
                 ? "estimated — see panel"
                 : cdaFromEstimator && isDrafting(cdaParams)
                   ? isRotating(cdaParams.formation)
-                    ? `rotating in a group of ${cdaParams.groupSize}`
-                    : `drafting ${cdaParams.draftRiders} rider${cdaParams.draftRiders > 1 ? "s" : ""}`
+                    ? `rotating in a group of ${cdaParams.draftRiders + 1}`
+                    : cdaParams.formation !== "line"
+                      ? `in a group of ${cdaParams.draftRiders + 1}`
+                      : `drafting ${cdaParams.draftRiders} rider${cdaParams.draftRiders > 1 ? "s" : ""}`
                   : "type, position, kit, draft"
             }
             info={

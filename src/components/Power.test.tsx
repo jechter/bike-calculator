@@ -116,17 +116,43 @@ describe("Cycling power", () => {
     // The drafting formation is the panel's last select; its count the last input.
     const formation = Array.from(container.querySelectorAll(".editor-pop select")).pop()!;
     fireEvent.change(formation, { target: { value: "doubleRotating" } });
-    const group8 = +nums(container)[7].value;
-    expect(group8).toBeLessThan(solo);
+    // Switching preserves the initial zero other riders (still alone).
+    expect(+nums(container)[7].value).toBe(solo);
     const count = () =>
       Array.from(container.querySelectorAll('.editor-pop input[type="number"]')).pop()!;
-    fireEvent.change(count(), { target: { value: "16" } });
+    fireEvent.change(count(), { target: { value: "7" } });
+    const group8 = +nums(container)[7].value;
+    expect(group8).toBeLessThan(solo);
+    fireEvent.change(count(), { target: { value: "15" } });
     const group16 = +nums(container)[7].value;
     expect(group16).toBeLessThan(group8); // bigger rotating group → more shelter
     // The panel readout and the field agree.
     expect(container.querySelector(".editor-pop-out strong")!.textContent).toContain(
       group16.toFixed(3),
     );
+  });
+
+  it("keeps one Other riders count across all formations and puts previews after the readout", () => {
+    const { container, getByTitle, getByLabelText } = render(<Power />);
+    fireEvent.click(getByTitle("Estimate CdA from bike, position & kit"));
+    const count = getByLabelText("Other riders") as HTMLInputElement;
+    const formation = getByLabelText("Drafting formation");
+    fireEvent.change(count, { target: { value: "7" } });
+    for (const value of ["line", "double", "doubleRotating", "bunch"]) {
+      fireEvent.change(formation, { target: { value } });
+      expect((getByLabelText("Other riders") as HTMLInputElement).value).toBe("7");
+      expect(container.querySelectorAll(".drafting-preview [data-rider]")).toHaveLength(8);
+    }
+    // Even a large peloton count survives switching to rotation without clamping.
+    fireEvent.change(count, { target: { value: "150" } });
+    fireEvent.change(formation, { target: { value: "doubleRotating" } });
+    expect((getByLabelText("Other riders") as HTMLInputElement).value).toBe("150");
+    expect(container.querySelectorAll("animateMotion")).toHaveLength(151);
+    const previews = container.querySelector(".cda-previews")!;
+    expect(previews.children).toHaveLength(2);
+    expect(container.querySelector(".editor-pop-grid .cda-bike-preview")).toBeNull();
+    expect(container.querySelector(".draft-you-halo")).toBeNull();
+    expect(container.querySelector(".editor-pop-out")!.compareDocumentPosition(previews) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("combines drivetrain and gearing into one efficiency via the editor", () => {

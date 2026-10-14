@@ -95,49 +95,78 @@ less, so the estimate takes a conservative 5 %. Like clothing, it has no effect
 inside a velomobile's fairing.
 
 **Drafting** is the last step: one *Drafting formation* menu, with a count
-field next to it, scales the solo CdA by a draft factor (`groupDraftFactor` in
-`cda.ts`). The options are single file, double file, double file (average in
+field labelled **Other riders** next to it, scales the solo CdA by a draft factor (`groupDraftFactor` in
+`cda.ts`). The same count is retained when switching formations. The options are single file, double file, double file (average in
 rotating group), and bunch/peloton.
 
-**Holding a spot** (single file, double file, bunch). You sit behind `n` riders
-("Riders ahead of you", 0 = alone), and `draftFactor` applies:
+**Holding a spot** (single file, double file, bunch). `n` is the count entered:
+- Single file: riders ahead.
+- Double file and bunch: other riders in the formation, including riders
+  alongside you. The preview fills rows with `n + 1` riders, including you.
+  Double-file drag uses the highlighted rider's complete row depth. Bunch drag
+  remains a count-based approximation, not a position-specific CFD calculation.
+
+Zero means alone. `draftFactor` applies:
 
 ```
 CdA = CdA_solo · draft(n, formation)
 line:   draft = 0.55 + 0.45 · 3^(−n)          (single file)
-double: draft = 0.35 + 0.65 · 0.48^(n/2)      (double file, two abreast)
 bunch:  draft = 0.10 + 0.90 / (1 + n/2)       (bunch / peloton)
 ```
 
-- **Behind one wheel**, every formation gives ~0.70, a ~30 % saving, as in
-  two-rider studies. In double file that's the second row (`n = 2`), at ~0.66.
+For fixed double file, you occupy row-major slot `n` (zero-based) in the same
+rows of two used by the schematic. `r = floor(n / 2)` is the number of complete
+rows ahead. The shared per-position model is:
+
+```
+solo:       factor = 1
+front pair: factor = 1.03
+row r ≥ 1:  factor = 0.35 + 0.65 · 0.48^r
+```
+
+The 1.03 penalty, 0.35 floor and 0.48 decay are heuristic model choices, not
+coefficients fitted to a documented published dataset. The front-pair penalty
+is spacing-dependent in reality; it is deliberately shared between fixed and
+rotating double file rather than suggesting a saving for two riders abreast.
+
+- **Behind one wheel**, single file and bunch give ~0.70, a ~30 % saving,
+  anchored to two-rider studies. In double file, one row ahead
+  (`n = 2`, two physical riders ahead) gives ~0.66.
 - **Single file** levels off near 0.55. Team-pursuit riders 3–4 feel ~55–60 % of
   the lead's drag.
-- **Double file** adds side shelter and falls row by row toward ~0.35: 4 ahead
-  → 0.50, 8 → ~0.39. That's better than single file but far from a peloton.
-  Small-formation CFD from the Blocken group (2025) shows 2-wide blocks sheltering
-  much better than a single line.
-- **Bunch:** riders on both sides shelter you, so drag keeps falling toward ~0.10
+- **Double file:** one other rider puts you abreast at the front (+3% estimated
+  drag). Two or three others put you behind one full row (factor 0.662).
+  Four or five others put you behind two full rows (factor 0.49976). Adding a
+  neighbour in your own row does not add another half-row of drafting shelter.
+  These are simplified estimates, not exact drag predictions for each spacing.
+- **Bunch:** the preview uses staggered rows widening 1, 2, …, 10, then
+  alternating 9/10, based on section 2.2 / Fig. 3 of
+  [Blocken et al. (2018)](https://doi.org/10.1016/j.jweia.2018.06.011).
+  The highlighted rider occupies a central slot in the row being filled;
+  other riders fill neighbouring slots before a new row begins. The preview does not claim
+  to reproduce the paper's exact rider positions or CFD values.
+  Riders on both sides shelter you, so drag keeps falling toward ~0.10
   deep in a large peloton (Blocken et al. 2018, 121-rider CFD): 5 ahead → ~0.36,
   20 → ~0.18, 100 → ~0.12.
 
 **Rotating double file** (through & off / Belgian tourniquet). Nobody holds one
-spot, so the count field becomes "Riders in group" (`N`, including you; 1 =
-alone). The factor is the **average over every position**, including your turns
+spot. The **Other riders** count stays unchanged; the group has `N = n + 1`
+riders including you (0 other riders = alone). The factor is the **average over every position**, including your turns
 on the front (`rotatingDraftFactor`):
 
-- Riders sit in rows of two, and row `r` sits behind `2r` riders, at
-  `draft(2r, double)`.
-- The front pair pays a small `SIDE_BY_SIDE_PENALTY` of 1.03. Barry et al.
-  measured over +6 % for two riders exactly abreast, fading with separation, and
-  a tourniquet's front pair is staggered rather than exactly abreast.
+- The calculation averages `doubleFilePositionFactor(slot, N)` over all `N`
+  slots, using exactly the same front-pair and complete-row model as fixed
+  double file. Rotating-group averages remain unchanged.
+- The front pair uses the shared estimated penalty of 1.03. This is a
+  conservative approximation; lateral spacing and staggering affect the actual
+  interference drag. No particular measured percentage is claimed for this model.
 - **Typical averages:** 8 riders → ~0.65, 16 → ~0.51, 24 → ~0.46.
 - **Limits:** the model only captures drag. A tourniquet's real draw at club size
   is short, steady pulls, which it doesn't capture. I found no study that
   measures a full rotation.
 
-The two count values are stored separately, so switching formation never turns
-"riders ahead" into "group size". These are rough fits for comparing scenarios,
+All formations share one **Other riders** value (0–150), excluding you.
+Switching formation preserves that value; rotating mode adds you internally. These are rough fits for comparing scenarios,
 not position-exact aerodynamics.
 
 Rider mass comes from the page's rider field. **CdA starts seeded from the
@@ -256,3 +285,7 @@ On a 6% climb at 12 km/h (3.333 m/s), same rider:
 - P ≈ (47.0 + 3.92 + 2.18) × 3.333 / 0.97 ≈ **182 W** (gravity dominates)
 
 Use these to unit-test the implementation.
+
+The CdA editor places the side-view riding-position and top-down formation
+previews side by side below the estimated CdA and explanatory note. The
+highlighted rider is blue, without a surrounding circle.

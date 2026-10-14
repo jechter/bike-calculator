@@ -2094,3 +2094,37 @@ html.embed-fill body { overscroll-behavior: none; }
 .component-db--details-only > .component-details:first-child { margin-top: 0; }
 
 .nav a { text-decoration: none; }
+
+/* Small shared bike/rider schematic inside the CdA editor. */
+.cda-bike-preview { margin: 0; text-align: center; color: var(--muted); font-size: 12px; }
+.cda-bike-preview svg { display: block; width: 100%; height: 150px; }
+.cda-bike-preview small { display: block; margin-top: 3px; font-size: 11px; }
+.cda-bike-preview-unavailable { padding: 12px; border: 1px solid var(--border); border-radius: 6px; }
+
+/* Top-down drafting schematic; bike glyphs always face the travel direction. */
+.drafting-preview { margin: 2px 0 0; padding: 10px; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: 11px; background: var(--panel-2); }
+.drafting-preview-head { display: flex; align-items: center; justify-content: space-between; min-height: 22px; font-weight: 600; }
+.drafting-preview-head button { background: transparent; border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 3px 8px; font-size: 11px; cursor: pointer; }
+.drafting-preview svg { display: block; width: 100%; margin: 3px auto; }
+.drafting-preview figcaption { text-align: center; }
+.drafting-preview small { display: block; margin-top: 4px; line-height: 1.4; }
+.draft-bike { color: var(--muted); }
+.draft-bike-you, .draft-you-key { color: var(--accent); }
+.draft-bike-frame { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+.draft-bike-body, .draft-bike-head { fill: currentColor; }
+.draft-loop { fill: none; stroke: var(--border); stroke-width: 1; stroke-dasharray: 4 5; }
+.draft-direction { fill: var(--muted); font-size: 11px; }
+
+/* Both CdA previews share the bottom row, even on narrow screens. */
+.cda-previews { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: stretch; }
+.cda-previews > * { grid-column: auto; min-width: 0; margin: 0; }
+.cda-previews .cda-bike-preview { padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); }
+.cda-previews .cda-bike-preview svg { margin: 3px auto; }
+.cda-previews .drafting-preview { padding: 8px; }
+.cda-previews .drafting-preview-head { flex-wrap: wrap; gap: 4px; }
+.cda-previews figcaption { font-size: 11px; line-height: 1.4; }
+.cda-previews small { font-size: 10px; }
+@media (max-width: 480px) {
+  .cda-pop .editor-pop-out { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .cda-pop .editor-pop-out strong { font-size: 16px; }
+}

@@ -1,3 +1,4 @@
+import { ResponsivePopover } from "./ResponsivePopover";
 import { useEffect, useRef } from "react";
 
 /**
@@ -20,7 +21,7 @@ export function EditorPopover(props: {
   className?: string;
 }) {
   return (
-    <div className={"cp-pop editor-pop" + (props.className ? " " + props.className : "")}>
+    <ResponsivePopover ownCloseButton onClose={props.onClose} className={"cp-pop editor-pop" + (props.className ? " " + props.className : "")}>
       <div className="editor-pop-head">
         <strong>{props.title}</strong>
         <button
@@ -39,7 +40,7 @@ export function EditorPopover(props: {
       </div>
       {props.note && <p className="editor-pop-note">{props.note}</p>}
       {props.footer}
-    </div>
+    </ResponsivePopover>
   );
 }
 

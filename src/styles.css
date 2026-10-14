@@ -212,10 +212,7 @@ body {
 }
 .infotip-btn:hover, .infotip-btn.open { border-color: var(--accent); color: var(--accent); }
 .infotip-pop {
-  /* Portalled to <body>; width, position and max-height are set inline by
-     InfoTip (it widens a tall tooltip so it fits the viewport height, capping
-     the height and scrolling only as a last resort). The 340px width here is
-     just the pre-measurement default. */
+  /* Shared ResponsivePopover chooses anchored or viewport-sized placement. */
   position: fixed; z-index: 60;
   width: 340px; overflow-y: auto;
   background: var(--panel);
@@ -2144,3 +2141,38 @@ html.embed-fill body { overscroll-behavior: none; }
   stroke: var(--diag-wheel);
 }
 .cda-bike-preview .rec-far-wheel { stroke-dasharray: 3 3; }
+
+/* Shared popup placement. Native popover top-layer escapes clipped and
+   transformed ancestors; the component measures against the visual viewport. */
+.responsive-popup {
+  position: fixed !important;
+  right: auto !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  transform: none !important;
+  z-index: 100;
+  overflow: auto;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
+  color: var(--text);
+}
+.responsive-popup[data-popup-mode="screen"] {
+  border-radius: 10px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.22);
+}
+.responsive-popup[data-popup-mode="screen"]::backdrop { background: rgba(0, 0, 0, 0.3); }
+.responsive-popup[data-popup-mode="screen"] .cp-list { max-height: none; flex-shrink: 0; }
+.responsive-popup[data-popup-mode="screen"] .editor-pop-head,
+.responsive-popup-dismiss {
+  position: sticky; top: -10px; z-index: 2; background: var(--panel);
+  padding: 4px 0 8px;
+}
+.responsive-popup-dismiss { display: flex; justify-content: flex-end; list-style: none; }
+.responsive-popup-dismiss button {
+  width: auto; padding: 5px 10px; border: 1px solid var(--border);
+  border-radius: 6px; background: var(--panel); color: var(--text); cursor: pointer;
+}
+.responsive-popup[data-popup-mode="screen"] > * { flex-shrink: 0; }
+.responsive-popup[data-popup-mode="anchored"] .responsive-popup-dismiss { display: none; }
+.responsive-popup[data-popup-mode="screen"]:popover-open { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22); }
+.responsive-popup-dismiss { top: 0; }

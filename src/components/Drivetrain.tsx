@@ -1,3 +1,4 @@
+import { ResponsivePopover } from "./ResponsivePopover";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CASSETTE_PRESETS,
@@ -330,7 +331,7 @@ function DerailleurPicker({
         <span className="caret">▾</span>
       </button>
       {open && (
-        <div className="cp-pop">
+        <ResponsivePopover className="cp-pop" onClose={() => setOpen(false)}>
           <input
             className="cp-search"
             type="text"
@@ -395,7 +396,7 @@ function DerailleurPicker({
             {matches.length} derailleur{matches.length === 1 ? "" : "s"}
             {matches.length > shown.length && ` · showing first ${shown.length}, refine to narrow`}
           </div>
-        </div>
+        </ResponsivePopover>
       )}
     </div>
   );
@@ -579,7 +580,7 @@ function HubPicker({
         <span className="caret">▾</span>
       </button>
       {open && (
-        <div className="cp-pop">
+        <ResponsivePopover className="cp-pop" onClose={() => setOpen(false)}>
           <input
             className="cp-search"
             type="text"
@@ -629,7 +630,7 @@ function HubPicker({
           <div className="cp-foot">
             {matches.length} hub{matches.length === 1 ? "" : "s"}
           </div>
-        </div>
+        </ResponsivePopover>
       )}
     </div>
   );
@@ -932,7 +933,7 @@ function CassettePicker({
         Browse <span className="caret">▾</span>
       </button>
       {open && (
-        <div className="cp-pop">
+        <ResponsivePopover className="cp-pop" onClose={() => setOpen(false)}>
           <input
             className="cp-search"
             type="text"
@@ -1003,7 +1004,7 @@ function CassettePicker({
             {matches.length} cassette{matches.length === 1 ? "" : "s"}
             {matches.length > shown.length && ` · showing first ${shown.length}, refine to narrow`}
           </div>
-        </div>
+        </ResponsivePopover>
       )}
     </div>
   );
@@ -1224,7 +1225,7 @@ function TirePicker({ onPick }: { onPick: (circumferenceMm: number, sizeLabel: s
         Tire size <span className="caret">▾</span>
       </button>
       {open && (
-        <div className="tp-pop">
+        <ResponsivePopover className="tp-pop" onClose={() => setOpen(false)}>
           <input
             className="cp-search"
             type="text"
@@ -1260,7 +1261,7 @@ function TirePicker({ onPick }: { onPick: (circumferenceMm: number, sizeLabel: s
               </button>
             ))}
           </div>
-        </div>
+        </ResponsivePopover>
       )}
     </div>
   );

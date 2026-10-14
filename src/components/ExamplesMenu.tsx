@@ -1,3 +1,4 @@
+import { ResponsivePopover } from "./ResponsivePopover";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { navigateTo } from "../useHashRoute";
 import { useIsMobile } from "../useIsMobile";
@@ -51,7 +52,7 @@ export function ExamplesMenu({ route, groups }: { route: string; groups: Example
         {isMobile ? "Examples" : "Load an example"} <span className="caret">▾</span>
       </button>
       {open && (
-        <ul className="preset-list examples-list">
+        <ResponsivePopover as="ul" className="preset-list examples-list" onClose={() => setOpen(false)}>
           {groups.map((g) => (
             <Fragment key={g.label}>
               <li className="preset-group">{g.label}</li>
@@ -64,7 +65,7 @@ export function ExamplesMenu({ route, groups }: { route: string; groups: Example
               ))}
             </Fragment>
           ))}
-        </ul>
+        </ResponsivePopover>
       )}
     </div>
   );

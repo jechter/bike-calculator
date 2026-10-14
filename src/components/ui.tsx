@@ -1,5 +1,5 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { ResponsivePopover } from "./ResponsivePopover";
+import React, { useEffect, useRef, useState } from "react";
 
 // Small shared UI primitives used across calculators.
 
@@ -88,7 +88,7 @@ export function PresetMenu(props: {
         <span className="caret">▾</span>
       </button>
       {open && (
-        <ul className="preset-list">
+        <ResponsivePopover as="ul" className="preset-list" onClose={() => setOpen(false)}>
           {props.options.map((o) => (
             <li key={o.value}>
               <button
@@ -102,7 +102,7 @@ export function PresetMenu(props: {
               </button>
             </li>
           ))}
-        </ul>
+        </ResponsivePopover>
       )}
     </div>
   );
@@ -414,7 +414,7 @@ export function SwatchSelect<T extends string | number>(props: {
         <span className="caret">▾</span>
       </button>
       {open && (
-        <ul className="swatch-select-list" role="listbox">
+        <ResponsivePopover as="ul" className="swatch-select-list" role="listbox" onClose={() => setOpen(false)}>
           {props.options.map((o, i) =>
             isGroup(o) ? (
               <li key={`g${i}`} className="swatch-select-group">
@@ -425,7 +425,7 @@ export function SwatchSelect<T extends string | number>(props: {
               renderOption(o)
             ),
           )}
-        </ul>
+        </ResponsivePopover>
       )}
     </div>
   );
@@ -472,23 +472,9 @@ export function Note(props: { children: React.ReactNode; tone?: "info" | "warn" 
  * A small "i" icon that reveals supplementary info in a popover on hover (with a
  * short close delay so you can move into it) or click (touch-friendly).
  */
-// Candidate popover widths (px), narrowest first. A long tooltip is stepped up
-// through these until it's short enough to fit the viewport height — trading
-// width for height so it never runs off the top/bottom of the screen.
-const INFOTIP_WIDTHS = [340, 460, 580, 700, 820];
-
-interface InfoTipStyle {
-  top: number;
-  left: number;
-  width: number;
-  maxHeight: number;
-}
-
 export function InfoTip(props: { children: React.ReactNode; label?: string }) {
   const [open, setOpen] = useState(false);
-  const [style, setStyle] = useState<InfoTipStyle | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
-  const popRef = useRef<HTMLDivElement>(null);
   const timer = useRef<number | null>(null);
 
   const show = () => {
@@ -502,63 +488,11 @@ export function InfoTip(props: { children: React.ReactNode; label?: string }) {
     timer.current = window.setTimeout(() => setOpen(false), 140);
   };
 
-  // The popover is portalled to <body> and fixed-positioned from the button's
-  // rect, so it floats above the page (e.g. the diagram) instead of being
-  // clipped by the scrolling controls column's overflow. Placed below the button
-  // by default, flipped above when it wouldn't fit, and clamped to the viewport.
-  // A tooltip taller than the viewport is widened (which shortens it) until it
-  // fits; if even the widest still overflows, its height is capped and it scrolls.
-  useLayoutEffect(() => {
-    if (!open) return;
-    const place = () => {
-      const pop = popRef.current;
-      const b = btnRef.current?.getBoundingClientRect();
-      if (!pop || !b) return;
-      const margin = 8;
-      const availH = window.innerHeight - margin * 2;
-      const maxW = Math.min(window.innerWidth - margin * 2, INFOTIP_WIDTHS[INFOTIP_WIDTHS.length - 1]);
-
-      // Measure the natural height at each candidate width (uncapped), stepping
-      // wider only until it fits the available vertical space.
-      pop.style.maxHeight = "none";
-      let width = INFOTIP_WIDTHS[0];
-      for (const w of INFOTIP_WIDTHS) {
-        if (w > maxW) break;
-        width = w;
-        pop.style.width = `${w}px`;
-        if (pop.offsetHeight <= availH) break;
-      }
-      const height = Math.min(pop.offsetHeight, availH);
-
-      // Horizontal: aligned to the button, clamped into the viewport.
-      const left = Math.max(margin, Math.min(b.left, window.innerWidth - width - margin));
-      // Vertical: below the button; flip above if that fits, else clamp on-screen.
-      const below = b.bottom + 6;
-      const above = b.top - height - 6;
-      let top = below;
-      if (below + height > window.innerHeight - margin) {
-        top = above >= margin ? above : Math.max(margin, window.innerHeight - margin - height);
-      }
-      setStyle({ top, left, width, maxHeight: availH });
-    };
-    place();
-    // A second pass once the popover has real dimensions, so the sizing/flip use
-    // its actual measurements rather than the first estimate.
-    const raf = requestAnimationFrame(place);
-    window.addEventListener("scroll", place, true);
-    window.addEventListener("resize", place);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", place, true);
-      window.removeEventListener("resize", place);
-    };
-  }, [open]);
-
   useEffect(() => {
     if (!open) return;
     const onDoc = (e: MouseEvent) => {
       const t = e.target as Node;
-      if (btnRef.current?.contains(t) || popRef.current?.contains(t)) return;
+      if (btnRef.current?.parentElement?.contains(t)) return;
       setOpen(false);
     };
     document.addEventListener("mousedown", onDoc);
@@ -577,25 +511,12 @@ export function InfoTip(props: { children: React.ReactNode; label?: string }) {
       >
         i
       </button>
-      {open &&
-        createPortal(
-          <div
-            ref={popRef}
-            className="infotip-pop"
-            role="tooltip"
-            style={{
-              top: style?.top ?? -9999,
-              left: style?.left ?? -9999,
-              width: style?.width,
-              maxHeight: style?.maxHeight,
-            }}
-            onMouseEnter={show}
-            onMouseLeave={hide}
-          >
-            {props.children}
-          </div>,
-          document.body,
-        )}
+      {open && (
+        <ResponsivePopover className="infotip-pop" role="tooltip" anchorRef={btnRef}
+          onClose={() => setOpen(false)} onMouseEnter={show} onMouseLeave={hide}>
+          {props.children}
+        </ResponsivePopover>
+      )}
     </span>
   );
 }

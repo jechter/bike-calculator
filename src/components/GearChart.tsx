@@ -1,3 +1,4 @@
+import { ResponsivePopover } from "./ResponsivePopover";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { GearResult } from "../lib/drivetrain";
 import { kmhToMph } from "../lib/units";
@@ -377,7 +378,7 @@ export function GearChart({
             <span className="caret">▾</span>
           </button>
           {menuOpen && (
-            <ul className="preset-list gc-axis-list">
+            <ResponsivePopover as="ul" className="preset-list gc-axis-list" onClose={() => setMenuOpen(false)}>
               {options.map((o) => (
                 <li key={o.value}>
                   <button
@@ -392,7 +393,7 @@ export function GearChart({
                   </button>
                 </li>
               ))}
-            </ul>
+            </ResponsivePopover>
           )}
         </div>
         {extra && <div className="gc-axis-extra">{extra}</div>}

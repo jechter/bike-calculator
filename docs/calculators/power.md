@@ -298,3 +298,13 @@ shows an enclosed three-wheel shell with the rider visible in cutaway, to explai
 the riding position; it is not a transparent real-world shell. Upright and
 reclined variants share the capsule rider renderer and two-bone limb solver.
 These illustrative geometries do not change the CdA calculation or frame sizing.
+
+Popup editors and pickers share viewport-aware placement. They stay directly
+below the triggering field when they fit there; otherwise they shift upward
+and horizontally into the viewport while keeping their preferred size. Only
+content larger than the available viewport is capped to fit, with internal
+scrolling. They remain above sticky navigation and scrolling columns. Long
+content scrolls inside the panel, with Close remaining reachable. Placement
+updates on resize, scrolling, content changes, and visual-viewport changes
+(including the on-screen keyboard). Height-constrained panels lock background scrolling,
+keep keyboard focus inside, and return focus to the trigger when dismissed.

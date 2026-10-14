@@ -1,3 +1,4 @@
+import { ResponsivePopover } from "./ResponsivePopover";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   spokeLength,
@@ -234,7 +235,7 @@ function HubPicker({
         <span className="caret">▾</span>
       </button>
       {open && (
-        <div className="cp-pop">
+        <ResponsivePopover className="cp-pop" onClose={() => setOpen(false)}>
           <input
             className="cp-search"
             type="text"
@@ -297,7 +298,7 @@ function HubPicker({
             {matches.length} hub{matches.length === 1 ? "" : "s"} · flange geometry is approximate —
             measure your hub
           </div>
-        </div>
+        </ResponsivePopover>
       )}
     </div>
   );

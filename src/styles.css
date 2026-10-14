@@ -2098,22 +2098,21 @@ html.embed-fill body { overscroll-behavior: none; }
 /* Small shared bike/rider schematic inside the CdA editor. */
 .cda-bike-preview { margin: 0; text-align: center; color: var(--muted); font-size: 12px; }
 .cda-bike-preview svg { display: block; width: 100%; height: 150px; }
-.cda-bike-preview small { display: block; margin-top: 3px; font-size: 11px; }
 .cda-bike-preview-unavailable { padding: 12px; border: 1px solid var(--border); border-radius: 6px; }
 
 /* Top-down drafting schematic; bike glyphs always face the travel direction. */
 .drafting-preview { margin: 2px 0 0; padding: 10px; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: 11px; background: var(--panel-2); }
 .drafting-preview-head { display: flex; align-items: center; justify-content: space-between; min-height: 22px; font-weight: 600; }
-.drafting-preview-head button { background: transparent; border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 3px 8px; font-size: 11px; cursor: pointer; }
 .drafting-preview svg { display: block; width: 100%; margin: 3px auto; }
 .drafting-preview figcaption { text-align: center; }
 .drafting-preview small { display: block; margin-top: 4px; line-height: 1.4; }
 .draft-bike { color: var(--muted); }
-.draft-bike-you, .draft-you-key { color: var(--accent); }
+.draft-bike-you, .draft-you-key { color: var(--diag-red); }
 .draft-bike-frame { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
 .draft-bike-body, .draft-bike-head { fill: currentColor; }
 .draft-loop { fill: none; stroke: var(--border); stroke-width: 1; stroke-dasharray: 4 5; }
-.draft-direction { fill: var(--muted); font-size: 11px; }
+.drafting-preview-image { position: relative; }
+.draft-direction { position: absolute; top: 4px; left: 4px; color: var(--muted); font-size: 12px; white-space: nowrap; }
 
 /* Both CdA previews share the bottom row, even on narrow screens. */
 .cda-previews { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: stretch; }
@@ -2135,3 +2134,13 @@ html.embed-fill body { overscroll-behavior: none; }
 .rec-canopy { fill: color-mix(in srgb, var(--accent) 6%, var(--panel-2)); stroke: var(--muted); stroke-width: 8; }
 .rec-far-wheel { opacity: 0.45; stroke-dasharray: 15 12; }
 .rec-cutaway-frame { opacity: 0.35; }
+
+/* Keep tyre outlines readable when the CdA side view shrinks to a thumbnail.
+   Non-scaling strokes stay 1.25 screen pixels wide instead of scaling with the
+   millimetre-based SVG geometry. The full-size frame diagram is unaffected. */
+.cda-bike-preview .fg-wheel {
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1.25px;
+  stroke: var(--diag-wheel);
+}
+.cda-bike-preview .rec-far-wheel { stroke-dasharray: 3 3; }

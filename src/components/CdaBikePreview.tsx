@@ -23,7 +23,7 @@ export function CdaBikePreview({ params: p }: { params: CdaParams }) {
     const kind: ReclinedBikeStyle = p.bike === "velomobile" ? "velomobile"
       : p.position === "lowracer" || p.position === "lowracerTail" ? p.position : "highracer";
     return (
-      <PreviewFigure description={description} note={p.bike === "velomobile" ? "Enclosed three-wheel shell · rider shown in cutaway" : "Reclined seat · feet-forward pedals"}>
+      <PreviewFigure description={description}>
         <BikePositionDiagram kind={kind} heightCm={p.heightCm} label={description} />
       </PreviewFigure>
     );
@@ -39,7 +39,7 @@ export function CdaBikePreview({ params: p }: { params: CdaParams }) {
   const aero = p.position === "clipOnAero";
   const wheel = wheelForFrame(category, frameCm);
   return (
-    <PreviewFigure description={description} note="Approximate riding position · not a bike fit">
+    <PreviewFigure description={description}>
       <BikePositionDiagram kind="upright" frame={{
         compact: true,
         label: `${description}: approximate bike and rider side view`,
@@ -60,12 +60,12 @@ export function CdaBikePreview({ params: p }: { params: CdaParams }) {
   );
 }
 
-function PreviewFigure({ description, note, children }: { description: string; note: string; children: ReactNode }) {
+function PreviewFigure({ description, children }: { description: string; children: ReactNode }) {
   return (
     <figure className="editor-field-wide cda-bike-preview">
-      <div className="drafting-preview-head">Riding position · side view</div>
+      <div className="drafting-preview-head">Riding position</div>
       {children}
-      <figcaption>{description}<small>{note}</small></figcaption>
+      <figcaption>{description}</figcaption>
     </figure>
   );
 }

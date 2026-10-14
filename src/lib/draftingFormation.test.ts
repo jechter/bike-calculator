@@ -35,7 +35,7 @@ describe("fixed drafting layouts", () => {
         : 0.35 + 0.65 * Math.pow(0.48, row);
       expect(draftFactor(count, "double")).toBeCloseTo(factor, 12);
     }
-    // Preview truncation must not truncate the aerodynamic row depth.
+    // Large formations use the full aerodynamic row depth.
     expect(draftFactor(31, "double")).toBeCloseTo(0.35 + 0.65 * Math.pow(0.48, 15), 12);
   });
 
@@ -54,7 +54,7 @@ describe("fixed drafting layouts", () => {
         const layout = fixedFormationLayout(formation, n);
         const you = layout.riders.find(r => r.you)!;
         expect(layout.riders.filter(r => !r.you).every(r => r.y <= you.y)).toBe(true);
-        expect(layout.riders.length + layout.omitted).toBe(layout.total);
+        expect(layout.riders.length).toBe(layout.total);
         expect(layout.total).toBe(n + 1);
         for (const r of layout.riders) {
           expect(Math.abs(r.x) + 17).toBeLessThan(layout.width / 2);

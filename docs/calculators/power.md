@@ -288,7 +288,8 @@ Use these to unit-test the implementation.
 
 The CdA editor places the side-view riding-position and top-down formation
 previews side by side below the estimated CdA and explanatory note. The
-highlighted rider is blue, without a surrounding circle.
+highlighted formation rider is red, without a surrounding circle. The travel
+arrow and label sit outside the scaled SVG so they remain legible in large groups.
 
 The shared `BikePositionDiagram` also supports high-racer and low-racer recumbents,
 low-racers with tailboxes, and velomobiles. These show a reclined seat and

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DraftingPreview } from "./DraftingPreview";
 import { DEFAULT_CDA_PARAMS } from "../lib/cda";
@@ -28,32 +28,37 @@ describe("Drafting formation preview", () => {
     expect(container.querySelector('[data-rider="you"]')?.parentElement?.getAttribute("transform")).toBe("translate(160 112)");
   });
 
-  it("labels omitted riders in large fixed groups", () => {
-    const { container, getByText, getByRole } = render(<DraftingPreview params={{ ...DEFAULT_CDA_PARAMS, formation: "line", draftRiders: 150 }} />);
-    expect(container.querySelectorAll("[data-rider]")).toHaveLength(13);
-    expect(getByText("Showing the nearest 12 riders ahead; 138 more not shown.")).toBeTruthy();
-    expect(getByRole("img").getAttribute("aria-label")).toContain("150 riders ahead");
+  it("keeps the travel label outside the scalable SVG and removes the double-file note", () => {
+    const { container, getByText, rerender } = render(<DraftingPreview params={{ ...DEFAULT_CDA_PARAMS, formation: "double", draftRiders: 7 }} />);
+    expect(getByText("↑ Travel").closest("svg")).toBeNull();
+    expect(container.querySelector(".drafting-preview-image > .draft-direction")).toBeTruthy();
+    expect(container.textContent).not.toContain("Two abreast");
+    rerender(<DraftingPreview params={{ ...DEFAULT_CDA_PARAMS, formation: "bunch", draftRiders: 150 }} />);
+    expect(getByText("↑ Travel").closest("svg")).toBeNull();
   });
 
-  it("animates every rotating rider with evenly spaced phases and supports pause", () => {
-    const pause = vi.fn();
-    const resume = vi.fn();
-    Object.defineProperty(SVGSVGElement.prototype, "pauseAnimations", { configurable: true, value: pause });
-    Object.defineProperty(SVGSVGElement.prototype, "unpauseAnimations", { configurable: true, value: resume });
-    const { container, getByRole, rerender } = render(<DraftingPreview params={{ ...DEFAULT_CDA_PARAMS, formation: "doubleRotating", draftRiders: 7 }} />);
+  it("shows every rider in large groups for all formations", () => {
+    const { container, rerender } = render(<DraftingPreview params={DEFAULT_CDA_PARAMS} />);
+    for (const formation of ["line", "double", "bunch", "doubleRotating"] as const) {
+      rerender(<DraftingPreview params={{ ...DEFAULT_CDA_PARAMS, formation, draftRiders: 150 }} />);
+      expect(container.querySelectorAll("[data-rider]")).toHaveLength(151);
+      expect(container.querySelectorAll('[data-rider="you"]')).toHaveLength(1);
+      expect(container.textContent).not.toMatch(/not shown|nearest|omitted/);
+      expect(container.querySelector("svg")!.getAttribute("aria-label")).not.toContain("omitted");
+    }
+  });
+
+  it("animates every rotating rider with evenly spaced phases without a pause button", () => {
+    const { container, queryByRole, rerender } = render(<DraftingPreview params={{ ...DEFAULT_CDA_PARAMS, formation: "doubleRotating", draftRiders: 7 }} />);
     expect(container.querySelectorAll("animateMotion")).toHaveLength(8);
     expect(new Set([...container.querySelectorAll("animateMotion")].map(e => e.getAttribute("begin"))).size).toBe(8);
     expect(container.querySelectorAll('[data-rider="you"]')).toHaveLength(1);
-    fireEvent.click(getByRole("button", { name: "Pause formation animation" }));
-    expect(pause).toHaveBeenCalled();
-    fireEvent.click(getByRole("button", { name: "Resume formation animation" }));
-    expect(resume).toHaveBeenCalled();
+    expect(queryByRole("button")).toBeNull();
+    expect(container.textContent).not.toMatch(/Schematic rotation|through & off/);
     rerender(<DraftingPreview params={{ ...DEFAULT_CDA_PARAMS, formation: "doubleRotating", draftRiders: 39 }} />);
     expect(container.querySelectorAll("animateMotion")).toHaveLength(40);
     rerender(<DraftingPreview params={{ ...DEFAULT_CDA_PARAMS, formation: "doubleRotating", draftRiders: 0 }} />);
     expect(container.querySelector("animateMotion")).toBeNull();
-    delete (SVGSVGElement.prototype as unknown as Record<string, unknown>).pauseAnimations;
-    delete (SVGSVGElement.prototype as unknown as Record<string, unknown>).unpauseAnimations;
   });
 
   it("respects reduced motion preferences", () => {

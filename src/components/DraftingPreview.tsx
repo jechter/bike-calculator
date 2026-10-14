@@ -23,10 +23,8 @@ export function DraftingPreview({ params: p, compact = false }: { params: CdaPar
   const bottom = Math.max(88, 40 + (Math.ceil(total / 2) - 1) * 38);
   const height = rotating ? bottom + 52 : layout.height;
   const width = rotating ? 320 : layout.width;
-  const omitted = rotating ? 0 : layout.omitted;
   const pathId = useId();
   const svgRef = useRef<SVGSVGElement>(null);
-  const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   useEffect(() => {
     const media = window.matchMedia?.("(prefers-reduced-motion: reduce)");
@@ -38,9 +36,9 @@ export function DraftingPreview({ params: p, compact = false }: { params: CdaPar
   }, []);
   useEffect(() => {
     const svg = svgRef.current;
-    if (paused || reducedMotion) svg?.pauseAnimations?.();
+    if (reducedMotion) svg?.pauseAnimations?.();
     else svg?.unpauseAnimations?.();
-  }, [paused, reducedMotion, rotating, total]);
+  }, [reducedMotion, rotating, total]);
 
   // Through & off: advance up the left lane, peel across at the front, drift
   // back down the right lane, then rejoin. All icons keep facing forward.
@@ -48,22 +46,16 @@ export function DraftingPreview({ params: p, compact = false }: { params: CdaPar
   const duration = Math.max(8, total * 1.4);
   const moving = rotating && total > 1;
   const name = CDA_FORMATIONS.find(f => f.value === p.formation)?.label ?? "Formation";
-  const summary = total === 1 ? "Riding alone" : rotating ? `${total} riders · through & off`
+  const summary = total === 1 ? "Riding alone" : rotating ? `${total} riders`
     : p.formation === "line" ? `${total - 1} rider${total === 2 ? "" : "s"} ahead`
-    : `${total - 1} other rider${total === 2 ? "" : "s"} · ${total} including you`;
+    : `${total - 1} other rider${total === 2 ? "" : "s"}`;
   const label = `${summary}; highlighted rider is you`;
   return (
     <figure className="editor-field-wide drafting-preview">
-      <div className="drafting-preview-head">
-        <span>Formation · top view</span>
-        {moving && !reducedMotion && (
-          <button type="button" onClick={() => setPaused(!paused)} aria-label={paused ? "Resume formation animation" : "Pause formation animation"}>
-            {paused ? "Resume" : "Pause"}
-          </button>
-        )}
-      </div>
-      <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${name}: ${label}${omitted ? `; ${omitted} riders omitted from schematic` : ""}`} style={{ height: compact ? 150 : Math.min(220, height) }}>
-        <text x="20" y="24" className="draft-direction">↑ Travel</text>
+      <div className="drafting-preview-head">Formation</div>
+      <div className="drafting-preview-image">
+        <span className="draft-direction">↑ Travel</span>
+      <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${name}: ${label}`} style={{ height: compact ? 150 : Math.min(220, height) }}>
         {moving ? (
           <>
             <defs><path id={pathId} d={path} /></defs>
@@ -83,12 +75,11 @@ export function DraftingPreview({ params: p, compact = false }: { params: CdaPar
           ))
         )}
       </svg>
+      </div>
       <figcaption>
         <span className="draft-you-key">● You</span> · {summary}
-        {omitted > 0 && <small>Showing the nearest {layout.riders.length - 1} riders{p.formation === "line" ? " ahead" : " in the formation"}; {omitted} more not shown.</small>}
-        {p.formation === "double" && total > 1 && <small>Two abreast · drag modeled by row position.</small>}
         {p.formation === "bunch" && total > 1 && <small>Staggered, widening peloton · illustrative shape, not position-exact drag.</small>}
-        {moving && <small>{reducedMotion ? "Motion disabled by your reduced-motion preference. " : ""}Schematic rotation; CdA is averaged over the whole group.</small>}
+        {moving && <small>{reducedMotion ? "Motion disabled by your reduced-motion preference. " : ""}CdA is averaged over the whole group.</small>}
       </figcaption>
     </figure>
   );

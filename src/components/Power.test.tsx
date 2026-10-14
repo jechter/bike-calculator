@@ -150,6 +150,9 @@ describe("Cycling power", () => {
     expect(container.querySelectorAll("animateMotion")).toHaveLength(151);
     const previews = container.querySelector(".cda-previews")!;
     expect(previews.children).toHaveLength(2);
+    expect(previews.querySelector(".cda-bike-preview figcaption small")).toBeNull();
+    expect(previews.querySelector("button")).toBeNull();
+    expect(previews.textContent).not.toMatch(/side view|top view|including you/);
     expect(container.querySelector(".editor-pop-grid .cda-bike-preview")).toBeNull();
     expect(container.querySelector(".draft-you-halo")).toBeNull();
     expect(container.querySelector(".editor-pop-out")!.compareDocumentPosition(previews) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

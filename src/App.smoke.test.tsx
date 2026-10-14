@@ -17,11 +17,11 @@ describe("App shell", () => {
   it("renders the sidebar with every visible calculator", () => {
     const { getByRole, queryByRole } = render(<App />);
     for (const c of CALCULATORS) {
-      const query = queryByRole("button", { name: new RegExp(c.title) });
+      const query = queryByRole("link", { name: c.title });
       if (c.hidden) {
         expect(query).toBeNull();
       } else {
-        expect(getByRole("button", { name: new RegExp(c.title) })).toBeTruthy();
+        expect(getByRole("link", { name: c.title })).toBeTruthy();
       }
     }
   });
@@ -39,7 +39,7 @@ describe("App shell", () => {
   it("navigates to and renders each calculator without crashing", async () => {
     const { getByRole, container } = render(<App />);
     for (const c of CALCULATORS.filter((c) => !c.hidden)) {
-      fireEvent.click(getByRole("button", { name: new RegExp(c.title) }));
+      fireEvent.click(getByRole("link", { name: c.title }));
       await waitFor(() => {
         const heading = within(container).getByRole("heading", { level: 1 });
         expect(heading.textContent).toContain(c.title);

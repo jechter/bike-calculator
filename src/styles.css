@@ -115,8 +115,8 @@ body {
 .app--nav-collapsed .brand-logo--full { display: none; }
 .app--nav-collapsed .brand-logo--mark { display: block; width: 40px; }
 .app--nav-collapsed .nav { width: 100%; }
-.app--nav-collapsed .nav button { justify-content: center; padding: 9px 0; gap: 0; }
-.app--nav-collapsed .nav button > span:not(.icon) { display: none; }
+.app--nav-collapsed .nav a { justify-content: center; padding: 9px 0; gap: 0; }
+.app--nav-collapsed .nav a > span:not(.icon) { display: none; }
 /* Keep GitHub reachable (icon centred); the unit switcher's popup would be
    clipped by the narrow rail, so hide it here — units live in the expanded bar. */
 .app--nav-collapsed .repo-link { justify-content: center; }
@@ -130,7 +130,7 @@ body {
 .repo-link:hover { color: var(--accent); }
 .repo-icon { flex: none; }
 .nav { display: flex; flex-direction: column; gap: 2px; }
-.nav button {
+.nav a {
   text-align: left;
   background: none;
   border: none;
@@ -143,8 +143,8 @@ body {
   gap: 10px;
   align-items: center;
 }
-.nav button:hover { background: var(--panel-2); }
-.nav button.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.nav a:hover { background: var(--panel-2); }
+.nav a.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 .nav .icon {
   width: 20px;
   display: inline-flex;
@@ -152,8 +152,8 @@ body {
   justify-content: center;
   color: var(--muted);
 }
-.nav button.active .icon { color: var(--accent); }
-.nav button:hover .icon { color: var(--text); }
+.nav a.active .icon { color: var(--accent); }
+.nav a:hover .icon { color: var(--text); }
 .nav .icon svg { display: block; }
 
 /* Main */
@@ -1642,14 +1642,14 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   .app--nav-collapsed .sidebar-head { flex-direction: row; }
   .app--nav-collapsed .brand-logo--full { display: block; }
   .app--nav-collapsed .brand-logo--mark { display: none; }
-  .app--nav-collapsed .nav button { justify-content: flex-start; padding: 9px 10px; gap: 10px; }
-  .app--nav-collapsed .nav button > span:not(.icon) { display: inline; }
+  .app--nav-collapsed .nav a { justify-content: flex-start; padding: 9px 10px; gap: 10px; }
+  .app--nav-collapsed .nav a > span:not(.icon) { display: inline; }
   .app--nav-collapsed .repo-link { justify-content: flex-start; }
   .app--nav-collapsed .repo-link span { display: inline; }
   .app--nav-collapsed .unit-switcher { display: block; }
 
   /* Larger tap targets for the nav rows in the drawer. */
-  .nav button { padding: 11px 12px; }
+  .nav a { padding: 11px 12px; }
 
   /* Fixed bottom bar (replaces the top bar): global Menu on the left, a divider,
      the page title, then the page's own actions grouped on the right. Sits below
@@ -2092,3 +2092,5 @@ html.embed-fill body { overscroll-behavior: none; }
 }
 /* Details-only view (compact, short screens): the details sit at the top. */
 .component-db--details-only > .component-details:first-child { margin-top: 0; }
+
+.nav a { text-decoration: none; }

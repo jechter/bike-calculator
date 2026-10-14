@@ -680,9 +680,9 @@ describe("Drivetrain page", () => {
   it("links to the tire calculator, carrying the selected tire size", () => {
     const { container } = render(<Drivetrain />);
     // Default is ETRTO 25-622, so the link seeds the Tire calculator with it.
-    const link = container.querySelector('a[href^="#/tire"]') as HTMLAnchorElement;
+    const link = container.querySelector('a[href^="/tire-pressure-calculator/"]') as HTMLAnchorElement;
     expect(link).toBeTruthy();
-    expect(link.getAttribute("href")).toBe("#/tire?size=25-622");
+    expect(link.getAttribute("href")).toBe("/tire-pressure-calculator/?size=25-622");
     expect(link.textContent).toContain("25-622");
   });
 
@@ -692,7 +692,7 @@ describe("Drivetrain page", () => {
     const circInput = field.querySelector('input[type="number"]') as HTMLInputElement;
     fireEvent.change(circInput, { target: { value: "2200" } });
     const link = field.querySelector("a.inline-link") as HTMLAnchorElement;
-    expect(link.getAttribute("href")).toBe("#/tire");
+    expect(link.getAttribute("href")).toBe("/tire-pressure-calculator/");
     expect(link.textContent).not.toContain("25-622");
   });
 
@@ -710,7 +710,7 @@ describe("Drivetrain page", () => {
     expect(circInput.value).toBe("2130");
     // The Tire-calculator link now carries the picked size, in href and label.
     const link = field.querySelector("a.inline-link") as HTMLAnchorElement;
-    expect(link.getAttribute("href")).toBe("#/tire?size=700x28C");
+    expect(link.getAttribute("href")).toBe("/tire-pressure-calculator/?size=700x28C");
     expect(link.textContent).toContain("700x28C");
   });
 

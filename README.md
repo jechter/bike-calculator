@@ -52,6 +52,7 @@ the current shell and run the script:
 ```bash
 export DEPLOY_USER='your-sftp-user' DEPLOY_HOST='your-sftp-host'
 export PASSWORD='your-sftp-password' REMOTE_DIR='/remote/path/to/site'
+export DEPLOY_URL='https://rueckenwind.berlin/bikeworkshopcalc/'
 ./scripts/deploy.sh
 ```
 
@@ -68,8 +69,9 @@ npm run build && npm run preview -- --port 4320 &
 npm run screenshot -- '#/drivetrain' out.png '.gc-dot'   # route, output, optional hover selector
 ```
 
-The build is a static site (`dist/`) that can be hosted anywhere or opened
-offline; `vite.config.ts` uses a relative base so it works from any subpath.
+The build is a static site (`dist/`) that can be served from any subdirectory;
+`vite.config.ts` uses relative assets. Serve it over HTTP rather than opening
+the files directly.
 
 ## Tech
 
@@ -77,8 +79,7 @@ offline; `vite.config.ts` uses a relative base so it works from any subpath.
 - Pure calculation modules live in [`src/lib/`](src/lib/) and are unit-tested
   against the worked examples in the calculator specs (`npm test`).
 - UI components (one per calculator) live in [`src/components/`](src/components/);
-  the sidebar/routing shell is [`src/App.tsx`](src/App.tsx) with a hash router so
-  each calculator is bookmarkable (e.g. `#/drivetrain`).
+  the sidebar/routing shell is [`src/App.tsx`](src/App.tsx) with path-based navigation and real static HTML entry points for each calculator.
 
 ## Contributing
 
@@ -87,3 +88,42 @@ Feedback and suggestions are welcome. So are contributions/pull requests - in pa
 ## License
 
 Released under the [MIT License](LICENSE).
+
+## Calculator URLs and SEO
+
+Each calculator now has a directory URL under `/bikeworkshopcalc/`:
+
+- `gear-ratio-chain-length-calculator/`
+- `spoke-length-calculator/`
+- `bike-frame-size-calculator/`
+- `tire-pressure-calculator/`
+- `bicycle-component-compatibility/`
+- `cycling-power-calculator/`
+- `bicycle-thread-direction/`
+
+`src/routes.json` defines paths and metadata. `npm run build` generates an
+`index.html` in each directory, containing a title, description, canonical URL,
+short introduction and links usable before JavaScript loads. The interactive
+calculators still run client-side; this is not full server-side rendering.
+The root entry selects the drivetrain page. Legacy `#/drivetrain?...` links
+migrate client-side using `replaceState`, retaining their configuration. Shared
+settings now use ordinary query parameters; canonical URLs omit those settings.
+The old iframe bridge retains hash navigation when explicitly embedded with
+`?embed=fill` (or `?embed=auto` for auto-height). Ordinary preview iframes use
+the new path URLs.
+
+Upload **all of `dist/`**, including the seven page directories and `sitemap.xml`,
+to the dedicated calculator directory alongside WordPress. No WordPress plugin
+or SPA rewrite is needed: the server only needs to serve directory index files
+and let existing files/directories bypass WordPress (the normal WordPress setup).
+Do not overwrite WordPress's root files or `.htaccess`. The deployment script
+uploads these entry points too; verify its host and remote directory before use.
+`DEPLOY_URL` is required and specifies the public page URL used for live
+verification; it is independent of the SFTP host and remote directory.
+
+Production canonical URLs and the sitemap target
+`https://rueckenwind.berlin/bikeworkshopcalc/` (configured in
+`scripts/build-pages.mjs` and `src/useHashRoute.ts`). If moving domains, update
+both. After deployment, submit
+`https://rueckenwind.berlin/bikeworkshopcalc/sitemap.xml` in Google Search Console.
+The sitemap intentionally excludes configurable query-string variants.

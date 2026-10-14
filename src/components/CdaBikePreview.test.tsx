@@ -33,7 +33,7 @@ describe("CdA bike preview", () => {
 
   it("renders every supported bike/position with finite coordinates", () => {
     const { container, rerender } = render(<CdaBikePreview params={DEFAULT_CDA_PARAMS} />);
-    for (const bike of CDA_BIKES.filter(b => b.value !== "recumbent" && b.value !== "velomobile")) {
+    for (const bike of CDA_BIKES) {
       for (const position of bike.positions) {
         const params: CdaParams = { ...DEFAULT_CDA_PARAMS, bike: bike.value, position };
         rerender(<CdaBikePreview params={params} />);
@@ -43,12 +43,58 @@ describe("CdA bike preview", () => {
     }
   });
 
-  it("does not misrepresent reclined or enclosed bikes as diamond frames", () => {
-    const { container, rerender, getByText } = render(<CdaBikePreview params={{ ...DEFAULT_CDA_PARAMS, bike: "recumbent", position: "lowracer" }} />);
-    expect(container.querySelector("svg")).toBeNull();
-    expect(getByText("Preview unavailable for recumbent geometry.")).toBeTruthy();
+  it("shows distinct reclined seats, tailbox and enclosed-shell geometry", () => {
+    const { container, rerender, getByRole } = render(<CdaBikePreview params={{ ...DEFAULT_CDA_PARAMS, bike: "recumbent", position: "highracer" }} />);
+    expect(getByRole("img").getAttribute("aria-label")).toContain("high reclined seat and feet-forward pedals");
+    const highHipY = +container.querySelector(".rp-trunk")!.getAttribute("y1")!;
+    expect(container.querySelectorAll(".fg-wheel")).toHaveLength(2);
+    rerender(<CdaBikePreview params={{ ...DEFAULT_CDA_PARAMS, bike: "recumbent", position: "lowracer" }} />);
+    expect(+container.querySelector(".rp-trunk")!.getAttribute("y1")!).toBeGreaterThan(highHipY);
+    expect(container.querySelector(".rec-tailbox")).toBeNull();
+    rerender(<CdaBikePreview params={{ ...DEFAULT_CDA_PARAMS, bike: "recumbent", position: "lowracerTail" }} />);
+    expect(container.querySelector(".rec-tailbox")).toBeTruthy();
+    expect(getByRole("img").getAttribute("aria-label")).toContain("aerodynamic tailbox");
     rerender(<CdaBikePreview params={{ ...DEFAULT_CDA_PARAMS, bike: "velomobile", position: "shell" }} />);
-    expect(container.querySelector("svg")).toBeNull();
-    expect(getByText("Preview unavailable for enclosed shells.")).toBeTruthy();
+    expect(container.querySelector(".rec-shell")).toBeTruthy();
+    expect(container.querySelector(".rec-canopy")).toBeTruthy();
+    expect(container.querySelectorAll(".fg-wheel")).toHaveLength(3);
+    expect(getByRole("img").getAttribute("aria-label")).toContain("reclined rider shown in cutaway");
+    expect(container.querySelector(".rp-rider")).toBeTruthy();
+    const shell = container.querySelector("svg")!.outerHTML;
+    rerender(<CdaBikePreview params={{ ...DEFAULT_CDA_PARAMS, bike: "velomobile", position: "shell", heightCm: 130 }} />);
+    expect(container.querySelector("svg")!.outerHTML).toBe(shell);
+  });
+
+  it("lowers the velomobile occupant and rounds the rear of the tailbox", () => {
+    const { container, rerender } = render(<CdaBikePreview params={{ ...DEFAULT_CDA_PARAMS, bike: "recumbent", position: "lowracerTail" }} />);
+    const lowHipY = +container.querySelector(".rp-trunk")!.getAttribute("y1")!;
+    const tail = container.querySelector(".rec-tailbox")!.getAttribute("d")!;
+    expect((tail.match(/Q/g) ?? []).length).toBeGreaterThanOrEqual(2);
+    rerender(<CdaBikePreview params={{ ...DEFAULT_CDA_PARAMS, bike: "velomobile", position: "shell" }} />);
+    expect(+container.querySelector(".rp-trunk")!.getAttribute("y1")!).toBeGreaterThan(lowHipY);
+    // Leave clearance for both knee outlines, especially the raised return leg.
+    const farLeg = [...container.querySelectorAll(".rp-far .rp-limb")];
+    const nearLeg = [...container.querySelectorAll(".rp-rider .rp-limb")].slice(0, 2);
+    for (const leg of [...farLeg, ...nearLeg]) {
+      expect(Math.min(+leg.getAttribute("y1")!, +leg.getAttribute("y2")!) - 40).toBeGreaterThan(-735);
+    }
+  });
+
+  it("keeps feet-forward riders and wheels within the view at every supported height", () => {
+    const { container, rerender } = render(<CdaBikePreview params={DEFAULT_CDA_PARAMS} />);
+    for (const position of ["highracer", "lowracer", "lowracerTail", "shell"] as const) {
+      for (const heightCm of [120, 175, 210]) {
+        rerender(<CdaBikePreview params={{ ...DEFAULT_CDA_PARAMS, bike: position === "shell" ? "velomobile" : "recumbent", position, heightCm }} />);
+        expect(container.innerHTML).not.toMatch(/NaN|Infinity/);
+        const [x, y, width, height] = container.querySelector("svg")!.getAttribute("viewBox")!.split(" ").map(Number);
+        for (const circle of container.querySelectorAll(".fg-wheel, .rp-head")) {
+          const cx = +circle.getAttribute("cx")!, cy = +circle.getAttribute("cy")!, r = +circle.getAttribute("r")!;
+          expect(cx - r).toBeGreaterThanOrEqual(x);
+          expect(cx + r).toBeLessThanOrEqual(x + width);
+          expect(cy - r).toBeGreaterThanOrEqual(y);
+          expect(cy + r).toBeLessThanOrEqual(y + height);
+        }
+      }
+    }
   });
 });

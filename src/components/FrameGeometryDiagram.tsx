@@ -1,3 +1,5 @@
+import { RiderPose } from "./RiderPose";
+import { flip, clamp, vadd, vsub, vscale, vlen, vnorm, ik2, type P } from "./bikeGeometry";
 // Schematic side view of a diamond frame, drawn to scale from the fit targets.
 // Stack (blue) rises from the bottom bracket; reach (red) runs forward to the
 // head-tube top. The top tube meets the head tube ~1 cm below its top (as real
@@ -102,28 +104,7 @@ export type HighlightKey =
   | "reach" | "stack" | "size" | "crank" | "body" | "inseam" | "arm" | "wheel"
   | "stem" | "spacer";
 
-type P = { x: number; y: number };
-// Bike space has y up; SVG has y down, so flip as we place points.
-const flip = (p: P): P => ({ x: p.x, y: -p.y });
 const onSeat = (len: number): P => ({ x: -len * COS, y: len * SIN });
-const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
-const vadd = (a: P, b: P): P => ({ x: a.x + b.x, y: a.y + b.y });
-const vsub = (a: P, b: P): P => ({ x: a.x - b.x, y: a.y - b.y });
-const vscale = (a: P, s: number): P => ({ x: a.x * s, y: a.y * s });
-const vlen = (a: P): number => Math.hypot(a.x, a.y);
-const vnorm = (a: P): P => vscale(a, 1 / (vlen(a) || 1));
-
-// Two-bone IK: joint J with |A→J|=l1, |J→B|=l2, bending to the side `bend`
-// (+1/−1). If A and B are too far apart the limb straightens.
-function ik2(a: P, b: P, l1: number, l2: number, bend: number): P {
-  const d = vlen(vsub(b, a));
-  const u = vnorm(vsub(b, a));
-  if (d >= l1 + l2) return vadd(a, vscale(u, (l1 / (l1 + l2)) * d));
-  const a1 = (d * d + l1 * l1 - l2 * l2) / (2 * d);
-  const h = Math.sqrt(Math.max(0, l1 * l1 - a1 * a1));
-  const base = vadd(a, vscale(u, a1));
-  return vadd(base, vscale({ x: -u.y, y: u.x }, h * bend));
-}
 
 // Hand positions (offset fwd/drop from the bar clamp), from most upright to most
 // aggressive. Drop bars: tops → hoods → drops. TT: base bar → aero extensions.
@@ -663,19 +644,11 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
 
       {/* seated rider (translucent capsules): hips at the saddle, foot on the
           pedal, hands on the grip; knee/elbow solved with two-bone IK */}
-      <g className="rp-rider">
-        {line(s.rHip, s.rKnee, "rp-limb" + (legOver ? " rp-over" : ""))}
-        {line(s.rKnee, s.rAnkle, "rp-limb" + (legOver ? " rp-over" : ""))}
-        {line(s.rAnkle, s.rToe, "rp-foot" + (legOver ? " rp-over" : ""))}
-        {line(s.rHip, s.rShoulder, "rp-trunk")}
-        {line(s.rShoulder, s.rHead, "rp-neck")}
-        {line(s.rShoulder, s.rElbow, "rp-limb" + (armOver ? " rp-over" : ""))}
-        {line(s.rElbow, s.grip, "rp-limb" + (armOver ? " rp-over" : ""))}
-        <circle cx={s.rHead.x} cy={s.rHead.y} r={rHeadR} className="rp-head" />
-        {[s.rHip, s.rKnee, s.rShoulder, s.rElbow].map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={11} className="rp-joint" />
-        ))}
-      </g>
+      <RiderPose
+        hip={s.rHip} knee={s.rKnee} ankle={s.rAnkle} toe={s.rToe}
+        shoulder={s.rShoulder} elbow={s.rElbow} grip={s.grip}
+        head={s.rHead} headRadius={rHeadR} legOver={legOver} armOver={armOver}
+      />
 
       {/* over-extension flags: the limb can't reach its contact point (bars too
           far, or a saddle forced too high for the rider on a too-big frame) */}

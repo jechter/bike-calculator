@@ -289,3 +289,11 @@ Use these to unit-test the implementation.
 The CdA editor places the side-view riding-position and top-down formation
 previews side by side below the estimated CdA and explanatory note. The
 highlighted rider is blue, without a surrounding circle.
+
+The shared `BikePositionDiagram` also supports high-racer and low-racer recumbents,
+low-racers with tailboxes, and velomobiles. These show a reclined seat and
+feet-forward pedals rather than a conventional diamond frame. The velomobile
+shows an enclosed three-wheel shell with the rider visible in cutaway, to explain
+the riding position; it is not a transparent real-world shell. Upright and
+reclined variants share the capsule rider renderer and two-bone limb solver.
+These illustrative geometries do not change the CdA calculation or frame sizing.

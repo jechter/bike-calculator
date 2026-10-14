@@ -2128,3 +2128,10 @@ html.embed-fill body { overscroll-behavior: none; }
   .cda-pop .editor-pop-out { flex-direction: column; align-items: flex-start; gap: 4px; }
   .cda-pop .editor-pop-out strong { font-size: 16px; }
 }
+
+/* Feet-forward bike styles share the frame diagram's wheels and capsule rider. */
+.rec-seat { fill: none; stroke: var(--muted); stroke-width: 36; stroke-linecap: round; }
+.rec-fairing, .rec-tailbox { fill: color-mix(in srgb, var(--accent) 10%, var(--panel-2)); stroke: var(--muted); stroke-width: 11; stroke-linejoin: round; }
+.rec-canopy { fill: color-mix(in srgb, var(--accent) 6%, var(--panel-2)); stroke: var(--muted); stroke-width: 8; }
+.rec-far-wheel { opacity: 0.45; stroke-dasharray: 15 12; }
+.rec-cutaway-frame { opacity: 0.35; }

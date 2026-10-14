@@ -1,4 +1,5 @@
-import { FrameGeometryDiagram } from "./FrameGeometryDiagram";
+import { BikePositionDiagram, type ReclinedBikeStyle } from "./BikePositionDiagram";
+import type { ReactNode } from "react";
 import {
   findCategory, fitTargets, cockpitForFrame, wheelForFrame,
   suggestCrankLength,
@@ -18,14 +19,15 @@ const POSTURE: Partial<Record<CdaParams["position"], number>> = {
 export function CdaBikePreview({ params: p }: { params: CdaParams }) {
   const categoryId = CATEGORY[p.bike];
   const description = `${bikeByValue(p.bike).label} · ${CDA_POSITIONS[p.position].label}`;
-  // The shared renderer models diamond frames, not reclined bikes or shells.
-  // Never show a misleading upright rider for those unsupported geometries.
-  if (!categoryId) return (
-    <div className="editor-field-wide cda-bike-preview cda-bike-preview-unavailable">
-      <span>{description}</span>
-      <small>Preview unavailable for {p.bike === "recumbent" ? "recumbent geometry" : "enclosed shells"}.</small>
-    </div>
-  );
+  if (!categoryId) {
+    const kind: ReclinedBikeStyle = p.bike === "velomobile" ? "velomobile"
+      : p.position === "lowracer" || p.position === "lowracerTail" ? p.position : "highracer";
+    return (
+      <PreviewFigure description={description} note={p.bike === "velomobile" ? "Enclosed three-wheel shell · rider shown in cutaway" : "Reclined seat · feet-forward pedals"}>
+        <BikePositionDiagram kind={kind} heightCm={p.heightCm} label={description} />
+      </PreviewFigure>
+    );
+  }
   const category = findCategory(categoryId);
   const heightCm = Math.max(120, Math.min(210, p.heightCm));
   // Height is the only body measurement in CdA; use typical proportions, not a fit claim.
@@ -37,25 +39,33 @@ export function CdaBikePreview({ params: p }: { params: CdaParams }) {
   const aero = p.position === "clipOnAero";
   const wheel = wheelForFrame(category, frameCm);
   return (
+    <PreviewFigure description={description} note="Approximate riding position · not a bike fit">
+      <BikePositionDiagram kind="upright" frame={{
+        compact: true,
+        label: `${description}: approximate bike and rider side view`,
+        reachMm: fit.reachMm,
+        stackMm: fit.stackMm,
+        topTubeSlopeDeg: category.topTubeSlopeDeg,
+        geometry: category.geometry,
+        saddleHeightMm: fit.saddleHeightCm * 10,
+        crankLengthMm: suggestCrankLength(inseamCm).suggestedMm,
+        bodyHeightMm: heightCm * 10,
+        inseamMm: inseamCm * 10,
+        armLengthMm: armCm * 10,
+        cockpit: aero ? { ...cockpit, bar: "aero", gripFwdMm: 155, gripDropMm: -8 } : cockpit,
+        wheelRadiusMm: wheel.outerMm / 2,
+        posture: POSTURE[p.position] ?? 0,
+      }} />
+    </PreviewFigure>
+  );
+}
+
+function PreviewFigure({ description, note, children }: { description: string; note: string; children: ReactNode }) {
+  return (
     <figure className="editor-field-wide cda-bike-preview">
       <div className="drafting-preview-head">Riding position · side view</div>
-      <FrameGeometryDiagram
-        compact
-        label={`${description}: approximate bike and rider side view`}
-        reachMm={fit.reachMm}
-        stackMm={fit.stackMm}
-        topTubeSlopeDeg={category.topTubeSlopeDeg}
-        geometry={category.geometry}
-        saddleHeightMm={fit.saddleHeightCm * 10}
-        crankLengthMm={suggestCrankLength(inseamCm).suggestedMm}
-        bodyHeightMm={heightCm * 10}
-        inseamMm={inseamCm * 10}
-        armLengthMm={armCm * 10}
-        cockpit={aero ? { ...cockpit, bar: "aero", gripFwdMm: 155, gripDropMm: -8 } : cockpit}
-        wheelRadiusMm={wheel.outerMm / 2}
-        posture={POSTURE[p.position] ?? 0}
-      />
-      <figcaption>{description}<small>Approximate riding position · not a bike fit</small></figcaption>
+      {children}
+      <figcaption>{description}<small>{note}</small></figcaption>
     </figure>
   );
 }

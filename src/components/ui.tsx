@@ -433,6 +433,8 @@ export function SwatchSelect<T extends string | number>(props: {
 
 export function Result(props: {
   label: string;
+  /** Supplementary explanation, matching the info control on input fields. */
+  info?: React.ReactNode;
   value: React.ReactNode;
   big?: boolean;
   /** Optional side colour accent (matches the wheel diagram). */
@@ -458,6 +460,7 @@ export function Result(props: {
       <div className="result-label">
         {props.dotColor && <span className="result-dot" style={{ background: props.dotColor }} />}
         {props.label}
+        {props.info && <InfoTip label={`About: ${props.label}`}>{props.info}</InfoTip>}
       </div>
       <div className="result-value">{props.value}</div>
     </div>

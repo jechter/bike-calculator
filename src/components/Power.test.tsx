@@ -208,6 +208,22 @@ describe("Cycling power", () => {
     expect(kcalAt()).toBeGreaterThan(kcal24);
   });
 
+  it("shows live food equivalents from the Food energy info button", () => {
+    const { container, getByLabelText, getByText } = render(<Power />);
+    const info = getByLabelText("About: Food energy");
+    const card = info.closest(".result")!;
+    const shownKcal = () => Number(card.querySelector(".result-value")!.textContent!.replace(/[^0-9]/g, ""));
+    const initial = shownKcal();
+    fireEvent.click(info);
+    expect(getByText(`${initial.toLocaleString("en")} kcal is roughly equivalent to:`)).toBeTruthy();
+    expect(container.querySelectorAll(".food-energy-equivalents li")).toHaveLength(4);
+    fireEvent.change(nums(container)[11], { target: { value: "120" } });
+    expect(shownKcal()).toBeGreaterThan(initial);
+    expect(getByText(`${shownKcal().toLocaleString("en")} kcal is roughly equivalent to:`)).toBeTruthy();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(container.querySelector(".food-energy-info")).toBeNull();
+  });
+
   it("reports elevation gained on a climb", () => {
     const { container, getByText } = render(<Power />);
     fireEvent.change(nums(container)[5], { target: { value: "5" } }); // 5 % gradient

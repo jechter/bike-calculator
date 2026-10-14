@@ -308,3 +308,8 @@ content scrolls inside the panel, with Close remaining reachable. Placement
 updates on resize, scrolling, content changes, and visual-viewport changes
 (including the on-screen keyboard). Height-constrained panels lock background scrolling,
 keep keyboard focus inside, and return focus to the trigger when dismissed.
+
+The Food energy result has an info popup with live illustrative food equivalents.
+It uses 105 kcal per medium banana, 220 kcal per energy bar (~60 g), 1000 kcal per
+whole margherita pizza (~30 cm), and 430 kcal per litre of regular lager. These
+are explicitly labelled assumptions, not exact nutrition values or fueling advice.

@@ -2176,3 +2176,9 @@ html.embed-fill body { overscroll-behavior: none; }
 .responsive-popup[data-popup-mode="anchored"] .responsive-popup-dismiss { display: none; }
 .responsive-popup[data-popup-mode="screen"]:popover-open { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22); }
 .responsive-popup-dismiss { top: 0; }
+
+.food-energy-equivalents { margin: 12px 0 !important; padding: 0 !important; list-style: none; }
+.food-energy-equivalents li { display: flex; gap: 10px; align-items: flex-start; margin: 10px 0; }
+.food-energy-equivalents li > span { font-size: 24px; line-height: 1.2; }
+.food-energy-quantity { font-weight: 600; }
+.food-energy-equivalents small { display: block; color: var(--muted); font-size: 11px; }

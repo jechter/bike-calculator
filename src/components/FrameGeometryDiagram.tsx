@@ -1,3 +1,5 @@
+import { RiderPose } from "./RiderPose";
+import { flip, clamp, vadd, vsub, vscale, vlen, vnorm, ik2, type P } from "./bikeGeometry";
 // Schematic side view of a diamond frame, drawn to scale from the fit targets.
 // Stack (blue) rises from the bottom bracket; reach (red) runs forward to the
 // head-tube top. The top tube meets the head tube ~1 cm below its top (as real
@@ -60,6 +62,10 @@ const MIN_POST_ABOVE = 60;
 const PERSON_GAP = 560; // gap from the rear wheel to the rider, mm
 
 export interface FrameGeometryDiagramProps {
+  /** Bike and seated rider only, without fit measurements or standing figure. */
+  compact?: boolean;
+  /** Accessible description for the compact preview. */
+  label?: string;
   reachMm: number;
   stackMm: number;
   /** Top-tube slope (degrees below horizontal): 0 = level, bigger = more compact. */
@@ -98,28 +104,7 @@ export type HighlightKey =
   | "reach" | "stack" | "size" | "crank" | "body" | "inseam" | "arm" | "wheel"
   | "stem" | "spacer";
 
-type P = { x: number; y: number };
-// Bike space has y up; SVG has y down, so flip as we place points.
-const flip = (p: P): P => ({ x: p.x, y: -p.y });
 const onSeat = (len: number): P => ({ x: -len * COS, y: len * SIN });
-const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
-const vadd = (a: P, b: P): P => ({ x: a.x + b.x, y: a.y + b.y });
-const vsub = (a: P, b: P): P => ({ x: a.x - b.x, y: a.y - b.y });
-const vscale = (a: P, s: number): P => ({ x: a.x * s, y: a.y * s });
-const vlen = (a: P): number => Math.hypot(a.x, a.y);
-const vnorm = (a: P): P => vscale(a, 1 / (vlen(a) || 1));
-
-// Two-bone IK: joint J with |A→J|=l1, |J→B|=l2, bending to the side `bend`
-// (+1/−1). If A and B are too far apart the limb straightens.
-function ik2(a: P, b: P, l1: number, l2: number, bend: number): P {
-  const d = vlen(vsub(b, a));
-  const u = vnorm(vsub(b, a));
-  if (d >= l1 + l2) return vadd(a, vscale(u, (l1 / (l1 + l2)) * d));
-  const a1 = (d * d + l1 * l1 - l2 * l2) / (2 * d);
-  const h = Math.sqrt(Math.max(0, l1 * l1 - a1 * a1));
-  const base = vadd(a, vscale(u, a1));
-  return vadd(base, vscale({ x: -u.y, y: u.x }, h * bend));
-}
 
 // Hand positions (offset fwd/drop from the bar clamp), from most upright to most
 // aggressive. Drop bars: tops → hoods → drops. TT: base bar → aero extensions.
@@ -143,6 +128,8 @@ function handOffsets(c: CockpitSpec): Array<{ fwd: number; drop: number }> {
 
 export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const {
+    compact = false,
+    label = "Bike and approximate riding position",
     reachMm,
     stackMm,
     topTubeSlopeDeg,
@@ -436,12 +423,14 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
     { x: s.jVirtual.x - 40, y: 0 },
     { x: 0, y: -groundY },
     { x: s.crankTip.x + 210, y: s.crankTip.y }, // crank label room
-    { x: bodyDimX - 200, y: -headTopY }, // rider labels + head top
-    { x: personX, y: -headTopY },
+    ...(!compact ? [
+      { x: bodyDimX - 200, y: -headTopY }, // rider labels + head top
+      { x: personX, y: -headTopY },
+    ] : []),
     { x: s.rHead.x, y: s.rHead.y - rHeadR }, // seated rider head
     { x: s.grip.x, y: s.grip.y },
   ];
-  const M = 34;
+  const M = compact ? 90 : 34;
   const minX = Math.min(...bounds.map((p) => p.x)) - M;
   const maxX = Math.max(...bounds.map((p) => p.x)) + M;
   const minY = Math.min(...bounds.map((p) => p.y)) - M;
@@ -493,10 +482,11 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
       width="100%"
       preserveAspectRatio="xMidYMax meet"
       role="img"
-      aria-label="Frame geometry: stack rises from the bottom bracket and reach runs forward to the head-tube top; the actual seat tube (to the sloping top tube) and the effective/virtual seat tube (to a horizontal top tube) are shown in two shades of green; a crank arm drawn to the suggested length pivots at the bottom bracket. To the left, a front-view cyclist stands to scale with dimension lines for body height, cycling inseam and arm length. An approximate rider is also posed on the bike to show the riding position."
+      aria-label={compact ? label : "Frame geometry: stack rises from the bottom bracket and reach runs forward to the head-tube top; the actual seat tube (to the sloping top tube) and the effective/virtual seat tube (to a horizontal top tube) are shown in two shades of green; a crank arm drawn to the suggested length pivots at the bottom bracket. To the left, a front-view cyclist stands to scale with dimension lines for body height, cycling inseam and arm length. An approximate rider is also posed on the bike to show the riding position."}
     >
       <line x1={minX} y1={-groundY} x2={maxX} y2={-groundY} className="fg-ground" />
 
+      {!compact && <>
       {/* traced line-art cyclist (front view), split into three bands scaled
           vertically and independently: legs (feet→crotch) span the inseam, torso
           (crotch→neck) takes the slack, and the head (neck→top) is unscaled. */}
@@ -574,6 +564,8 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
         Arm {cm(armLengthMm)} cm
       </text>
 
+      </>}
+
       {/* wheels, drawn to the chosen wheel size; front one labelled */}
       <circle cx={s.rearAxle.x} cy={s.rearAxle.y} r={WHEEL_R} className={"fg-wheel" + hlClass("wheel")} />
       <circle cx={s.frontAxle.x} cy={s.frontAxle.y} r={WHEEL_R} className={"fg-wheel" + hlClass("wheel")} />
@@ -626,7 +618,7 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
 
       {/* dashed virtual top tube back from the head tube (the two green seat-tube
           length markers are drawn later, over the rider, so they stay visible) */}
-      {line(s.jHead, s.jVirtual, "fg-virtual-tt")}
+      {!compact && line(s.jHead, s.jVirtual, "fg-virtual-tt")}
 
       {/* saddle */}
       <line
@@ -652,23 +644,15 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
 
       {/* seated rider (translucent capsules): hips at the saddle, foot on the
           pedal, hands on the grip; knee/elbow solved with two-bone IK */}
-      <g className="rp-rider">
-        {line(s.rHip, s.rKnee, "rp-limb" + (legOver ? " rp-over" : ""))}
-        {line(s.rKnee, s.rAnkle, "rp-limb" + (legOver ? " rp-over" : ""))}
-        {line(s.rAnkle, s.rToe, "rp-foot" + (legOver ? " rp-over" : ""))}
-        {line(s.rHip, s.rShoulder, "rp-trunk")}
-        {line(s.rShoulder, s.rHead, "rp-neck")}
-        {line(s.rShoulder, s.rElbow, "rp-limb" + (armOver ? " rp-over" : ""))}
-        {line(s.rElbow, s.grip, "rp-limb" + (armOver ? " rp-over" : ""))}
-        <circle cx={s.rHead.x} cy={s.rHead.y} r={rHeadR} className="rp-head" />
-        {[s.rHip, s.rKnee, s.rShoulder, s.rElbow].map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={11} className="rp-joint" />
-        ))}
-      </g>
+      <RiderPose
+        hip={s.rHip} knee={s.rKnee} ankle={s.rAnkle} toe={s.rToe}
+        shoulder={s.rShoulder} elbow={s.rElbow} grip={s.grip}
+        head={s.rHead} headRadius={rHeadR} legOver={legOver} armOver={armOver}
+      />
 
       {/* over-extension flags: the limb can't reach its contact point (bars too
           far, or a saddle forced too high for the rider on a too-big frame) */}
-      {armOver && (
+      {!compact && armOver && (
         <text
           x={s.grip.x}
           y={s.grip.y - 26}
@@ -678,7 +662,7 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
           reach too long
         </text>
       )}
-      {legOver && (
+      {!compact && legOver && (
         <text
           x={s.rAnkle.x}
           y={s.rAnkle.y + 40}
@@ -692,12 +676,13 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
       {/* seat-tube length markers, drawn OVER the rider so the green stays clearly
           visible: effective (light green, to the virtual horizontal top tube)
           underneath, actual (dark green, to the sloping top tube) on top */}
-      {line(s.BB, s.jVirtual, "fg-seat-effective" + hlClass("size"))}
-      {line(s.BB, s.jActual, "fg-seat-actual" + hlClass("size"))}
+      {!compact && line(s.BB, s.jVirtual, "fg-seat-effective" + hlClass("size"))}
+      {line(s.BB, s.jActual, (compact ? "fg-tube" : "fg-seat-actual") + hlClass("size"))}
 
       {/* crank arm + pedal, pivoting at the BB, drawn to the suggested length */}
       {line(s.BB, s.crankTip, "fg-crank" + hlClass("crank"))}
       {line(s.pedalL, s.pedalR, "fg-pedal" + hlClass("crank"))}
+      {!compact && <>
       <text
         x={s.pedalR.x + 14}
         y={s.crankTip.y + 6}
@@ -745,6 +730,7 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
           effective seat tube
         </text>
       )}
+      </>}
     </svg>
   );
 }

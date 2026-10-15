@@ -212,10 +212,7 @@ body {
 }
 .infotip-btn:hover, .infotip-btn.open { border-color: var(--accent); color: var(--accent); }
 .infotip-pop {
-  /* Portalled to <body>; width, position and max-height are set inline by
-     InfoTip (it widens a tall tooltip so it fits the viewport height, capping
-     the height and scrolling only as a last resort). The 340px width here is
-     just the pre-measurement default. */
+  /* Shared ResponsivePopover chooses anchored or viewport-sized placement. */
   position: fixed; z-index: 60;
   width: 340px; overflow-y: auto;
   background: var(--panel);
@@ -2094,3 +2091,140 @@ html.embed-fill body { overscroll-behavior: none; }
 .component-db--details-only > .component-details:first-child { margin-top: 0; }
 
 .nav a { text-decoration: none; }
+
+/* Small shared bike/rider schematic inside the CdA editor. */
+.cda-bike-preview { margin: 0; text-align: center; color: var(--muted); font-size: 12px; }
+.cda-bike-preview svg { display: block; width: 100%; height: 150px; }
+.cda-bike-preview-unavailable { padding: 12px; border: 1px solid var(--border); border-radius: 6px; }
+
+/* Top-down drafting schematic; bike glyphs always face the travel direction. */
+.drafting-preview { margin: 2px 0 0; padding: 10px; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: 11px; background: var(--panel-2); }
+.drafting-preview-head { display: flex; align-items: center; justify-content: space-between; min-height: 22px; font-weight: 600; }
+.drafting-preview svg { display: block; width: 100%; margin: 3px auto; }
+.drafting-preview figcaption { text-align: center; }
+.drafting-preview small { display: block; margin-top: 4px; line-height: 1.4; }
+.draft-bike { color: var(--muted); }
+.draft-bike-you, .draft-you-key { color: var(--diag-red); }
+.draft-bike-frame { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+.draft-bike-body, .draft-bike-head { fill: currentColor; }
+.draft-loop { fill: none; stroke: var(--border); stroke-width: 1; stroke-dasharray: 4 5; }
+.drafting-preview-image { position: relative; }
+.draft-direction { position: absolute; top: 4px; left: 4px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+/* Both CdA previews share the bottom row, even on narrow screens. */
+.cda-previews { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: stretch; }
+.cda-previews > * { grid-column: auto; min-width: 0; margin: 0; }
+.cda-previews .cda-bike-preview { padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); }
+.cda-previews .cda-bike-preview svg { margin: 3px auto; }
+.cda-previews .drafting-preview { padding: 8px; }
+.cda-previews .drafting-preview-head { flex-wrap: wrap; gap: 4px; }
+.cda-previews figcaption { font-size: 11px; line-height: 1.4; }
+.cda-previews small { font-size: 10px; }
+@media (max-width: 480px) {
+  .cda-pop .editor-pop-out { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .cda-pop .editor-pop-out strong { font-size: 16px; }
+}
+
+/* Feet-forward bike styles share the frame diagram's wheels and capsule rider. */
+.rec-seat { fill: none; stroke: var(--muted); stroke-width: 36; stroke-linecap: round; }
+.rec-fairing, .rec-tailbox { fill: color-mix(in srgb, var(--accent) 10%, var(--panel-2)); stroke: var(--muted); stroke-width: 11; stroke-linejoin: round; }
+.rec-canopy { fill: color-mix(in srgb, var(--accent) 6%, var(--panel-2)); stroke: var(--muted); stroke-width: 8; }
+.rec-far-wheel { opacity: 0.45; stroke-dasharray: 15 12; }
+.rec-cutaway-frame { opacity: 0.35; }
+
+/* Keep tyre outlines readable when the CdA side view shrinks to a thumbnail.
+   Non-scaling strokes stay 1.25 screen pixels wide instead of scaling with the
+   millimetre-based SVG geometry. The full-size frame diagram is unaffected. */
+.cda-bike-preview .fg-wheel {
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1.25px;
+  stroke: var(--diag-wheel);
+}
+.cda-bike-preview .rec-far-wheel { stroke-dasharray: 3 3; }
+
+/* Shared popup placement. Native popover top-layer escapes clipped and
+   transformed ancestors; the component measures against the visual viewport. */
+.responsive-popup {
+  position: fixed !important;
+  right: auto !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  transform: none !important;
+  z-index: 100;
+  overflow: auto;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
+  color: var(--text);
+}
+.responsive-popup[data-popup-mode="screen"] {
+  border-radius: 10px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.22);
+}
+.responsive-popup[data-popup-mode="screen"]::backdrop { background: rgba(0, 0, 0, 0.3); }
+.responsive-popup[data-popup-mode="screen"] .cp-list { max-height: none; flex-shrink: 0; }
+.responsive-popup[data-popup-mode="screen"] .editor-pop-head,
+.responsive-popup-dismiss {
+  position: sticky; top: -10px; z-index: 2; background: var(--panel);
+  padding: 4px 0 8px;
+}
+.responsive-popup-dismiss { display: flex; justify-content: flex-end; list-style: none; }
+.responsive-popup-dismiss button {
+  width: auto; padding: 5px 10px; border: 1px solid var(--border);
+  border-radius: 6px; background: var(--panel); color: var(--text); cursor: pointer;
+}
+.responsive-popup[data-popup-mode="screen"] > * { flex-shrink: 0; }
+.responsive-popup[data-popup-mode="anchored"] .responsive-popup-dismiss { display: none; }
+.responsive-popup[data-popup-mode="screen"]:popover-open { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22); }
+.responsive-popup-dismiss { top: 0; }
+
+.food-energy-equivalents { margin: 12px 0 !important; padding: 0 !important; list-style: none; }
+.food-energy-equivalents li { display: flex; gap: 10px; align-items: flex-start; margin: 10px 0; }
+.food-energy-equivalents li > span { font-size: 24px; line-height: 1.2; }
+.food-energy-quantity { font-weight: 600; }
+.food-energy-equivalents small { display: block; color: var(--muted); font-size: 11px; }
+
+/* Touch controls share one outline, like popup-backed combo fields. Keep the
+   number between the buttons; padding, not extra rows, makes room for digits. */
+.ni-touch-step { display: none; }
+@media (pointer: coarse) {
+  .number-input .ni-field {
+    display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--panel);
+  }
+  .number-input .ni-field:focus-within { border-color: var(--accent); }
+  .number-input .ni-stepper { display: none; }
+  .number-input .ni-field input {
+    grid-column: 2; grid-row: 1;
+    min-width: 0; min-height: 44px; padding-left: 4px; padding-right: 4px;
+    border: none; border-radius: 0; background: transparent; text-align: center;
+    appearance: textfield; -moz-appearance: textfield;
+  }
+  .number-input .ni-field input:focus { outline: none; }
+  .number-input .ni-field input.ni-custom.ni-set { padding-right: 24px; }
+  .number-input input::-webkit-outer-spin-button,
+  .number-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .ni-touch-step {
+    display: flex; align-items: center; justify-content: center;
+    min-width: 44px; min-height: 44px; padding: 0;
+    border: none; border-radius: 8px; background: transparent; color: var(--text);
+    font: inherit; font-size: 22px; cursor: pointer;
+    touch-action: none; user-select: none; -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .ni-touch-minus { grid-column: 1; grid-row: 1; }
+  .ni-touch-plus { grid-column: 3; grid-row: 1; }
+  .ni-touch-step:active:not(:disabled) { background: var(--border); }
+  .ni-touch-step:disabled { opacity: .4; cursor: default; }
+  .number-input .number-clear { right: 48px; }
+  .number-input .suffix { align-self: flex-start; padding-top: 12px; }
+  .combo .number-input .ni-field { border: none; background: transparent; }
+  .combo .ni-touch-step { background: transparent; }
+  .field-highlight .number-input .ni-field { box-shadow: inset 0 3px var(--accent); }
+  .slider-row { flex-wrap: wrap; }
+  .slider-row .number-input { width: 220px; max-width: 100%; }
+  .cda-draft-row { grid-template-columns: minmax(0, 1fr) 132px; }
+}
+@media (pointer: coarse) and (max-width: 480px) {
+  /* Numeric editor fields need more room than short select labels do. */
+  .editor-pop-grid > .editor-field:has(.number-input) { grid-column: 1 / -1; }
+}

@@ -1,3 +1,4 @@
+import { ResponsivePopover } from "./ResponsivePopover";
 import { useEffect, useRef, useState } from "react";
 import { useUnits, type SpeedUnit } from "../units-context";
 
@@ -35,7 +36,7 @@ export function UnitSwitcher() {
         <span className="caret">▾</span>
       </button>
       {open && (
-        <ul className="preset-list unit-list">
+        <ResponsivePopover as="ul" className="preset-list unit-list" onClose={() => setOpen(false)}>
           {options.map((o) => (
             <li key={o.value}>
               <button
@@ -50,7 +51,7 @@ export function UnitSwitcher() {
               </button>
             </li>
           ))}
-        </ul>
+        </ResponsivePopover>
       )}
     </div>
   );

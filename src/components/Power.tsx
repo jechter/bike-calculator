@@ -1,3 +1,4 @@
+import { FoodEnergyInfo } from "./FoodEnergyInfo";
 import { useEffect, useState } from "react";
 import {
   powerForSpeed,
@@ -339,8 +340,10 @@ export function Power() {
                 ? "estimated — see panel"
                 : cdaFromEstimator && isDrafting(cdaParams)
                   ? isRotating(cdaParams.formation)
-                    ? `rotating in a group of ${cdaParams.groupSize}`
-                    : `drafting ${cdaParams.draftRiders} rider${cdaParams.draftRiders > 1 ? "s" : ""}`
+                    ? `rotating in a group of ${cdaParams.draftRiders + 1}`
+                    : cdaParams.formation !== "line"
+                      ? `in a group of ${cdaParams.draftRiders + 1}`
+                      : `drafting ${cdaParams.draftRiders} rider${cdaParams.draftRiders > 1 ? "s" : ""}`
                   : "type, position, kit, draft"
             }
             info={
@@ -518,7 +521,7 @@ export function Power() {
         {workKj > 0 ? (
           <div className="results" style={{ marginTop: 8 }}>
             <Result label="Pedal work" value={`${Math.round(workKj)} kJ`} big />
-            <Result label="Food energy" value={`${Math.round(kcal)} kcal`} big />
+            <Result label="Food energy" value={`${Math.round(kcal)} kcal`} info={<FoodEnergyInfo kcal={kcal} />} big />
             <Result
               label={elevationM < 0 ? "Elevation lost" : "Elevation gained"}
               value={`${Math.round(Math.abs(elevationM))} m`}

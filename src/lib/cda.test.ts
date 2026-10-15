@@ -12,6 +12,7 @@ import {
   groupDraftFactor,
   isRotating,
   SIDE_BY_SIDE_PENALTY,
+  doubleFilePositionFactor,
   bikeByValue,
   type CdaParams,
   SHAVED_LEGS_FACTOR,
@@ -137,7 +138,6 @@ describe("estimateCda", () => {
       shavedLegs: false,
       formation: "bunch",
       draftRiders: 0,
-      groupSize: 1,
     };
     expect(estimateCda(huge, 150)).toBeLessThanOrEqual(CDA_MAX);
     expect(estimateCda(huge, 150)).toBeGreaterThanOrEqual(CDA_MIN);
@@ -151,7 +151,6 @@ describe("estimateCda", () => {
       shavedLegs: true,
       formation: "bunch",
       draftRiders: 0,
-      groupSize: 1,
     };
     expect(estimateCda(tiny, 40)).toBeGreaterThanOrEqual(CDA_MIN);
   });
@@ -185,7 +184,7 @@ describe("draftFactor", () => {
   });
 
   it("decreases monotonically with more riders ahead", () => {
-    for (const f of ["line", "double", "bunch"] as const) {
+    for (const f of ["line", "bunch"] as const) {
       for (let n = 0; n < 20; n++) {
         expect(draftFactor(n + 1, f)).toBeLessThan(draftFactor(n, f));
       }
@@ -204,10 +203,38 @@ describe("draftFactor", () => {
     expect(velo).toBe(CDA_MIN);
   });
 
-  it("puts double file between single file and a bunch", () => {
+  it("penalizes a front pair, then shelters by complete rows ahead", () => {
+    expect(draftFactor(0, "double")).toBe(1);
+    expect(draftFactor(1, "double")).toBe(SIDE_BY_SIDE_PENALTY);
+    expect(draftFactor(2, "double")).toBeCloseTo(0.662, 12);
+    expect(draftFactor(3, "double")).toBe(draftFactor(2, "double"));
+    expect(draftFactor(4, "double")).toBeCloseTo(0.49976, 12);
+    expect(draftFactor(5, "double")).toBe(draftFactor(4, "double"));
+    expect(draftFactor(NaN, "double")).toBe(1);
+    expect(draftFactor(-1, "double")).toBe(1);
+    expect(draftFactor(150, "double")).toBeCloseTo(0.35, 12);
+  });
+
+  it("uses the same position factors for fixed and rotating double file", () => {
+    for (let size = 1; size <= 40; size++) {
+      let sum = 0;
+      for (let slot = 0; slot < size; slot++) {
+        sum += doubleFilePositionFactor(slot, size);
+      }
+      expect(rotatingDraftFactor(size)).toBeCloseTo(sum / size, 12);
+      expect(draftFactor(size - 1, "double")).toBe(doubleFilePositionFactor(size - 1, size));
+    }
+    const p = { ...DEFAULT_CDA_PARAMS, formation: "double" as const, draftRiders: 1 };
+    const solo = estimateCda({ ...p, draftRiders: 0 }, REF_MASS_KG);
+    expect(estimateCda(p, REF_MASS_KG)).toBeCloseTo(solo * SIDE_BY_SIDE_PENALTY, 3);
+  });
+
+  it("puts sheltered double-file rows between single file and a bunch", () => {
     // Second row of a double file ≈ one wheel ahead plus a little side shelter.
-    expect(draftFactor(2, "double")).toBeCloseTo(0.66, 2);
+    expect(draftFactor(2, "double")).toBeCloseTo(0.662, 3);
+    expect(draftFactor(4, "double")).toBeCloseTo(0.49976, 5);
     for (const n of [4, 8, 20]) {
+      // All formations now count the same physical riders ahead.
       expect(draftFactor(n, "double")).toBeLessThan(draftFactor(n, "line"));
       expect(draftFactor(n, "double")).toBeGreaterThan(draftFactor(n, "bunch"));
     }
@@ -222,12 +249,24 @@ describe("rotatingDraftFactor", () => {
   });
 
   it("averages the per-position factors over the rotation", () => {
-    // Two lines of 4: a staggered front pair (penalty) and a second row.
+    // A group of 4: a staggered front pair (penalty) and a second row.
     const dbl4 = (2 * SIDE_BY_SIDE_PENALTY + 2 * draftFactor(2, "double")) / 4;
     expect(rotatingDraftFactor(4)).toBeCloseTo(dbl4, 10);
     // An odd group: the lone last rider sits in the third row.
     const dbl5 = (2 * SIDE_BY_SIDE_PENALTY + 2 * draftFactor(2, "double") + draftFactor(4, "double")) / 5;
     expect(rotatingDraftFactor(5)).toBeCloseTo(dbl5, 10);
+  });
+
+  it("preserves the original rotating estimates for every supported group size", () => {
+    for (let n = 2; n <= 40; n++) {
+      let oldSum = 0;
+      for (let i = 0; i < n; i++) {
+        const physicalRidersAhead = 2 * Math.floor(i / 2);
+        oldSum += physicalRidersAhead === 0 ? SIDE_BY_SIDE_PENALTY
+          : 0.35 + 0.65 * Math.pow(0.48, physicalRidersAhead / 2);
+      }
+      expect(rotatingDraftFactor(n)).toBeCloseTo(oldSum / n, 12);
+    }
   });
 
   it("saves less than sitting in, and more with a bigger group", () => {
@@ -236,11 +275,13 @@ describe("rotatingDraftFactor", () => {
   });
 
   it("drives estimateCda for the rotating formation, sized by the group", () => {
-    const rotating = { ...DEFAULT_CDA_PARAMS, formation: "doubleRotating" as const, groupSize: 8 };
+    expect(rotatingDraftFactor(8)).toBeCloseTo(0.6534112, 7);
+    const rotating = { ...DEFAULT_CDA_PARAMS, formation: "doubleRotating" as const, draftRiders: 7 };
     expect(isRotating("doubleRotating")).toBe(true);
     expect(isRotating("double")).toBe(false);
-    // Riders-ahead is ignored when rotating; group size is ignored otherwise.
-    expect(groupDraftFactor({ ...rotating, draftRiders: 20 })).toBe(rotatingDraftFactor(8));
+    // One shared count excludes you, regardless of the selected formation.
+    expect(groupDraftFactor(rotating)).toBe(rotatingDraftFactor(8));
+    expect(groupDraftFactor({ ...rotating, draftRiders: 20 })).toBe(rotatingDraftFactor(21));
     expect(groupDraftFactor({ ...rotating, formation: "double", draftRiders: 0 })).toBe(1);
     const solo = estimateCda(DEFAULT_CDA_PARAMS, REF_MASS_KG);
     expect(estimateCda(rotating, REF_MASS_KG)).toBeCloseTo(solo * rotatingDraftFactor(8), 2);

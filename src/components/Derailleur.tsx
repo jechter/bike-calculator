@@ -1,3 +1,4 @@
+import { ResponsivePopover } from "./ResponsivePopover";
 import { routeHref, handleRouteLinkClick } from "../useHashRoute";
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { HUBS, HUB_TYPE_LABELS, type Hub } from "../lib/spokes";
@@ -316,14 +317,14 @@ export function Derailleur() {
       <Field label="Brand">
       <div className="component-brand-filter">
         <button type="button" className="preset-btn component-brand-trigger" aria-expanded={brandOpen} onClick={() => setBrandOpen((open) => !open)}>{brand === "all" ? "All brands" : brand} <span className="caret">▾</span></button>
-        {brandOpen && <div className="cp-pop component-brand-pop">
+        {brandOpen && <ResponsivePopover className="cp-pop component-brand-pop" onClose={() => setBrandOpen(false)}>
           <input className="cp-search" type="text" autoFocus placeholder="Filter brands…" aria-label="Filter brands" value={brandSearch} onChange={(e) => setBrandSearch(e.target.value)} />
           <ul className="cp-list">
             <li><button type="button" onClick={() => { setBrand("all"); setSpeeds("all"); setCassetteRange("all"); setCassetteFreehub("all"); setBrandOpen(false); }}>All brands</button></li>
             {filteredBrands.map((b) => <li key={b}><button type="button" onClick={() => { setBrand(b); setSpeeds("all"); setCassetteRange("all"); setCassetteFreehub("all"); setBrandOpen(false); }}>{b}</button></li>)}
             {filteredBrands.length === 0 && <li className="cp-empty">No brands match.</li>}
           </ul>
-        </div>}
+        </ResponsivePopover>}
       </div>
       </Field>
       {kind === "derailleur" && <>

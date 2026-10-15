@@ -1,3 +1,4 @@
+import { ResponsivePopover } from "./ResponsivePopover";
 import { useEffect, useRef } from "react";
 
 /**
@@ -14,11 +15,13 @@ export function EditorPopover(props: {
   readoutLabel: string;
   readoutValue: React.ReactNode;
   note?: React.ReactNode;
+  /** Optional bottom content beneath the readout and note. */
+  footer?: React.ReactNode;
   /** Extra class on the panel (e.g. to widen it). */
   className?: string;
 }) {
   return (
-    <div className={"cp-pop editor-pop" + (props.className ? " " + props.className : "")}>
+    <ResponsivePopover ownCloseButton onClose={props.onClose} className={"cp-pop editor-pop" + (props.className ? " " + props.className : "")}>
       <div className="editor-pop-head">
         <strong>{props.title}</strong>
         <button
@@ -36,7 +39,8 @@ export function EditorPopover(props: {
         <strong>{props.readoutValue}</strong>
       </div>
       {props.note && <p className="editor-pop-note">{props.note}</p>}
-    </div>
+      {props.footer}
+    </ResponsivePopover>
   );
 }
 

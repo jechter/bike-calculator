@@ -1,3 +1,5 @@
+import { DraftingPreview } from "./DraftingPreview";
+import { CdaBikePreview } from "./CdaBikePreview";
 import { NumberInput, Select, type SelectOption } from "./ui";
 import { EditorPopover, EditorField } from "./EditorPopover";
 import {
@@ -7,13 +9,13 @@ import {
   CDA_CLOTHING,
   CDA_FORMATIONS,
   DRAFT_RIDERS_MAX,
-  GROUP_SIZE_MAX,
   isDrafting,
   isRotating,
   estimateCda,
   bikeByValue,
   defaultPositionFor,
   isFaired,
+  SIDE_BY_SIDE_PENALTY,
   type CdaParams,
 } from "../lib/cda";
 
@@ -51,6 +53,7 @@ export function CdaAdvancedPanel(props: {
     ? estimateCda({ ...p, formation: "line", draftRiders: 0 }, props.massKg)
     : cda;
   const saving = drafting ? Math.round((1 - cda / solo) * 100) : 0;
+  const changeLabel = saving > 0 ? `−${saving}` : saving < 0 ? `+${-saving}` : "0";
   const faired = isFaired(p.bike);
   const recumbent = p.bike === "recumbent";
 
@@ -59,7 +62,9 @@ export function CdaAdvancedPanel(props: {
     (v) => ({ value: v, label: CDA_POSITIONS[v].label }),
   );
 
-  const draftNote = drafting && rotating && (
+  const draftNote = p.formation === "double" && p.draftRiders === 1 ? (
+    <> Two abreast at the front: modeled drag penalty of {Math.round((SIDE_BY_SIDE_PENALTY - 1) * 100)} %, not a drafting saving. Actual drag depends on spacing.</>
+  ) : drafting && rotating && (
     <>
       {" "}Rotating: averaged over a full rotation, including your turns on the
       front, so it saves less than sitting in. The saving grows with group size.
@@ -92,10 +97,16 @@ export function CdaAdvancedPanel(props: {
       readoutLabel="Estimated CdA"
       readoutValue={
         drafting
-          ? `${cda.toFixed(3)} m² (solo ${solo.toFixed(3)}, −${saving} %)`
+          ? `${cda.toFixed(3)} m² (solo ${solo.toFixed(3)}, ${changeLabel} %)`
           : `${cda.toFixed(3)} m²`
       }
       note={note}
+      footer={
+        <div className="cda-previews">
+          <CdaBikePreview params={p} />
+          <DraftingPreview params={p} compact />
+        </div>
+      }
     >
       <EditorField label="Bike type">
         <Select
@@ -158,31 +169,17 @@ export function CdaAdvancedPanel(props: {
             onChange={(v) => set({ formation: v })}
           />
         </EditorField>
-        {rotating ? (
-          <EditorField label="Riders in group">
-            <div className="combo">
-              <NumberInput
-                value={p.groupSize}
-                onChange={(v) => set({ groupSize: Math.round(v) })}
-                min={1}
-                max={GROUP_SIZE_MAX}
-                step={1}
-              />
-            </div>
-          </EditorField>
-        ) : (
-          <EditorField label="Riders ahead">
-            <div className="combo">
-              <NumberInput
-                value={p.draftRiders}
-                onChange={(v) => set({ draftRiders: Math.round(v) })}
-                min={0}
-                max={DRAFT_RIDERS_MAX}
-                step={1}
-              />
-            </div>
-          </EditorField>
-        )}
+        <EditorField label="Other riders">
+          <div className="combo">
+            <NumberInput
+              value={p.draftRiders}
+              onChange={(v) => set({ draftRiders: Math.round(v) })}
+              min={0}
+              max={DRAFT_RIDERS_MAX}
+              step={1}
+            />
+          </div>
+        </EditorField>
       </div>
     </EditorPopover>
   );

@@ -311,7 +311,9 @@ keep keyboard focus inside, and return focus to the trigger when dismissed.
 
 The Food energy result has an info popup with live illustrative food equivalents.
 It uses 105 kcal per medium banana, 220 kcal per energy bar (~60 g), 1000 kcal per
-whole margherita pizza (~30 cm), and 430 kcal per litre of regular lager. These
+whole margherita pizza (~30 cm), 150 kcal per 100 g of plain cooked pasta, and
+430 kcal per litre of regular lager. Pasta is shown in grams below 1000 g and
+kilograms at or above that amount. These
 are explicitly labelled assumptions, not exact nutrition values or fueling advice.
 
 On devices with a coarse primary pointer, numerical fields show touch-sized − / +

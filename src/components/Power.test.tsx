@@ -216,7 +216,7 @@ describe("Cycling power", () => {
     const initial = shownKcal();
     fireEvent.click(info);
     expect(getByText(`${initial.toLocaleString("en")} kcal is roughly equivalent to:`)).toBeTruthy();
-    expect(container.querySelectorAll(".food-energy-equivalents li")).toHaveLength(4);
+    expect(container.querySelectorAll(".food-energy-equivalents li")).toHaveLength(5);
     fireEvent.change(nums(container)[11], { target: { value: "120" } });
     expect(shownKcal()).toBeGreaterThan(initial);
     expect(getByText(`${shownKcal().toLocaleString("en")} kcal is roughly equivalent to:`)).toBeTruthy();

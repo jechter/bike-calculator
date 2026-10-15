@@ -15,6 +15,22 @@ describe("food energy equivalents", () => {
     expect(queryByText(/Portion sizes, recipes and products vary/)).toBeNull();
   });
 
+  it("shows plain cooked pasta in grams, switching to kilograms at 1000 g", () => {
+    const { getByText, rerender } = render(<FoodEnergyInfo kcal={150} />);
+    expect(getByText("100 g of cooked pasta")).toBeTruthy();
+    expect(getByText("Using 150 kcal per 100 g of plain cooked pasta")).toBeTruthy();
+    rerender(<FoodEnergyInfo kcal={1499} />);
+    expect(getByText("999 g of cooked pasta")).toBeTruthy();
+    rerender(<FoodEnergyInfo kcal={1500} />);
+    expect(getByText("1 kg of cooked pasta")).toBeTruthy();
+    rerender(<FoodEnergyInfo kcal={1800} />);
+    expect(getByText("1.2 kg of cooked pasta")).toBeTruthy();
+    rerender(<FoodEnergyInfo kcal={9000} />);
+    expect(getByText("6 kg of cooked pasta")).toBeTruthy();
+    rerender(<FoodEnergyInfo kcal={0} />);
+    expect(getByText("0 g of cooked pasta")).toBeTruthy();
+  });
+
   it("rounds quantities over five to whole numbers, keeping smaller quantities precise", () => {
     const { getByText, rerender } = render(<FoodEnergyInfo kcal={504} />);
     expect(getByText("4.8 bananas")).toBeTruthy();

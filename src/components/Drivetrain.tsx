@@ -185,7 +185,7 @@ function cassetteModelIdx(cogs: number[], preferBrand?: string): number {
   return parseInt((preferred ?? matches[0]).value);
 }
 
-// Link (labelled with the cassette's name) to where its cogs came from; falls
+// Link (labeled with the cassette's name) to where its cogs came from; falls
 // back to the plain "comma-separated tooth counts" hint for a custom cog list.
 function CassetteSourceLink({ preset }: { preset: CassettePreset | null }) {
   const src = preset?.source;
@@ -664,7 +664,7 @@ function isBelt(cfg: { mode: Mode; hubIdx: number; transmission: Transmission })
   return cfg.transmission === "belt" && !hasDerailleur(cfg);
 }
 
-// Link (labelled with the hub's name) to where its ratios came from.
+// Link (labeled with the hub's name) to where its ratios came from.
 function HubSourceLink({ hub }: { hub: HubPreset }) {
   const src = hub.source;
   if (!src) return <>internal ratios — verify against maker's data</>;
@@ -685,7 +685,7 @@ function HubSourceLink({ hub }: { hub: HubPreset }) {
 // All the state describing one drivetrain, including its wheel's rolling
 // circumference (so a comparison can span two different bikes, or the same bike
 // with a different wheel/tire). Cadence is shared across configs — it's just the
-// axis parameter for the speed visualisation, not part of a drivetrain.
+// axis parameter for the speed visualization, not part of a drivetrain.
 
 interface ConfigInit {
   mode: Mode;
@@ -1475,12 +1475,12 @@ export function Drivetrain() {
   const wearThresholds = chainWearThresholdsFor(hasDerailleur(focusCfg), cogs.length);
 
   // Belt / single-speed length. Belts snap to a stock size and move the frame's
-  // centre distance to suit; a single-speed chain instead has a minimum length
+  // center distance to suit; a single-speed chain instead has a minimum length
   // (shortest chain that reaches). Both only apply without a derailleur.
   const belt = isBelt(focusCfg);
   const beltIdeal = belt ? idealBeltTeeth(chainstay, largestRing, largestCog) : 0;
   const beltOptions = belt ? nearbyBeltOptions(chainstay, largestRing, largestCog) : [];
-  // The stock belt closest to the target chainstay (smallest centre-distance
+  // The stock belt closest to the target chainstay (smallest center-distance
   // delta), and whether that delta is within a frame's typical adjustment — if
   // not, no belt reasonably fits (chainstay too short/long, or in a size gap).
   const bestBelt = beltOptions.length
@@ -1942,9 +1942,9 @@ export function Drivetrain() {
             <>
               A belt is a closed loop — it can't be cut or shortened. You fit a
               stock belt (a whole tooth count) and set the frame's{" "}
-              <strong>centre distance</strong> to suit it, via a sliding dropout,
+              <strong>center distance</strong> to suit it, via a sliding dropout,
               eccentric BB or eccentric hub. Gates CDX/CDN run an 11 mm pitch, so
-              belt length = teeth × 11 mm. The centre distances below are the exact
+              belt length = teeth × 11 mm. The center distances below are the exact
               chainstay each belt needs.
             </>
           ) : (
@@ -2035,7 +2035,7 @@ export function Drivetrain() {
                 {!beltFits && bestBelt && (
                   <Note tone="warn">
                     No stock Gates belt fits this chainstay — the closest is{" "}
-                    <strong>{bestBelt.teeth} T</strong>, which needs a centre distance{" "}
+                    <strong>{bestBelt.teeth} T</strong>, which needs a center distance{" "}
                     {Math.abs(Math.round(bestBelt.deltaMm))} mm{" "}
                     {bestBelt.deltaMm > 0 ? "longer" : "shorter"} than the {chainstay} mm
                     chainstay — beyond the ~{BELT_ADJUST_TOLERANCE_MM} mm a sliding
@@ -2049,7 +2049,7 @@ export function Drivetrain() {
                     <tr>
                       <th>Belt</th>
                       <th className="num">Length</th>
-                      <th className="num">Centre distance</th>
+                      <th className="num">Center distance</th>
                       <th className="num">vs. chainstay</th>
                     </tr>
                   </thead>
@@ -2075,13 +2075,13 @@ export function Drivetrain() {
               </>
             ) : (
               <Note tone="warn">
-                No catalogued Gates belt spans this sprocket combination at this
+                No cataloged Gates belt spans this sprocket combination at this
                 chainstay — try a size closer to the sprockets.
               </Note>
             )}
             {beltOptions.length > 0 && beltFits && (
               <Note>
-                Pick the belt whose centre distance lands inside your frame's
+                Pick the belt whose center distance lands inside your frame's
                 adjustment range — a <strong>sliding dropout</strong>,{" "}
                 <strong>eccentric BB</strong> or <strong>eccentric hub</strong> — with a
                 few mm of travel to spare for tensioning (✓ marks the closest to your
@@ -2166,14 +2166,14 @@ export function Drivetrain() {
             {comboActive(focusCfg) ? (
               <>
                 One line per <strong>hub gear</strong>; each dot is a cassette cog
-                (labelled with its tooth count) — the hub steps act like extra front
+                (labeled with its tooth count) — the hub steps act like extra front
                 gears multiplied through the cassette. Hover a dot for its exact
                 values.{" "}
               </>
             ) : (
               <>
                 One line per chainring; each dot is a{" "}
-                {focusCfg.mode === "hub" ? "hub gear" : "cog"} (labelled with its{" "}
+                {focusCfg.mode === "hub" ? "hub gear" : "cog"} (labeled with its{" "}
                 {focusCfg.mode === "hub" ? "gear" : "tooth count"}) — hover a dot for its
                 exact values.{" "}
               </>
@@ -2186,14 +2186,14 @@ export function Drivetrain() {
             )}
             {focusCfg.mode === "cassette" && chainrings.length > 1 && (
               <>
-                <strong>Greyed dots</strong> are cross-chained combinations (big-big /
+                <strong>Grayed dots</strong> are cross-chained combinations (big-big /
                 small-small) to avoid shifting into.{" "}
               </>
             )}
             <strong>Gear inches</strong> = the drive-wheel diameter (in) of an
             equivalent direct-drive high-wheeler — a wheel-size-independent way to
             compare gears; bigger = taller/harder. <strong>Development</strong> is
-            metres travelled per pedal revolution.
+            meters traveled per pedal revolution.
           </>
         }
       >

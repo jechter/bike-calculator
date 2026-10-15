@@ -116,7 +116,7 @@ describe('CASSETTE_PRESETS (loaded from data/cassette-presets.json)', () => {
 describe('deriveCassetteSpacing', () => {
   const base = { brand: 'X', model: 'Y', speeds: 11, sprockets: [] as number[] };
 
-  it('honours an explicit spacing override', () => {
+  it('honors an explicit spacing override', () => {
     expect(deriveCassetteSpacing({ ...base, freehub: 'Campagnolo', spacing: 'shimano-sram' })).toBe(
       'shimano-sram',
     );
@@ -169,12 +169,12 @@ describe('belt drive', () => {
   it('belt length is teeth * 11 mm pitch', () => {
     expect(BELT_PITCH_MM).toBe(11);
     expect(GATES_BELT_TEETH).toContain(118);
-    // 111T = 1221 mm, 125T = 1375 mm (Gates catalogue).
+    // 111T = 1221 mm, 125T = 1375 mm (Gates catalog).
     expect(111 * BELT_PITCH_MM).toBe(1221);
     expect(125 * BELT_PITCH_MM).toBe(1375);
   });
 
-  it('centre distance for a 118T belt on 50/24 is ~443 mm', () => {
+  it('center distance for a 118T belt on 50/24 is ~443 mm', () => {
     expect(beltCenterDistanceMm(118, 50, 24)).toBeCloseTo(443, 0);
   });
 
@@ -189,13 +189,13 @@ describe('belt drive', () => {
     }
   });
 
-  it('nearbyBeltOptions returns catalogued sizes ordered by tooth count', () => {
+  it('nearbyBeltOptions returns cataloged sizes ordered by tooth count', () => {
     const opts = nearbyBeltOptions(440, 50, 22, 5);
     expect(opts).toHaveLength(5);
     for (const o of opts) {
       expect(GATES_BELT_TEETH).toContain(o.teeth);
       expect(o.lengthMm).toBe(o.teeth * BELT_PITCH_MM);
-      // deltaMm is how far the frame's centre distance must move from the target.
+      // deltaMm is how far the frame's center distance must move from the target.
       expect(o.deltaMm).toBeCloseTo(o.centerDistanceMm - 440, 6);
     }
     for (let i = 1; i < opts.length; i++) {

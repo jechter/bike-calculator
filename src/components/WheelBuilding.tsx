@@ -116,7 +116,7 @@ function SpokeSpecs({ specs }: { specs: SpokeSpec[] }) {
 const hubName = (h: Hub) => `${h.manufacturer} ${h.model}`;
 const drillingsLabel = (h: Hub) => h.spokeCounts.join("/") + "h";
 
-// Link (labelled with the hub's name) to where its flange geometry came from —
+// Link (labeled with the hub's name) to where its flange geometry came from —
 // mirrors the drivetrain calculator's hub-source link.
 function HubSourceLink({ hub }: { hub: Hub }) {
   const src = hub.source;
@@ -366,8 +366,8 @@ export function WheelBuilding() {
   const [spokes, setSpokes] = useState(() => wbNum(q.get("n"), DEF.spokes));
   const [holeDia, setHoleDia] = useState(() => wbNum(q.get("hd"), DEF.holeDia));
   const [ratio, setRatio] = useState<HubRatio>(() => (q.get("ratio") === "2:1" ? "2:1" : "1:1"));
-  const [ndsCentre, setNdsCentre] = useState(() => q.get("ndsc") === "1"); // 2:1: non-drive in triplet centre
-  const [crossPhase, setCrossPhase] = useState(() => q.get("xph") === "1"); // cross the neighbouring group (G3)
+  const [ndsCentre, setNdsCentre] = useState(() => q.get("ndsc") === "1"); // 2:1: non-drive in triplet center
+  const [crossPhase, setCrossPhase] = useState(() => q.get("xph") === "1"); // cross the neighboring group (G3)
   const [interlaced, setInterlaced] = useState(() => q.get("il") !== "0"); // spokes woven at the last cross
 
   const [leftFlange, setLeftFlange] = useState(() => wbNum(q.get("lf"), DEF.leftFlange));
@@ -617,7 +617,7 @@ export function WheelBuilding() {
             rough starting points that vary a lot by rim depth.{" "}
             <strong>Spoke-hole offset</strong> models a rim drilled with
             alternating left/right holes (each leaning toward the flange it feeds);
-            leave it 0 for a plain centre-drilled rim, or go negative to cross each
+            leave it 0 for a plain center-drilled rim, or go negative to cross each
             hole to the far side (as on a WH-7700).
           </>
         }
@@ -638,7 +638,7 @@ export function WheelBuilding() {
           </Field>
           <Field
             label="Spoke-hole offset (alternating drilling)"
-            hint="each hole nudged toward its flange · negative crosses it to the far side · 0 = centred"
+            hint="each hole nudged toward its flange · negative crosses it to the far side · 0 = centered"
           >
             <NumberInput
               value={rimHoleOffset}
@@ -713,7 +713,7 @@ export function WheelBuilding() {
         info={
           <>
             Flange diameter is the circle through the spoke holes (PCD); the offset
-            is centre-to-flange per side. Presets are <strong>approximate</strong> —
+            is center-to-flange per side. Presets are <strong>approximate</strong> —
             measure your hub. Left/right offsets differ on a dished (rear or disc)
             wheel.
           </>
@@ -742,7 +742,7 @@ export function WheelBuilding() {
             <Field label="Flange diameter">
               <NumberInput value={leftFlange} onChange={edited(setLeftFlange)} suffix="mm" />
             </Field>
-            <Field label="Centre-to-flange offset">
+            <Field label="Center-to-flange offset">
               <NumberInput value={leftOffset} onChange={edited(setLeftOffset)} suffix="mm" />
             </Field>
           </div>
@@ -751,7 +751,7 @@ export function WheelBuilding() {
             <Field label="Flange diameter">
               <NumberInput value={rightFlange} onChange={edited(setRightFlange)} suffix="mm" />
             </Field>
-            <Field label="Centre-to-flange offset">
+            <Field label="Center-to-flange offset">
               <NumberInput value={rightOffset} onChange={edited(setRightOffset)} suffix="mm" />
             </Field>
           </div>
@@ -795,7 +795,7 @@ export function WheelBuilding() {
                 onChange={(v) => setNdsCentre(v === "centre")}
                 options={[
                   { value: "edge", label: "Edge (D-D-N)" },
-                  { value: "centre", label: "Centre (D-N-D)" },
+                  { value: "centre", label: "Center (D-N-D)" },
                 ]}
               />
             </Field>

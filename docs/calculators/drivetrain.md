@@ -28,7 +28,7 @@ worn chain.
   to the [tire calculator](tire.md) carries the selected size as a
   `#/tire?size=…` param (dropped once a raw circumference is typed).
 - **Cadence** (rpm): lives in the **chart's control bar** (next to the axis
-  selector), since it only affects the speed visualisation — a compact slider
+  selector), since it only affects the speed visualization — a compact slider
   over 60–120 with a number field for values outside it. Default 90.
 - **Speed unit** (km/h / mph): the global switch in the sidebar footer, shared
   with the [power calculator](power.md) — not a per-chart toggle.
@@ -93,7 +93,7 @@ outputs: per-gear overall ratio and speed, plus the **total gear range**
 - **Gear ratio** for every chainring × cog combination: `ratio = chainring / cog`.
 - **Gear inches**: `gear_inches = ratio × wheel_diameter_inches`
   (classic penny-farthing-equivalent measure).
-- **Development / metres of development**: distance travelled per crank
+- **Development / meters of development**: distance traveled per crank
   revolution: `development_m = ratio × circumference_m`.
 - **Speed at cadence**:
   `speed = ratio × circumference × cadence` →
@@ -102,7 +102,7 @@ outputs: per-gear overall ratio and speed, plus the **total gear range**
 
 Present the gears as a **visualization**, not a table: a horizontal axis (the
 chosen metric — speed at cadence, gear inches, development, or ratio) with **one
-line per chainring** and a dot per gear (labelled with its cog / hub gear). This
+line per chainring** and a dot per gear (labeled with its cog / hub gear). This
 makes overlaps and gaps between chainrings, and the overall range, obvious at a
 glance. Also show the gear count and range (`highest ratio / lowest ratio`).
 
@@ -119,8 +119,8 @@ For a **derailleur** setup a rear derailleur is simulated: the tension pulley
 swings on its cage (solved by circle intersection) so the **total chain length
 stays constant** as the gear changes — bigger cogs retract the cage, smaller cogs
 extend it. Single-speed/hub setups draw a plain chain loop (no derailleur).
-The **rear wheel is drawn to scale** from the rolling circumference (rim + tyre +
-a **three-spoke** design), centred on the rear hub. The viewBox stays **focused on
+The **rear wheel is drawn to scale** from the rolling circumference (rim + tire +
+a **three-spoke** design), centered on the rear hub. The viewBox stays **focused on
 the drivetrain** (the wheel is far larger), so the wheel is deliberately **culled
 by the SVG viewport** — it shows only as a faint background arc and three spoke
 blades. The three spokes make the wheel's rotation legible even though most of it
@@ -133,7 +133,7 @@ gears, so the effective ratio (and hence the wheel-spin speed, the caption ratio
 and the speed) uses the selected **hub gear's ratio** — hovering a different hub
 gear updates the diagram accordingly, and the caption names the hub gear (e.g.
 "3rd"). The animation respects `prefers-reduced-motion`. The selected gear is
-coloured to match its chainring's line in the chart. A **chainstay-length slider**
+colored to match its chainring's line in the chart. A **chainstay-length slider**
 sits under the diagram (350–500 mm) and re-spaces the chainring and cassette live;
 it's the same value used for the chain-length calculation.
 
@@ -141,7 +141,7 @@ A hint under the diagram links to the [cycling power calculator](power.md): pair
 your lowest gear's speed at a comfortable cadence with a gradient there to check
 whether a climb is realistic on this gearing.
 
-**Cross-chaining.** With 2+ chainrings, the chart **greys out** the extreme
+**Cross-chaining.** With 2+ chainrings, the chart **grays out** the extreme
 cross-chained combinations to avoid shifting into: the big ring with the two
 largest cogs, and the small ring with the two smallest cogs (big-big /
 small-small). The hover tooltip flags them too. Single-speed and hub setups have

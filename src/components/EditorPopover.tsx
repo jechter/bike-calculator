@@ -44,7 +44,7 @@ export function EditorPopover(props: {
   );
 }
 
-/** One labelled control inside an {@link EditorPopover} grid. */
+/** One labeled control inside an {@link EditorPopover} grid. */
 export function EditorField(props: {
   label: string;
   /** Span both columns (e.g. a wide select). */

@@ -15,7 +15,7 @@ by drivetrain efficiency:
 P_pedal = (F_gravity + F_rolling + F_aero) × v / η_drivetrain
 ```
 
-(steady state; ignores acceleration — add `F_accel = m·a` if modelling changes
+(steady state; ignores acceleration — add `F_accel = m·a` if modeling changes
 in speed.)
 
 Forces, with ground speed `v` (m/s) and road gradient `G` (rise/run, e.g. 0.05
@@ -76,7 +76,7 @@ multiplier and decides the available riding positions, which really follow the
   Clip-on aero bars. All three share this list and differ only by `factor` (gravel
   bulkier than road). Clip-ons (~0.26 base, for ultra/TT setups) sit below the
   drops but above a dedicated TT bike's tuck — the frame isn't aero and the
-  position is less optimised.
+  position is less optimized.
 - **Flat bar** (city, mountain) → Upright / Leaning forward. No hoods or drops.
 - **Aero bar** (TT) → Aero tuck / Base bar.
 - **Recumbent** → High-racer / Low-racer / Low-racer + tailbox.
@@ -95,7 +95,7 @@ less, so the estimate takes a conservative 5 %. Like clothing, it has no effect
 inside a velomobile's fairing.
 
 **Drafting** is the last step: one *Drafting formation* menu, with a count
-field labelled **Other riders** next to it, scales the solo CdA by a draft factor (`groupDraftFactor` in
+field labeled **Other riders** next to it, scales the solo CdA by a draft factor (`groupDraftFactor` in
 `cda.ts`). The same count is retained when switching formations. The options are single file, double file, double file (average in
 rotating group), and bunch/peloton.
 
@@ -137,13 +137,13 @@ rotating double file rather than suggesting a saving for two riders abreast.
 - **Double file:** one other rider puts you abreast at the front (+3% estimated
   drag). Two or three others put you behind one full row (factor 0.662).
   Four or five others put you behind two full rows (factor 0.49976). Adding a
-  neighbour in your own row does not add another half-row of drafting shelter.
+  neighbor in your own row does not add another half-row of drafting shelter.
   These are simplified estimates, not exact drag predictions for each spacing.
 - **Bunch:** the preview uses staggered rows widening 1, 2, …, 10, then
   alternating 9/10, based on section 2.2 / Fig. 3 of
   [Blocken et al. (2018)](https://doi.org/10.1016/j.jweia.2018.06.011).
   The highlighted rider occupies a central slot in the row being filled;
-  other riders fill neighbouring slots before a new row begins. The preview does not claim
+  other riders fill neighboring slots before a new row begins. The preview does not claim
   to reproduce the paper's exact rider positions or CFD values.
   Riders on both sides shelter you, so drag keeps falling toward ~0.10
   deep in a large peloton (Blocken et al. 2018, 121-rider CFD): 5 ahead → ~0.36,
@@ -202,7 +202,7 @@ Rather than a "solve for" switch, **speed, power and power-to-weight (W/kg) are
 editable fields that stay in sync**: edit one and the others update via the
 model. When a *condition* (mass, gradient, CdA, …) changes, the field the user
 **edited last** is held fixed and the others are recomputed — the intuitive
-behaviour. Internally: track `last ∈ {speed, power, wkg}`; from it we get the
+behavior. Internally: track `last ∈ {speed, power, wkg}`; from it we get the
 independent pedal power (`powerForSpeed(speed)`, the typed watts, or
 `wkg × rider_mass`), then derive the rest (`speedForPower`, `watts / rider_mass`).
 
@@ -230,11 +230,11 @@ Direct substitution — plug `v` into the model above.
 - The answer (speed in km/h & mph, or power in W).
 - A **breakdown** of where the watts go, in **watts and %**, against gravity,
   rolling and aero, plus the **drivetrain loss** — the four sum to the total pedal
-  power. It's drawn as a colour-coded stacked bar under the cards. This is
+  power. It's drawn as a color-coded stacked bar under the cards. This is
   genuinely instructive (e.g. shows how aero dominates on the flat and gravity
   dominates on a climb) and helps sanity-check inputs. The percentages are shares
   of the **resisting** power (the parts the rider must overcome). On a descent
-  gravity *assists* rather than resists, so it shows negative watts labelled
+  gravity *assists* rather than resists, so it shows negative watts labeled
   "assist" and takes no bar width, while the rest still sum to 100 %. The
   drivetrain loss is `road_power × (1/η − 1)`, so it shrinks as gravity assists on
   a descent. If gravity overcomes rolling and drag on its own (pedal power ≤ 0),
@@ -312,9 +312,9 @@ keep keyboard focus inside, and return focus to the trigger when dismissed.
 The Food energy result has an info popup with live illustrative food equivalents.
 It uses 105 kcal per medium banana, 220 kcal per energy bar (~60 g), 1000 kcal per
 whole margherita pizza (~30 cm), 150 kcal per 100 g of plain cooked pasta, and
-430 kcal per litre of regular lager. Pasta is shown in grams below 1000 g and
+430 kcal per liter of regular lager. Pasta is shown in grams below 1000 g and
 kilograms at or above that amount. These
-are explicitly labelled assumptions, not exact nutrition values or fueling advice.
+are explicitly labeled assumptions, not exact nutrition values or fueling advice.
 
 On devices with a coarse primary pointer, numerical fields show touch-sized − / +
 steppers. Tap for one step, or hold to repeat; min/max bounds still apply. The

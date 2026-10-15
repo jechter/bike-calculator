@@ -366,7 +366,7 @@ describe('resolveFit (unified two-way solve)', () => {
     expect(r.heightCm).toBeGreaterThan(140);
   });
 
-  it('honours a measured inseam independent of height', () => {
+  it('honors a measured inseam independent of height', () => {
     const r = resolveFit({ heightCm: 178, inseamCm: 90 }, ROAD);
     expect(r.heightCm).toBeCloseTo(178, 6); // height stays
     expect(r.inseamCm).toBeCloseTo(90, 6); // measured inseam kept

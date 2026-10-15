@@ -54,7 +54,7 @@ export function initEmbedBridge(): void {
     if (e.data?.type === "bikecalc:embed" && typeof e.data.parentUrl === "string") {
       parentUrl = e.data.parentUrl;
       parentOrigin = e.origin;
-      postConfig(); // sync the host to our (possibly normalised) hash right away
+      postConfig(); // sync the host to our (possibly normalized) hash right away
     }
   });
   // Mirror config to the host on any hash change: route navigation and

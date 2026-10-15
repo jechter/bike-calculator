@@ -41,7 +41,7 @@ brand+model+cage+speeds — **not** stored in the file) and *derives* the
 - `chainLengthGuide` — `{ url, name }` for models sized by the manufacturer's own
   chain-length procedure rather than the generic Park Tool wrap formula (SRAM Full
   Mount: Eagle Transmission and 13-speed XPLR). When present, the chain calculator
-  links out to `url` (labelled with `name`) instead of showing a computed length.
+  links out to `url` (labeled with `name`) instead of showing a computed length.
   Optional.
 - `source` — `{ url, sourceType: "primary" | "secondary", note }` citing the specs.
 
@@ -109,7 +109,7 @@ fields (and snaps the spoke count to a drilling the hub offers):
 - `spokeCounts` — drillings the hub is offered in (e.g. `[28, 32, 36]`).
 - `leftFlangeDiaMm`, `rightFlangeDiaMm` — flange diameters, i.e. the pitch
   circle through the spoke holes (mm). Left = non-drive, right = drive.
-- `leftOffsetMm`, `rightOffsetMm` — centre-to-flange distances (mm).
+- `leftOffsetMm`, `rightOffsetMm` — center-to-flange distances (mm).
 - `spokeHoleMm` — flange spoke-hole diameter (mm). Optional: omitted when the
   maker doesn't publish it (SON, Onyx); the calculator then uses its 2.6 mm
   default.
@@ -119,13 +119,13 @@ fields (and snaps the spoke count to a drilling the hub offers):
 
 Most shipped rows are **first-party manufacturer geometry** taken from each
 maker's own published spec sheets / spoke-length data, cited per row:
-- **Chris King** — official wheel-building spec PDFs (flange diameter, centre-to-
+- **Chris King** — official wheel-building spec PDFs (flange diameter, center-to-
   flange DS/NDS, 2.5 mm holes).
 - **White Industries** — per-hub product pages (left/right flange diameter,
-  centre-to-flange, spoke-hole diameter).
+  center-to-flange, spoke-hole diameter).
 - **Onyx** — product-page "Spoke Hole Circle Diameter" (a true pitch circle) and
-  centre-to-flange offsets.
-- **Schmidt (SON)** — official spoke-length data; the diameter is the labelled
+  center-to-flange offsets.
+- **Schmidt (SON)** — official spoke-length data; the diameter is the labeled
   "PCD — Pitch Circle Diameter".
 
 The three internal-gear hubs (Rohloff, Shimano Nexus, SRAM i-Motion) are marked

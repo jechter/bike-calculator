@@ -10,7 +10,7 @@ describe("food energy equivalents", () => {
     expect(getByText("10 bananas")).toBeTruthy();
     expect(getByText("5 power bars")).toBeTruthy();
     expect(getByText("1.1 whole pizzas")).toBeTruthy();
-    expect(getByText("2.6 litres of beer")).toBeTruthy();
+    expect(getByText("2.6 liters of beer")).toBeTruthy();
     expect(getByText("Using 105 kcal per medium banana")).toBeTruthy();
     expect(queryByText(/Portion sizes, recipes and products vary/)).toBeNull();
   });
@@ -31,6 +31,13 @@ describe("food energy equivalents", () => {
     expect(getByText("0 g of cooked pasta")).toBeTruthy();
   });
 
+  it("uses US spelling for singular beer quantities and portion assumptions", () => {
+    const { getByText, queryByText } = render(<FoodEnergyInfo kcal={430} />);
+    expect(getByText("1 liter of beer")).toBeTruthy();
+    expect(getByText("Using 430 kcal per liter of regular lager")).toBeTruthy();
+    expect(queryByText(/litres?/)).toBeNull();
+  });
+
   it("rounds quantities over five to whole numbers, keeping smaller quantities precise", () => {
     const { getByText, rerender } = render(<FoodEnergyInfo kcal={504} />);
     expect(getByText("4.8 bananas")).toBeTruthy();
@@ -45,7 +52,7 @@ describe("food energy equivalents", () => {
     expect(getByText("54 bananas")).toBeTruthy();
     expect(getByText("26 power bars")).toBeTruthy();
     expect(getByText("6 whole pizzas")).toBeTruthy();
-    expect(getByText("13 litres of beer")).toBeTruthy();
+    expect(getByText("13 liters of beer")).toBeTruthy();
   });
 
   it("updates live and does not round tiny positive amounts down to zero", () => {

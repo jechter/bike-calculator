@@ -3,7 +3,7 @@ const PORTIONS = [
   { emoji: "🍫", label: "power bars", singular: "power bar", kcal: 220, portion: "energy bar (~60 g)" },
   { emoji: "🍝", label: "cooked pasta", singular: "cooked pasta", kcal: 150, portion: "100 g of plain cooked pasta", grams: 100 },
   { emoji: "🍕", label: "whole pizzas", singular: "whole pizza", kcal: 1000, portion: "margherita pizza (~30 cm)" },
-  { emoji: "🍺", label: "litres of beer", singular: "litre of beer", kcal: 430, portion: "litre of regular lager" },
+  { emoji: "🍺", label: "liters of beer", singular: "liter of beer", kcal: 430, portion: "liter of regular lager" },
 ] as const;
 
 /** Illustrative energy equivalents, not a recommendation for how to fuel a ride. */

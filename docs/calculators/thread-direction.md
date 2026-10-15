@@ -30,7 +30,7 @@ threads: **pedals** and **bottom brackets**.
 column showing each side's thread hand (RH/LH). Left-hand cells are highlighted.
 Hovering (or tapping) a side updates a **big rotation diagram** that shows, from
 the correct viewpoint, which way to turn **to loosen** (green) and **to tighten**
-(grey).
+(gray).
 
 | Component | Left / non-drive | Right / drive |
 |-----------|------------------|---------------|

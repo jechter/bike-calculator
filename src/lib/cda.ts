@@ -79,7 +79,7 @@ export const CDA_POSITIONS: Record<CdaPosition, { label: string; base: number }>
   drops: { label: 'Drops', base: 0.31 },
   dropsLow: { label: 'Drops, low', base: 0.28 },
   // Clip-on aero bars fitted to a drop bar — lower than the drops, but a touch
-  // higher than a dedicated TT bike (non-aero frame, less-optimised position).
+  // higher than a dedicated TT bike (non-aero frame, less-optimized position).
   clipOnAero: { label: 'Clip-on aero bars', base: 0.26 },
   // Flat bar: no hoods/drops — posture is just how far forward the rider leans.
   upright: { label: 'Upright', base: 0.5 },

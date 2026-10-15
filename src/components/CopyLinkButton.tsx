@@ -17,7 +17,7 @@ export function CopyLinkButton() {
   const [status, setStatus] = useState<"idle" | "copied" | "manual">("idle");
   const [url, setUrl] = useState("");
   const manualRef = useRef<HTMLInputElement>(null);
-  // Icon-only in the cramped mobile top bar; labelled on wider screens.
+  // Icon-only in the cramped mobile top bar; labeled on wider screens.
   const isMobile = useIsMobile();
 
   // Auto-select the fallback field so a plain Cmd/Ctrl+C works.

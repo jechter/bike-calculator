@@ -7,8 +7,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Wheel3D } from "./Wheel3D";
 import { spokePlan, wheelLayout, type HubType, type HubRatio, type LacingPattern } from "../lib/spokes";
 
-// Legend shades, matching the 3D spoke colours: light = leading, medium = radial
-// (crow's foot centre spokes), dark = trailing.
+// Legend shades, matching the 3D spoke colors: light = leading, medium = radial
+// (crow's foot center spokes), dark = trailing.
 type Role = "lead" | "radial" | "trail";
 const ROLE_LABEL: Record<Role, string> = { lead: "Leading", radial: "Radial", trail: "Trailing" };
 const ROLE_LEAD: Record<Role, number> = { lead: 1, radial: 0, trail: -1 };
@@ -46,9 +46,9 @@ export interface WheelDiagramProps {
   rightPattern?: LacingPattern;
   /** Flange spoke split: '1:1' (even) or '2:1' (drive-doubled). */
   ratio?: HubRatio;
-  /** 2:1 only: non-drive hole in the centre of each triplet (D-N-D). */
+  /** 2:1 only: non-drive hole in the center of each triplet (D-N-D). */
   ndsCentre?: boolean;
-  /** Flip lead phase so clustered pairs cross the neighbouring group (G3-style). */
+  /** Flip lead phase so clustered pairs cross the neighboring group (G3-style). */
   crossPhase?: boolean;
   /** Rim drilled in groups of this many holes (1 = evenly drilled), and the
    *  between-group gap as a multiple of the in-group spacing. */

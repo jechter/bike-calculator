@@ -109,7 +109,7 @@ describe('deriveActuation', () => {
     expect(one('Sunrace', (d) => d.model === 'RDUX600').actuation).toBe('Shimano CUES / LinkGlide');
     expect(one('Sunrace', (d) => d.model === 'RDMS10').actuation).toBe('Shimano MTB 10-speed (Dynasys)');
     expect(one('Sunrace', (d) => d.model === 'RDMZ600').actuation).toBe('Shimano MTB 11/12-speed (Hyperglide+ / Micro Spline)');
-    // S-Ride: 1.7/1.2 Shimano; SRAM-labelled 1.1 ≤9sp is SRAM 1:1; 1.1 12sp unknown.
+    // S-Ride: 1.7/1.2 Shimano; SRAM-labeled 1.1 ≤9sp is SRAM 1:1; 1.1 12sp unknown.
     expect(one('S-Ride', (d) => d.model === 'RD-M200').actuation).toBe('Shimano MTB 6/7/8/9-speed');
     expect(one('S-Ride', (d) => d.model === 'RD-M310').actuation).toBe('SRAM 1:1 (older MTB)');
     expect(one('S-Ride', (d) => d.model === 'RD-M600C').actuation).toBeUndefined();

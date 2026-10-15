@@ -87,7 +87,7 @@ describe("Drivetrain page", () => {
     );
   });
 
-  it("greys out cross-chained gears (big-big / small-small)", () => {
+  it("grays out cross-chained gears (big-big / small-small)", () => {
     const { container } = render(<Drivetrain />);
     // default 50/34, 11-28: 50x28,50x24 and 34x11,34x12 are cross-chained
     const crossed = container.querySelectorAll(".gc-crossed");
@@ -225,7 +225,7 @@ describe("Drivetrain page", () => {
     const { container } = render(<Drivetrain />);
     const selects = Array.from(container.querySelectorAll("select"));
     fireEvent.change(selects[0], { target: { value: "hub" } });
-    // Default hub is the Sturmey-Archer S3 -> the link is labelled with its name.
+    // Default hub is the Sturmey-Archer S3 -> the link is labeled with its name.
     const link = Array.from(container.querySelectorAll("a")).find((a) =>
       /Sturmey Archer S3/.test(a.textContent || ""),
     ) as HTMLAnchorElement;
@@ -260,7 +260,7 @@ describe("Drivetrain page", () => {
     // 2 hub-gear rows × 10 cogs = 20 dots, and the range multiplies the two.
     expect(container.querySelectorAll(".gc-row-line").length).toBe(2);
     expect(container.querySelectorAll(".gc-dot").length).toBe(20);
-    // Rows are labelled by hub gear (1st / 2nd), not by chainring tooth count.
+    // Rows are labeled by hub gear (1st / 2nd), not by chainring tooth count.
     const rowLabels = Array.from(container.querySelectorAll(".gc-row-label")).map(
       (n) => n.textContent,
     );
@@ -287,8 +287,8 @@ describe("Drivetrain page", () => {
     expect(getByText(/Ideal belt/)).toBeTruthy();
     expect(queryByText(/When to replace/)).toBeNull();
     expect(queryByText(/dropout \/ tensioner/)).toBeNull();
-    // The nearby-belt table lists catalogued sizes with centre distances.
-    expect(getByText("Centre distance")).toBeTruthy();
+    // The nearby-belt table lists cataloged sizes with center distances.
+    expect(getByText("Center distance")).toBeTruthy();
     expect(container.textContent).toMatch(/\bT ✓/);
   });
 
@@ -304,7 +304,7 @@ describe("Drivetrain page", () => {
     // Default 42/18 at 410 mm: the nearest belt is ~17 mm off — within a frame's
     // adjustment, so no warning.
     expect(queryByText(/No stock Gates belt fits/)).toBeNull();
-    // Drop to a very short chainstay: even the smallest belt now needs a centre
+    // Drop to a very short chainstay: even the smallest belt now needs a center
     // distance far beyond what any dropout/EBB could take up.
     const cs = container.querySelector(
       'input[aria-label="Chainstay length"]',
@@ -312,7 +312,7 @@ describe("Drivetrain page", () => {
     fireEvent.change(cs, { target: { value: "350" } });
     expect(getByText(/No stock Gates belt fits/)).toBeTruthy();
     // The option table is still shown (so you can see how far off each size is).
-    expect(getByText("Centre distance")).toBeTruthy();
+    expect(getByText("Center distance")).toBeTruthy();
   });
 
   it("draws belt sprockets ~13% smaller than chain sprockets (11 vs 12.7 mm pitch)", () => {
@@ -365,7 +365,7 @@ describe("Drivetrain page", () => {
     expect(getByText("Links")).toBeTruthy();
     // Pick a SRAM Full Mount (Eagle Transmission) derailleur.
     pickDerailleur(container, "GX Eagle", (t) => /Transmission/i.test(t));
-    // Our computed length is now hidden in favour of SRAM's guide.
+    // Our computed length is now hidden in favor of SRAM's guide.
     expect(queryByText("Links")).toBeNull();
     const link = Array.from(container.querySelectorAll("a")).find((a) =>
       a.getAttribute("href")?.includes("axs.sram.com/guides/fullmount/chain/calculator"),
@@ -738,7 +738,7 @@ describe("Drivetrain page", () => {
     // A (50/34 -> 2) + B (copied from A -> 2) = 4 rows; 2 are the hollow B rows.
     expect(container.querySelectorAll(".gc-row-line").length).toBe(4);
     expect(container.querySelectorAll(".gc-row-line-b").length).toBe(2);
-    // both configs' ranges are summarised
+    // both configs' ranges are summarized
     expect(container.textContent).toContain("A: gears / range");
     expect(container.textContent).toContain("B: gears / range");
   });

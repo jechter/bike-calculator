@@ -20,7 +20,7 @@ always overridable, and clearly flagged as starting points to measure against.
 - **Spoke-hole offset (alternating drilling)** (mm) — many rims are drilled with
   each hole nudged a little toward the flange it feeds, alternating left/right
   around the rim, so the spoke enters the bed straighter. This drives the 3D
-  view's rim-hole placement (0 = a plain centre-drilled rim). It's a small axial
+  view's rim-hole placement (0 = a plain center-drilled rim). It's a small axial
   shift at the rim bed; it does **not** meaningfully change the computed spoke
   length, so the length formula ignores it (as do the standard calculators).
 
@@ -42,7 +42,7 @@ always overridable, and clearly flagged as starting points to measure against.
 - Per side (left/non-drive and right/drive):
   - **Flange diameter** — the diameter of the circle through the spoke holes on
     the flange (mm), a.k.a. PCD. Use radius `R = flange_diameter / 2`.
-  - **Flange offset / centre-to-flange** (`W`, mm) — distance from the wheel
+  - **Flange offset / center-to-flange** (`W`, mm) — distance from the wheel
     centreline to the flange. Drive and non-drive differ on a dished wheel.
   - **Lacing** — a single menu that combines the cross count with the pattern, so
     only buildable combinations are offered. It's grouped into:
@@ -65,12 +65,12 @@ always overridable, and clearly flagged as starting points to measure against.
 ### Wheel diagram
 
 The page renders the wheel as a **rotatable 3D view** — a WebGL rendering (a
-box-section rim with a concave tyre channel and nipples seated in the bed, hub
+box-section rim with a concave tire channel and nipples seated in the bed, hub
 barrel + flanges, and spokes with button heads on the flange faces) so you can
-see how the inputs affect the spokes. Spokes are coloured by side (blue = left /
+see how the inputs affect the spokes. Spokes are colored by side (blue = left /
 non-drive, red = right / drive) and shaded by weave role: light = leading,
-medium = radial, dark = trailing; nipples match their spoke's colour. Radial
-spokes — a crow's foot's centre spokes, or every spoke on a plain radial wheel —
+medium = radial, dark = trailing; nipples match their spoke's color. Radial
+spokes — a crow's foot's center spokes, or every spoke on a plain radial wheel —
 use the medium shade and aren't split into leading/trailing. The legend spells
 out only the shades actually on the wheel.
 

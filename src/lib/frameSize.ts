@@ -73,9 +73,9 @@ export function findCategory(id: string): FrameCategory {
 
 export const SEAT_ANGLE_DEG = 73;
 const SEAT_ANGLE = (SEAT_ANGLE_DEG * Math.PI) / 180;
-const SADDLE_FACTOR = 0.883; // LeMond: BB centre → saddle top, along the seat tube
+const SADDLE_FACTOR = 0.883; // LeMond: BB center → saddle top, along the seat tube
 /**
- * Starting saddle height (BB centre → saddle top), cm, from the cycling inseam and
+ * Starting saddle height (BB center → saddle top), cm, from the cycling inseam and
  * the crank length. At the crank length *suggested* for that inseam it's the plain
  * LeMond 0.883 × inseam; fitting a longer crank than suggested lowers the saddle by
  * the difference (a shorter one raises it), keeping leg extension at the bottom of
@@ -98,7 +98,7 @@ export interface FrameSizeResult {
   frameCmRange: [number, number];
   /** Frame size in inches (shown for mountain bikes). */
   frameInches: number;
-  /** Starting saddle height (BB centre to saddle top), cm — LeMond. */
+  /** Starting saddle height (BB center to saddle top), cm — LeMond. */
   saddleHeightCm: number;
   nominalSize: string; // XS/S/M/L/XL best guess
 }
@@ -243,7 +243,7 @@ export const LEG_PROPORTIONS: LegProportion[] = [
 /**
  * Reach and stack are the modern, frame-independent way to describe fit: the
  * horizontal (reach) and vertical (stack) distance from the bottom-bracket
- * centre to the top-centre of the head tube. Unlike a seat-tube "size" they
+ * center to the top-center of the head tube. Unlike a seat-tube "size" they
  * don't depend on how far the top tube slopes, so they compare directly across
  * brands. We estimate a *target* pair from body measurements and the chosen
  * category; these bake in typical stem/spacer/setback assumptions, so treat
@@ -310,7 +310,7 @@ export interface FitTargets {
   stackReach: number;
   /** Torso length used for the reach estimate. */
   torsoCm: number;
-  /** Starting saddle height (BB centre → saddle top), cm — LeMond. */
+  /** Starting saddle height (BB center → saddle top), cm — LeMond. */
   saddleHeightCm: number;
 }
 
@@ -335,16 +335,16 @@ export function fitTargets(input: FitTargetsInput): FitTargets {
 
 /**
  * A wheel standard, described the way cyclists actually talk about wheels: a
- * common name (700c, 29", …), the precise tyre-independent ISO/ETRTO bead-seat
- * diameter, and an approximate outer diameter with a typical tyre for that use
+ * common name (700c, 29", …), the precise tire-independent ISO/ETRTO bead-seat
+ * diameter, and an approximate outer diameter with a typical tire for that use
  * (so the diagram can draw it to scale).
  */
 export interface Wheel {
   /** Common name: "700c", "650b", "29\"", "27.5\"", "26\"", "27\"", "28\"". */
   label: string;
-  /** ISO/ETRTO bead-seat diameter (mm) — the precise, tyre-independent number. */
+  /** ISO/ETRTO bead-seat diameter (mm) — the precise, tire-independent number. */
   isoMm: number;
-  /** Approx outer diameter with a typical tyre for this use (mm), for the diagram. */
+  /** Approx outer diameter with a typical tire for this use (mm), for the diagram. */
   outerMm: number;
   /** One line on why this wheel suits the frame. */
   note: string;

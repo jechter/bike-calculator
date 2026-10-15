@@ -46,7 +46,7 @@ function formatDuration(min: number): string {
   return h > 0 ? `${h} h ${String(m).padStart(2, "0")} min` : `${m} min`;
 }
 
-// Colours shared by the breakdown's number cards and the stacked bar.
+// Colors shared by the breakdown's number cards and the stacked bar.
 const SPLIT_COLORS = {
   gravity: "#b7791f",
   rolling: "#0e8a8a",
@@ -68,7 +68,7 @@ function splitParts(bd: PowerBreakdown): SplitPart[] {
 
 /**
  * Stacked bar of where the pedal power goes. Only resisting (positive) parts
- * get a segment, normalised to fill the bar; an assisting part (downhill
+ * get a segment, normalized to fill the bar; an assisting part (downhill
  * gravity, strong tailwind) is ≤ 0 and simply takes no width.
  */
 function SplitBar({ parts }: { parts: SplitPart[] }) {

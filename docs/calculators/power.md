@@ -313,3 +313,11 @@ The Food energy result has an info popup with live illustrative food equivalents
 It uses 105 kcal per medium banana, 220 kcal per energy bar (~60 g), 1000 kcal per
 whole margherita pizza (~30 cm), and 430 kcal per litre of regular lager. These
 are explicitly labelled assumptions, not exact nutrition values or fueling advice.
+
+On devices with a coarse primary pointer, numerical fields show touch-sized − / +
+steppers. Tap for one step, or hold to repeat; min/max bounds still apply. The
+buttons and number stay on one line inside a shared outline, without separate
+button borders. Numeric editor fields use a full row on narrow phones when needed.
+Direct entry requests a decimal numeric keyboard (`inputmode="decimal"`); the
+exact keyboard, including availability of a minus key, depends on the device.
+Desktop numerical controls retain their compact appearance.

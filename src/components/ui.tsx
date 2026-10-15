@@ -1,5 +1,5 @@
 import { ResponsivePopover } from "./ResponsivePopover";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useId, useRef, useState } from "react";
 
 // Small shared UI primitives used across calculators.
 
@@ -133,6 +133,7 @@ export function NumberInput(props: {
   /** Greys the input and blocks edits (e.g. a factor that doesn't apply). */
   disabled?: boolean;
 }) {
+  const inputId = useId();
   const finite = Number.isFinite(props.value);
   const est = props.estimate;
   const onEstimate = !finite && est != null && Number.isFinite(est);
@@ -143,15 +144,18 @@ export function NumberInput(props: {
     return v;
   };
 
-  // Fields with a reset (the frame-size workbench) use custom steppers on the LEFT
-  // and the "×" on the right, so neither moves as the other appears — the native
-  // spinner, stuck on the right, can't be repositioned. Other NumberInputs keep
-  // the plain native spinner.
+  // Resettable fields retain their compact desktop steppers. All fields also
+  // have larger touch steppers, revealed only for a coarse primary pointer.
   const custom = !!props.onClear;
   // Step from the current value, or from the estimate when the field is empty
   // (so a first press nudges the greyed default instead of jumping to the min).
   const stepFrom = finite ? props.value : onEstimate ? est : props.min ?? 0;
-  const step = (dir: number) => props.onChange(clampVal(stepFrom + dir * stepBy));
+  // Avoid accumulating binary floating-point noise during repeated decimal steps.
+  const nextValue = (base: number, dir: number) =>
+    clampVal(Number((base + dir * stepBy).toPrecision(12)));
+  const step = (dir: number) => {
+    if (!props.disabled) props.onChange(nextValue(stepFrom, dir));
+  };
 
   // Press-and-hold auto-repeat for the custom steppers. A local `base` carries the
   // running value, so it keeps climbing across ticks without waiting on re-renders.
@@ -164,36 +168,58 @@ export function NumberInput(props: {
   };
   const startHold = (dir: number) => {
     stopHold();
+    if (props.disabled) return;
     let base = finite ? props.value : onEstimate ? (est as number) : props.min ?? 0;
     const tick = () => {
-      base = clampVal(base + dir * stepBy);
+      const next = nextValue(base, dir);
+      if (next === base) { stopHold(); return; }
+      base = next;
       props.onChange(base);
+      if (dir > 0 ? base >= (props.max ?? Infinity) : base <= (props.min ?? -Infinity)) stopHold();
     };
     tick(); // step once immediately
+    if (dir > 0 ? base >= (props.max ?? Infinity) : base <= (props.min ?? -Infinity)) return;
     holdDelay.current = window.setTimeout(() => {
       holdRepeat.current = window.setInterval(tick, 70);
     }, 300);
   };
-  useEffect(() => stopHold, []); // clear timers on unmount
+  useEffect(() => {
+    window.addEventListener("blur", stopHold);
+    document.addEventListener("visibilitychange", stopHold);
+    return () => {
+      stopHold();
+      window.removeEventListener("blur", stopHold);
+      document.removeEventListener("visibilitychange", stopHold);
+    };
+  }, []);
+  useEffect(() => { if (props.disabled) stopHold(); }, [props.disabled]);
 
   // When the field only shows its estimate, a native step would jump to the min.
   // Arrow keys are handled directly; a spinner press lands on the min, so we
   // remap that to estimate ± step using which half (up/down) was pressed.
   const spinUp = useRef(true);
   const emptyStepLands = props.min ?? 0;
-  const holdButton = (dir: number, glyph: string) => (
+  const holdButton = (dir: number, glyph: string, touch = false) => (
     <button
       type="button"
-      className="ni-step"
-      tabIndex={-1}
-      aria-hidden
+      className={touch ? `ni-touch-step ni-touch-${dir > 0 ? "plus" : "minus"}` : "ni-step"}
+      tabIndex={touch ? undefined : -1}
+      aria-hidden={touch ? undefined : true}
+      aria-label={touch ? (dir > 0 ? "Increase value" : "Decrease value") : undefined}
+      aria-controls={touch ? inputId : undefined}
+      disabled={props.disabled || (dir > 0 ? stepFrom >= (props.max ?? Infinity) : stepFrom <= (props.min ?? -Infinity))}
       onPointerDown={(e) => {
-        e.preventDefault();
+        if (e.button !== 0) return;
+        e.preventDefault(); // Stepping must not open the on-screen keyboard.
+        e.currentTarget.setPointerCapture?.(e.pointerId);
         startHold(dir);
       }}
       onPointerUp={stopHold}
       onPointerLeave={stopHold}
       onPointerCancel={stopHold}
+      onLostPointerCapture={stopHold}
+      onClick={(e) => { if (e.detail === 0) step(dir); }}
+      onContextMenu={(e) => e.preventDefault()}
     >
       {glyph}
     </button>
@@ -202,7 +228,9 @@ export function NumberInput(props: {
     <span className="number-input">
       <span className="ni-field">
       <input
+        id={inputId}
         type="number"
+        inputMode="decimal"
         className={
           [custom && "ni-custom", custom && finite && "ni-set"].filter(Boolean).join(" ") ||
           undefined
@@ -249,17 +277,20 @@ export function NumberInput(props: {
           }
         }}
       />
+      {holdButton(-1, "−", true)}
       {custom && finite && (
         <button
           type="button"
           className="number-clear"
           title="Reset to the recommended value"
           aria-label="Reset to the recommended value"
+          disabled={props.disabled}
           onClick={props.onClear}
         >
           ×
         </button>
       )}
+      {holdButton(1, "+", true)}
       </span>
       {custom && (
         <span className="ni-stepper">

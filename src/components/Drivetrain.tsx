@@ -1984,6 +1984,7 @@ export function Drivetrain() {
               />
               <input
                 type="number"
+                inputMode="numeric"
                 value={Number.isFinite(chainstay) ? chainstay : ""}
                 min={350}
                 max={500}
@@ -2268,6 +2269,7 @@ export function Drivetrain() {
                 />
                 <input
                   type="number"
+                  inputMode="numeric"
                   className="gc-cadence-num"
                   value={Number.isFinite(cadence) ? cadence : ""}
                   min={20}

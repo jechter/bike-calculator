@@ -2182,3 +2182,49 @@ html.embed-fill body { overscroll-behavior: none; }
 .food-energy-equivalents li > span { font-size: 24px; line-height: 1.2; }
 .food-energy-quantity { font-weight: 600; }
 .food-energy-equivalents small { display: block; color: var(--muted); font-size: 11px; }
+
+/* Touch controls share one outline, like popup-backed combo fields. Keep the
+   number between the buttons; padding, not extra rows, makes room for digits. */
+.ni-touch-step { display: none; }
+@media (pointer: coarse) {
+  .number-input .ni-field {
+    display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--panel);
+  }
+  .number-input .ni-field:focus-within { border-color: var(--accent); }
+  .number-input .ni-stepper { display: none; }
+  .number-input .ni-field input {
+    grid-column: 2; grid-row: 1;
+    min-width: 0; min-height: 44px; padding-left: 4px; padding-right: 4px;
+    border: none; border-radius: 0; background: transparent; text-align: center;
+    appearance: textfield; -moz-appearance: textfield;
+  }
+  .number-input .ni-field input:focus { outline: none; }
+  .number-input .ni-field input.ni-custom.ni-set { padding-right: 24px; }
+  .number-input input::-webkit-outer-spin-button,
+  .number-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .ni-touch-step {
+    display: flex; align-items: center; justify-content: center;
+    min-width: 44px; min-height: 44px; padding: 0;
+    border: none; border-radius: 8px; background: transparent; color: var(--text);
+    font: inherit; font-size: 22px; cursor: pointer;
+    touch-action: none; user-select: none; -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .ni-touch-minus { grid-column: 1; grid-row: 1; }
+  .ni-touch-plus { grid-column: 3; grid-row: 1; }
+  .ni-touch-step:active:not(:disabled) { background: var(--border); }
+  .ni-touch-step:disabled { opacity: .4; cursor: default; }
+  .number-input .number-clear { right: 48px; }
+  .number-input .suffix { align-self: flex-start; padding-top: 12px; }
+  .combo .number-input .ni-field { border: none; background: transparent; }
+  .combo .ni-touch-step { background: transparent; }
+  .field-highlight .number-input .ni-field { box-shadow: inset 0 3px var(--accent); }
+  .slider-row { flex-wrap: wrap; }
+  .slider-row .number-input { width: 220px; max-width: 100%; }
+  .cda-draft-row { grid-template-columns: minmax(0, 1fr) 132px; }
+}
+@media (pointer: coarse) and (max-width: 480px) {
+  /* Numeric editor fields need more room than short select labels do. */
+  .editor-pop-grid > .editor-field:has(.number-input) { grid-column: 1 / -1; }
+}

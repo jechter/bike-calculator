@@ -1634,10 +1634,10 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
     position: fixed;
     top: 0;
     left: 0;
-    bottom: 0;
+    bottom: var(--bottom-bar-height, 60px);
     z-index: 70;
     width: min(290px, 84vw);
-    height: 100%;
+    height: calc(100dvh - var(--bottom-bar-height, 60px));
     border-right: 1px solid var(--border);
     transform: translateX(-100%);
     transition: transform 0.22s ease;
@@ -1649,7 +1649,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   .nav-backdrop {
     display: block;
     position: fixed;
-    inset: 0;
+    inset: 0 0 var(--bottom-bar-height, 60px);
     z-index: 60;
     padding: 0;
     border: none;
@@ -1676,8 +1676,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   .nav a { padding: 11px 12px; }
 
   /* Fixed bottom bar (replaces the top bar): global Menu on the left, a divider,
-     the page title, then the page's own actions grouped on the right. Sits below
-     the drawers' backdrop, so it's covered while a drawer is open. */
+     the page title, then the page's own actions grouped on the right. Remains
+     accessible below both drawers and their backdrops. */
   .botbar {
     display: flex;
     align-items: center;
@@ -1686,7 +1686,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 50;
+    z-index: 80;
     padding: 8px 12px;
     padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     background: var(--panel);
@@ -1817,7 +1817,7 @@ body.mobile-nav-lock { overflow: hidden; }
 
   .workbench-backdrop {
     position: fixed;
-    inset: 0;
+    inset: 0 0 var(--bottom-bar-height, 60px);
     z-index: 60;
     padding: 0;
     border: none;
@@ -1829,7 +1829,7 @@ body.mobile-nav-lock { overflow: hidden; }
     position: fixed;
     top: 0;
     left: 0;
-    bottom: 0;
+    bottom: var(--bottom-bar-height, 60px);
     z-index: 70;
     /* Leave room on the right so the pull tab is reachable when the drawer is open. */
     width: min(380px, 84vw);

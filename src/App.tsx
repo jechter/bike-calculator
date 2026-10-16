@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CALCULATORS } from "./registry";
 import { useHashRoute, useHashConfigKey, routeHref, updatePageMetadata } from "./useHashRoute";
 import { useIsMobile } from "./useIsMobile";
@@ -24,6 +24,23 @@ export function App() {
   // action into #topbar-actions-slot.
   const isMobile = useIsMobile();
   const sharedActions = active.HeaderActions || active.shareable;
+  const appRef = useRef<HTMLDivElement>(null);
+  const bottomBarRef = useRef<HTMLDivElement>(null);
+  // Include safe-area padding and any wrapped/portalled actions in the drawer
+  // clearance rather than assuming a fixed toolbar height.
+  useLayoutEffect(() => {
+    const bar = bottomBarRef.current;
+    const app = appRef.current;
+    if (!isMobile || !bar || !app) return;
+    const measure = () => app.style.setProperty("--bottom-bar-height", `${bar.getBoundingClientRect().height}px`);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(bar);
+    return () => {
+      observer.disconnect();
+      app.style.removeProperty("--bottom-bar-height");
+    };
+  }, [isMobile]);
 
   // Workbench pages (controls + visualization) get a "Settings" button in the
   // compact-mode bottom toolbar that folds the controls drawer out over the
@@ -69,6 +86,7 @@ export function App() {
     <UnitsProvider>
      <SettingsDrawerContext.Provider value={{ open: settingsOpen, setOpen: setSettingsOpen }}>
       <div
+        ref={appRef}
         className={
           "app" +
           (navCollapsed ? " app--nav-collapsed" : "") +
@@ -183,12 +201,12 @@ export function App() {
             left, then the page title and the page's own actions (Settings, examples,
             copy link) grouped on the right. Hidden on desktop (sidebar rail). */}
         {isMobile && (
-          <div className="botbar">
+          <div className="botbar" ref={bottomBarRef}>
             <button
               type="button"
               className="botbar-menu"
-              onClick={() => setMobileNavOpen(true)}
-              aria-label="Open menu"
+              onClick={() => { setSettingsOpen(false); setMobileNavOpen(!mobileNavOpen); }}
+              aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileNavOpen}
             >
               <svg viewBox="0 0 20 20" width="22" height="22" aria-hidden="true" fill="currentColor">
@@ -205,7 +223,7 @@ export function App() {
                 <button
                   type="button"
                   className={"botbar-icon-btn" + (settingsOpen ? " active" : "")}
-                  onClick={() => setSettingsOpen(!settingsOpen)}
+                  onClick={() => { setMobileNavOpen(false); setSettingsOpen(!settingsOpen); }}
                   aria-label={settingsOpen ? "Close settings" : "Open settings"}
                   aria-expanded={settingsOpen}
                 >

@@ -43,7 +43,7 @@ export const CALCULATORS: CalculatorDef[] = [
     id: "drivetrain",
     title: "Drivetrain",
     subtitle:
-      "Gear ratios, speed at cadence, chain/belt length and chain wear — cassette, single speed or geared hub.",
+      "Try and compare different bicycle drivetrain setups and visualize the gear ratios. Check components for compatibility, and calculate the ideal chain/belt length.",
     icon: <ComponentsIcon />,
     Component: Drivetrain,
     shareable: true,
@@ -53,7 +53,7 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: "wheel-building",
     title: "Wheel Building",
-    subtitle: "Spoke lengths for a hub + rim + lacing, plus a spoke-tension converter.",
+    subtitle: "Visualize different wheel lacing patterns and calculate required spoke lengths.",
     icon: <WheelIcon />,
     Component: WheelBuilding,
     shareable: true,
@@ -79,7 +79,7 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: "derailleur",
     title: "Components",
-    subtitle: "",
+    subtitle: "Look up any component used in these calculators and view its specifications.",
     icon: <DrivetrainIcon />,
     Component: Derailleur,
     HeaderActions: ComponentProposalButton,
@@ -87,7 +87,7 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: "power",
     title: "Cycling Power",
-    subtitle: "Watts needed for a speed and gradient — and speed from watts.",
+    subtitle: "Calculates the watts needed for a speed and gradient — and speed from watts. Also calculates energy used for a specific distance or duration.",
     icon: <PowerIcon />,
     Component: Power,
   },

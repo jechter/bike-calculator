@@ -137,9 +137,9 @@ colored to match its chainring's line in the chart. A **chainstay-length slider*
 sits under the diagram (350–500 mm) and re-spaces the chainring and cassette live;
 it's the same value used for the chain-length calculation.
 
-A hint under the diagram links to the [cycling power calculator](power.md): pair
-your lowest gear's speed at a comfortable cadence with a gradient there to check
-whether a climb is realistic on this gearing.
+A hint under the diagram shows the lowest gear's speed at the selected cadence
+and links to the [cycling power calculator](power.md) with that speed and a 10%
+climb prefilled. Adjust the gradient there to check whether a climb is realistic.
 
 **Cross-chaining.** With 2+ chainrings, the chart **grays out** the extreme
 cross-chained combinations to avoid shifting into: the big ring with the two

@@ -11,6 +11,39 @@ const nums = (c: HTMLElement) =>
   Array.from(c.querySelectorAll('input[type="number"]')) as HTMLInputElement[];
 
 describe("Cycling power", () => {
+  it("shows Rider & conditions without a section info button", () => {
+    const { queryByRole } = render(<Power />);
+    expect(queryByRole("button", { name: "About: Rider & conditions" })).toBeNull();
+  });
+
+  it("prefills speed and climb gradient from a deep link", () => {
+    const originalUrl = window.location.href;
+    try {
+      history.replaceState(null, "", "/cycling-power-calculator/?speed=8.5&gradient=10");
+      const { container } = render(<Power />);
+      expect(+nums(container)[0].value).toBe(8.5);
+      expect(+nums(container)[5].value).toBe(10);
+      const watts = +nums(container)[1].value;
+      fireEvent.change(nums(container)[5], { target: { value: "12" } });
+      expect(+nums(container)[0].value).toBe(8.5);
+      expect(+nums(container)[1].value).toBeGreaterThan(watts);
+    } finally {
+      history.replaceState(null, "", originalUrl);
+    }
+  });
+
+  it("ignores invalid deep-link values", () => {
+    const originalUrl = window.location.href;
+    try {
+      history.replaceState(null, "", "/cycling-power-calculator/?speed=-5&gradient=NaN");
+      const { container } = render(<Power />);
+      expect(+nums(container)[0].value).toBe(30);
+      expect(+nums(container)[5].value).toBe(0);
+    } finally {
+      history.replaceState(null, "", originalUrl);
+    }
+  });
+
   it("shows the computed power for the default speed", () => {
     const { container } = render(<Power />);
     const [speed, power] = nums(container);

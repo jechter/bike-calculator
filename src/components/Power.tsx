@@ -1,3 +1,4 @@
+import { getHashQuery } from "../useHashRoute";
 import { FoodEnergyInfo } from "./FoodEnergyInfo";
 import { useEffect, useState } from "react";
 import {
@@ -88,6 +89,15 @@ function SplitBar({ parts }: { parts: SplitPart[] }) {
   );
 }
 
+// Deep-link speed is always km/h; gradient is a percentage, independent of
+// the user's display-unit preference. Ignore malformed or negative speeds.
+function initialParam(name: string, fallback: number, min = -Infinity): number {
+  const raw = getHashQuery().get(name);
+  if (raw === null || raw.trim() === "") return fallback;
+  const value = Number(raw);
+  return Number.isFinite(value) && value >= min ? value : fallback;
+}
+
 export function Power() {
   const units = useUnits();
   const unitLabel = speedUnitLabel(units.speed);
@@ -97,7 +107,7 @@ export function Power() {
   const [riderMass, setRiderMass] = useState(70);
   const [bikeMass, setBikeMass] = useState(10);
   const mass = riderMass + bikeMass;
-  const [gradient, setGradient] = useState(0);
+  const [gradient, setGradient] = useState(() => initialParam("gradient", 0));
   const [crr, setCrr] = useState(0.005);
   // Air density: seeded from its editor (15 °C, sea level → 1.225); editor-driven
   // until the user types a value directly.
@@ -126,7 +136,7 @@ export function Power() {
   // Speed, power and power-to-weight (W per rider kg) are coupled: whichever was
   // edited last is the independent one and stays fixed as conditions change; the
   // others are derived.
-  const [speedKmh, setSpeedKmh] = useState(30);
+  const [speedKmh, setSpeedKmh] = useState(() => initialParam("speed", 30, 0));
   const [watts, setWatts] = useState(200);
   const [wkg, setWkg] = useState(200 / 70);
   const [last, setLast] = useState<"speed" | "power" | "wkg">("speed");
@@ -298,20 +308,7 @@ export function Power() {
         )}
       </Section>
 
-      <Section
-        title="Rider & conditions"
-        info={
-          <>
-            Steady-state model: power against gravity, rolling resistance and aero
-            drag, divided by drivetrain efficiency (chain/belt friction × gearing
-            losses). The breakdown above shows where
-            your watts go — against gravity, rolling and aero, plus the drivetrain
-            loss — with the share of the total in each card. Aero dominates on the
-            flat, gravity on climbs. Each coefficient is editable, with a ⌄ button
-            for common presets.
-          </>
-        }
-      >
+      <Section title="Rider & conditions">
         {/* Grouped in rows of three by what they drive: gravity, aero, friction.
             grid-3 pins it to three columns so the grouping survives wide windows. */}
         <div className="grid grid-3">

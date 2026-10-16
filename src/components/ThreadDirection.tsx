@@ -15,12 +15,6 @@ export function ThreadDirection() {
 
   return (
     <>
-      <p className="subtitle" style={{ marginTop: -12 }}>
-        Pedals and bottom brackets are the only parts with left-hand threads —
-        everything else on the bike is normal (right-hand) thread. Hover (or tap) a
-        side to see which way to turn. Left-hand sides are highlighted.
-      </p>
-
       <Section
         title="Thread direction"
         info={

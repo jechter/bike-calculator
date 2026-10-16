@@ -1613,6 +1613,7 @@ export function Drivetrain() {
   // Axis definitions for the gear chart. Speed uses the global unit (set in the
   // sidebar), so there's no per-chart unit toggle.
   const rpm = cadence || 90;
+  const lowestSpeedKmh = Math.min(...focusDerived.gears.map((g) => g.speedKmh));
   const unitLabel = speedUnitLabel(units.speed);
   const toSpeed = (kmh: number) => (units.speed === "mph" ? kmhToMph(kmh) : kmh);
   const metricDefs: Record<
@@ -1922,39 +1923,6 @@ export function Drivetrain() {
 
       <Section
         title={(belt ? "Belt" : "Chain") + (comparing ? ` · ${focusLabel}` : "")}
-        info={
-          hasDerailleur(focusCfg) ? (
-            chainGuide ? (
-              <>
-                {chainGuide.name} derailleurs mount directly to the frame and are
-                sized by the manufacturer's own procedure (chainstay length +
-                chainring, set with a setup key), not the Park Tool wrap formula —
-                so we link out to their calculator instead.
-              </>
-            ) : (
-              <>
-                Park Tool formula, rounded up so the link count is even (each link ≈
-                12.7 mm). It includes the +1 inch wrap for the rear derailleur. The
-                big-big wrap method is more reliable for wide 1× and full-suspension.
-              </>
-            )
-          ) : belt ? (
-            <>
-              A belt is a closed loop — it can't be cut or shortened. You fit a
-              stock belt (a whole tooth count) and set the frame's{" "}
-              <strong>center distance</strong> to suit it, via a sliding dropout,
-              eccentric BB or eccentric hub. Gates CDX/CDN run an 11 mm pitch, so
-              belt length = teeth × 11 mm. The center distances below are the exact
-              chainstay each belt needs.
-            </>
-          ) : (
-            <>
-              Set by the wheel / tensioner position, not a formula. The minimum is
-              the shortest chain that reaches at this chainstay; a longer chain
-              just sits the axle further back.
-            </>
-          )
-        }
       >
         {/* Chainstay and the chain/belt choice don't change the gearing, so they
             live here with the length + wear they drive rather than in Setup. */}
@@ -2021,14 +1989,27 @@ export function Drivetrain() {
             <div className="grid">
               <Result label="Largest ring / cog" value={`${largestRing} / ${largestCog} T`} />
               <Result label="Length" value={`${chain.mm} mm`} />
-              <Result label="Links" value={chain.links} big />
+              <Result label="Links" value={chain.links} big info={
+                <>Park Tool formula, rounded up so the link count is even (each link ≈
+                12.7 mm). It includes the +1 inch wrap for the rear derailleur. The
+                big-big wrap method is more reliable for wide 1× and full-suspension.</>
+              } />
             </div>
           )
         ) : belt ? (
           <>
             <div className="grid">
               <Result label="Front / rear sprocket" value={`${largestRing} / ${largestCog} T`} />
-              <Result label="Ideal belt" value={`${beltIdeal.toFixed(1)} T`} />
+              <Result label="Ideal belt" value={`${beltIdeal.toFixed(1)} T`} info={
+                <>
+                  A belt is a closed loop — it can't be cut or shortened. Gates CDX/CDN
+                  use an 11 mm pitch (length = teeth × 11 mm). Pick a stock belt whose
+                  center distance fits your frame's adjustment range, with a few mm
+                  of travel left for tensioning.
+                  The table shows the chainstay each belt needs; ✓ marks the closest
+                  to your chainstay. Adjust the chainstay slider to preview the fit.
+                </>
+              } />
             </div>
             {beltOptions.length ? (
               <>
@@ -2079,46 +2060,28 @@ export function Drivetrain() {
                 chainstay — try a size closer to the sprockets.
               </Note>
             )}
-            {beltOptions.length > 0 && beltFits && (
-              <Note>
-                Pick the belt whose center distance lands inside your frame's
-                adjustment range — a <strong>sliding dropout</strong>,{" "}
-                <strong>eccentric BB</strong> or <strong>eccentric hub</strong> — with a
-                few mm of travel to spare for tensioning (✓ marks the closest to your
-                chainstay). Drag the chainstay slider above to preview each fit.
-              </Note>
-            )}
           </>
         ) : (
-          <>
-            <Note>
-              {focusCfg.mode === "hub" ? "Hub-geared" : "Single-speed"} chains aren't sized
-              by the derailleur formula — there's no derailleur cage to take up
-              slack, so length is set by the <strong>dropout / tensioner
-              position</strong>. Wrap the chain around the ring and cog, pull it
-              snug, and pick the shortest link that lets the wheel sit within its
-              adjustment range with correct tension (about 1 cm of vertical play).
-              A <strong>half-link</strong> can fine-tune the fit on track/horizontal
-              dropouts. Use a chain tensioner if the frame has vertical dropouts.
-            </Note>
-            {singleChain && (
-              <>
-                <div className="grid">
-                  <Result label="Ring / cog" value={`${largestRing} / ${largestCog} T`} />
-                  <Result label="Minimum length" value={`${singleChain.mm} mm`} />
-                  <Result label="Minimum links" value={singleChain.links} big />
-                </div>
-                <Note>
-                  That's the shortest chain that will reach at this chainstay
-                  (rounded up to a whole {singleChain.links}-link even count). A new
-                  chain typically comes as <strong>112 links</strong> (single-speed /
-                  track, ⅛″) or <strong>116</strong> (derailleur-width) — if the
-                  minimum above is longer, you'll need an extra-long chain or to add
-                  links from a second one.
-                </Note>
-              </>
-            )}
-          </>
+          singleChain && (
+            <div className="grid">
+              <Result label="Ring / cog" value={`${largestRing} / ${largestCog} T`} />
+              <Result label="Minimum length" value={`${singleChain.mm} mm`} />
+              <Result label="Minimum links" value={singleChain.links} big info={
+                <>
+                  The shortest chain that reaches at this chainstay, rounded up to
+                  an even link count. With no derailleur to take up slack, size the
+                  chain using the dropout / tensioner position: wrap it around the
+                  ring and cog and choose the shortest length that leaves the wheel
+                  within its adjustment range with correct tension (about 1 cm of
+                  vertical play). A half-link can fine-tune the fit; vertical
+                  dropouts need a chain tensioner. New chains typically have 112
+                  links (single-speed / track, ⅛″) or 116 (derailleur-width). If the
+                  minimum is longer, use an extra-long chain or add links from a
+                  second chain.
+                </>
+              } />
+            </div>
+          )
         )}
 
         {/* Chain wear — belts don't elongate (no metal-on-metal wear), so the
@@ -2127,12 +2090,8 @@ export function Drivetrain() {
           <div className="dt-subsection">
             <h4 className="dt-subhead">When to replace</h4>
             <p className="dt-subnote">
-              Measured at the bench with a chain-wear gauge.{" "}
-              {hasDerailleur(focusCfg)
-                ? `Shown for your ${cogs.length}-speed cassette.`
-                : "Single-speed and hub bikes can run a narrow 3/32\" or wide 1/8\" chain — pick the row matching your chain."}{" "}
-              Past the threshold the cassette (and possibly chainrings) may skip with a
-              new chain.
+              Measure with a chain wear gauge, and replace the chain when wear is
+              above the threshold for your chain.
             </p>
             <div className="table-wrap">
               <table>
@@ -2140,7 +2099,6 @@ export function Drivetrain() {
                   <tr>
                     <th>Chain type</th>
                     <th className="num">Replace at</th>
-                    <th>Notes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2148,7 +2106,6 @@ export function Drivetrain() {
                     <tr key={t.chainType}>
                       <td>{t.chainType}</td>
                       <td className="num">{t.replaceAtPercent.toFixed(2)}%</td>
-                      <td>{t.note}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -2159,44 +2116,7 @@ export function Drivetrain() {
       </Section>
       </div>
       <div className="dt-viz">
-      <Section
-        title="Gears"
-        info={
-          <>
-            {comboActive(focusCfg) ? (
-              <>
-                One line per <strong>hub gear</strong>; each dot is a cassette cog
-                (labeled with its tooth count) — the hub steps act like extra front
-                gears multiplied through the cassette. Hover a dot for its exact
-                values.{" "}
-              </>
-            ) : (
-              <>
-                One line per chainring; each dot is a{" "}
-                {focusCfg.mode === "hub" ? "hub gear" : "cog"} (labeled with its{" "}
-                {focusCfg.mode === "hub" ? "gear" : "tooth count"}) — hover a dot for its
-                exact values.{" "}
-              </>
-            )}
-            {comparing && (
-              <>
-                <strong>Drivetrain B</strong> is drawn with hollow dots on a dashed line, sharing
-                the same axis so you can compare range, gaps and overlap directly.{" "}
-              </>
-            )}
-            {focusCfg.mode === "cassette" && chainrings.length > 1 && (
-              <>
-                <strong>Grayed dots</strong> are cross-chained combinations (big-big /
-                small-small) to avoid shifting into.{" "}
-              </>
-            )}
-            <strong>Gear inches</strong> = the drive-wheel diameter (in) of an
-            equivalent direct-drive high-wheeler — a wheel-size-independent way to
-            compare gears; bigger = taller/harder. <strong>Development</strong> is
-            meters traveled per pedal revolution.
-          </>
-        }
-      >
+      <Section title="Gears">
         <div className="chart-controls">
           {comparing ? (
             <>
@@ -2325,15 +2245,20 @@ export function Drivetrain() {
           canShiftUp={canShiftUp}
         />
 
-        <p className="dt-hint">
-          Want to know if this gearing will get you up a mountain? The{" "}
-          <a onClick={handleRouteLinkClick} className="inline-link" href={routeHref("power")}>
-            cycling power calculator
-          </a>{" "}
-          turns a speed and gradient into the watts you'd need — pair it with your
-          lowest gear's speed at a comfortable cadence to see if the climb is
-          realistic.
-        </p>
+        {Number.isFinite(lowestSpeedKmh) && (
+          <p className="dt-hint">
+            Want to know if this drivetrain will get you up a mountain?{" "}
+            <a
+              onClick={handleRouteLinkClick}
+              className="inline-link"
+              href={`${routeHref("power")}?speed=${lowestSpeedKmh.toFixed(3)}&gradient=10`}
+            >
+              Check {toSpeed(lowestSpeedKmh).toFixed(1)} {unitLabel} (lowest gear @ {cadence} rpm)
+              {" "}in the cycling power calculator
+            </a>
+            , adjust the gradient, and check how much power you need for the climb.
+          </p>
+        )}
       </Section>
       {hasDerailleur(focusCfg) && derailleur && (
         <Section

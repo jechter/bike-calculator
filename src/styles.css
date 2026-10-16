@@ -1384,6 +1384,9 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .main--drivetrain { --wb-header-h: 62px; }
 .main--wheel-building .main-head,
 .main--drivetrain .main-head,
+.main--tire .main-head,
+.main--thread-direction .main-head,
+.main--power .main-head,
 .main--derailleur .main-head {
   position: sticky;
   top: 0;
@@ -1393,10 +1396,34 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   padding: 16px 32px 12px;
   border-bottom: 1px solid var(--border);
 }
-/* The subtitle is redundant with the controls, so drop it to keep the pinned
-   header compact. */
+/* Short introductions beside calculator page titles. */
+.main--derailleur .main-head > div:first-child,
+.main--thread-direction .main-head > div:first-child,
+.main--power .main-head > div:first-child,
+.main--tire .main-head > div:first-child,
+.main--wheel-building .main-head > div:first-child,
+.main--drivetrain .main-head > div:first-child {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+.main--derailleur .main-head h1,
+.main--thread-direction .main-head h1,
+.main--power .main-head h1,
+.main--tire .main-head h1,
+.main--wheel-building .main-head h1,
+.main--drivetrain .main-head h1 { margin: 0; }
+.main--derailleur .main-head .subtitle,
+.main--thread-direction .main-head .subtitle,
+.main--power .main-head .subtitle,
+.main--tire .main-head .subtitle,
 .main--wheel-building .main-head .subtitle,
-.main--drivetrain .main-head .subtitle { display: none; }
+.main--drivetrain .main-head .subtitle {
+  margin: 0;
+  font-size: 13px;
+  max-width: 72ch;
+}
 
 @media (min-width: 1200px) {
   /* Use the full width on this page; the controls take a fixed reading width and
@@ -1754,12 +1781,24 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
      under the sticky top bar) and drop its edge-bleed margins. */
   .main--wheel-building .main-head,
   .main--drivetrain .main-head,
+  .main--tire .main-head,
+  .main--thread-direction .main-head,
+  .main--power .main-head,
   .main--derailleur .main-head {
     position: static;
     margin: 0;
     padding: 0;
     border-bottom: none;
   }
+}
+
+@media (max-width: 1199px) {
+  .main--thread-direction .main-head,
+  .main--power .main-head,
+  .main--derailleur .main-head,
+  .main--tire .main-head,
+  .main--wheel-building .main-head,
+  .main--drivetrain .main-head { margin-bottom: 20px; }
 }
 
 /* The drawer traps the page behind it; stop the body from scrolling underneath
@@ -1879,6 +1918,9 @@ html.embedded .main { padding: 24px 24px 24px; }
 html.embedded .main > :last-child { margin-bottom: 0; }
 /* The workbench header isn't collapsed into a top bar here, so give it back its
    normal spacing. */
+html.embedded .main--thread-direction .main-head,
+html.embedded .main--power .main-head,
+html.embedded .main--tire .main-head,
 html.embedded .main--drivetrain .main-head,
 html.embedded .main--wheel-building .main-head { margin: 0 0 18px; }
 

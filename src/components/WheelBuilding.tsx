@@ -384,6 +384,11 @@ export function WheelBuilding() {
   const rightChoice = rightLace === "same" ? leftChoice : LACING_BY_VALUE[rightLace] ?? leftChoice;
   const { cross: leftCross, group: leftGroup, pattern: leftPattern } = leftChoice;
   const { cross: rightCross, group: rightGroup, pattern: rightPattern } = rightChoice;
+  const hasCrossedSpokes = leftCross > 0 || rightCross > 0;
+  const hasGroupedRim = !rimHolePaired && rimHoleGroup >= 2 && spokes % rimHoleGroup === 0;
+  const canGroupCross = (ratio === "2:1" || hasGroupedRim) &&
+    ((leftCross > 0 && leftPattern === "standard") ||
+     (rightCross > 0 && rightPattern === "standard"));
 
   // The hub picked from the database, if any (cleared once a hub value is edited
   // by hand, so the trigger no longer claims a specific hub). Defaults to a
@@ -610,20 +615,14 @@ export function WheelBuilding() {
       <div className="wb-controls">
       <Section
         title="Rim"
-        info={
-          <>
-            <strong>ERD</strong> (effective rim diameter) is the diameter at the
-            nipple seats — the single biggest error source. Measure it; presets are
-            rough starting points that vary a lot by rim depth.{" "}
-            <strong>Spoke-hole offset</strong> models a rim drilled with
-            alternating left/right holes (each leaning toward the flange it feeds);
-            leave it 0 for a plain center-drilled rim, or go negative to cross each
-            hole to the far side (as on a WH-7700).
-          </>
-        }
+
       >
         <div className="grid">
-          <Field label="ERD (effective rim diameter)">
+          <Field label="ERD (effective rim diameter)" info={
+            <>The diameter at the nipple seats — the single biggest error source in
+            spoke-length calculations. Measure it; presets are rough starting
+            points that vary a lot by rim depth.</>
+          }>
             <div className="number-input">
               <div className="combo">
                 <NumberInput value={erd} onChange={setErd} min={200} max={720} />
@@ -638,7 +637,7 @@ export function WheelBuilding() {
           </Field>
           <Field
             label="Spoke-hole offset (alternating drilling)"
-            hint="each hole nudged toward its flange · negative crosses it to the far side · 0 = centered"
+            info="each hole nudged toward its flange · negative crosses it to the far side · 0 = centered"
           >
             <NumberInput
               value={rimHoleOffset}
@@ -651,17 +650,14 @@ export function WheelBuilding() {
           </Field>
           <Field
             label="Hole grouping"
+            info="Controls how spoke holes are spaced around the rim: evenly, in clusters, or in offset pairs that share the same angle but sit on opposite sides."
             hint={
-              rimHolePaired ? (
-                "each pair shares one rim angle; the spoke-hole offset above splits them side-to-side (negative crosses left/right)"
-              ) : rimHoleGroup >= 2 && spokes % rimHoleGroup !== 0 ? (
+              !rimHolePaired && rimHoleGroup >= 2 && spokes % rimHoleGroup !== 0 ? (
                 <span className="field-hint-warn">
                   ⚠ {spokes} spokes isn't divisible by {rimHoleGroup} — grouping is
                   ignored. Use a count that divides by {rimHoleGroup}.
                 </span>
-              ) : (
-                "cluster holes at nearby angles, or offset-pair them at the same angle"
-              )
+              ) : null
             }
           >
             <Select
@@ -681,15 +677,10 @@ export function WheelBuilding() {
               options={RIM_GROUP_OPTIONS}
             />
           </Field>
+          {hasGroupedRim && (
           <Field
             label="Group gap"
-            hint={
-              rimHolePaired
-                ? "not used for offset pairs"
-                : rimHoleGroup < 2
-                  ? "pick a grouping to enable"
-                  : `between-group gap is ${rimHoleGap.toFixed(1)}× the in-group spacing`
-            }
+            info={`Between-group gap is ${rimHoleGap.toFixed(1)}× the in-group spacing.`}
           >
             <div className="wb-slider">
               <input
@@ -698,39 +689,33 @@ export function WheelBuilding() {
                 max={6}
                 step={0.1}
                 value={rimHoleGap}
-                disabled={rimHolePaired || rimHoleGroup < 2}
                 aria-label="Between-group gap"
                 onChange={(e) => setRimHoleGap(Number(e.target.value))}
               />
               <span className="wb-slider-val">{rimHoleGap.toFixed(1)}×</span>
             </div>
           </Field>
+          )}
         </div>
       </Section>
 
       <Section
         title="Hub"
-        info={
-          <>
-            Flange diameter is the circle through the spoke holes (PCD); the offset
-            is center-to-flange per side. Presets are <strong>approximate</strong> —
-            measure your hub. Left/right offsets differ on a dished (rear or disc)
-            wheel.
-          </>
-        }
+
         action={<HubPicker selected={hub} onPick={applyHub} />}
       >
         <div className="grid">
-          <Field label="Flange hole diameter">
+          <Field label="Flange hole diameter" info={
+            <>The diameter of each spoke hole in the hub flange, not the circle through
+            the holes. Measure your hub to confirm.
+            {hub && <span className="wb-hub-source"><br />Flange geometry from <HubSourceLink hub={hub} />.
+              Measured values vary between production runs — confirm against your hub.</span>}</>
+          }>
             <NumberInput value={holeDia} onChange={edited(setHoleDia)} suffix="mm" step={0.1} />
           </Field>
           <Field
             label="Hub layout"
-            hint={
-              ratio === "2:1"
-                ? `${counts.drive} drive / ${counts.nds} non-drive`
-                : "even split between flanges"
-            }
+            info="Sets how the total spoke count is split between the hub flanges. Standard (1:1) uses equal counts on both sides; 2:1 puts twice as many spokes on the drive side to help balance spoke tension on a dished wheel."
           >
             <Select value={ratio} onChange={changeRatio} options={RATIO_OPTIONS} />
           </Field>
@@ -739,45 +724,33 @@ export function WheelBuilding() {
         <div className="wb-sides">
           <div className="wb-side wb-side-left">
             <h4 className="wb-side-title">Left / non-drive</h4>
-            <Field label="Flange diameter">
+            <Field label="Flange diameter" info="The diameter of the circle through the spoke-hole centers (PCD). Presets are approximate — measure your hub.">
               <NumberInput value={leftFlange} onChange={edited(setLeftFlange)} suffix="mm" />
             </Field>
-            <Field label="Center-to-flange offset">
+            <Field label="Center-to-flange offset" info="The distance from the hub centerline to this flange. Left and right offsets differ on a dished rear or disc wheel.">
               <NumberInput value={leftOffset} onChange={edited(setLeftOffset)} suffix="mm" />
             </Field>
           </div>
           <div className="wb-side wb-side-right">
             <h4 className="wb-side-title">Right / drive</h4>
-            <Field label="Flange diameter">
+            <Field label="Flange diameter" info="The diameter of the circle through the spoke-hole centers (PCD). Presets are approximate — measure your hub.">
               <NumberInput value={rightFlange} onChange={edited(setRightFlange)} suffix="mm" />
             </Field>
-            <Field label="Center-to-flange offset">
+            <Field label="Center-to-flange offset" info="The distance from the hub centerline to this flange. Left and right offsets differ on a dished rear or disc wheel.">
               <NumberInput value={rightOffset} onChange={edited(setRightOffset)} suffix="mm" />
             </Field>
           </div>
         </div>
 
-        {hub && (
-          <p className="field-hint wb-hub-source">
-            Flange geometry from <HubSourceLink hub={hub} />. Measured values vary between
-            production runs — confirm against your hub.
-          </p>
-        )}
+
       </Section>
 
       <Section
         title="Spokes"
-        info={
-          <>
-            The total spoke count splits between the two flanges (a 2:1 hub doubles
-            the drive side). Lacing is set per side — the drive side can mirror the
-            non-drive side or take its own cross count, grouping, or crow's-foot
-            pattern.
-          </>
-        }
+
       >
         <div className="grid">
-          <Field label="Spoke count (total)">
+          <Field label="Spoke count (total)" info="The total count splits between the two flanges. A 2:1 hub has twice as many spokes on the drive side.">
             <NumberInput
               value={spokes}
               onChange={setSpokes}
@@ -788,7 +761,7 @@ export function WheelBuilding() {
           {ratio === "2:1" && (
             <Field
               label="Non-drive position"
-              hint="where the single non-drive spoke sits in each drive-drive triplet"
+              info="where the single non-drive spoke sits in each drive-drive triplet"
             >
               <Select
                 value={ndsCentre ? "centre" : "edge"}
@@ -800,9 +773,10 @@ export function WheelBuilding() {
               />
             </Field>
           )}
+          {canGroupCross && (
           <Field
             label="Group crossing"
-            hint="only visible on a clustered wheel (2:1 or grouped drilling)"
+            info="Choose whether crossed spokes cross within each cluster or between neighboring clusters (G3-style)."
           >
             <Select
               value={crossPhase ? "between" : "within"}
@@ -813,9 +787,11 @@ export function WheelBuilding() {
               ]}
             />
           </Field>
+          )}
+          {hasCrossedSpokes && (
           <Field
             label="Interlacing"
-            hint="woven laces the last cross under; straight leaves the trailing spokes outside at every cross"
+            info="woven laces the last cross under; straight leaves the trailing spokes outside at every cross"
           >
             <Select
               value={interlaced ? "woven" : "straight"}
@@ -826,18 +802,19 @@ export function WheelBuilding() {
               ]}
             />
           </Field>
+          )}
         </div>
 
         <div className="wb-sides">
           <div className="wb-side wb-side-left">
             <h4 className="wb-side-title">Left / non-drive</h4>
-            <Field label="Lacing">
+            <Field label="Lacing" info="Choose the non-drive side's cross count, grouping, or crow's-foot pattern. The drive side can mirror it or use its own pattern.">
               <Select value={leftLace} onChange={setLeftLace} options={LACING_OPTIONS} />
             </Field>
           </div>
           <div className="wb-side wb-side-right">
             <h4 className="wb-side-title">Right / drive</h4>
-            <Field label="Lacing">
+            <Field label="Lacing" info="Mirror the non-drive side or choose a separate cross count, grouping, or crow's-foot pattern for the drive side.">
               <Select value={rightLace} onChange={setRightLace} options={RIGHT_LACING_OPTIONS} />
             </Field>
           </div>
@@ -846,14 +823,7 @@ export function WheelBuilding() {
 
       <Section
         title="Spoke tension converter"
-        info={
-          <>
-            Reference curves generated from Park Tool's Wheel Tension App — spot-check
-            against the official chart before a real build, and check against the rim's
-            max spoke tension (typically ~100–120 kgf). On a dished wheel the two sides
-            sit at different tensions by design.
-          </>
-        }
+        info="Use this to convert between numbers reported by a supported spoke tensiometer tool and target tension measurements."
       >
         <div className="grid">
           <Field label="Tool">
@@ -863,7 +833,7 @@ export function WheelBuilding() {
               options={tools.map((t) => ({ value: t, label: t }))}
             />
           </Field>
-          <Field label="Spoke" hint="spot-check against the official chart">
+          <Field label="Spoke">
             <Select
               value={spokeType}
               onChange={setSpokeType}
@@ -872,13 +842,7 @@ export function WheelBuilding() {
           </Field>
         </div>
         <TensionCurveChart curve={curve} />
-        <p className="field-hint tc-caption">
-          The graph reads both ways: mouse over (or drag on touch) to convert a
-          tensiometer reading to tension, or find your target tension on the vertical
-          axis and read across to the reading you're aiming for. The curve only spans
-          the readings this spoke measures meaningfully — pick a spoke size that lands
-          your build tension inside it.
-        </p>
+
       </Section>
       </div>
       <div className="wb-viz">

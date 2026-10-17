@@ -65,7 +65,8 @@ export function App() {
 
   // On narrow screens the sidebar is a slide-in drawer rather than a fixed rail,
   // so the nav doesn't push every page's content far down the screen.
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  // Introduce the navigation on the initial compact-layout page load only.
+  const [mobileNavOpen, setMobileNavOpen] = useState(isMobile);
   // Close the drawer on Escape, and never leave it stuck open when the layout
   // grows past the mobile breakpoint (the drawer only exists below it).
   useEffect(() => {

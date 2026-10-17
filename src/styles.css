@@ -1711,6 +1711,13 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
     color: #fff;
     cursor: pointer;
   }
+  .botbar-menu {
+    transition: background-color 0.22s ease, border-color 0.22s ease;
+  }
+  .botbar-menu[aria-expanded="true"] {
+    background: var(--muted);
+    border-color: var(--muted);
+  }
   .botbar-menu:hover { filter: brightness(1.05); }
   .botbar-divider { flex: none; width: 1px; height: 28px; background: var(--border); }
   .botbar-title {

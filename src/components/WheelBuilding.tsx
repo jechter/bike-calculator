@@ -671,7 +671,7 @@ export function WheelBuilding() {
             </div>
           </Field>
           <Field
-            label="Spoke-hole offset (alternating drilling)"
+            label="Alternating hole offset"
             {...dimLink("rimHoleOffset")}
             info="each hole nudged toward its flange · negative crosses it to the far side · 0 = centered"
           >

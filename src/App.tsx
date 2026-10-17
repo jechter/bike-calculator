@@ -5,6 +5,7 @@ import { useIsMobile } from "./useIsMobile";
 import { SettingsDrawerContext } from "./settingsDrawer";
 import { UnitsProvider } from "./units-context";
 import { UnitSwitcher } from "./components/UnitSwitcher";
+import { SettingsButton } from "./components/SettingsButton";
 import { CopyLinkButton } from "./components/CopyLinkButton";
 import rueckenwindLogo from "./assets/rueckenwind-logo.png";
 import rueckenwindMark from "./assets/rueckenwind-mark.png";
@@ -84,7 +85,7 @@ export function App() {
 
   return (
     <UnitsProvider>
-     <SettingsDrawerContext.Provider value={{ open: settingsOpen, setOpen: setSettingsOpen }}>
+     <SettingsDrawerContext.Provider value={{ open: settingsOpen, setOpen: (open) => { if (open) setMobileNavOpen(false); setSettingsOpen(open); } }}>
       <div
         ref={appRef}
         className={
@@ -219,36 +220,12 @@ export function App() {
               {active.title}
             </span>
             <div className="botbar-actions">
-              {isWorkbench && (
-                <button
-                  type="button"
-                  className={"botbar-icon-btn" + (settingsOpen ? " active" : "")}
-                  onClick={() => { setMobileNavOpen(false); setSettingsOpen(!settingsOpen); }}
-                  aria-label={settingsOpen ? "Close settings" : "Open settings"}
-                  aria-expanded={settingsOpen}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    aria-hidden="true"
-                  >
-                    <line x1="4" y1="8" x2="20" y2="8" />
-                    <circle cx="9" cy="8" r="2.6" fill="currentColor" />
-                    <line x1="4" y1="16" x2="20" y2="16" />
-                    <circle cx="15" cy="16" r="2.6" fill="currentColor" />
-                  </svg>
-                </button>
-              )}
               {active.HeaderActions && <active.HeaderActions />}
               {active.shareable && <CopyLinkButton />}
               {/* ownHeader pages (Frame Size) portal their action in here. */}
               <span className="topbar-actions-slot" id="topbar-actions-slot" />
             </div>
+            {isWorkbench && <SettingsButton icon={active.icon} pageTitle={active.title} />}
           </div>
         )}
       </div>

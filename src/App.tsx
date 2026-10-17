@@ -49,8 +49,14 @@ export function App() {
   // so the trigger (here) and the drawer (in the page) stay in sync.
   const isWorkbench = Boolean(active.workbench);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  // Close the drawer whenever the page changes.
-  useEffect(() => setSettingsOpen(false), [active.id]);
+  // After the initial menu, introduce each selected page's controls on compact
+  // layouts. Ordinary rerenders and a manual close must not reopen the drawer.
+  const previousPage = useRef(active.id);
+  useEffect(() => {
+    if (previousPage.current === active.id) return;
+    previousPage.current = active.id;
+    setSettingsOpen(isMobile && isWorkbench);
+  }, [active.id, isMobile, isWorkbench]);
 
   // The sidebar can collapse to an icon rail to free up horizontal space for
   // the wider pages (e.g. wheel building's controls + visualization split).
@@ -150,6 +156,7 @@ export function App() {
                   event.preventDefault();
                   if (c.id !== active.id) navigate(c.id);
                   setMobileNavOpen(false);
+                  setSettingsOpen(isMobile && Boolean(c.workbench));
                 }}
               >
                 <span className="icon">{c.icon}</span>

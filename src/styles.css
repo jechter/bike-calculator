@@ -1554,6 +1554,23 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   touch-action: none; cursor: grab; background: transparent;
 }
 .wd-canvas:active { cursor: grabbing; }
+/* Dimension arrow for the hovered/edited distance field, projected over the 3D
+   wheel. Green throughout, so it stands apart from the blue and red spokes. */
+.wd-dims {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: visible;
+  color: var(--diag-green);
+}
+.wd-dim { filter: drop-shadow(0 0 3px color-mix(in srgb, currentColor 60%, transparent)); }
+.wd-dim-seg { stroke: currentColor; stroke-width: 2.5; }
+.wd-dim-halo { stroke: currentColor; stroke-width: 9; stroke-linecap: round; opacity: 0.22; }
+.wd-dim polygon { fill: currentColor; }
+.wd-dim polyline { fill: none; stroke-linejoin: round; }
+.wd-dim-guide { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-dasharray: 5 4; opacity: 0.8; }
+.wd-dim-ring { fill: none; stroke: currentColor; stroke-width: 2; }
+.wd-dim-label {
+  fill: currentColor; font-size: 13px; font-weight: 700;
+  stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; paint-order: stroke;
+}
 .wd-caption { font-size: 12px; color: var(--muted); }
 /* Overlay cards sit above the canvas */
 .wd-align, .wd-zoomcol, .wd-lacing, .wd-legend, .wd-hint { position: absolute; z-index: 2; }

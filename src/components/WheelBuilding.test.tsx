@@ -27,7 +27,7 @@ describe("Wheel building page", () => {
     const { container, getByRole, queryByText, getByText } = render(<WheelBuilding />);
     expect(container.querySelector(".wb-controls .field-hint")).toBeNull();
     expect(queryByText(/each hole nudged/)).toBeNull();
-    fireEvent.click(getByRole("button", { name: "About: Spoke-hole offset (alternating drilling)" }));
+    fireEvent.click(getByRole("button", { name: "About: Alternating hole offset" }));
     expect(getByText(/each hole nudged/)).toBeTruthy();
   });
 

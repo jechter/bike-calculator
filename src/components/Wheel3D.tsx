@@ -8,7 +8,7 @@
 // GL lines colored by side. Depth-testing lets the hub occlude far spokes, so
 // dish and cross pattern read as real 3D.
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   spokePlan,
   wheelLayout,
@@ -17,6 +17,11 @@ import {
   type HubRatio,
   type LacingPattern,
 } from "../lib/spokes";
+import {
+  WheelDimensions,
+  type WheelDimension,
+  type SpokeAnchor,
+} from "./WheelDimensions";
 
 // Three shades per side, by weave role: light = leading, medium = radial (crow's
 // foot's center spokes), dark = trailing. Kept in step with the 2D legend colors
@@ -72,6 +77,11 @@ export interface Wheel3DProps {
   /** When set, draw only spokes matching this side and/or weave role (a legend
    *  hover). Either field may be omitted to match all of that axis. */
   highlight?: { isDrive?: boolean; lead?: number } | null;
+  /** A measurement to draw as a dimension arrow over the wheel (a hovered or
+   *  edited distance field). */
+  dimension?: WheelDimension | null;
+  /** Zoom in on the hub (temporarily) — while a hub measurement is edited. */
+  hubCloseUp?: boolean;
   /** Rim drilled in groups of this many holes (1 = evenly drilled). */
   rimHoleGroup?: number;
   /** Between-group gap as a multiple of the in-group hole spacing. */
@@ -93,6 +103,9 @@ export interface Wheel3DProps {
   /** Rim indices in build order; sequence[k] is the k-th spoke placed. */
   sequence: number[];
 }
+
+// The zoom that makes hub measurements readable.
+const HUB_ZOOM = 3.2;
 
 // --- Small column-major mat4 helpers (WebGL order) --------------------------
 
@@ -135,6 +148,19 @@ function rotateY(a: number): Float32Array {
   const c = Math.cos(a), s = Math.sin(a);
   // prettier-ignore
   return new Float32Array([c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1]);
+}
+
+// The camera: the wheel turned by `rot`, viewed from a distance set by `zoom`.
+// Shared by the GL draw and the dimension overlay so the two line up.
+function viewMatrices(rot: { x: number; y: number }, zoom: number, aspect: number) {
+  // Keep the wheel circular whatever the panel's shape: widen the vertical FOV
+  // when the canvas is taller than wide so the wheel always fits.
+  let fovy = 0.74;
+  if (aspect < 1) fovy = 2 * Math.atan(Math.tan(fovy / 2) / aspect);
+  const model = multiply(rotateX(rot.x), rotateY(rot.y));
+  const view = translateZ(-3.4 / zoom); // zoom in by moving the camera closer
+  const proj = perspective(fovy, aspect, 0.05, 20);
+  return { model, mvp: multiply(proj, multiply(view, model)) };
 }
 
 // --- Geometry builders (push interleaved pos[3], normal[3], color[3]) ------
@@ -406,6 +432,20 @@ export function Wheel3D(props: Wheel3DProps) {
   const [, force] = useState(0); // bump to redraw (e.g. on resize)
   const drag = useRef<{ x: number; y: number } | null>(null);
   const raf = useRef(0);
+  // A hub dimension's temporary close-up: 0 = the user's own zoom, 1 = fully
+  // zoomed on the hub. Kept apart from `zoom`, so it always eases back out to
+  // exactly where the user left it; only the slider or a pinch changes `zoom`.
+  const [hubT, setHubT] = useState(0);
+  const hubTRef = useRef(0);
+  const viewZoom = zoom + Math.max(0, HUB_ZOOM - zoom) * hubT;
+  const viewZoomRef = useRef(viewZoom);
+  viewZoomRef.current = viewZoom;
+  // An explicit zoom starts from what's on screen and ends any close-up.
+  const zoomTo = (z: number) => {
+    hubTRef.current = 0;
+    setHubT(0);
+    setZoom(Math.max(1, Math.min(3.2, z)));
+  };
   // Per-spoke (isDrive, lead) in draw/build order, so a legend hover can draw just
   // the matching spokes.
   const spokeMeta = useRef<{ isDrive: boolean; lead: number }[]>([]);
@@ -428,7 +468,7 @@ export function Wheel3D(props: Wheel3DProps) {
       if (!e.ctrlKey) return;
       e.preventDefault();
       cancelAnimationFrame(raf.current);
-      setZoom((z) => Math.max(1, Math.min(3.2, z * Math.exp(-e.deltaY * 0.01))));
+      zoomTo(viewZoomRef.current * Math.exp(-e.deltaY * 0.01));
     };
     canvas.addEventListener("wheel", onWheel, { passive: false });
     return () => canvas.removeEventListener("wheel", onWheel);
@@ -480,8 +520,47 @@ export function Wheel3D(props: Wheel3DProps) {
     step,
     sequence,
     highlight,
+    dimension,
+    hubCloseUp = false,
   } = props;
   const phase = crossPhase ? 1 : 0;
+
+  // Model-space anchors the dimension overlay measures between: each spoke's
+  // flange hole and rim hole (same placement as the geometry build below).
+  const dimGeometry = useMemo(() => {
+    const scale = 2 / erdMm;
+    const lfR = (leftFlangeDiaMm / 2) * scale;
+    const rfR = (rightFlangeDiaMm / 2) * scale;
+    const zL = -leftOffsetMm * scale;
+    const zR = rightOffsetMm * scale;
+    const stagger = Math.max(-0.04, Math.min((rimHoleOffsetMm ?? 0) * scale, 0.04));
+    const holes = wheelLayout(spokeCount, ratio, ndsCentre);
+    const spokes: SpokeAnchor[] = holes.map(({ isDrive, flangeIndex, flangeSpokes }, i) => {
+      const plan = spokePlan(flangeIndex, {
+        cross: isDrive ? rightCross : leftCross,
+        group: isDrive ? rightGroup : leftGroup,
+        pattern: isDrive ? rightPattern : leftPattern,
+        phase,
+      });
+      const fR = isDrive ? rfR : lfR;
+      const flA = (2 * Math.PI * i) / spokeCount + plan.offset * ((2 * Math.PI) / flangeSpokes);
+      const rimA = rimHoleAngle(i, spokeCount, rimHoleGroup, rimHoleGap, rimHolePaired);
+      return {
+        isDrive,
+        lead: plan.lead,
+        hub: [fR * Math.cos(flA), fR * Math.sin(flA), isDrive ? zR : zL],
+        rim: [Math.cos(rimA), Math.sin(rimA), isDrive ? stagger : -stagger],
+      };
+    });
+    const grouped = !rimHolePaired && rimHoleGroup >= 2 && spokeCount % rimHoleGroup === 0;
+    return {
+      lfR, rfR, zL, zR, flEdge: 4 * scale, holeR: 0.008,
+      rimHoleGroup: grouped ? rimHoleGroup : 1,
+      spokes,
+    };
+  }, [erdMm, spokeCount, leftFlangeDiaMm, rightFlangeDiaMm, leftOffsetMm, rightOffsetMm,
+    leftCross, rightCross, leftGroup, rightGroup, leftPattern, rightPattern, ratio,
+    ndsCentre, phase, rimHoleGroup, rimHoleGap, rimHoleOffsetMm, rimHolePaired]);
 
   // Init GL + program once the canvas exists.
   useEffect(() => {
@@ -840,15 +919,7 @@ export function Wheel3D(props: Wheel3DProps) {
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // Keep the wheel circular whatever the panel's shape: widen the vertical FOV
-    // when the canvas is taller than wide so the wheel always fits.
-    const aspect = cw / ch;
-    let fovy = 0.74;
-    if (aspect < 1) fovy = 2 * Math.atan(Math.tan(fovy / 2) / aspect);
-    const model = multiply(rotateX(rot.x), rotateY(rot.y));
-    const view = translateZ(-3.4 / zoom); // zoom in by moving the camera closer
-    const proj = perspective(fovy, aspect, 0.05, 20);
-    const mvp = multiply(proj, multiply(view, model));
+    const { model, mvp } = viewMatrices(rot, viewZoom, cw / ch);
 
     gl.useProgram(s.program);
     gl.uniformMatrix4fv(loc.uMVP, false, mvp);
@@ -911,6 +982,31 @@ export function Wheel3D(props: Wheel3DProps) {
     e.currentTarget.releasePointerCapture(e.pointerId);
   };
 
+  // Hub measurements are only a few mm across — too small to read at whole-wheel
+  // zoom — so editing one moves the camera in on the hub, and back out after.
+  // Only editing, not hovering: a sweep of the mouse shouldn't jerk the camera.
+  useEffect(() => {
+    const from = hubTRef.current;
+    const to = hubCloseUp ? 1 : 0;
+    if (from === to) return;
+    const start = performance.now();
+    const dur = 420 * Math.abs(to - from);
+    const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+    let id = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / dur);
+      hubTRef.current = from + (to - from) * ease(t);
+      setHubT(hubTRef.current);
+      if (t < 1) id = requestAnimationFrame(tick);
+    };
+    id = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(id);
+  }, [hubCloseUp]);
+
+  // The overlay is sized to the canvas as last laid out (a resize re-renders).
+  const cssW = canvasRef.current?.clientWidth || 0;
+  const cssH = canvasRef.current?.clientHeight || 0;
+
   if (failed) {
     return <p className="field-hint">3D view needs WebGL, which isn't available here.</p>;
   }
@@ -927,6 +1023,15 @@ export function Wheel3D(props: Wheel3DProps) {
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       />
+      {dimension && cssW > 0 && cssH > 0 && (
+        <WheelDimensions
+          dimension={dimension}
+          geometry={dimGeometry}
+          mvp={viewMatrices(rot, viewZoom, cssW / cssH).mvp}
+          width={cssW}
+          height={cssH}
+        />
+      )}
       <div className="wd-align">
         <button type="button" className="wd-align-btn" onClick={() => animateTo(0, 0)}>
           Face
@@ -943,9 +1048,9 @@ export function Wheel3D(props: Wheel3DProps) {
           min={1}
           max={3.2}
           step={0.05}
-          value={zoom}
+          value={viewZoom}
           aria-label="Zoom"
-          onChange={(e) => setZoom(Number(e.target.value))}
+          onChange={(e) => zoomTo(Number(e.target.value))}
         />
       </div>
       <div className="wd-caption wd-hint">3D · drag to rotate</div>

@@ -2283,3 +2283,15 @@ html.embed-fill body { overscroll-behavior: none; }
   /* Numeric editor fields need more room than short select labels do. */
   .editor-pop-grid > .editor-field:has(.number-input) { grid-column: 1 / -1; }
 }
+
+/* Larger info-button tap targets in compact/touch layouts. */
+@media (max-width: 1199px), (pointer: coarse) {
+  .infotip { flex-shrink: 0; }
+  .infotip-btn,
+  .field-label .infotip-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+    touch-action: manipulation;
+  }
+}

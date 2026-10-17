@@ -534,7 +534,10 @@ export function InfoTip(props: { children: React.ReactNode; label?: string }) {
   }, [open]);
 
   return (
-    <span className="infotip" onMouseEnter={show} onMouseLeave={hide}>
+    <span className="infotip"
+      onPointerEnter={(event) => { if (event.pointerType === "mouse") show(); }}
+      onPointerLeave={(event) => { if (event.pointerType === "mouse") hide(); }}
+    >
       <button
         ref={btnRef}
         type="button"

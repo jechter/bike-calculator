@@ -21,16 +21,18 @@ export function Field(props: {
   /** Always render the caption line (empty when there's no source), so the field
    *  keeps a constant height and neighbors don't move as the caption toggles. */
   reserveSource?: boolean;
-  /** Called on hover/focus and blur/leave — used to highlight a linked diagram element. */
-  activate?: () => void;
-  deactivate?: () => void;
+  /** Called on hover/focus and blur/leave — used to highlight a linked diagram
+   *  element. The argument says which, for callers that let a hover override an
+   *  edit in progress. */
+  activate?: (via: "hover" | "focus") => void;
+  deactivate?: (via: "hover" | "focus") => void;
 }) {
   const linked = props.activate || props.deactivate
     ? {
-        onMouseEnter: props.activate,
-        onMouseLeave: props.deactivate,
-        onFocus: props.activate,
-        onBlur: props.deactivate,
+        onMouseEnter: () => props.activate?.("hover"),
+        onMouseLeave: () => props.deactivate?.("hover"),
+        onFocus: () => props.activate?.("focus"),
+        onBlur: () => props.deactivate?.("focus"),
       }
     : {};
   return (

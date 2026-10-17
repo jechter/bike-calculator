@@ -78,6 +78,19 @@ out only the shades actually on the wheel.
   inspect the lacing at the hub.
 - **Face** and **Side** buttons animate the view to a head-on lacing view or an
   edge-on view that shows the **dish** and bracing angles.
+- **Dimension arrows** — hovering or editing a distance field draws that
+  measurement on the wheel as a labeled double-headed arrow, like the frame-size
+  diagram's highlights: ERD across the rim, the spoke-hole offset at a rim hole, the
+  group gap as an arc along the rim between two groups,
+  flange diameter across the spoke-hole circle, center-to-flange offset along
+  the axle, and the flange hole size on a ringed hole. Hovering a spoke-length
+  result draws it alongside a spoke and isolates that side's spokes. Arrows are
+  green, to stand apart from the blue and red spokes, and projected from the 3D
+  model, so they follow the wheel as it turns. Hub measurements are only a few
+  mm across, so editing one (not just hovering it) zooms in on the hub
+  temporarily and always eases back to your own zoom afterwards; only the zoom
+  slider or a pinch changes that. A hover takes over from a field being
+  edited; the edited field's arrow returns on mouse-out.
 
 Raw WebGL, no 3D library — falls back to a short message where WebGL isn't
 available.

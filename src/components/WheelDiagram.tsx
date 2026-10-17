@@ -5,6 +5,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Wheel3D } from "./Wheel3D";
+import type { WheelDimension } from "./WheelDimensions";
 import { spokePlan, wheelLayout, type HubType, type HubRatio, type LacingPattern } from "../lib/spokes";
 
 // Legend shades, matching the 3D spoke colors: light = leading, medium = radial
@@ -64,6 +65,10 @@ export interface WheelDiagramProps {
    *  axle length and the hub-shell shape in the 3D view. */
   hubType?: HubType;
   hubWidthMm?: number;
+  /** A hovered/edited distance to draw as a dimension arrow on the wheel. */
+  dimension?: WheelDimension | null;
+  /** Zoom the 3D view in on the hub while a hub measurement is edited. */
+  hubCloseUp?: boolean;
 }
 
 export function WheelDiagram(props: WheelDiagramProps) {
@@ -134,6 +139,12 @@ export function WheelDiagram(props: WheelDiagramProps) {
     return () => clearTimeout(id);
   }, [playing, step, n]);
 
+  // A spoke-length dimension also isolates that side's spokes, so the measured
+  // spoke stands out.
+  const dimKind = props.dimension?.kind;
+  const spokeSide =
+    dimKind === "leftSpoke" ? { isDrive: false } : dimKind === "rightSpoke" ? { isDrive: true } : null;
+
   if (!valid) {
     return <p className="field-hint">Enter a valid spoke count and rim ERD to see the wheel.</p>;
   }
@@ -192,7 +203,9 @@ export function WheelDiagram(props: WheelDiagramProps) {
         rimHoleGroup={props.rimHoleGroup}
         rimHoleGap={props.rimHoleGap}
         rimHoleOffsetMm={props.rimHoleOffsetMm}
-        highlight={hover}
+        highlight={hover ?? spokeSide}
+        dimension={props.dimension}
+        hubCloseUp={props.hubCloseUp}
         hubType={props.hubType}
         hubWidthMm={props.hubWidthMm}
         step={step}

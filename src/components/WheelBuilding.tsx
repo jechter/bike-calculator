@@ -15,6 +15,7 @@ import {
 } from "../lib/spokes";
 import { Field, NumberInput, Select, PresetMenu, Result, Note, Section } from "./ui";
 import { WheelDiagram } from "./WheelDiagram";
+import { HUB_DIMENSIONS, type WheelDimension, type WheelDimensionKind } from "./WheelDimensions";
 import { TensionCurveChart } from "./TensionCurveChart";
 import { Workbench } from "./Workbench";
 import { getHashQuery, useUrlConfigSync } from "../useHashRoute";
@@ -518,6 +519,38 @@ export function WheelBuilding() {
   const leftOk = sideOk(leftCross, leftPattern, counts.nds);
   const rightOk = sideOk(rightCross, rightPattern, counts.drive);
 
+  // The distance hovered or being edited, drawn as an arrow on the 3D wheel. A
+  // hover wins over a focused field, and the focused one returns on mouse-out.
+  const [hoverDim, setHoverDim] = useState<WheelDimensionKind | null>(null);
+  const [focusDim, setFocusDim] = useState<WheelDimensionKind | null>(null);
+  const dimLink = (k: WheelDimensionKind) => ({
+    activate: (via?: unknown) => (via === "focus" ? setFocusDim : setHoverDim)(k),
+    deactivate: (via?: unknown) =>
+      (via === "focus" ? setFocusDim : setHoverDim)((cur) => (cur === k ? null : cur)),
+  });
+  const mm = (v: number) => `${+v.toFixed(1)} mm`;
+  // A side's spoke length for its arrow: the crossed length where crow's foot
+  // also has a radial one.
+  const spokeLabel = (specs: SpokeSpec[]) =>
+    mm((specs.find((s) => s.kind !== "radial") ?? specs[0]).lengthMm);
+  const dimKind = hoverDim ?? focusDim;
+  const dimLabels: Record<WheelDimensionKind, string> = {
+    erd: mm(erd),
+    rimHoleOffset: mm(rimHoleOffset),
+    rimHoleGap: `${rimHoleGap.toFixed(1)}×`,
+    holeDia: mm(holeDia),
+    leftFlange: mm(leftFlange),
+    rightFlange: mm(rightFlange),
+    leftOffset: mm(leftOffset),
+    rightOffset: mm(rightOffset),
+    leftSpoke: leftOk ? spokeLabel(leftSpecs) : "",
+    rightSpoke: rightOk ? spokeLabel(rightSpecs) : "",
+  };
+  const dimension: WheelDimension | null =
+    dimKind && dimLabels[dimKind] ? { kind: dimKind, label: dimLabels[dimKind] } : null;
+  // The hub close-up follows the field being edited, not a passing hover.
+  const hubCloseUp = !!focusDim && HUB_DIMENSIONS.has(focusDim);
+
   // Tension converter. Tool and spoke type are picked separately. Default to a
   // common 2.0 mm steel round spoke on the Park Tool TM-1 if present.
   const tools = useMemo(() => {
@@ -598,6 +631,8 @@ export function WheelBuilding() {
       interlaced={interlaced}
       hubType={hubStyle?.type}
       hubWidthMm={hubStyle?.widthMm}
+      dimension={dimension}
+      hubCloseUp={hubCloseUp}
     />
   ) : (
     <Note tone="warn">
@@ -618,7 +653,7 @@ export function WheelBuilding() {
 
       >
         <div className="grid">
-          <Field label="ERD (effective rim diameter)" info={
+          <Field label="ERD (effective rim diameter)" {...dimLink("erd")} info={
             <>The diameter at the nipple seats — the single biggest error source in
             spoke-length calculations. Measure it; presets are rough starting
             points that vary a lot by rim depth.</>
@@ -637,6 +672,7 @@ export function WheelBuilding() {
           </Field>
           <Field
             label="Spoke-hole offset (alternating drilling)"
+            {...dimLink("rimHoleOffset")}
             info="each hole nudged toward its flange · negative crosses it to the far side · 0 = centered"
           >
             <NumberInput
@@ -680,6 +716,7 @@ export function WheelBuilding() {
           {hasGroupedRim && (
           <Field
             label="Group gap"
+            {...dimLink("rimHoleGap")}
             info={`Between-group gap is ${rimHoleGap.toFixed(1)}× the in-group spacing.`}
           >
             <div className="wb-slider">
@@ -705,7 +742,7 @@ export function WheelBuilding() {
         action={<HubPicker selected={hub} onPick={applyHub} />}
       >
         <div className="grid">
-          <Field label="Flange hole diameter" info={
+          <Field label="Flange hole diameter" {...dimLink("holeDia")} info={
             <>The diameter of each spoke hole in the hub flange, not the circle through
             the holes. Measure your hub to confirm.
             {hub && <span className="wb-hub-source"><br />Flange geometry from <HubSourceLink hub={hub} />.
@@ -724,19 +761,19 @@ export function WheelBuilding() {
         <div className="wb-sides">
           <div className="wb-side wb-side-left">
             <h4 className="wb-side-title">Left / non-drive</h4>
-            <Field label="Flange diameter" info="The diameter of the circle through the spoke-hole centers (PCD). Presets are approximate — measure your hub.">
+            <Field label="Flange diameter" {...dimLink("leftFlange")} info="The diameter of the circle through the spoke-hole centers (PCD). Presets are approximate — measure your hub.">
               <NumberInput value={leftFlange} onChange={edited(setLeftFlange)} suffix="mm" />
             </Field>
-            <Field label="Center-to-flange offset" info="The distance from the hub centerline to this flange. Left and right offsets differ on a dished rear or disc wheel.">
+            <Field label="Center-to-flange offset" {...dimLink("leftOffset")} info="The distance from the hub centerline to this flange. Left and right offsets differ on a dished rear or disc wheel.">
               <NumberInput value={leftOffset} onChange={edited(setLeftOffset)} suffix="mm" />
             </Field>
           </div>
           <div className="wb-side wb-side-right">
             <h4 className="wb-side-title">Right / drive</h4>
-            <Field label="Flange diameter" info="The diameter of the circle through the spoke-hole centers (PCD). Presets are approximate — measure your hub.">
+            <Field label="Flange diameter" {...dimLink("rightFlange")} info="The diameter of the circle through the spoke-hole centers (PCD). Presets are approximate — measure your hub.">
               <NumberInput value={rightFlange} onChange={edited(setRightFlange)} suffix="mm" />
             </Field>
-            <Field label="Center-to-flange offset" info="The distance from the hub centerline to this flange. Left and right offsets differ on a dished rear or disc wheel.">
+            <Field label="Center-to-flange offset" {...dimLink("rightOffset")} info="The distance from the hub centerline to this flange. Left and right offsets differ on a dished rear or disc wheel.">
               <NumberInput value={rightOffset} onChange={edited(setRightOffset)} suffix="mm" />
             </Field>
           </div>
@@ -862,12 +899,14 @@ export function WheelBuilding() {
               value={leftOk ? <SpokeSpecs specs={leftSpecs} /> : "—"}
               big={leftOk && leftSpecs.length === 1}
               accent="left"
+              {...dimLink("leftSpoke")}
             />
             <Result
               label="Right / drive"
               value={rightOk ? <SpokeSpecs specs={rightSpecs} /> : "—"}
               big={rightOk && rightSpecs.length === 1}
               accent="right"
+              {...dimLink("rightSpoke")}
             />
           </div>
         </Section>

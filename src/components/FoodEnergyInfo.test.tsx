@@ -12,6 +12,7 @@ describe("food energy equivalents", () => {
     expect(getByText("1.1 whole pizzas")).toBeTruthy();
     expect(getByText("2.6 liters of beer")).toBeTruthy();
     expect(getByText("Using 105 kcal per medium banana")).toBeTruthy();
+    expect(getByText("Not nutrition advice").tagName).toBe("SMALL");
     expect(queryByText(/Portion sizes, recipes and products vary/)).toBeNull();
   });
 

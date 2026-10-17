@@ -37,6 +37,7 @@ export function FoodEnergyInfo({ kcal }: { kcal: number }) {
           );
         })}
       </ul>
+      <small>Not nutrition advice</small>
     </div>
   );
 }

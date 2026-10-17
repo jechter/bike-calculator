@@ -1,6 +1,6 @@
 /**
  * Subtle, monochrome line-art icons for the calculators. They draw with
- * `currentColor` and no fills, so they inherit the nav text colour (muted,
+ * `currentColor` and no fills, so they inherit the nav text color (muted,
  * or the accent when a page is active) and adapt to light/dark automatically.
  */
 

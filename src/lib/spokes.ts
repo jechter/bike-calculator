@@ -56,7 +56,7 @@ export interface SpokeHole {
  * drive; 2:1 repeats a drive-drive-non-drive triplet so the drive flange gets two
  * thirds. `ndsCentre` puts the single non-drive hole in the middle of each triplet
  * (drive-non-drive-drive) instead of at the edge — so with rim holes grouped in
- * threes, the non-drive spoke lands in the centre of each cluster.
+ * threes, the non-drive spoke lands in the center of each cluster.
  */
 export function wheelLayout(
   spokeCount: number,
@@ -112,9 +112,9 @@ export function rimHoleAngle(
   const g = Math.floor(groupSize);
   if (g < 2 || n % g !== 0 || !(gap > 1)) return (2 * Math.PI * i) / n;
   const groups = n / g;
-  // Each group is centred on the even position it would occupy ungrouped, so the
-  // holes spread symmetrically around that centre. For an odd group the middle
-  // hole therefore stays exactly on its even position (a centred radial spoke
+  // Each group is centered on the even position it would occupy ungrouped, so the
+  // holes spread symmetrically around that center. For an odd group the middle
+  // hole therefore stays exactly on its even position (a centered radial spoke
   // stays radial). In-group spacing `a` shrinks as the gap grows, conserving 2π.
   const a = (2 * Math.PI) / groups / (g - 1 + gap);
   const q = Math.floor(i / g); // group index
@@ -176,12 +176,12 @@ export function spokePlan(
     return { offset: -opts.cross, lead: -1 };
   }
   // A 0-cross spoke sits radially and never crosses another, so it has no
-  // leading/trailing role — treat it as radial (lead 0) like a crow's foot centre.
+  // leading/trailing role — treat it as radial (lead 0) like a crow's foot center.
   if (opts.cross === 0) return { offset: 0, lead: 0 };
   // `phase` shifts the leading/trailing alternation by whole spokes. It's invisible
   // on an evenly-spaced flange (just rotates the pattern), but on a clustered one it
   // flips whether a cluster's crossed pair converges (crosses inside the cluster) or
-  // splays out to cross the neighbouring clusters — the latter gives G3-style lacing.
+  // splays out to cross the neighboring clusters — the latter gives G3-style lacing.
   const lead = spokeLead(flangeIndex + (opts.phase ?? 0), opts.group);
   return { offset: lead * opts.cross, lead };
 }

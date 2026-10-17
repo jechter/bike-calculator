@@ -3,7 +3,7 @@ import { DRAFT_RIDERS_MAX, type CdaFixedFormation } from "./cda";
 
 export interface FormationRider { x: number; y: number; you: boolean }
 
-/** Static schematic. Single file counts riders ahead; wider formations count other riders, including neighbours. */
+/** Static schematic. Single file counts riders ahead; wider formations count other riders, including neighbors. */
 export function fixedFormationLayout(formation: CdaFixedFormation, value: number) {
   const ahead = Number.isFinite(value) ? Math.max(0, Math.min(DRAFT_RIDERS_MAX, Math.round(value))) : 0;
   const riders: FormationRider[] = [];

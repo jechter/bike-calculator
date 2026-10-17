@@ -126,7 +126,7 @@ indexes at any of those counts given the matching shifter. The verdict:
 
 ### Cassette cog-pitch (spacing) compatibility
 Matching the cog *count* isn't enough: the cassette must also be cut to the
-**cog pitch** (centre-to-centre sprocket spacing) the drivetrain indexes to. An
+**cog pitch** (center-to-center sprocket spacing) the drivetrain indexes to. An
 11-speed Shimano/SRAM shifter+derailleur and an 11-speed **Campagnolo** cassette
 share a cog count but have different pitch, so the indexed clicks don't line up
 — it won't shift. Each cassette therefore carries a **spacing** standard

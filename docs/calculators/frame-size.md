@@ -20,7 +20,7 @@ direction**:
 
 A single seat-tube number is a weak way to describe a frame:
 
-- **Actual seat tube (centre-to-top)** depends on how far the top tube slopes. A
+- **Actual seat tube (center-to-top)** depends on how far the top tube slopes. A
   compact frame with a steeply sloping top tube has a much shorter c–t than a
   level-top-tube frame that fits the same rider.
 - The **effective / virtual seat tube** measures up to where a *horizontal* top
@@ -32,8 +32,8 @@ A single seat-tube number is a weak way to describe a frame:
   edge of the geometry; the diagram shows both edges, and the **Frame size** field
   is just the traditional inseam-based ballpark for picking what to try.
 - **Reach & stack** are the modern, brand-independent coordinates: the horizontal
-  (reach) and vertical (stack) distance from the bottom-bracket centre to the
-  top-centre of the head tube. They don't move when the top tube slopes, so they
+  (reach) and vertical (stack) distance from the bottom-bracket center to the
+  top-center of the head tube. They don't move when the top tube slopes, so they
   compare directly across any two frames — use them to compare real candidates.
 
 ## Inputs (rider → fit)
@@ -43,7 +43,7 @@ A single seat-tube number is a weak way to describe a frame:
   drives saddle height, stack and the effective size.
 - **Arm length** (shoulder/acromion to wrist) — with the torso, drives reach.
 
-  Inseam and arm start **empty**, showing a greyed height-based estimate (≈47 %
+  Inseam and arm start **empty**, showing a grayed height-based estimate (≈47 %
   and ≈33 % of height) as a placeholder. That estimate is used until you type a
   measured value, so the tool works from height alone but rewards measuring.
 - **Bike category** — one picker that merges the old "frame style" and "riding
@@ -73,7 +73,7 @@ the three body inputs already capture.
 - **Frame size** (cm) — the nominal, inseam-based ballpark (with a range and the
   nominal S/M/L, plus inches for MTB) and a note explaining it's a label, not a
   geometric length.
-- **Saddle height** (LeMond, `inseam × 0.883`, BB centre → saddle top).
+- **Saddle height** (LeMond, `inseam × 0.883`, BB center → saddle top).
 - **Crank length** suggestion (range + nearest available size).
 - **Wheel size** — the standard that fits the frame's style *and* size (see below),
   shown with its ISO/ETRTO bead diameter and drawn to scale in the diagram.
@@ -161,7 +161,7 @@ crank_mm ≈ I × 10 × 0.216
 ```
 
 Show the spanning range and snap the midpoint to the nearest available size.
-Recent fitting trends favour **shorter** cranks; also mind pedal/ground clearance
+Recent fitting trends favor **shorter** cranks; also mind pedal/ground clearance
 and knee comfort. Feeds the [drivetrain gain-ratio calc](drivetrain.md).
 
 ## Diagram
@@ -191,16 +191,16 @@ category picks one of three **geometry styles**:
   even with a tall front end, drawn with a stanchion + lowers (mountain bikes).
 
 A **crank arm** (violet) pivots at the bottom bracket, drawn to scale at the
-suggested crank length with a pedal across its end and the length labelled, so
+suggested crank length with a pedal across its end and the length labeled, so
 the crank suggestion is shown in the geometry too.
 
 To the **left**, a front-view cyclist is drawn to scale on the same ground line,
 with dimension lines for the three body inputs so the measurements driving the
 fit are visible: **body height** (cyan, full height), **cycling inseam** (pink,
 ground to crotch) and **arm length** (amber, shoulder to wrist) — each with its
-own colour, echoed as a dot on the matching input. Every measurement label shows
+own color, echoed as a dot on the matching input. Every measurement label shows
 its value at a consistent size, and **hovering or editing a value in the UI
-highlights the matching measurement** in the diagram (thicker line, coloured
+highlights the matching measurement** in the diagram (thicker line, colored
 glow, larger label). The figure is a
 vectorized (potrace) line-art illustration in `src/components/cyclistFigure.ts`,
 scaled so its ink height equals the rider's body height. It is **split into three bands that are vertically scaled independently** — legs
@@ -210,7 +210,7 @@ only the legs and torso: a longer inseam draws longer legs and a shorter torso,
 and vice versa (widths keep the uniform scale; the splits are seamless). The
 **arms** (bare forearms + hands, traced as a separate piece cut at the sleeve
 hem) hang from the sleeve line and **scale vertically with arm length**,
-independent of the body. The dimension lines are labelled with the entered
+independent of the body. The dimension lines are labeled with the entered
 values. In "identify a frame" mode it illustrates the representative rider the
 frame fits.
 
@@ -226,9 +226,9 @@ the **kids' sizes** — **24" → 20" → 16" → 14" → 12"** — chosen by th
 cycling inseam (`frameCm ÷ the category multiplier`) so a small "road" and a
 small "mtb" frame of the same-sized child land on the same wheel. Each `Wheel`
 carries the common name, the ISO/ETRTO bead diameter, and an approximate outer
-diameter with a typical tyre, so the diagram draws the wheels to scale (a 29"
+diameter with a typical tire, so the diagram draws the wheels to scale (a 29"
 wheel is visibly taller than a 26", and a 12" a fraction of either). The value is
-shown in the results (name + ISO), labelled on the front wheel, and — like the
+shown in the results (name + ISO), labeled on the front wheel, and — like the
 other measurements — highlights in the diagram when hovered/edited.
 
 The frame parts that depend on the wheel — **BB drop, chainstay length, fork rake
@@ -276,4 +276,4 @@ bend and (on drop/TT bars) the hand position change.
   geometries can't reach a level forearm without over-bending the elbow.
 
 Like the rest of the fit model, the cockpit numbers are **hand-picked
-approximations**, meant to visualise the position, not spec it.
+approximations**, meant to visualize the position, not spec it.

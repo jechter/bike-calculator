@@ -34,7 +34,7 @@
     "frontEndRiseMm": 35,
     "topTubeSlopeDeg": 7,
     "geometry": "sloping",
-    "blurb": "A taller front end and longer wheelbase for a less bent-over drop-bar position, with room for wider tyres.",
+    "blurb": "A taller front end and longer wheelbase for a less bent-over drop-bar position, with room for wider tires.",
     "sizing": "Still size on reach & stack — just expect more stack than a race frame. Small gaps are easily trimmed with spacers and stem length.",
     "cockpit": { "stemLenMm": 100, "stemRiseDeg": -6, "spacerMm": 40, "bar": "drop", "gripFwdMm": 75, "gripDropMm": 16 }
   },
@@ -47,7 +47,7 @@
     "frontEndRiseMm": 18,
     "topTubeSlopeDeg": 6,
     "geometry": "sloping",
-    "blurb": "Drop-bar and fairly aggressive, but longer and more stable than road race, with big tyre clearance.",
+    "blurb": "Drop-bar and fairly aggressive, but longer and more stable than road race, with big tire clearance.",
     "sizing": "Size on reach & stack like a road bike; flared bars add a little effective reach and width to allow for.",
     "cockpit": { "stemLenMm": 90, "stemRiseDeg": -6, "spacerMm": 35, "bar": "drop", "gripFwdMm": 75, "gripDropMm": 14 }
   },
@@ -74,7 +74,7 @@
     "topTubeSlopeDeg": 24,
     "geometry": "suspension",
     "showInches": true,
-    "blurb": "A suspension fork and slack head angle; modern trail bikes run a long front-centre with a short stem.",
+    "blurb": "A suspension fork and slack head angle; modern trail bikes run a long front-center with a short stem.",
     "sizing": "Size by reach, not seat-tube length — a longer reach is the \"bigger\" bike. Then check the short seat tube clears your dropper insertion; the fork and bars handle stack.",
     "cockpit": { "stemLenMm": 50, "stemRiseDeg": 0, "spacerMm": 30, "bar": "flat", "gripFwdMm": -18, "gripDropMm": 0 }
   },

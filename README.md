@@ -127,3 +127,5 @@ Production canonical URLs and the sitemap target
 both. After deployment, submit
 `https://rueckenwind.berlin/bikeworkshopcalc/sitemap.xml` in Google Search Console.
 The sitemap intentionally excludes configurable query-string variants.
+
+UI text and documentation use US English spelling. Preserve official product names, source titles, URLs, and existing internal identifiers.

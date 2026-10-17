@@ -238,7 +238,7 @@ describe('2:1 hubs', () => {
     expect(layout.every((h) => h.flangeSpokes === (h.isDrive ? 16 : 8))).toBe(true);
   });
 
-  it('can centre the non-drive hole in each triplet (D-N-D)', () => {
+  it('can center the non-drive hole in each triplet (D-N-D)', () => {
     const layout = wheelLayout(24, '2:1', true);
     expect(layout.slice(0, 3).map((h) => h.isDrive)).toEqual([true, false, true]);
     expect(layout.filter((h) => !h.isDrive)).toHaveLength(8); // still 8 non-drive
@@ -313,7 +313,7 @@ describe('rimHoleAngle (grouped drilling)', () => {
   });
 
   it('keeps the middle hole of an odd group on its even position', () => {
-    // 24h in threes: hole 1 (centre of the first group) stays at its even angle,
+    // 24h in threes: hole 1 (center of the first group) stays at its even angle,
     // so a radial spoke there stays truly radial regardless of the gap.
     for (const gap of [1.5, 2, 3]) {
       expect(rimHoleAngle(1, 24, 3, gap)).toBeCloseTo((2 * Math.PI * 1) / 24);

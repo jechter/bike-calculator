@@ -295,7 +295,7 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   const H = maxY - minY;
 
   // If the container is taller than the drivetrain's natural aspect, stretch the
-  // viewBox vertically (centred) to match — the wheel/crank fill the extra space
+  // viewBox vertically (centered) to match — the wheel/crank fill the extra space
   // instead of the diagram letterboxing. `minHeight` keeps it at least its
   // natural, width-driven size when there's no spare height (it shrinks-to-fit
   // rather than scrolling only when even that doesn't fit). VPAD = 2 × card pad.
@@ -371,7 +371,7 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
   // each group's SVG `rotate(angle cx cy)` transform. This rotates about an
   // explicit point (the hub / bottom bracket) in user coordinates, which every
   // engine handles the same way — unlike CSS transform-box/transform-origin,
-  // which can pivot off-centre. Each part keeps a running angle, so a gear or
+  // which can pivot off-center. Each part keeps a running angle, so a gear or
   // slo-mo change only alters its angular velocity: the crank and wheels keep
   // their current angle instead of jumping back to the start.
   const wheelRef = useRef<SVGGElement>(null);
@@ -415,7 +415,7 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  // Selected-gear colour matches the chainring's line in the gear chart.
+  // Selected-gear color matches the chainring's line in the gear chart.
   const activeColor = PALETTE[Math.max(0, rings.indexOf(props.activeChainring)) % PALETTE.length];
 
   // Nothing to draw (no valid gears) — keep the measured container so the
@@ -479,7 +479,7 @@ export function DrivetrainDiagram(props: DrivetrainDiagramProps) {
             <circle cx={R.x} cy={R.y} r={wheelR - tireW} className="dt-rim" />
             {/* three-spoke design so the spin is legible */}
             {blades(R.x, R.y, rrMax + 8, wheelR - tireW, 3, 18, "dt-wheel-spoke")}
-            {/* tyre valve: a stem on the rim (pointing at the hub) with a nut at
+            {/* tire valve: a stem on the rim (pointing at the hub) with a nut at
                 its base — an asymmetric marker that makes the wheel's rotation
                 easy to follow. Resting at 9 o'clock keeps it in the visible
                 left arc when motion is reduced. */}

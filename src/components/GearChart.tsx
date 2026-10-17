@@ -10,12 +10,12 @@ import { useUnits, speedUnitLabel } from "../units-context";
 // and highest gear so their values can be read straight off the axis.
 //
 // The chart takes one or more *series* (drivetrain configs). With a single
-// series it draws one row per chainring in the palette colours (matching the
+// series it draws one row per chainring in the palette colors (matching the
 // drivetrain diagram). When comparing two configs their gears share one axis so
 // range, overlap and gaps line up; the second config is drawn with hollow dots
 // and a dashed line, behind a faint band, so it's clearly the other drivetrain.
 
-// One colour per chainring line (largest ring first). Shared with the
+// One color per chainring line (largest ring first). Shared with the
 // drivetrain diagram so the selected gear matches the chart.
 export const PALETTE = ["#0b6bcb", "#c0392b", "#157347", "#b7791f", "#7b3fb0", "#0e8a8a"];
 
@@ -30,7 +30,7 @@ export interface GearSeries {
   gears: GearResult[];
   /** Draw dots hollow + line dashed (the compared-against config). */
   hollow?: boolean;
-  /** Mark a gear as cross-chained (greyed out; avoid shifting into it). */
+  /** Mark a gear as cross-chained (grayed out; avoid shifting into it). */
   isCrossChained?: (g: GearResult) => boolean;
   /** CVT: draw a thick bar between the low/high endpoints (a continuous range). */
   continuous?: boolean;
@@ -147,7 +147,7 @@ export function GearChart({
   const currentLabel = options.find((o) => o.value === metric)?.label ?? "";
 
   // Build the rows: within each series, one row per chainring (largest on top),
-  // coloured from the palette so a single-series chart matches the diagram.
+  // colored from the palette so a single-series chart matches the diagram.
   const rows: Row[] = [];
   const seriesBounds: Array<{ start: number; end: number; hollow: boolean }> = [];
   for (const s of series) {

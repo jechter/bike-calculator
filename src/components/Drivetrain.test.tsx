@@ -42,6 +42,21 @@ function pickHub(container: HTMLElement, search: string, rowMatch: (text: string
 }
 
 describe("Drivetrain page", () => {
+  it("links the lowest gear at the selected cadence to a 10% climb", () => {
+    const { container, getByRole } = render(<Drivetrain />);
+    const link = getByRole("link", { name: /Check .*lowest gear @/ }) as HTMLAnchorElement;
+    const url = new URL(link.href);
+    expect(url.pathname).toContain("cycling-power-calculator/");
+    expect(url.searchParams.get("gradient")).toBe("10");
+    const speed = Number(url.searchParams.get("speed"));
+    expect(speed).toBeGreaterThan(0);
+    expect(link.textContent).toBe(`Check ${speed.toFixed(1)} km/h (lowest gear @ 90 rpm) in the cycling power calculator`);
+    expect(link.parentElement?.textContent).toBe(`Want to know if this drivetrain will get you up a mountain? ${link.textContent}, adjust the gradient, and check how much power you need for the climb.`);
+    fireEvent.change(container.querySelector(".gc-cadence-num")!, { target: { value: "60" } });
+    expect(link.textContent).toContain("lowest gear @ 60 rpm");
+    expect(Number(new URL(link.href).searchParams.get("speed"))).toBeCloseTo(speed * 60 / 90, 2);
+  });
+
   it("has a cadence slider (60–120) plus a free number field", () => {
     const { container } = render(<Drivetrain />);
     const slider = container.querySelector(
@@ -87,7 +102,7 @@ describe("Drivetrain page", () => {
     );
   });
 
-  it("greys out cross-chained gears (big-big / small-small)", () => {
+  it("grays out cross-chained gears (big-big / small-small)", () => {
     const { container } = render(<Drivetrain />);
     // default 50/34, 11-28: 50x28,50x24 and 34x11,34x12 are cross-chained
     const crossed = container.querySelectorAll(".gc-crossed");
@@ -102,18 +117,11 @@ describe("Drivetrain page", () => {
     expect(container.querySelector(".gc-cadence input[type='range']")).toBeTruthy();
   });
 
-  it("keeps section info in a popover revealed by the info icon", () => {
-    const { container, getByText, queryByText } = render(<Drivetrain />);
-    // Gears explanation is hidden until its info tip is opened
-    expect(queryByText(/wheel-size-independent/)).toBeNull();
-    // The Gears section lives in the visualization rail; target its info tip
-    // directly (section order no longer puts it first in the DOM).
-    const infoBtn = container.querySelector(
-      ".dt-viz .section-head .infotip-btn",
-    ) as HTMLButtonElement;
-    expect(infoBtn).toBeTruthy();
-    fireEvent.click(infoBtn);
-    expect(getByText(/wheel-size-independent/)).toBeTruthy();
+  it("shows Gears without an info icon", () => {
+    const { container } = render(<Drivetrain />);
+    const heading = container.querySelector(".dt-viz .section-head")!;
+    expect(heading.textContent).toContain("Gears");
+    expect(heading.querySelector(".infotip-btn")).toBeNull();
   });
 
   it("renders a drivetrain diagram and moves the chain on gear hover", () => {
@@ -225,7 +233,7 @@ describe("Drivetrain page", () => {
     const { container } = render(<Drivetrain />);
     const selects = Array.from(container.querySelectorAll("select"));
     fireEvent.change(selects[0], { target: { value: "hub" } });
-    // Default hub is the Sturmey-Archer S3 -> the link is labelled with its name.
+    // Default hub is the Sturmey-Archer S3 -> the link is labeled with its name.
     const link = Array.from(container.querySelectorAll("a")).find((a) =>
       /Sturmey Archer S3/.test(a.textContent || ""),
     ) as HTMLAnchorElement;
@@ -260,7 +268,7 @@ describe("Drivetrain page", () => {
     // 2 hub-gear rows × 10 cogs = 20 dots, and the range multiplies the two.
     expect(container.querySelectorAll(".gc-row-line").length).toBe(2);
     expect(container.querySelectorAll(".gc-dot").length).toBe(20);
-    // Rows are labelled by hub gear (1st / 2nd), not by chainring tooth count.
+    // Rows are labeled by hub gear (1st / 2nd), not by chainring tooth count.
     const rowLabels = Array.from(container.querySelectorAll(".gc-row-label")).map(
       (n) => n.textContent,
     );
@@ -274,8 +282,8 @@ describe("Drivetrain page", () => {
     fireEvent.change(container.querySelector("select") as HTMLSelectElement, {
       target: { value: "single" },
     });
-    // Chain mode: the wrap note and the chain-wear ("when to replace") table.
-    expect(getByText(/dropout \/ tensioner/)).toBeTruthy();
+    // Chain mode: sizing info is collapsed; the wear table stays visible.
+    expect(queryByText(/dropout \/ tensioner/)).toBeNull();
     expect(getByText(/When to replace/)).toBeTruthy();
     // Switch the transmission select (the one offering a belt) to Gates belt.
     const beltSelect = Array.from(container.querySelectorAll("select")).find((s) =>
@@ -287,8 +295,8 @@ describe("Drivetrain page", () => {
     expect(getByText(/Ideal belt/)).toBeTruthy();
     expect(queryByText(/When to replace/)).toBeNull();
     expect(queryByText(/dropout \/ tensioner/)).toBeNull();
-    // The nearby-belt table lists catalogued sizes with centre distances.
-    expect(getByText("Centre distance")).toBeTruthy();
+    // The nearby-belt table lists cataloged sizes with center distances.
+    expect(getByText("Center distance")).toBeTruthy();
     expect(container.textContent).toMatch(/\bT ✓/);
   });
 
@@ -304,7 +312,7 @@ describe("Drivetrain page", () => {
     // Default 42/18 at 410 mm: the nearest belt is ~17 mm off — within a frame's
     // adjustment, so no warning.
     expect(queryByText(/No stock Gates belt fits/)).toBeNull();
-    // Drop to a very short chainstay: even the smallest belt now needs a centre
+    // Drop to a very short chainstay: even the smallest belt now needs a center
     // distance far beyond what any dropout/EBB could take up.
     const cs = container.querySelector(
       'input[aria-label="Chainstay length"]',
@@ -312,7 +320,7 @@ describe("Drivetrain page", () => {
     fireEvent.change(cs, { target: { value: "350" } });
     expect(getByText(/No stock Gates belt fits/)).toBeTruthy();
     // The option table is still shown (so you can see how far off each size is).
-    expect(getByText("Centre distance")).toBeTruthy();
+    expect(getByText("Center distance")).toBeTruthy();
   });
 
   it("draws belt sprockets ~13% smaller than chain sprockets (11 vs 12.7 mm pitch)", () => {
@@ -336,13 +344,40 @@ describe("Drivetrain page", () => {
     }
   });
 
+  it("keeps chain sizing info on Links and simplifies the wear table", () => {
+    const { container, getByRole, queryByText, getByText } = render(<Drivetrain />);
+    const section = getByText("Chain", { selector: "h3" }).closest("section")!;
+    expect(section.querySelector(".section-head .infotip-btn")).toBeNull();
+    expect(queryByText(/Park Tool formula/)).toBeNull();
+    fireEvent.click(getByRole("button", { name: "About: Links" }));
+    expect(getByText(/Park Tool formula/)).toBeTruthy();
+    expect(container.querySelector(".dt-subnote")?.textContent).toBe(
+      "Measure with a chain wear gauge, and replace the chain when wear is above the threshold for your chain.",
+    );
+    const headers = Array.from(container.querySelectorAll(".dt-subsection th"), el => el.textContent);
+    expect(headers).toEqual(["Chain type", "Replace at"]);
+  });
+
+  it("keeps belt sizing guidance only in the Ideal belt popover", () => {
+    const { container, getByRole, queryByText, getByText } = render(<Drivetrain />);
+    fireEvent.change(container.querySelector("select")!, { target: { value: "single" } });
+    const transmission = Array.from(container.querySelectorAll("select")).find(s =>
+      Array.from(s.options).some(o => o.value === "belt"),
+    )!;
+    fireEvent.change(transmission, { target: { value: "belt" } });
+    expect(queryByText(/closed loop/)).toBeNull();
+    fireEvent.click(getByRole("button", { name: "About: Ideal belt" }));
+    expect(getByText(/closed loop/)).toBeTruthy();
+  });
+
   it("shows a minimum single-speed chain length in chain mode", () => {
     const { container, getByText } = render(<Drivetrain />);
     fireEvent.change(container.querySelector("select") as HTMLSelectElement, {
       target: { value: "single" },
     });
-    // Alongside the wrap note, chain mode now reports the shortest chain that fits.
     expect(getByText("Minimum links")).toBeTruthy();
+    expect(container.textContent).not.toMatch(/extra-long chain/);
+    fireEvent.click(within(container).getByRole("button", { name: "About: Minimum links" }));
     expect(getByText(/extra-long chain/)).toBeTruthy();
   });
 
@@ -351,7 +386,8 @@ describe("Drivetrain page", () => {
     fireEvent.change(container.querySelector("select") as HTMLSelectElement, {
       target: { value: "hub" },
     });
-    // A plain hub uses the dropout/tensioner note, not the derailleur formula.
+    // A plain hub keeps sizing guidance in the minimum-links popover.
+    fireEvent.click(within(container).getByRole("button", { name: "About: Minimum links" }));
     expect(getByText(/dropout \/ tensioner/)).toBeTruthy();
     pickHub(container, "classified", (t) => /Classified/i.test(t));
     // With a derailleur + cassette the chain-length result appears (mm/links).
@@ -365,7 +401,7 @@ describe("Drivetrain page", () => {
     expect(getByText("Links")).toBeTruthy();
     // Pick a SRAM Full Mount (Eagle Transmission) derailleur.
     pickDerailleur(container, "GX Eagle", (t) => /Transmission/i.test(t));
-    // Our computed length is now hidden in favour of SRAM's guide.
+    // Our computed length is now hidden in favor of SRAM's guide.
     expect(queryByText("Links")).toBeNull();
     const link = Array.from(container.querySelectorAll("a")).find((a) =>
       a.getAttribute("href")?.includes("axs.sram.com/guides/fullmount/chain/calculator"),
@@ -656,6 +692,7 @@ describe("Drivetrain page", () => {
     const typeSelect = container.querySelector("select") as HTMLSelectElement;
     fireEvent.change(typeSelect, { target: { value: "single" } });
     expect(queryByText("1346 mm")).toBeNull();
+    fireEvent.click(within(container).getByRole("button", { name: "About: Minimum links" }));
     expect(getByText(/dropout \/ tensioner/)).toBeTruthy();
   });
 
@@ -738,7 +775,7 @@ describe("Drivetrain page", () => {
     // A (50/34 -> 2) + B (copied from A -> 2) = 4 rows; 2 are the hollow B rows.
     expect(container.querySelectorAll(".gc-row-line").length).toBe(4);
     expect(container.querySelectorAll(".gc-row-line-b").length).toBe(2);
-    // both configs' ranges are summarised
+    // both configs' ranges are summarized
     expect(container.textContent).toContain("A: gears / range");
     expect(container.textContent).toContain("B: gears / range");
   });

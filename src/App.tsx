@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CALCULATORS } from "./registry";
 import { useHashRoute, useHashConfigKey, routeHref, updatePageMetadata } from "./useHashRoute";
 import { useIsMobile } from "./useIsMobile";
 import { SettingsDrawerContext } from "./settingsDrawer";
 import { UnitsProvider } from "./units-context";
 import { UnitSwitcher } from "./components/UnitSwitcher";
+import { SettingsButton } from "./components/SettingsButton";
 import { CopyLinkButton } from "./components/CopyLinkButton";
 import rueckenwindLogo from "./assets/rueckenwind-logo.png";
 import rueckenwindMark from "./assets/rueckenwind-mark.png";
@@ -24,6 +25,23 @@ export function App() {
   // action into #topbar-actions-slot.
   const isMobile = useIsMobile();
   const sharedActions = active.HeaderActions || active.shareable;
+  const appRef = useRef<HTMLDivElement>(null);
+  const bottomBarRef = useRef<HTMLDivElement>(null);
+  // Include safe-area padding and any wrapped/portalled actions in the drawer
+  // clearance rather than assuming a fixed toolbar height.
+  useLayoutEffect(() => {
+    const bar = bottomBarRef.current;
+    const app = appRef.current;
+    if (!isMobile || !bar || !app) return;
+    const measure = () => app.style.setProperty("--bottom-bar-height", `${bar.getBoundingClientRect().height}px`);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(bar);
+    return () => {
+      observer.disconnect();
+      app.style.removeProperty("--bottom-bar-height");
+    };
+  }, [isMobile]);
 
   // Workbench pages (controls + visualization) get a "Settings" button in the
   // compact-mode bottom toolbar that folds the controls drawer out over the
@@ -31,8 +49,14 @@ export function App() {
   // so the trigger (here) and the drawer (in the page) stay in sync.
   const isWorkbench = Boolean(active.workbench);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  // Close the drawer whenever the page changes.
-  useEffect(() => setSettingsOpen(false), [active.id]);
+  // After the initial menu, introduce each selected page's controls on compact
+  // layouts. Ordinary rerenders and a manual close must not reopen the drawer.
+  const previousPage = useRef(active.id);
+  useEffect(() => {
+    if (previousPage.current === active.id) return;
+    previousPage.current = active.id;
+    setSettingsOpen(isMobile && isWorkbench);
+  }, [active.id, isMobile, isWorkbench]);
 
   // The sidebar can collapse to an icon rail to free up horizontal space for
   // the wider pages (e.g. wheel building's controls + visualization split).
@@ -47,7 +71,8 @@ export function App() {
 
   // On narrow screens the sidebar is a slide-in drawer rather than a fixed rail,
   // so the nav doesn't push every page's content far down the screen.
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  // Introduce the navigation on the initial compact-layout page load only.
+  const [mobileNavOpen, setMobileNavOpen] = useState(isMobile);
   // Close the drawer on Escape, and never leave it stuck open when the layout
   // grows past the mobile breakpoint (the drawer only exists below it).
   useEffect(() => {
@@ -67,8 +92,9 @@ export function App() {
 
   return (
     <UnitsProvider>
-     <SettingsDrawerContext.Provider value={{ open: settingsOpen, setOpen: setSettingsOpen }}>
+     <SettingsDrawerContext.Provider value={{ open: settingsOpen, setOpen: (open) => { if (open) setMobileNavOpen(false); setSettingsOpen(open); } }}>
       <div
+        ref={appRef}
         className={
           "app" +
           (navCollapsed ? " app--nav-collapsed" : "") +
@@ -130,6 +156,7 @@ export function App() {
                   event.preventDefault();
                   if (c.id !== active.id) navigate(c.id);
                   setMobileNavOpen(false);
+                  setSettingsOpen(isMobile && Boolean(c.workbench));
                 }}
               >
                 <span className="icon">{c.icon}</span>
@@ -183,12 +210,12 @@ export function App() {
             left, then the page title and the page's own actions (Settings, examples,
             copy link) grouped on the right. Hidden on desktop (sidebar rail). */}
         {isMobile && (
-          <div className="botbar">
+          <div className="botbar" ref={bottomBarRef}>
             <button
               type="button"
               className="botbar-menu"
-              onClick={() => setMobileNavOpen(true)}
-              aria-label="Open menu"
+              onClick={() => { setSettingsOpen(false); setMobileNavOpen(!mobileNavOpen); }}
+              aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileNavOpen}
             >
               <svg viewBox="0 0 20 20" width="22" height="22" aria-hidden="true" fill="currentColor">
@@ -201,36 +228,12 @@ export function App() {
               {active.title}
             </span>
             <div className="botbar-actions">
-              {isWorkbench && (
-                <button
-                  type="button"
-                  className={"botbar-icon-btn" + (settingsOpen ? " active" : "")}
-                  onClick={() => setSettingsOpen(!settingsOpen)}
-                  aria-label={settingsOpen ? "Close settings" : "Open settings"}
-                  aria-expanded={settingsOpen}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    aria-hidden="true"
-                  >
-                    <line x1="4" y1="8" x2="20" y2="8" />
-                    <circle cx="9" cy="8" r="2.6" fill="currentColor" />
-                    <line x1="4" y1="16" x2="20" y2="16" />
-                    <circle cx="15" cy="16" r="2.6" fill="currentColor" />
-                  </svg>
-                </button>
-              )}
               {active.HeaderActions && <active.HeaderActions />}
               {active.shareable && <CopyLinkButton />}
               {/* ownHeader pages (Frame Size) portal their action in here. */}
               <span className="topbar-actions-slot" id="topbar-actions-slot" />
             </div>
+            {isWorkbench && <SettingsButton icon={active.icon} pageTitle={active.title} />}
           </div>
         )}
       </div>

@@ -14,12 +14,12 @@ export function Field(props: {
    * two-way solve like Speed ⇄ Power).
    */
   highlight?: boolean;
-  /** Optional colour swatch before the label (ties the field to a diagram legend). */
+  /** Optional color swatch before the label (ties the field to a diagram legend). */
   dotColor?: string;
   /** A small caption under the value noting what an estimate is based on. */
   source?: React.ReactNode;
   /** Always render the caption line (empty when there's no source), so the field
-   *  keeps a constant height and neighbours don't move as the caption toggles. */
+   *  keeps a constant height and neighbors don't move as the caption toggles. */
   reserveSource?: boolean;
   /** Called on hover/focus and blur/leave — used to highlight a linked diagram element. */
   activate?: () => void;
@@ -56,7 +56,7 @@ export function Field(props: {
  */
 export function PresetMenu(props: {
   title?: string;
-  /** When set, render a labelled button (for multi-field / section-level
+  /** When set, render a labeled button (for multi-field / section-level
    *  presets) instead of the bare caret used inside a field. */
   label?: string;
   options: Array<{ value: string; label: string }>;
@@ -118,7 +118,7 @@ export function NumberInput(props: {
   placeholder?: string;
   /**
    * The height-based estimate. The field stays visually empty (showing the
-   * greyed `placeholder`), but stepping it — spinner buttons, arrow keys or the
+   * grayed `placeholder`), but stepping it — spinner buttons, arrow keys or the
    * wheel — increments from this estimate and commits, instead of the browser's
    * default of jumping to the field minimum.
    */
@@ -130,7 +130,7 @@ export function NumberInput(props: {
    * while the field holds a user value (so there's something to clear).
    */
   onClear?: () => void;
-  /** Greys the input and blocks edits (e.g. a factor that doesn't apply). */
+  /** Grays the input and blocks edits (e.g. a factor that doesn't apply). */
   disabled?: boolean;
 }) {
   const inputId = useId();
@@ -148,7 +148,7 @@ export function NumberInput(props: {
   // have larger touch steppers, revealed only for a coarse primary pointer.
   const custom = !!props.onClear;
   // Step from the current value, or from the estimate when the field is empty
-  // (so a first press nudges the greyed default instead of jumping to the min).
+  // (so a first press nudges the grayed default instead of jumping to the min).
   const stepFrom = finite ? props.value : onEstimate ? est : props.min ?? 0;
   // Avoid accumulating binary floating-point noise during repeated decimal steps.
   const nextValue = (base: number, dir: number) =>
@@ -328,13 +328,13 @@ export interface SelectGroup<T> {
 }
 
 // A native select that also accepts <optgroup>s: any item with an `options` array
-// renders as a labelled group. Flat option arrays work unchanged.
+// renders as a labeled group. Flat option arrays work unchanged.
 export function Select<T extends string | number>(props: {
   value: T;
   options: Array<SelectOption<T> | SelectGroup<T>>;
   onChange: (v: T) => void;
   className?: string;
-  /** Greys the control and blocks changes (e.g. a factor that doesn't apply). */
+  /** Grays the control and blocks changes (e.g. a factor that doesn't apply). */
   disabled?: boolean;
 }) {
   const isGroup = (o: SelectOption<T> | SelectGroup<T>): o is SelectGroup<T> =>
@@ -375,7 +375,7 @@ interface SwatchOption<T> {
   label: string;
   /** A shorter label for the folded control; falls back to `label`. */
   shortLabel?: string;
-  /** Colour square shown before the label in the open list. */
+  /** Color square shown before the label in the open list. */
   color?: string;
 }
 interface SwatchGroup<T> {
@@ -385,15 +385,15 @@ interface SwatchGroup<T> {
 
 /**
  * A custom (non-native) select whose open list prefixes each option with a
- * colour square, while the folded control shows just the label — the current
- * colour is carried by an accent border (`accentColor`) instead, so the square
- * isn't repeated redundantly. Used where options map to a colour legend.
+ * color square, while the folded control shows just the label — the current
+ * color is carried by an accent border (`accentColor`) instead, so the square
+ * isn't repeated redundantly. Used where options map to a color legend.
  */
 export function SwatchSelect<T extends string | number>(props: {
   value: T;
   options: Array<SwatchOption<T> | SwatchGroup<T>>;
   onChange: (v: T) => void;
-  /** Left-edge accent on the folded control (typically the current option's colour). */
+  /** Left-edge accent on the folded control (typically the current option's color). */
   accentColor?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -468,9 +468,9 @@ export function Result(props: {
   info?: React.ReactNode;
   value: React.ReactNode;
   big?: boolean;
-  /** Optional side colour accent (matches the wheel diagram). */
+  /** Optional side color accent (matches the wheel diagram). */
   accent?: "left" | "right";
-  /** Optional colour swatch before the label (ties the card to a chart/bar). */
+  /** Optional color swatch before the label (ties the card to a chart/bar). */
   dotColor?: string;
   /** Called on hover and leave — used to highlight a linked diagram element. */
   activate?: () => void;
@@ -534,7 +534,10 @@ export function InfoTip(props: { children: React.ReactNode; label?: string }) {
   }, [open]);
 
   return (
-    <span className="infotip" onMouseEnter={show} onMouseLeave={hide}>
+    <span className="infotip"
+      onPointerEnter={(event) => { if (event.pointerType === "mouse") show(); }}
+      onPointerLeave={(event) => { if (event.pointerType === "mouse") hide(); }}
+    >
       <button
         ref={btnRef}
         type="button"

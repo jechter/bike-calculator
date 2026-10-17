@@ -10,7 +10,7 @@ import { useSettingsDrawer } from "../settingsDrawer";
  * On wide screens it just renders them in the page's own grid/flex container
  * (via `className`), so the existing desktop CSS is untouched. On mobile the
  * visualization becomes the base view and the controls slide out over it as a
- * drawer — opened from the "Settings" toggle App renders in the top bar (open
+ * drawer — opened from the page-icon Settings toggle in the bottom bar (open
  * state shared via SettingsDrawerContext) — so you're not scrolling past the
  * whole form to see the result it drives.
  */

@@ -30,7 +30,7 @@ describe("Frame size page", () => {
     }
   });
 
-  it("seeds each field with a greyed estimate before anything is typed", () => {
+  it("seeds each field with a grayed estimate before anything is typed", () => {
     const { container } = render(<FrameSize />);
     const height = fieldInput(container, "Body height");
     expect(height.value).toBe(""); // empty → shows the placeholder

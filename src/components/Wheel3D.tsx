@@ -3,9 +3,9 @@
 // appear in build order here too. Raw WebGL — no 3D library dependency.
 //
 // Coordinates: the axle runs along +Z, the wheel lies in the X-Y plane. Rim
-// radius is normalised to 1 unit; every mm is scaled by 2/ERD. The rim is a
+// radius is normalized to 1 unit; every mm is scaled by 2/ERD. The rim is a
 // torus, hub barrel and flanges are capped cylinders (shaded), and spokes are
-// GL lines coloured by side. Depth-testing lets the hub occlude far spokes, so
+// GL lines colored by side. Depth-testing lets the hub occlude far spokes, so
 // dish and cross pattern read as real 3D.
 
 import { useEffect, useRef, useState } from "react";
@@ -19,7 +19,7 @@ import {
 } from "../lib/spokes";
 
 // Three shades per side, by weave role: light = leading, medium = radial (crow's
-// foot's centre spokes), dark = trailing. Kept in step with the 2D legend colours
+// foot's center spokes), dark = trailing. Kept in step with the 2D legend colors
 // in WheelDiagram.
 const DRIVE_OUT: [number, number, number] = [0.97, 0.5, 0.4];
 const DRIVE_MID: [number, number, number] = [0.85, 0.27, 0.19];
@@ -64,9 +64,9 @@ export interface Wheel3DProps {
   rightPattern: LacingPattern;
   /** Flange spoke split: '1:1' (even) or '2:1' (drive-doubled). */
   ratio: HubRatio;
-  /** 2:1 only: put the non-drive hole in the centre of each triplet (D-N-D). */
+  /** 2:1 only: put the non-drive hole in the center of each triplet (D-N-D). */
   ndsCentre?: boolean;
-  /** Flip the leading/trailing phase so clustered pairs cross the neighbouring
+  /** Flip the leading/trailing phase so clustered pairs cross the neighboring
    *  group instead of each other (G3-style). No effect on an evenly-spaced flange. */
   crossPhase?: boolean;
   /** When set, draw only spokes matching this side and/or weave role (a legend
@@ -77,7 +77,7 @@ export interface Wheel3DProps {
   /** Between-group gap as a multiple of the in-group hole spacing. */
   rimHoleGap?: number;
   /** Alternating rim drilling: each hole nudged this many mm toward the flange it
-   *  serves (0 = centred / single-drilled). Purely the rim-bed hole position. */
+   *  serves (0 = centered / single-drilled). Purely the rim-bed hole position. */
   rimHoleOffsetMm?: number;
   /** Offset-pair drilling (WH-7700): both holes of a pair share one rim angle and
    *  are split only by the axial offset above. Overrides angular hole grouping. */
@@ -137,7 +137,7 @@ function rotateY(a: number): Float32Array {
   return new Float32Array([c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1]);
 }
 
-// --- Geometry builders (push interleaved pos[3], normal[3], colour[3]) ------
+// --- Geometry builders (push interleaved pos[3], normal[3], color[3]) ------
 
 type Mesh = number[];
 
@@ -145,7 +145,7 @@ type Mesh = number[];
 // Each profile point is [dr, z]: dr is the radial offset out from the spoke bed
 // (radius R = ERD/2), z is axial. Outward normals are derived per profile edge
 // (flat across the section, smooth around the ring). The profile's outer face
-// dips inward at the centre, giving the concave tyre channel.
+// dips inward at the center, giving the concave tire channel.
 function addRim(m: Mesh, R: number, profile: number[][], maj: number, col: number[]) {
   let cdr = 0, cz = 0;
   for (const p of profile) { cdr += p[0]; cz += p[1]; }
@@ -173,7 +173,7 @@ function addRim(m: Mesh, R: number, profile: number[][], maj: number, col: numbe
   }
 }
 
-// A capped cylinder centred at z=zc along the Z axis. Used for flanges (thin,
+// A capped cylinder centered at z=zc along the Z axis. Used for flanges (thin,
 // wide) and the hub barrel (thick, narrow).
 function addCoin(m: Mesh, zc: number, rad: number, half: number, seg: number, col: number[]) {
   const zf = zc + half, zb = zc - half;
@@ -224,7 +224,7 @@ function addCapsule(m: Mesh, a: number[], b: number[], rad: number, seg: number,
     const cx = a[0] + dx * len * s, cy = a[1] + dy * len * s, cz = a[2] + dz * len * s;
     return { p: [cx + nx * rad, cy + ny * rad, cz + nz * rad], n: [nx, ny, nz] };
   };
-  // hemisphere point: latitude φ, longitude θ, around a cap centre / direction
+  // hemisphere point: latitude φ, longitude θ, around a cap center / direction
   const capV = (c: number[], sign: number, sf: number, cf: number, ct: number, st: number) => {
     const rx2 = ct * ux + st * vx, ry2 = ct * uy + st * vy, rz2 = ct * uz + st * vz;
     const nx = sf * rx2 + cf * sign * dx, ny = sf * ry2 + cf * sign * dy, nz = sf * rz2 + cf * sign * dz;
@@ -284,7 +284,7 @@ function addTube(m: Mesh, a: number[], b: number[], rad: number, seg: number, co
   }
 }
 
-// A flat disc closing one end of a tube: centre c, facing along unit dir d.
+// A flat disc closing one end of a tube: center c, facing along unit dir d.
 function addCap(m: Mesh, c: number[], d: number[], rad: number, seg: number, col: number[]) {
   let rx = 1, ry = 0, rz = 0;
   if (Math.abs(d[0]) > 0.9) { rx = 0; ry = 1; rz = 0; }
@@ -304,7 +304,7 @@ function addCap(m: Mesh, c: number[], d: number[], rad: number, seg: number, col
   }
 }
 
-// A thin disc (short capped cylinder along Z) centred at (cx, cy, cz), lying in
+// A thin disc (short capped cylinder along Z) centered at (cx, cy, cz), lying in
 // a plane parallel to the flange — the spoke's round button head.
 function addButton(m: Mesh, cx: number, cy: number, cz: number, r: number, half: number, seg: number, col: number[]) {
   const zf = cz + half, zb = cz - half;
@@ -552,7 +552,7 @@ export function Wheel3D(props: Wheel3DProps) {
     const rfR = (rightFlangeDiaMm / 2) * scale;
     const zL = -leftOffsetMm * scale;
     const zR = rightOffsetMm * scale;
-    // Axial offset of each rim hole toward the flange it serves. 0 = centred
+    // Axial offset of each rim hole toward the flange it serves. 0 = centered
     // (single-drilled); positive nudges each hole toward its own flange, negative
     // crosses it to the far side (drive spoke to the non-drive hole and vice versa,
     // as on a WH-7700). Signed, clamped to the rim's half-width either way.
@@ -565,13 +565,13 @@ export function Wheel3D(props: Wheel3DProps) {
     const bedR = 1; // spoke bed sits at ERD/2; the rim body extends outward
 
     // Rim cross-section [dr, z]: inner wall (spoke bed) at dr=0, sidewalls out to
-    // the shoulders, and a concave outer channel that dips inward at the centre.
+    // the shoulders, and a concave outer channel that dips inward at the center.
     const depth = 0.06, halfW = 0.045;
     const rimProfile = [
       [0, -halfW],           // inner wall (spoke bed), left
       [0, halfW],            // inner wall, right
       [depth, halfW],        // outer-right shoulder
-      [depth * 0.4, 0],      // concave tyre channel (dips inward)
+      [depth * 0.4, 0],      // concave tire channel (dips inward)
       [depth, -halfW],       // outer-left shoulder
     ];
 
@@ -627,12 +627,12 @@ export function Wheel3D(props: Wheel3DProps) {
     addCoin(mesh, zR, rfR + flEdge, flHalf, 48, METAL);
     addValve(mesh, -Math.PI / spokeCount, VALVE);
 
-    // Empty spoke holes drilled in the flanges and the rim (bed + tyre channel).
+    // Empty spoke holes drilled in the flanges and the rim (bed + tire channel).
     // Static, so they show through the lacing animation until a spoke/nipple
     // fills each one.
     const holeR = 0.008;
     const outerHoleR = 0.007;
-    // The tyre channel is a concave valley in z, so a flat outward-facing disc
+    // The tire channel is a concave valley in z, so a flat outward-facing disc
     // gets clipped by the rising walls unless it sits proud of the floor across
     // its whole width. Place it just past the floor at its outermost z edge.
     const zEdge = Math.min(Math.abs(stagger) + outerHoleR, halfW);
@@ -660,7 +660,7 @@ export function Wheel3D(props: Wheel3DProps) {
       const zRim = isDrive ? stagger : -stagger;
       // rim-bed hole: a dark disc on the inner wall, facing the hub
       addCap(mesh, [0.999 * ca, 0.999 * sa, zRim], [-ca, -sa, 0], holeR, SPOKE_SEG, HOLE);
-      // outer hole: a dark disc on the tyre-channel floor, facing outward
+      // outer hole: a dark disc on the tire-channel floor, facing outward
       addCap(mesh, [outerR * ca, outerR * sa, zRim], [ca, sa, 0], outerHoleR, SPOKE_SEG, HOLE);
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, s.mesh);
@@ -742,22 +742,22 @@ export function Wheel3D(props: Wheel3DProps) {
       const ca = Math.cos(rimA), sa = Math.sin(rimA);
       const bed = [ca, sa, zRim]; // spoke bed at radius 1 (ERD)
 
-      // Outboard is away from the wheel centre for this flange. The body leaves the
-      // flange centre and the elbow/head sit on one face for the J-bend look.
+      // Outboard is away from the wheel center for this flange. The body leaves the
+      // flange center and the elbow/head sit on one face for the J-bend look.
       const outSign = isDrive ? 1 : -1;
       const headZ = zF + (leading ? 1 : -1) * outSign * (flHalf + 0.003);
 
       // Straight body point at chord fraction t (0 = hub, 1 = rim), z on the
-      // undished line from the flange centre to the rim bed, plus a nudge dz.
+      // undished line from the flange center to the rim bed, plus a nudge dz.
       const at = (t: number, dz: number) => [
         lerp(hx, ca, t),
         lerp(hy, sa, t),
         lerp(zF, zRim, t) + dz,
       ];
-      // Leading dips inboard, trailing lifts outboard, radial stays centred. This
+      // Leading dips inboard, trailing lifts outboard, radial stays centered. This
       // hub offset is what keeps the trailing group sitting outside the leading.
       const s = lead === 1 ? -1 : lead === 0 ? 0 : 1;
-      const hubGap = 0.01; // half the axial separation at the flange (0 = centred)
+      const hubGap = 0.01; // half the axial separation at the flange (0 = centered)
       const flangeZ = zF + outSign * hubGap * s;
 
       // A crossing pair each bend once, near their shared outermost crossing: the

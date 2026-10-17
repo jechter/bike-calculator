@@ -20,7 +20,7 @@ describe("fixed drafting layouts", () => {
 
   it("fills the peloton row around You before starting another row", () => {
     const a = fixedFormationLayout("bunch", 3); // 4 riders: 1 + 2 + You
-    const b = fixedFormationLayout("bunch", 4); // Add a neighbour in the same row
+    const b = fixedFormationLayout("bunch", 4); // Add a neighbor in the same row
     const c = fixedFormationLayout("bunch", 5); // Fill that row of 3
     const d = fixedFormationLayout("bunch", 6); // Start the next row
     expect([a, b, c, d].map(l => l.riders.find(r => r.you)!.y)).toEqual([72, 72, 72, 108]);

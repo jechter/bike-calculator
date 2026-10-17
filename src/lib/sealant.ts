@@ -11,7 +11,7 @@ export interface SealantResult {
   highMl: number; // high end of the range
 }
 
-// Coefficient (ml per metre of wheel circumference · mm of tire width),
+// Coefficient (ml per meter of wheel circumference · mm of tire width),
 // calibrated so common setups land near published brand guidance:
 //   700×28C road  ≈ 45 ml
 //   700×40 gravel ≈ 65 ml

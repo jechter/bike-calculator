@@ -6,10 +6,87 @@ import { WheelBuilding } from "./WheelBuilding";
 afterEach(cleanup);
 
 describe("Wheel building page", () => {
+  it("puts Rim, Hub and Spokes guidance on fields instead of section headers", () => {
+    const { getByRole, getAllByRole, queryByText, getByText } = render(<WheelBuilding />);
+    for (const name of ["Rim", "Hub", "Spokes"]) {
+      const heading = getByRole("heading", { name });
+      expect(heading.closest(".section-head")?.querySelector(".infotip-btn")).toBeNull();
+    }
+    expect(queryByText(/diameter at the nipple seats/)).toBeNull();
+    fireEvent.click(getByRole("button", { name: "About: ERD (effective rim diameter)" }));
+    expect(getByText(/diameter at the nipple seats/)).toBeTruthy();
+    for (const name of ["Flange hole diameter", "Spoke count (total)"]) {
+      expect(getByRole("button", { name: `About: ${name}` })).toBeTruthy();
+    }
+    for (const name of ["Flange diameter", "Center-to-flange offset", "Lacing"]) {
+      expect(getAllByRole("button", { name: `About: ${name}` })).toHaveLength(2);
+    }
+  });
+
+  it("uses info popovers rather than under-field explanations", () => {
+    const { container, getByRole, queryByText, getByText } = render(<WheelBuilding />);
+    expect(container.querySelector(".wb-controls .field-hint")).toBeNull();
+    expect(queryByText(/each hole nudged/)).toBeNull();
+    fireEvent.click(getByRole("button", { name: "About: Spoke-hole offset (alternating drilling)" }));
+    expect(getByText(/each hole nudged/)).toBeTruthy();
+  });
+
+  it("keeps grouping warnings visible and explains hub layout", () => {
+    const { container, queryByRole, getByRole, getByText } = render(<WheelBuilding />);
+    fireEvent.click(getByRole("button", { name: "About: Hole grouping" }));
+    expect(getByText(/Controls how spoke holes are spaced/)).toBeTruthy();
+    expect(queryByRole("button", { name: "About: Spoke" })).toBeNull();
+    const grouping = Array.from(container.querySelectorAll("select")).find(s =>
+      Array.from(s.options).some(o => o.value === "pair"),
+    )!;
+    fireEvent.change(grouping, { target: { value: "3" } });
+    expect(getByText(/32 spokes isn't divisible by 3/).className).toBe("field-hint-warn");
+    fireEvent.click(getByRole("button", { name: "About: Hub layout" }));
+    expect(getByText(/Sets how the total spoke count is split/)).toBeTruthy();
+  });
+
+  it("only shows grouping controls when the setup supports them", () => {
+    const { container, queryByText } = render(<WheelBuilding />);
+    const selectWith = (value: string) => Array.from(container.querySelectorAll("select"))
+      .find(s => Array.from(s.options).some(o => o.value === value))!;
+    expect(queryByText("Group gap")).toBeNull();
+    expect(queryByText("Group crossing")).toBeNull();
+    const grouping = selectWith("pair");
+    fireEvent.change(grouping, { target: { value: "2" } });
+    expect(queryByText("Group gap")).toBeTruthy();
+    expect(queryByText("Group crossing")).toBeTruthy();
+    fireEvent.change(grouping, { target: { value: "pair" } });
+    expect(queryByText("Group gap")).toBeNull();
+    expect(queryByText("Group crossing")).toBeNull();
+    fireEvent.change(selectWith("2:1"), { target: { value: "2:1" } });
+    expect(queryByText("Group crossing")).toBeTruthy();
+  });
+
+  it("hides Interlacing for radial wheels but keeps it for mixed lacing", () => {
+    const { container, queryByText } = render(<WheelBuilding />);
+    const lacing = Array.from(container.querySelectorAll("select"))
+      .filter(s => Array.from(s.options).some(o => o.value === "radial"));
+    expect(queryByText("Interlacing")).toBeTruthy();
+    fireEvent.change(lacing[0], { target: { value: "radial" } });
+    expect(queryByText("Interlacing")).toBeNull(); // right mirrors left
+    fireEvent.change(lacing[1], { target: { value: "3x" } });
+    expect(queryByText("Interlacing")).toBeTruthy();
+    fireEvent.change(lacing[1], { target: { value: "radial" } });
+    expect(queryByText("Interlacing")).toBeNull();
+    expect(queryByText("Group crossing")).toBeNull();
+  });
+
   it("has separate Rim and Hub sections", () => {
     const { getByRole } = render(<WheelBuilding />);
     expect(getByRole("heading", { name: "Rim" })).toBeTruthy();
     expect(getByRole("heading", { name: "Hub" })).toBeTruthy();
+  });
+
+  it("briefly explains the tension converter's purpose", () => {
+    const { getByRole, getByText, queryByText } = render(<WheelBuilding />);
+    fireEvent.click(getByRole("button", { name: "About: Spoke tension converter" }));
+    expect(getByText("Use this to convert between numbers reported by a supported spoke tensiometer tool and target tension measurements.")).toBeTruthy();
+    expect(queryByText(/Reference curves generated/)).toBeNull();
   });
 
   it("plots the tension curve as a reading → tension graph", () => {
@@ -67,7 +144,8 @@ describe("Wheel building page", () => {
     fireEvent.click(getByText("Chris King R45D Centerlock Front"));
     expect(inputWithValue("28")).toBeTruthy();
     expect(inputWithValue("32")).toBeFalsy();
-    // a first-party source link appears, opening in a new tab
+    // The field info contains the first-party source link.
+    fireEvent.click(getByLabelText("About: Flange hole diameter"));
     const link = container.querySelector(".wb-hub-source a.inline-link") as HTMLAnchorElement;
     expect(link).toBeTruthy();
     expect(link.getAttribute("href")).toContain("chrisking");

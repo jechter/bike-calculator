@@ -36,7 +36,7 @@ const CATEGORY_OPTIONS = (() => {
   return groups;
 })();
 
-// Diagram legend colours — each measurement in the diagram has its own colour.
+// Diagram legend colors — each measurement in the diagram has its own color.
 const REACH_COLOR = "var(--diag-red)";
 const STACK_COLOR = "var(--diag-blue)";
 const SIZE_COLOR = "var(--diag-green)";
@@ -78,7 +78,7 @@ const EMPTY: Record<FieldKey, number> = {
 
 export function FrameSize() {
   // Every field starts empty (auto): the model seeds itself from a nominal rider
-  // and shows each value greyed as an "≈" estimate until you type over it.
+  // and shows each value grayed as an "≈" estimate until you type over it.
   const [vals, setVals] = useState<Record<FieldKey, number>>(EMPTY);
   const [categoryId, setCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
@@ -213,7 +213,7 @@ export function FrameSize() {
   // quoted number and the drawn saddle track a crank change.
   const effSaddleCm = saddleHeight(fit.inseamCm, effCrank);
 
-  // A NumberInput bound to a field: it shows the resolved value greyed as an
+  // A NumberInput bound to a field: it shows the resolved value grayed as an
   // estimate until you type, and steps from that estimate rather than the min.
   const input = (
     field: FieldKey,
@@ -376,20 +376,20 @@ export function FrameSize() {
 
                   <ul>
                     <li>
-                      <strong>C-C:</strong> bottom-bracket centre to the centre
+                      <strong>C-C:</strong> bottom-bracket center to the center
                       of the seat-tube / top-tube junction.
                     </li>
                     <li>
-                      <strong>C-T:</strong> bottom-bracket centre to the top of
+                      <strong>C-T:</strong> bottom-bracket center to the top of
                       the seat tube.
                     </li>
                   </ul>
                   Since the late 1990s, most frames use <i>sloping geometries</i>,
-                  where the top tube drops towards the seat tube. That makes the
+                  where the top tube drops toward the seat tube. That makes the
                   seat-tube length less meaningful, so some vendors quote instead:
                   <ul>
                     <li>
-                      <strong>Effective / virtual:</strong> bottom-bracket centre
+                      <strong>Effective / virtual:</strong> bottom-bracket center
                       to where the seat tube meets an imagined horizontal top tube.
                     </li>
                     <li>

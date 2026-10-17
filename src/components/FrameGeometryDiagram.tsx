@@ -34,16 +34,16 @@ const HA = (72 * Math.PI) / 180; // head-tube angle
 const COS = Math.cos(SA);
 const SIN = Math.sin(SA);
 
-const DEFAULT_WHEEL_R = 350; // ~700c with tyre, mm — used when no wheel is given
+const DEFAULT_WHEEL_R = 350; // ~700c with tire, mm — used when no wheel is given
 // The frame dimensions that depend on the wheel scale WITH the wheel radius, tuned
 // so a 700c wheel (R = 350) reproduces the original numbers. Without this a small
 // (kids') wheel gets a big-wheel fork and chainstay drawn around it — the fork
-// crown floats above the tyre, and the head tube can even invert when the stack
+// crown floats above the tire, and the head tube can even invert when the stack
 // falls below the fixed crown height.
 const WHEEL_R_REF = 350; // 700c reference radius
 const BB_DROP_RATIO = 0.2; // BB below the axle line, as a fraction of wheel R (70/350)
-const REAR_CLEARANCE = 80; // gap from the rear tyre back to the BB axis (chainstay = R + this)
-const SUSP_FORK_EXTRA = 80; // a suspension fork raises the crown this far above the tyre top
+const REAR_CLEARANCE = 80; // gap from the rear tire back to the BB axis (chainstay = R + this)
+const SUSP_FORK_EXTRA = 80; // a suspension fork raises the crown this far above the tire top
 const FORK_OFFSET_REF = 45; // fork rake at 700c
 const HEAD_STUB_MM = 14; // head tube + headset above the top-tube junction (~1 cm)
 const CRANK_ANGLE = (32 * Math.PI) / 180; // crank arm, forward of straight-down
@@ -86,9 +86,9 @@ export interface FrameGeometryDiagramProps {
   cockpit: CockpitSpec;
   /** Outer wheel radius (mm), so the wheels are drawn to the chosen size. */
   wheelRadiusMm?: number;
-  /** Wheel-size name (e.g. "700c", "29\"") labelled on the front wheel. */
+  /** Wheel-size name (e.g. "700c", "29\"") labeled on the front wheel. */
   wheelLabel?: string;
-  /** Which measurement to emphasise (hovered/edited in the UI), if any. */
+  /** Which measurement to emphasize (hovered/edited in the UI), if any. */
   highlight?: HighlightKey | null;
   /** Seated posture: 0 = arms fully straight, 1 = forearm parallel to the ground. */
   posture: number;
@@ -161,7 +161,7 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
   const headTop = { x: reachMm, y: stackMm };
   const stackCorner = { x: 0, y: stackMm };
 
-  // The rigid fork crown sits at the tyre top (BB drop + wheel R above the BB); a
+  // The rigid fork crown sits at the tire top (BB drop + wheel R above the BB); a
   // suspension fork raises it further, so the head tube can be short even with a
   // tall front end (mountain bikes). Both scale with the wheel, so a small wheel
   // gets a correspondingly short fork.
@@ -296,7 +296,7 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
 
   // --- rider figure (bike-space, y up) ---------------------------------------
   const H = bodyHeightMm;
-  const personX = rearAxle.x - WHEEL_R - PERSON_GAP; // centre, left of the bike
+  const personX = rearAxle.x - WHEEL_R - PERSON_GAP; // center, left of the bike
   const gY = groundY; // feet on the ground line
   const figScale = H / (CYCLIST_VIEW.bottom - CYCLIST_VIEW.top); // horizontal scale
   const figLeft = personX - CYCLIST_VIEW.cx * figScale;
@@ -566,7 +566,7 @@ export function FrameGeometryDiagram(props: FrameGeometryDiagramProps) {
 
       </>}
 
-      {/* wheels, drawn to the chosen wheel size; front one labelled */}
+      {/* wheels, drawn to the chosen wheel size; front one labeled */}
       <circle cx={s.rearAxle.x} cy={s.rearAxle.y} r={WHEEL_R} className={"fg-wheel" + hlClass("wheel")} />
       <circle cx={s.frontAxle.x} cy={s.frontAxle.y} r={WHEEL_R} className={"fg-wheel" + hlClass("wheel")} />
       {wheelLabel && (

@@ -604,7 +604,7 @@ export interface CassetteFit {
 // --- Shifter ----------------------------------------------------------------
 // The derailleur only moves sideways; the *shifter* is what indexes to each cog.
 // So an accurate compatibility verdict needs both. A shifter is an actuation
-// family plus a speed count. `Friction` is modelled as just another family — it
+// family plus a speed count. `Friction` is modeled as just another family — it
 // doesn't index, so it drives any mechanical derailleur at any cog count (and is
 // the native "family" of older friction-shifted derailleurs). The universally-
 // true rule: an indexed shifter and the rear derailleur must share an actuation

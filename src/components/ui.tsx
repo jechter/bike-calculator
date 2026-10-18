@@ -146,8 +146,17 @@ export function NumberInput(props: {
     return v;
   };
 
-  // Resettable fields retain their compact desktop steppers. All fields also
-  // have larger touch steppers, revealed only for a coarse primary pointer.
+  // Text inputs avoid the browser discarding a locale decimal comma before
+  // onChange runs. Keep an editing draft so "2," can become "2,5" (and
+  // "-" can become a negative number) without losing the separator mid-entry.
+  const [draft, setDraft] = useState(finite ? String(props.value) : "");
+  const parseDraft = (text: string) => text.trim() === "" ? NaN : Number(text.replace(",", "."));
+  useEffect(() => {
+    setDraft(current => Object.is(parseDraft(current), props.value)
+      ? current : Number.isFinite(props.value) ? String(props.value) : "");
+  }, [props.value]);
+
+  // All fields have compact desktop steppers and larger touch steppers.
   const custom = !!props.onClear;
   // Step from the current value, or from the estimate when the field is empty
   // (so a first press nudges the grayed default instead of jumping to the min).
@@ -196,11 +205,6 @@ export function NumberInput(props: {
   }, []);
   useEffect(() => { if (props.disabled) stopHold(); }, [props.disabled]);
 
-  // When the field only shows its estimate, a native step would jump to the min.
-  // Arrow keys are handled directly; a spinner press lands on the min, so we
-  // remap that to estimate ± step using which half (up/down) was pressed.
-  const spinUp = useRef(true);
-  const emptyStepLands = props.min ?? 0;
   const holdButton = (dir: number, glyph: string, touch = false) => (
     <button
       type="button"
@@ -231,52 +235,34 @@ export function NumberInput(props: {
       <span className="ni-field">
       <input
         id={inputId}
-        type="number"
+        type="text"
         inputMode="decimal"
+        role="spinbutton"
+        aria-valuenow={finite ? props.value : undefined}
+        aria-valuemin={props.min}
+        aria-valuemax={props.max}
         className={
-          [custom && "ni-custom", custom && finite && "ni-set"].filter(Boolean).join(" ") ||
+          ["ni-custom", custom && finite && "ni-set"].filter(Boolean).join(" ") ||
           undefined
         }
-        value={finite ? props.value : ""}
+        value={draft}
         placeholder={props.placeholder}
         disabled={props.disabled}
-        min={props.min}
-        max={props.max}
-        step={props.step ?? "any"}
-        onKeyDown={
-          custom
-            ? (e) => {
-                const d = e.key === "ArrowUp" ? 1 : e.key === "ArrowDown" ? -1 : 0;
-                if (d) {
-                  e.preventDefault();
-                  step(d);
-                }
-              }
-            : onEstimate
-              ? (e) => {
-                  const d = e.key === "ArrowUp" ? 1 : e.key === "ArrowDown" ? -1 : 0;
-                  if (d) {
-                    e.preventDefault();
-                    props.onChange(clampVal(est + d * stepBy));
-                  }
-                }
-              : undefined
-        }
-        onPointerDown={
-          !custom && onEstimate
-            ? (e) => {
-                const r = e.currentTarget.getBoundingClientRect();
-                spinUp.current = e.clientY < r.top + r.height / 2;
-              }
-            : undefined
-        }
-        onChange={(e) => {
-          const raw = parseFloat(e.target.value);
-          if (!custom && onEstimate && raw === emptyStepLands) {
-            props.onChange(clampVal(est + (spinUp.current ? 1 : -1) * stepBy));
-          } else {
-            props.onChange(raw);
+        onKeyDown={(e) => {
+          const d = e.key === "ArrowUp" ? 1 : e.key === "ArrowDown" ? -1 : 0;
+          if (d) {
+            e.preventDefault();
+            step(d);
           }
+        }}
+        onBlur={() => setDraft(finite ? String(props.value) : "")}
+        onChange={(e) => {
+          const text = e.target.value;
+          // A comma is a decimal separator, not a thousands separator.
+          // Reject malformed input rather than silently parsing just its prefix.
+          if (!/^[+-]?(?:\d*(?:[.,]\d*)?)(?:[eE][+-]?\d*)?$/.test(text)) return;
+          setDraft(text);
+          props.onChange(parseDraft(text));
         }}
       />
       {holdButton(-1, "−", true)}
@@ -294,12 +280,10 @@ export function NumberInput(props: {
       )}
       {holdButton(1, "+", true)}
       </span>
-      {custom && (
-        <span className="ni-stepper">
-          {holdButton(1, "▲")}
-          {holdButton(-1, "▼")}
-        </span>
-      )}
+      <span className="ni-stepper">
+        {holdButton(1, "▲")}
+        {holdButton(-1, "▼")}
+      </span>
       {props.suffix && <span className="suffix">{props.suffix}</span>}
     </span>
   );

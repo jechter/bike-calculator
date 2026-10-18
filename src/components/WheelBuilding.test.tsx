@@ -118,7 +118,7 @@ describe("Wheel building page", () => {
     fireEvent.click(getByLabelText("Browse the hub database"));
     // pick a front hub with 35 mm flanges (the default R45 Rear has 51 mm flanges)
     fireEvent.click(getByText("White Industries T11 Front"));
-    const flange = Array.from(container.querySelectorAll('input[type="number"]')).find(
+    const flange = Array.from(container.querySelectorAll('input[role="spinbutton"]')).find(
       (i) => (i as HTMLInputElement).value === "35",
     ) as HTMLInputElement;
     expect(flange).toBeTruthy();
@@ -132,7 +132,7 @@ describe("Wheel building page", () => {
   it("assigns the spoke count from the filter and links to the maker's source", () => {
     const { getByText, getByLabelText, container } = render(<WheelBuilding />);
     const inputWithValue = (v: string) =>
-      Array.from(container.querySelectorAll('input[type="number"]')).find(
+      Array.from(container.querySelectorAll('input[role="spinbutton"]')).find(
         (i) => (i as HTMLInputElement).value === v,
       ) as HTMLInputElement | undefined;
     // default spoke count is 32 (the only field at that value)
@@ -157,7 +157,7 @@ describe("Wheel building page", () => {
     const { getByTitle, getByText, container } = render(<WheelBuilding />);
     fireEvent.click(getByTitle(/Fill ERD from a common rim/));
     fireEvent.click(getByText(/26" MTB/));
-    const has538 = Array.from(container.querySelectorAll('input[type="number"]')).some(
+    const has538 = Array.from(container.querySelectorAll('input[role="spinbutton"]')).some(
       (i) => (i as HTMLInputElement).value === "538",
     );
     expect(has538).toBe(true);
@@ -175,7 +175,7 @@ describe("Wheel building page", () => {
   it("shows an error and hides the diagram for an infeasible lacing", () => {
     const { container, getByText } = render(<WheelBuilding />);
     // set spoke count to 10 (default lacing is 3-cross -> infeasible)
-    const count = Array.from(container.querySelectorAll('input[type="number"]')).find(
+    const count = Array.from(container.querySelectorAll('input[role="spinbutton"]')).find(
       (i) => (i as HTMLInputElement).value === "32",
     ) as HTMLInputElement;
     fireEvent.change(count, { target: { value: "10" } });
@@ -208,7 +208,7 @@ describe("Wheel building page", () => {
     const scrubber = () => container.querySelector(".wd-scrubber") as HTMLInputElement;
     fireEvent.change(scrubber(), { target: { value: "5" } });
     expect(scrubber().value).toBe("5");
-    const count = Array.from(container.querySelectorAll('input[type="number"]')).find(
+    const count = Array.from(container.querySelectorAll('input[role="spinbutton"]')).find(
       (i) => (i as HTMLInputElement).value === "32",
     ) as HTMLInputElement;
     fireEvent.change(count, { target: { value: "24" } });
@@ -221,7 +221,7 @@ describe("Wheel building page", () => {
     const { container } = render(<WheelBuilding />);
     const scrubber = () => container.querySelector(".wd-scrubber") as HTMLInputElement;
     expect(scrubber().max).toBe("32");
-    const count = Array.from(container.querySelectorAll('input[type="number"]')).find(
+    const count = Array.from(container.querySelectorAll('input[role="spinbutton"]')).find(
       (i) => (i as HTMLInputElement).value === "32",
     ) as HTMLInputElement;
     expect(count).toBeTruthy();

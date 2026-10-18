@@ -322,4 +322,6 @@ buttons and number stay on one line inside a shared outline, without separate
 button borders. Numeric editor fields use a full row on narrow phones when needed.
 Direct entry requests a decimal numeric keyboard (`inputmode="decimal"`); the
 exact keyboard, including availability of a minus key, depends on the device.
+Both decimal commas and decimal points are accepted; commas are converted to
+points when editing finishes, and calculations always receive numeric values.
 Desktop numerical controls retain their compact appearance.

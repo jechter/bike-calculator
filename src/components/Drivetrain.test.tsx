@@ -726,7 +726,7 @@ describe("Drivetrain page", () => {
   it("drops the tire-size param after a manual circumference edit", () => {
     const { getByText } = render(<Drivetrain />);
     const field = getByText("Rolling circumference (mm)").closest(".field") as HTMLElement;
-    const circInput = field.querySelector('input[type="number"]') as HTMLInputElement;
+    const circInput = field.querySelector('input[role="spinbutton"]') as HTMLInputElement;
     fireEvent.change(circInput, { target: { value: "2200" } });
     const link = field.querySelector("a.inline-link") as HTMLAnchorElement;
     expect(link.getAttribute("href")).toBe("/tire-pressure-calculator/");
@@ -736,7 +736,7 @@ describe("Drivetrain page", () => {
   it("fills the rolling circumference from a typed tire size in the picker", () => {
     const { getByText, getByPlaceholderText } = render(<Drivetrain />);
     const field = getByText("Rolling circumference (mm)").closest(".field") as HTMLElement;
-    const circInput = field.querySelector('input[type="number"]') as HTMLInputElement;
+    const circInput = field.querySelector('input[role="spinbutton"]') as HTMLInputElement;
     expect(circInput.value).toBe("2111"); // default
 
     fireEvent.click(within(field).getByText(/Tire size/));
@@ -754,7 +754,7 @@ describe("Drivetrain page", () => {
   it("applies a suggested tire size directly from the picker", () => {
     const { getByText } = render(<Drivetrain />);
     const field = getByText("Rolling circumference (mm)").closest(".field") as HTMLElement;
-    const circInput = field.querySelector('input[type="number"]') as HTMLInputElement;
+    const circInput = field.querySelector('input[role="spinbutton"]') as HTMLInputElement;
 
     fireEvent.click(within(field).getByText(/Tire size/));
     // "26x2.1" is in the default broad spread: pi * (559 + 2*53.34) = 2091 mm.

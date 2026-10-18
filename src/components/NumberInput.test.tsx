@@ -21,6 +21,56 @@ describe("NumberInput touch controls", () => {
     expect(input.value).toBe("2.5");
   });
 
+  it.each(["2,5", "2.5", ",5", "-2,5"])("accepts %s and emits a numeric value", text => {
+    const onChange = vi.fn();
+    const { getByRole } = render(<NumberInput value={1} onChange={onChange} />);
+    fireEvent.change(getByRole("spinbutton"), { target: { value: text } });
+    expect(onChange).toHaveBeenLastCalledWith(Number(text.replace(",", ".")));
+  });
+
+  it.each([",", "."])("keeps a trailing %s while typing, then normalizes on blur", separator => {
+    const { getByRole } = render(<Editable initial={2} />);
+    const input = getByRole("spinbutton") as HTMLInputElement;
+    fireEvent.change(input, { target: { value: `2${separator}` } });
+    expect(input.value).toBe(`2${separator}`);
+    fireEvent.change(input, { target: { value: `2${separator}5` } });
+    expect(input.value).toBe(`2${separator}5`);
+    expect(input.getAttribute("aria-valuenow")).toBe("2.5");
+    fireEvent.blur(input);
+    expect(input.value).toBe("2.5");
+  });
+
+  it("supports clearing, negative entry, and arrow stepping after a comma", () => {
+    const { getByRole } = render(<Editable step={0.1} />);
+    const input = getByRole("spinbutton") as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "" } });
+    expect(input.value).toBe("");
+    fireEvent.change(input, { target: { value: "-" } });
+    expect(input.value).toBe("-");
+    fireEvent.change(input, { target: { value: "-0,5" } });
+    fireEvent.keyDown(input, { key: "ArrowUp" });
+    expect(input.value).toBe("-0.4");
+    fireEvent.click(getByRole("button", { name: "Increase value" }));
+    expect(input.value).toBe("-0.3");
+  });
+
+  it.each(["1,2.3", "1,,2", "2kg"])("rejects malformed input %s", text => {
+    const onChange = vi.fn();
+    const { getByRole } = render(<NumberInput value={1} onChange={onChange} />);
+    fireEvent.change(getByRole("spinbutton"), { target: { value: text } });
+    expect(onChange).not.toHaveBeenCalled();
+    expect((getByRole("spinbutton") as HTMLInputElement).value).toBe("1");
+  });
+
+  it("updates the draft when a preset or reset changes the supplied value", () => {
+    const onChange = vi.fn();
+    const { getByRole, rerender } = render(<NumberInput value={1} onChange={onChange} />);
+    rerender(<NumberInput value={2.5} onChange={onChange} />);
+    expect((getByRole("spinbutton") as HTMLInputElement).value).toBe("2.5");
+    rerender(<NumberInput value={NaN} onChange={onChange} />);
+    expect((getByRole("spinbutton") as HTMLInputElement).value).toBe("");
+  });
+
   it("steps once per pointer tap without double-counting its click", () => {
     const { getByRole } = render(<Editable initial={0.2} step={0.1} />);
     const plus = getByRole("button", { name: "Increase value" });

@@ -344,10 +344,11 @@ select {
 input.ni-custom {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
-  padding-right: 30px;
+  padding-right: 10px;
   -moz-appearance: textfield;
   appearance: textfield;
 }
+input.ni-custom.ni-set { padding-right: 30px; }
 input.ni-custom::-webkit-outer-spin-button,
 input.ni-custom::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 /* Hand-entered values are bold, to stand out from the grayed estimates. */
@@ -1231,7 +1232,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
    which would otherwise swallow the flex:1 slider). */
 .dt-chainstay { display: flex; align-items: center; gap: 10px; }
 .dt-chainstay input[type="range"] { flex: 1; min-width: 80px; accent-color: var(--accent); }
-.dt-chainstay input[type="number"] { flex: 0 0 auto; width: 72px; }
+.dt-chainstay input[role="spinbutton"] { flex: 0 0 auto; width: 72px; }
 /* Space the available-belt list off the summary results above it. */
 .dt-belt-table { margin-top: 14px; }
 /* A titled block within a section (e.g. the chain-wear table under Chain). */

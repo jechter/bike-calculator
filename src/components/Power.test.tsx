@@ -8,7 +8,7 @@ afterEach(cleanup);
 // input order: [speed, power, wkg, rider, bike, gradient, headwind, cda, rho, crr,
 //               drivetrain-efficiency, duration, distance, gross-efficiency]
 const nums = (c: HTMLElement) =>
-  Array.from(c.querySelectorAll('input[type="number"]')) as HTMLInputElement[];
+  Array.from(c.querySelectorAll('input[role="spinbutton"]')) as HTMLInputElement[];
 
 describe("Cycling power", () => {
   it("shows Rider & conditions without a section info button", () => {
@@ -152,7 +152,7 @@ describe("Cycling power", () => {
     // Switching preserves the initial zero other riders (still alone).
     expect(+nums(container)[7].value).toBe(solo);
     const count = () =>
-      Array.from(container.querySelectorAll('.editor-pop input[type="number"]')).pop()!;
+      Array.from(container.querySelectorAll('.editor-pop input[role="spinbutton"]')).pop()!;
     fireEvent.change(count(), { target: { value: "7" } });
     const group8 = +nums(container)[7].value;
     expect(group8).toBeLessThan(solo);
@@ -209,7 +209,7 @@ describe("Cycling power", () => {
     expect(rho0).toBeCloseTo(1.225, 2); // seeded: 15 °C, sea level
     fireEvent.click(getByTitle("Set air density from temperature & altitude"));
     // Panel number inputs are [temperature, altitude].
-    const panelNums = container.querySelectorAll('.editor-pop input[type="number"]');
+    const panelNums = container.querySelectorAll('.editor-pop input[role="spinbutton"]');
     fireEvent.change(panelNums[1] as HTMLInputElement, { target: { value: "2000" } });
     expect(+nums(container)[8].value).toBeLessThan(rho0); // thinner air up high
   });

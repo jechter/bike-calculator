@@ -10,7 +10,7 @@ const fieldInput = (container: HTMLElement, labelText: string) => {
   const field = Array.from(container.querySelectorAll(".field")).find((f) =>
     f.querySelector(".field-label")?.textContent?.includes(labelText),
   );
-  return field?.querySelector("input[type=number]") as HTMLInputElement;
+  return field?.querySelector("input[role=spinbutton]") as HTMLInputElement;
 };
 
 // The category picker is the <select> that offers a mountain-bike option.

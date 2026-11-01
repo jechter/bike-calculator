@@ -3,6 +3,14 @@ import { isEmbedded, notifyConfigChanged } from "./embed";
 import routes from "./routes.json";
 
 const NAVIGATION = "bikecalc:navigate";
+const routeSlugs = (route: (typeof routes)[number]) => [route.slug, ...route.legacySlugs];
+const matchPath = (path: string) => {
+  for (const route of routes) {
+    const slug = routeSlugs(route).find(candidate => path.endsWith(`/${candidate}/`) || path.endsWith(`/${candidate}`));
+    if (slug) return { route, slug };
+  }
+  return null;
+};
 const legacyRoute = () => {
   const match = window.location.hash.match(/^#\/?([^?]+)(?:\?(.*))?$/);
   return match && routes.some(r => r.id === match[1]) ? match : null;
@@ -11,8 +19,8 @@ const legacyRoute = () => {
 /** Infer the installation directory, including when opened on a nested page. */
 export function getBasePath(): string {
   const path = window.location.pathname.replace(/index\.html$/, "");
-  const page = routes.find(r => path.endsWith(`/${r.slug}/`) || path.endsWith(`/${r.slug}`));
-  if (page) return path.slice(0, path.lastIndexOf(`/${page.slug}`) + 1);
+  const match = matchPath(path);
+  if (match) return path.slice(0, path.lastIndexOf(`/${match.slug}`) + 1);
   return path.endsWith("/") ? path : path + "/";
 }
 
@@ -26,7 +34,7 @@ function currentRoute(): string {
   const legacy = legacyRoute();
   if (legacy) return legacy[1];
   const path = window.location.pathname.replace(/\/index\.html$/, "/").replace(/\/$/, "");
-  return routes.find(r => path.endsWith(`/${r.slug}`))?.id ?? routes[0].id;
+  return matchPath(path)?.route.id ?? routes[0].id;
 }
 
 /** Retain the old function names for calculator consumers and legacy links. */

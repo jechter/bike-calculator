@@ -21,6 +21,12 @@ it("migrates legacy links and their encoded settings without adding history", ()
   expect(history.length).toBe(length);
 });
 
+it("normalizes legacy directory URLs to their canonical slug", () => {
+  history.replaceState(null, "", "/bikeworkshopcalc/bicycle-component-compatibility/");
+  normalizeRoute();
+  expect(location.pathname).toBe("/bikeworkshopcalc/bicycle-component-database/");
+});
+
 it("routes navigation and popstate, including a same-page example", () => {
   const { result } = renderHook(() => ({ route: useHashRoute("drivetrain")[0], key: useHashConfigKey() }));
   act(() => navigateTo("wheel-building", { hub: "A~B" }));
@@ -62,7 +68,7 @@ it("sets distinct metadata and excludes settings from canonical URLs", () => {
 });
 
 it("follows configured links within the app without a document navigation", () => {
-  history.replaceState(null, "", "/bikeworkshopcalc/bicycle-component-compatibility/");
+  history.replaceState(null, "", "/bikeworkshopcalc/bicycle-component-database/");
   const { result } = renderHook(() => ({ route: useHashRoute("drivetrain")[0], key: useHashConfigKey() }));
   const link = document.createElement("a");
   link.href = routeHref("drivetrain") + "?cassette=Shimano%20CS-HG50&cr=50%2C34";

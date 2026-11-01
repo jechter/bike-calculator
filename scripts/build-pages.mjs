@@ -16,6 +16,10 @@ function pageHtml(page, nested) {
 for (const page of routes) {
   await mkdir(`dist/${page.slug}`, { recursive: true });
   await writeFile(`dist/${page.slug}/index.html`, pageHtml(page, true));
+  for (const legacySlug of page.legacySlugs) {
+    await mkdir(`dist/${legacySlug}`, { recursive: true });
+    await writeFile(`dist/${legacySlug}/index.html`, pageHtml(page, true));
+  }
 }
 await writeFile('dist/index.html', pageHtml(routes[0], false));
 await writeFile('dist/sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${routes.map(r => `  <url><loc>${origin}${r.slug}/</loc></url>`).join('\n')}\n</urlset>\n`);

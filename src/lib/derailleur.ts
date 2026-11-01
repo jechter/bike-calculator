@@ -1,5 +1,5 @@
 // Derailleur compatibility: capacity check plus a reference chart of systems.
-// See docs/calculators/derailleur-compatibility.md.
+// See docs/calculators/components.md.
 //
 // The derailleur database itself lives in data/derailleurs.json so entries can be
 // added or edited without touching code — see src/data/README.md.

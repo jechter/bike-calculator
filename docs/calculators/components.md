@@ -1,7 +1,35 @@
-# Derailleur
+# Components
 
-Two things: a **searchable derailleur database** (look up the specs of a given
-derailleur) and a **compatibility reference** chart of actuation families.
+The Components page is a searchable database of parts used by the other
+calculators:
+
+- Rear derailleurs, including cage, capacity, sprocket, actuation, pull-ratio,
+  and model-year data.
+- Wheel hubs, including type, spacing, spoke counts, flange geometry, and spoke
+  hole diameter.
+- Internal gear hubs and bottom-bracket gearboxes, including gear ratios and
+  whether they can be combined with a derailleur drivetrain.
+- Cassettes, including sprockets, speed count, freehub body, spacing standard,
+  special drivetrain family, and weight.
+
+Users can search across all categories or filter by component type and brand.
+Additional filters adapt to the selected category. Selecting a row shows its
+full specifications, source, and a link to configure it in the relevant
+calculator.
+
+The page also allows users to propose a new component or changes to an existing
+entry. A proposal opens an email draft for review; it does not alter the live
+database directly.
+
+The underlying JSON files and their field definitions are documented in
+[`src/data/README.md`](../../src/data/README.md). Reference values are
+approximate and sourced; verify critical measurements against the manufacturer
+or the physical component.
+
+## Derailleurs and compatibility
+
+The derailleur data supports both the searchable component database and
+compatibility checks based on actuation families.
 
 The **capacity / max-sprocket fit check** lives in the
 [drivetrain calculator](drivetrain.md) instead — that's where you have a
@@ -9,11 +37,10 @@ cassette and crankset to check against. There you can pick a derailleur from the
 database and it tells you whether your largest cog and total capacity are within
 its limits.
 
-> **All the spec data is approximate / sourced** (and actuation ratios are
-> marketing-obscured). Each row cites a source; verify against the manufacturer
-> before relying on it. The database is extendable — add rows to the JSON.
+Actuation ratios are often disputed or obscured by marketing. Each row cites a
+source; verify against the manufacturer before relying on it.
 
-## Part 1 — Derailleur database
+### Derailleur database
 
 A searchable, filterable table of ~550 rear derailleurs. Search by brand /
 model / series / discipline / speeds, and narrow with the **brand / type /
@@ -43,7 +70,7 @@ or shifter-specific pull (Microshift Advent/Advent X/Sword, Box Prime 9, TRP,
 Ingrid, closed wireless systems like WheelTop/L-TWOO eRX) — and genuinely
 ambiguous cases — are left "unknown" rather than guessed.
 
-## Part 2 — Compatibility reference
+### Compatibility reference
 
 A browsable table of rear derailleur (and shifter) families with:
 

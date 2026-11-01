@@ -35,7 +35,7 @@ worn chain.
 - **For chain length**: chainstay length (mm) OR the "big-big" measurement,
   plus largest chainring and largest cog.
 - **Rear derailleur** (cassette mode, optional): pick one from the
-  [derailleur database](derailleur-compatibility.md); the tool checks that your
+  [component database](components.md); the tool checks that your
   largest cog ≤ its max sprocket and required capacity ≤ its rated capacity, and
   shows its actuation/pull ratio. Both checks are **tri-state** — OK / caution /
   over — since a little past spec usually still works: up to **+4T** over is a

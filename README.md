@@ -3,24 +3,29 @@
 I am volunteering in a community bike workshop. We repair donated bikes for refugees, and teach people how to fix bikes. Working on bikes often involves small calculations, for which there are many many great web calculators out there. So, why build another one?
 
 - I never remember which one I liked best for which task, so I figured I would like to have a collection of different useful calculators all in one place.
-- I wanted to build something which is very visual to let us use this as a tool to teach people how bike components work. So, the drivetrain calculator will actually show an animation of what the drivetrain would look like, and how shifting between the different gears works. The wheel building calculator can show a 3d visualization of the wheel with an animation of which order to put in the spokes when lacing the wheels.
+- I wanted to build something which is very visual to let us use this as a tool to teach people how bikes and bike components work. For instance:
+  - The drivetrain calculator shows an animation of what the drivetrain would look like and how shifting between the different gears works.
+  - The wheel building calculator shows a 3D visualization of the wheel with an animation of the order in which to insert the spokes when lacing the wheel.
+  - The frame size calculator shows how a person with the specified body dimensions would sit on a frame with the specified dimensions.
 - In our bike workshop, we often have old donated bikes with a very random mix of components - or you may try to find replacements from a box of used parts - and you don't know if components are actually compatible. So one goal of this calculator is to help you answer such questions. The drivetrain calculator lets you specify components (derailleurs, shifters and cassettes) and will validate them against known specs for the parts (gear counts, derailleur pull ratio, max cog size, capacity), to give you a judgement if they are expected to work together or not.
 
 You can try the calculator live on the [Rückenwind web site](https://rueckenwind.berlin/bikeworkshopcalc/).
 
 ![Drivetrain visualization](docs/images/drivetrain.png)
 ![Wheelbuilding visualization](docs/images/wheelbuilding.png)
+![Frame size visualization](docs/images/framesize.png)
 
 ## Calculators
 
 | # | Calculator | What it answers | Spec |
 |---|-----------|-----------------|------|
-| 1 | Drivetrain | Gear ratios, speed at cadence, gear inches/development (cassette, single speed, or geared hub), chain length, chain wear | [drivetrain.md](docs/calculators/drivetrain.md) |
-| 2 | Wheel building | Spoke lengths for a given hub + rim + lacing, plus spoke tension converter | [wheel-building.md](docs/calculators/wheel-building.md) |
-| 3 | Frame size | Frame size / saddle height / crank length from inseam or body height | [frame-size.md](docs/calculators/frame-size.md) |
-| 4 | Tire | Convert tire size formats; recommend pressure | [tire.md](docs/calculators/tire.md) |
-| 5 | Cycling power | Watts needed for a speed/gradient, speed from watts, and work / food energy over a ride | [power.md](docs/calculators/power.md) |
-| 6 | Thread direction | Reference: which parts are left-hand threaded, and which way to turn to loosen/tighten | [thread-direction.md](docs/calculators/thread-direction.md) |
+| 1 | [Drivetrain](https://rueckenwind.berlin/bikeworkshopcalc/gear-ratio-chain-length-calculator/) | Gear ratios, speed at cadence, gear inches/development (cassette, single speed, or geared hub), chain length, chain wear | [drivetrain.md](docs/calculators/drivetrain.md) |
+| 2 | [Wheel building](https://rueckenwind.berlin/bikeworkshopcalc/spoke-length-calculator/) | Spoke lengths for a given hub + rim + lacing, plus spoke tension converter | [wheel-building.md](docs/calculators/wheel-building.md) |
+| 3 | [Frame size](https://rueckenwind.berlin/bikeworkshopcalc/bike-frame-size-calculator/) | Frame size / saddle height / crank length from inseam or body height | [frame-size.md](docs/calculators/frame-size.md) |
+| 4 | [Tire](https://rueckenwind.berlin/bikeworkshopcalc/tire-pressure-calculator/) | Convert tire size formats; recommend pressure | [tire.md](docs/calculators/tire.md) |
+| 5 | [Components](https://rueckenwind.berlin/bikeworkshopcalc/bicycle-component-compatibility/) | Look up specifications for derailleurs, wheel hubs, internal gear hubs, gearboxes, and cassettes used by the other calculators | [components.md](docs/calculators/components.md) |
+| 6 | [Cycling power](https://rueckenwind.berlin/bikeworkshopcalc/cycling-power-calculator/) | Watts needed for a speed/gradient, speed from watts, and work / food energy over a ride | [power.md](docs/calculators/power.md) |
+| 7 | [Thread direction](https://rueckenwind.berlin/bikeworkshopcalc/bicycle-thread-direction/) | Reference: which parts are left-hand threaded, and which way to turn to loosen/tighten | [thread-direction.md](docs/calculators/thread-direction.md) |
 
 ## Documentation
 

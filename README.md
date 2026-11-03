@@ -27,6 +27,14 @@ You can try the calculator live on the [Rückenwind web site](https://rueckenwin
 | 6 | [Cycling power](https://rueckenwind.berlin/bikeworkshopcalc/cycling-power-calculator/) | Watts needed for a speed/gradient, speed from watts, and work / food energy over a ride | [power.md](docs/calculators/power.md) |
 | 7 | [Thread direction](https://rueckenwind.berlin/bikeworkshopcalc/bicycle-thread-direction/) | Reference: which parts are left-hand threaded, and which way to turn to loosen/tighten | [thread-direction.md](docs/calculators/thread-direction.md) |
 
+## Maintenance log
+
+The **Maintenance Log** page connects to Strava for sign-in and bike mileage,
+with private service records stored in Supabase. No separate user login is needed.
+It includes an account-free demo; live connections require external setup.
+See [setup and security notes](docs/maintenance-setup.md) for the database migration,
+Edge Function secrets, Strava app configuration, and verification checklist.
+
 ## Documentation
 
 - [`docs/architecture.md`](docs/architecture.md) — page layout, navigation, and
@@ -80,7 +88,8 @@ the files directly.
 
 ## Tech
 
-- **Vite + React + TypeScript**, all math client-side (no backend).
+- **Vite + React + TypeScript**, all calculator math client-side. The optional
+  maintenance log uses a Supabase database and Edge Function.
 - Pure calculation modules live in [`src/lib/`](src/lib/) and are unit-tested
   against the worked examples in the calculator specs (`npm test`).
 - UI components (one per calculator) live in [`src/components/`](src/components/);

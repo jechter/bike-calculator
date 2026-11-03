@@ -1,6 +1,6 @@
 # Bike Workshop Calculator
 
-I am volunteering in a community bike workshop. We repair donated bikes for refugees, and teach people how to fix bikes. Working on bikes often involves small calculations, for which there are many many great web calculators out there. So, why build another one?
+I am volunteering in a community bike workshop. We repair donated bikes for refugees, and teach people how to fix bikes. Working on bikes often involves small calculations, for which there are many great web calculators out there. So, why build another one?
 
 - I never remember which one I liked best for which task, so I figured I would like to have a collection of different useful calculators all in one place.
 - I wanted to build something which is very visual to let us use this as a tool to teach people how bikes and bike components work. For instance:

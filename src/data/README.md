@@ -158,3 +158,19 @@ or tensiometer, add more entries following the same shape.
 Only the numeric conversion values (facts) are reproduced here, re-keyed into our
 own structure — not Park Tool's chart artwork. "Park Tool" and "TM-1" are their
 trademarks, used only to identify the tool the data describes.
+
+## Maintenance component catalog
+
+[`maintenance-components.json`](maintenance-components.json) is the source of
+truth for maintenance component suggestions, their service suggestions, and icon
+IDs. Each entry in `types` contains a unique `id`, a `names` list (for example,
+front and rear variants), an `icon`, and a `services` list. The form matches names
+case-insensitively and updates service suggestions as the component changes.
+These are suggestions, not restrictions: custom names and free-text services
+remain supported. `custom` supplies the fallback icon and generic services.
+
+Icon IDs map to local SVG components in
+[`MaintenanceComponentIcon.tsx`](../components/MaintenanceComponentIcon.tsx).
+If adding a new icon ID, add its SVG mapping there too. Catalogue tests check
+names, service strings, and icon mappings. Existing records keep their stored
+names/tasks; editing this file does not rewrite maintenance history.

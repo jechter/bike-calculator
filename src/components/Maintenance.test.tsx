@@ -252,3 +252,47 @@ it('clears the component filter when folding or switching bikes and restores who
   fireEvent.click(bikeButton());
   expect(log().getAllByRole('article')).toHaveLength(3);
 });
+
+it('uses labeled, tooltip-equipped icons for each maintenance action', async () => {
+  await demo();
+  for (const action of ['Repeat', 'Edit', 'Delete']) {
+    const button = screen.getByRole('button', { name: `${action} Replaced chain` });
+    expect(button.getAttribute('title')).toBe(action);
+    expect(button.textContent).toBe('');
+    expect(button.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+  }
+});
+
+it('suggests services for the current component without overwriting a typed task', async () => {
+  await demo();
+  fireEvent.click(screen.getByText('+ Log maintenance'));
+  const suggestions = () => [...document.querySelectorAll('#maintenance-tasks option')].map(option => option.textContent);
+  expect(suggestions()).toContain('Lubricated chain');
+  expect(suggestions()).not.toContain('Refreshed tubeless sealant');
+  fireEvent.change(screen.getByLabelText('Task'), { target: { value: 'Custom work details' } });
+  fireEvent.change(screen.getByLabelText('Component'), { target: { value: ' rear tire ' } });
+  expect(suggestions()).toContain('Refreshed tubeless sealant');
+  expect(suggestions()).not.toContain('Lubricated chain');
+  expect((screen.getByLabelText('Task') as HTMLInputElement).value).toBe('Custom work details');
+  fireEvent.change(screen.getByLabelText('Component'), { target: { value: 'Rear brake pads' } });
+  expect(suggestions()).toContain('Aligned brake pads');
+  expect(suggestions()).not.toContain('Refreshed tubeless sealant');
+  fireEvent.change(screen.getByLabelText('Component'), { target: { value: 'Custom part' } });
+  expect(suggestions()).toEqual(['Inspected component', 'Cleaned component']);
+  fireEvent.change(screen.getByLabelText('Work type'), { target: { value: 'replacement' } });
+  expect(screen.queryByLabelText('Task')).toBeNull();
+});
+it('shows decorative bike and component icons, including a fallback for custom names', async () => {
+  await demo();
+  expect(bikeButton().querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+  const chain = componentButton('Chain');
+  expect(chain.querySelector('[data-component-icon="chain"] svg')).toBeTruthy();
+  fireEvent.click(screen.getByText('+ Log maintenance'));
+  fireEvent.change(screen.getByLabelText('Component'), { target: { value: 'Custom part' } });
+  fireEvent.change(screen.getByLabelText('Work type'), { target: { value: 'replacement' } });
+  fireEvent.click(screen.getByText('Save maintenance'));
+  await waitFor(() => expect(log().getByRole('heading', { name: 'Replaced custom part' })).toBeTruthy());
+  const custom = screen.getByRole('button', { name: /^Custom part. Since replacement/ });
+  expect(custom.querySelector('[data-component-icon="component"] svg')).toBeTruthy();
+  expect(log().getAllByRole('article')[0].querySelector('[data-component-icon="component"]')).toBeTruthy();
+});

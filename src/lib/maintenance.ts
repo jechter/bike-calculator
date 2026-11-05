@@ -1,5 +1,12 @@
+import componentCatalog from '../data/maintenance-components.json';
+
 export type MaintenanceKind = 'replacement' | 'service';
-export const bikeComponents = ['Chain', 'Cassette', 'Chainrings', 'Front brake pads', 'Rear brake pads', 'Front tire', 'Rear tire', 'Bottom bracket', 'Headset', 'Front hub', 'Rear hub', 'Fork', 'Rear shock'];
+export const bikeComponents = componentCatalog.types.flatMap(type => type.names);
+export function getComponentType(name: string) {
+  return componentCatalog.types.find(type => type.names.some(candidate => candidate.toLowerCase() === name.trim().toLowerCase())) ?? componentCatalog.custom;
+}
+export function suggestedServices(name: string) { return getComponentType(name).services; }
+
 export interface MaintenanceEntry { component: string; kind: MaintenanceKind; id: string; bike_id: string; task: string; notes: string; performed_on: string; odometer_km: number }
 export interface MaintenanceBike { id: string; name: string; distance: number }
 export interface MaintenanceData { name: string; synced_at: string; bikes: MaintenanceBike[]; entries: MaintenanceEntry[] }

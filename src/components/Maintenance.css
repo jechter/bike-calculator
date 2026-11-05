@@ -116,3 +116,11 @@
   .maintenance-log .maintenance-entry-meta { flex-direction: row; justify-content: space-between; align-items: center; text-align: left; flex-wrap: wrap; }
   .maintenance-log .maintenance-form-row { grid-template-columns: minmax(0, 1fr); gap: 0; }
 }
+.maintenance-entry-actions button { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 7px; flex-shrink: 0; }
+.maintenance-entry-actions .maintenance-delete:hover:not(:disabled) { color: var(--danger); border-color: var(--danger); }
+@media (pointer: coarse) { .maintenance-entry-actions button { width: 44px; height: 44px; } }
+.maintenance-item-label { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.maintenance-item-label > svg, .maintenance-type-icon { flex-shrink: 0; }
+.maintenance-type-icon { display: inline-flex; align-items: center; }
+.maintenance-item-label > span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.maintenance-entry-context { display: flex; align-items: center; gap: 8px; }

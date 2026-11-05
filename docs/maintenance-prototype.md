@@ -46,6 +46,10 @@ component again returns to the open bike's full log. Switching bikes also clears
 the component filter. There are no separate reset buttons. Initially all bikes
 are folded and all records are shown, newest first. Each log item identifies its
 bike and component.
+Component suggestions, relevant service suggestions, and icon IDs come from
+`src/data/maintenance-components.json`. The form updates service suggestions as
+the component changes without overwriting typed task text. Custom components
+use a generic icon and generic suggestions; free-text tasks remain supported.
 Only components with records appear. Missing service counters stay hidden.
 The latest service task is shown below its distance counter. On wide screens,
 the bike/component tree and maintenance log sit side by side; narrow screens

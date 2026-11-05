@@ -137,3 +137,101 @@ export const ThreadIcon = () => (
     <path d="M21 3v5h-5" />
   </svg>
 );
+
+// Maintenance entry actions — repeat, pencil, and trash can.
+export const RepeatIcon = () => (
+  <svg {...SVG_PROPS}>
+    <path d="M20 7H7a4 4 0 0 0-4 4M16 3l4 4-4 4M4 17h13a4 4 0 0 0 4-4M8 13l-4 4 4 4" />
+  </svg>
+);
+
+export const EditIcon = () => (
+  <svg {...SVG_PROPS}>
+    <path d="m15 5 4 4M4 20l5-1L20 8a2.8 2.8 0 0 0-4-4L5 15l-1 5Z" />
+  </svg>
+);
+
+export const DeleteIcon = () => (
+  <svg {...SVG_PROPS}>
+    <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" />
+  </svg>
+);
+
+export const BikeIcon = () => (
+  <svg {...SVG_PROPS}>
+    <circle cx="5" cy="16" r="4" /><circle cx="19" cy="16" r="4" />
+    <path d="m5 16 5-9 5 9H5l4-7h7M7 6h5M19 16 15 4h3" />
+  </svg>
+);
+
+export const ChainIcon = () => (
+  <svg {...SVG_PROPS}>
+    <path d="m9 14-2 2a3.5 3.5 0 0 1-5-5l4-4a3.5 3.5 0 0 1 5 0M15 10l2-2a3.5 3.5 0 0 1 5 5l-4 4a3.5 3.5 0 0 1-5 0M8 12l8 0" />
+  </svg>
+);
+
+export const CassetteIcon = () => (
+  <svg {...SVG_PROPS}>
+    <path d="M5 5v14M9 6v12M13 8v8M17 9v6M21 11v2M3 12h20" />
+  </svg>
+);
+
+export const BrakePadsIcon = () => (
+  <svg {...SVG_PROPS}>
+    <rect x="3" y="7" width="7" height="13" rx="2" /><rect x="14" y="7" width="7" height="13" rx="2" />
+    <path d="M5 7V4h3v3M16 7V4h3v3M7 11v5M17 11v5" />
+  </svg>
+);
+
+export const BottomBracketIcon = () => (
+  <svg {...SVG_PROPS}>
+    <rect x="5" y="6" width="14" height="12" rx="2" />
+    <path d="M3 12h18M8 6v12M16 6v12M3 9v6M21 9v6" />
+  </svg>
+);
+
+export const HeadsetIcon = () => (
+  <svg {...SVG_PROPS}>
+    <path d="M9 3h6v18H9zM5 6h14v3H5zM5 15h14v3H5z" />
+  </svg>
+);
+
+export const HubIcon = () => (
+  <svg {...SVG_PROPS}>
+    <rect x="7" y="8" width="10" height="8" rx="2" />
+    <path d="M2 12h20M6 5v14M18 5v14M4 7h4M4 17h4M16 7h4M16 17h4" />
+  </svg>
+);
+
+export const ForkIcon = () => (
+  <svg {...SVG_PROPS}>
+    <path d="M12 2v6M7 8h10M7 6v15M17 6v15M5 21h4M15 21h4M7 12h10" />
+  </svg>
+);
+
+export const ShockIcon = () => (
+  <svg {...SVG_PROPS}>
+    <circle cx="12" cy="3" r="2" /><circle cx="12" cy="21" r="2" />
+    <path d="M12 5v2M12 17v2M8 7h8l-8 3 8 3-8 4h8M9 7v10M15 7v10" />
+  </svg>
+);
+
+export const GenericComponentIcon = () => (
+  <svg {...SVG_PROPS}>
+    <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3ZM4 7.5l8 4.5 8-4.5M12 12v9" />
+  </svg>
+);
+
+export const BatteryIcon = () => (
+  <svg {...SVG_PROPS}>
+    <rect x="3" y="6" width="17" height="12" rx="2" />
+    <path d="M20 10h2v4h-2M12 8l-4 5h4l-1 3 5-5h-4l1-3" />
+  </svg>
+);
+
+export const BrakeDiscIcon = () => (
+  <svg {...SVG_PROPS}>
+    <circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="2" />
+    <path d="M12 3v7M21 12h-7M12 21v-7M3 12h7M6 5.5l2 2M18 5.5l-2 2M18 18.5l-2-2M6 18.5l2-2" />
+  </svg>
+);

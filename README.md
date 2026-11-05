@@ -29,11 +29,18 @@ You can try the calculator live on the [Rückenwind web site](https://rueckenwin
 
 ## Maintenance log
 
-The **Maintenance Log** page connects to Strava for sign-in and bike mileage,
-with private service records stored in Supabase. No separate user login is needed.
-It includes an account-free demo; live connections require external setup.
-See [setup and security notes](docs/maintenance-setup.md) for the database migration,
-Edge Function secrets, Strava app configuration, and verification checklist.
+The **Maintenance Log** currently connects directly to Intervals.icu using a
+personal API key for design iteration. It reads real bike mileage and stores
+maintenance records **only in this browser**, separately for each Intervals.icu
+athlete. The API key is saved **unencrypted in localStorage** for automatic
+reconnection after reloading. Disconnect removes the saved key, not the records.
+Nothing is uploaded or changed in Intervals.icu. Only use trusted deployments
+and browsers; scripts on the same origin can read the saved key.
+
+See [prototype usage and limitations](docs/maintenance-prototype.md). An
+account-free, in-memory demo is also available. The earlier Strava/Supabase
+scaffold remains in the repository but is not used by the current page; its
+[historical setup notes](docs/maintenance-setup.md) are retained for reference.
 
 ## Documentation
 
@@ -88,8 +95,8 @@ the files directly.
 
 ## Tech
 
-- **Vite + React + TypeScript**, all calculator math client-side. The optional
-  maintenance log uses a Supabase database and Edge Function.
+- **Vite + React + TypeScript**, all calculator math client-side. The maintenance
+  prototype reads Intervals.icu directly and stores records in browser storage.
 - Pure calculation modules live in [`src/lib/`](src/lib/) and are unit-tested
   against the worked examples in the calculator specs (`npm test`).
 - UI components (one per calculator) live in [`src/components/`](src/components/);

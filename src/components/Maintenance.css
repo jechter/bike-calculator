@@ -16,12 +16,18 @@
 .maintenance-error { color: var(--danger); background: var(--panel); border-color: var(--danger); }
 .maintenance-toolbar, .maintenance-section-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
 .maintenance-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.maintenance-bikes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 36px; }
-.maintenance .maintenance-bike { padding: 22px; display: flex; flex-direction: column; text-align: left; gap: 6px; border-radius: 12px; }
-.maintenance .maintenance-bike.selected { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
-.maintenance-bike > strong { font-size: 18px; }
-.maintenance-mileage { font-size: 30px; letter-spacing: -.7px; margin-top: 12px; font-weight: 600; }
-.maintenance-mileage small { font-size: 16px; color: var(--muted); font-weight: 400; }
+.maintenance-bikes { list-style: none; padding: 0; margin: 0 0 36px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--panel); }
+.maintenance-bikes > li + li { border-top: 1px solid var(--border); }
+.maintenance .maintenance-bike { width: 100%; padding: 18px 24px; display: grid; grid-template-columns: minmax(0, 1fr) 180px 18px; align-items: center; text-align: left; gap: 16px; border: 0; border-radius: 0; }
+.maintenance .maintenance-bike.selected { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.maintenance .maintenance-bike:hover:not(:disabled) { background: var(--accent-soft); }
+.maintenance .maintenance-bike:focus-visible { outline-offset: -3px; }
+.maintenance-bike > strong { font-size: 16px; overflow-wrap: anywhere; }
+.maintenance-bike-distance { display: flex; flex-direction: column; gap: 3px; }
+.maintenance-bike-distance .maintenance-fine { font-size: 12px; margin: 0; }
+.maintenance-mileage { font-size: 16px; font-weight: 600; }
+.maintenance-mileage small { font-size: inherit; font-weight: inherit; }
+@media(max-width: 600px) { .maintenance .maintenance-bike { grid-template-columns: minmax(0, 1fr) auto 14px; gap: 12px; padding: 16px; } }
 .maintenance-section-head h2 { margin: 0; font-size: 22px; }
 .maintenance-form, .maintenance-history, .maintenance-empty { border: 1px solid var(--border); background: var(--panel); border-radius: 12px; }
 .maintenance-form { padding: 24px; margin-bottom: 24px; }
@@ -40,7 +46,7 @@
 .maintenance-entry-meta > strong { color: var(--accent); }
 .maintenance-entry-meta button { font-size: 12px; padding: 4px 8px; color: var(--muted); }
 .maintenance-footer { margin-top: 20px; }
-@media(max-width: 600px) { .maintenance-welcome { padding: 28px 18px 0; } .maintenance-features { grid-template-columns: 1fr; } .maintenance-form-row { grid-template-columns: 1fr; gap: 0; } .maintenance-entry { padding: 18px; flex-direction: column; gap: 12px; } .maintenance-entry-meta { flex-direction: row; justify-content: space-between; align-items: center; text-align: left; } .maintenance-bikes { grid-template-columns: 1fr; } }
+@media(max-width: 600px) { .maintenance-welcome { padding: 28px 18px 0; } .maintenance-features { grid-template-columns: 1fr; } .maintenance-form-row { grid-template-columns: 1fr; gap: 0; } .maintenance-entry { padding: 18px; flex-direction: column; gap: 12px; } .maintenance-entry-meta { flex-direction: row; justify-content: space-between; align-items: center; text-align: left; } }
 .maintenance-components { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--panel); }
 .maintenance-component + .maintenance-component { border-top: 1px solid var(--border); }
 .maintenance .maintenance-component-summary { width: 100%; display: grid; grid-template-columns: minmax(140px, 1fr) 180px 180px 18px; gap: 16px; align-items: center; text-align: left; border: 0; border-radius: 0; padding: 18px 24px; background: transparent; }
@@ -61,4 +67,52 @@
   .maintenance-chevron { grid-column: 3; grid-row: 1 / 3; }
   .maintenance-component-log-head { padding: 12px 16px; }
 }
-.maintenance-entry-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.maintenance-entry-actions { display: flex; gap: 8px; flex-wrap: nowrap; justify-content: flex-end; }
+.maintenance-connect { display: flex; gap: 12px; align-items: flex-end; max-width: 600px; margin: 24px auto 14px; text-align: left; }
+.maintenance-connect label { display: flex; flex: 1; flex-direction: column; gap: 8px; font-weight: 600; min-width: 0; }
+.maintenance-connect input { width: 100%; font: inherit; padding: 10px; border: 1px solid var(--border); border-radius: 6px; color: var(--text); background: var(--bg); }
+.maintenance-welcome > .maintenance-notice { max-width: 680px; margin: 24px auto; text-align: left; font-size: 13px; line-height: 1.6; }
+@media(max-width: 600px) { .maintenance-connect { align-items: stretch; flex-direction: column; } }
+.maintenance-bike-row { display: grid; grid-template-columns: minmax(0, 1fr) 48px; }
+.maintenance-bike-row .maintenance-bike { grid-template-columns: minmax(0, 1fr) 180px; }
+.maintenance .maintenance-bike-toggle { border: 0; border-radius: 0; padding: 12px; background: var(--panel); color: var(--muted); }
+.maintenance .maintenance-bike-toggle:hover { background: var(--accent-soft); }
+.maintenance-bike-toggle:focus-visible { outline-offset: -3px; }
+.maintenance-bike-components { border-top: 1px solid var(--border); padding-left: 24px; background: var(--bg); }
+.maintenance-bike-components .maintenance-component-summary + .maintenance-component-summary { border-top: 1px solid var(--border); }
+.maintenance-component-summary[aria-pressed="true"] { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.maintenance .maintenance-bike-components .maintenance-component-summary:focus-visible { outline-offset: -3px; }
+.maintenance-tree-empty { padding: 18px 24px; margin: 0; }
+.maintenance-entry-context { color: var(--accent); font-size: 13px; font-weight: 600; margin: 0 0 8px; overflow-wrap: anywhere; }
+.maintenance-log { margin-top: 36px; }
+@media(max-width: 600px) {
+  .maintenance-bike-row { grid-template-columns: minmax(0, 1fr) 36px; }
+  .maintenance-bike-row .maintenance-bike { grid-template-columns: minmax(0, 1fr) auto; }
+  .maintenance-bike-components { padding-left: 12px; }
+}
+/* Use actual page width so a collapsed sidebar also frees space for the split. */
+.main.main--maintenance { max-width: none; min-width: 0; }
+.maintenance { max-width: 1440px; container-type: inline-size; container-name: maintenance-page; }
+.maintenance-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 36px; align-items: start; }
+.maintenance-bike-panel, .maintenance-log { min-width: 0; }
+.maintenance-layout .maintenance-log { margin-top: 0; }
+.maintenance-bike-panel .maintenance-bikes { margin-bottom: 0; }
+.maintenance-service-task { display: block; color: var(--muted); font-size: 12px; line-height: 1.4; font-weight: 400; overflow-wrap: anywhere; }
+.maintenance-component-stat { min-width: 0; }
+@container maintenance-page (min-width: 1000px) {
+  .maintenance-layout { grid-template-columns: minmax(340px, .85fr) minmax(0, 1.15fr); gap: 28px; }
+  .maintenance-bike-row .maintenance-bike { grid-template-columns: minmax(0, 1fr) auto; padding: 18px; }
+  .maintenance-bike-components { padding-left: 12px; }
+  .maintenance .maintenance-component-summary { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 14px; gap: 12px; padding: 16px; }
+  .maintenance-component-summary > strong { grid-column: 1 / 3; }
+  .maintenance-component-stat { grid-row: 2; align-self: start; }
+  .maintenance-component-summary .maintenance-chevron { grid-column: 3; grid-row: 1 / 3; }
+  .maintenance-log .maintenance-section-head { align-items: flex-start; }
+  .maintenance-log .maintenance-form-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+.maintenance-log { container-type: inline-size; container-name: maintenance-log; }
+@container maintenance-log (max-width: 560px) {
+  .maintenance-log .maintenance-entry { flex-direction: column; gap: 12px; }
+  .maintenance-log .maintenance-entry-meta { flex-direction: row; justify-content: space-between; align-items: center; text-align: left; flex-wrap: wrap; }
+  .maintenance-log .maintenance-form-row { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}

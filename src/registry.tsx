@@ -17,6 +17,7 @@ import {
   ComponentsIcon,
   PowerIcon,
   ThreadIcon,
+  MaintenanceIcon,
 } from "./icons";
 
 export interface CalculatorDef {
@@ -100,5 +101,5 @@ export const CALCULATORS: CalculatorDef[] = [
     icon: <ThreadIcon />,
     Component: ThreadDirection,
   },
-  { id: "maintenance", title: "Maintenance Log", subtitle: "Your bikes, their mileage, and the care that keeps them rolling.", icon: <ThreadIcon />, Component: Maintenance },
+  { id: "maintenance", title: "Maintenance Log", subtitle: "Your bikes, their mileage, and the care that keeps them rolling.", icon: <MaintenanceIcon />, Component: Maintenance },
 ];

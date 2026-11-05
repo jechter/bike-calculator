@@ -1,4 +1,8 @@
-# Maintenance log: Strava + Supabase
+# Historical scaffold: Strava + Supabase
+
+> The current page uses the [Intervals.icu API-key prototype](maintenance-prototype.md).
+> This document describes the earlier backend scaffold, which is no longer
+> connected to the page. Do not configure it to enable the current prototype.
 
 The page lives at `/maintenance-log/` under the existing installation directory.
 Without backend configuration it offers a clearly labeled, in-memory demo.

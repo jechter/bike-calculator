@@ -9,7 +9,7 @@ function pageHtml(page, nested) {
   const prefix = nested ? '../' : './';
   const links = routes.map(r => `<li><a href="${prefix}${r.slug}/">${escape(r.title)}</a></li>`).join('\n');
   const introduction = page.id === 'maintenance'
-    ? 'Keep a private bike service history with the Rückenwind community bike workshop. Enable JavaScript to connect Strava or explore a demo.'
+    ? 'Keep a private bike service history with the Rückenwind community bike workshop. Enable JavaScript to connect Intervals.icu or explore a demo.'
     : 'Use this free interactive calculator from the Rückenwind community bike workshop. Enable JavaScript to enter your measurements and see results.';
   return template
     .replaceAll('./assets/', `${prefix}assets/`)

@@ -117,6 +117,19 @@ export const PowerIcon = () => (
   </svg>
 );
 
+// Maintenance Log — an outlined calendar with a grid of days.
+export const MaintenanceIcon = () => (
+  <svg {...SVG_PROPS}>
+    <rect x="3" y="5" width="18" height="16" rx="2" />
+    <path d="M7 3v4M17 3v4M3 10h18" />
+    {[7, 12, 17].map((x) =>
+      [14, 18].map((y) => (
+        <rect key={`${x}-${y}`} x={x - 0.8} y={y - 0.8} width="1.6" height="1.6" rx="0.2" fill="currentColor" stroke="none" />
+      )),
+    )}
+  </svg>
+);
+
 // Thread Direction — a clockwise rotation arrow.
 export const ThreadIcon = () => (
   <svg {...SVG_PROPS}>

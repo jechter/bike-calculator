@@ -1,183 +1,254 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { Maintenance } from './Maintenance';
+import { saveApiKey, loadSavedApiKey } from '../lib/intervals';
 import { componentHistory, componentMileage, componentNames, demoMaintenance, kilometersAgo, localDate } from '../lib/maintenance';
-afterEach(() => { cleanup(); sessionStorage.clear(); vi.restoreAllMocks(); });
-it('computes kilometers since service and flags reduced odometers', () => {
-  expect(kilometersAgo(4826500, 4600)).toBe(226.5);
-  expect(kilometersAgo(4826500, 5000)).toBeNull();
-  expect(kilometersAgo(100000, 100)).toBe(0);
-  expect(localDate(new Date(2026, 0, 2))).toBe('2026-01-02');
+afterEach(() => { cleanup(); localStorage.clear(); sessionStorage.clear(); vi.restoreAllMocks(); });
+async function demo() { render(<Maintenance />); fireEvent.click(screen.getByText('Explore a demo')); }
+const showAll = () => fireEvent.click(screen.getByRole('button', { name: /^Hide components for/ }));
+const log = () => within(screen.getByRole('region', { name: 'Performed maintenance' }));
+const bikeButton = (name = 'Everyday road bike') => screen.getByRole('button', { name: new RegExp('^' + name + '. Total distance') });
+function componentButton(name: string, bikeName = 'Everyday road bike') {
+  const toggle = screen.getByRole('button', { name: `Show components for ${bikeName}` });
+  fireEvent.click(toggle);
+  return within(screen.getByRole('region', { name: `${bikeName} components` })).getByRole('button', { name: new RegExp('^' + name + '. Since replacement') });
+}
+it('shows all maintenance newest first with nothing selected and all bikes folded initially', async () => {
+  const request = vi.spyOn(globalThis, 'fetch');
+  await demo();
+  expect(screen.getByRole('list', { name: 'Your bikes' })).toBeTruthy();
+  expect(bikeButton().getAttribute('aria-pressed')).toBe('false');
+  expect(screen.getAllByRole('button', { name: /^Show components for/ })).toHaveLength(2);
+  expect(log().getAllByRole('article')).toHaveLength(4);
+  expect(log().getAllByRole('heading', { level: 3 }).map(el => el.textContent)).toEqual(['Cleaned and lubricated chain', 'Replaced chain', 'Refreshed tubeless sealant', 'Replaced rear brake pads']);
+  expect(request).not.toHaveBeenCalled();
 });
-it('offers an explicitly labeled demo without making network requests', async () => {
-  const fetch = vi.spyOn(globalThis, 'fetch');
-  render(<Maintenance />);
-  await waitFor(() => expect((screen.getByText('Explore a demo') as HTMLButtonElement).disabled).toBe(false));
-  fireEvent.click(screen.getByText('Explore a demo'));
-  const chain = screen.getByRole('button', { name: /^Chain. Since replacement/ });
-  expect(chain.getAttribute('aria-expanded')).toBe('false');
+it('selects bikes on expansion and clears selection on collapse through either control', async () => {
+  await demo();
+  expect(screen.queryByRole('button', { name: 'All bikes' })).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Show all maintenance' })).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Show components for Everyday road bike' }));
+  expect(bikeButton().getAttribute('aria-pressed')).toBe('true');
+  expect(log().getAllByRole('article')).toHaveLength(3);
+  fireEvent.click(bikeButton());
+  expect(bikeButton().getAttribute('aria-expanded')).toBe('false');
+  expect(bikeButton().getAttribute('aria-pressed')).toBe('false');
+  expect(log().getAllByRole('article')).toHaveLength(4);
+  fireEvent.click(bikeButton());
+  expect(log().getAllByRole('article')).toHaveLength(3);
+  showAll();
+  expect(bikeButton().getAttribute('aria-pressed')).toBe('false');
+  expect(log().getAllByRole('article')).toHaveLength(4);
+});
+it('filters the separate log by component and toggles selection off without rendering logs in the tree', async () => {
+  await demo();
+  const chain = componentButton('Chain');
   expect(within(chain).getByText('226.5 km')).toBeTruthy();
   expect(within(chain).getByText('36.5 km')).toBeTruthy();
-  expect(screen.queryByText('Replaced chain')).toBeNull();
+  expect(within(chain).getByText('Cleaned and lubricated chain')).toBeTruthy();
   fireEvent.click(chain);
-  expect(screen.getByText('Replaced chain')).toBeTruthy();
-  expect(screen.getByText('Cleaned and lubricated chain')).toBeTruthy();
+  expect(chain.getAttribute('aria-pressed')).toBe('true');
+  expect(log().getAllByRole('article')).toHaveLength(2);
+  expect(within(screen.getByRole('region', { name: 'Everyday road bike components' })).queryByRole('article')).toBeNull();
   fireEvent.click(chain);
-  expect(screen.queryByText('Replaced chain')).toBeNull();
-  expect(screen.getByText('Sample data · changes are not saved')).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: /Weekend gravel bike/ }));
-  expect(screen.queryByText('Replaced chain')).toBeNull();
-  expect(screen.queryByText('Refreshed tubeless sealant')).toBeNull();
-  fireEvent.click(screen.getByRole('button', { name: /^Front tire. Since replacement/ }));
-  expect(screen.getByText('Refreshed tubeless sealant')).toBeTruthy();
-  expect(fetch).not.toHaveBeenCalled();
+  expect(chain.getAttribute('aria-pressed')).toBe('false');
+  expect(bikeButton().getAttribute('aria-expanded')).toBe('true');
+  expect(bikeButton().getAttribute('aria-pressed')).toBe('true');
+  expect(log().getAllByRole('article')).toHaveLength(3);
+  fireEvent.click(bikeButton('Weekend gravel bike'));
+  expect(log().getAllByRole('article')).toHaveLength(1);
+  expect(log().getByText('Refreshed tubeless sealant')).toBeTruthy();
 });
-it('logs a backdated job for the selected bike, deletes it, and leaves demo cleanly', async () => {
-  vi.spyOn(window, 'confirm').mockReturnValue(true);
-  render(<Maintenance />);
-  await waitFor(() => expect((screen.getByText('Explore a demo') as HTMLButtonElement).disabled).toBe(false));
-  fireEvent.click(screen.getByText('Explore a demo'));
+it('only shows components with entries and hides missing service counters', async () => {
+  await demo();
+  const pads = componentButton('Rear brake pads');
+  expect(within(pads).queryByText('Since service')).toBeNull();
+  expect(within(pads).queryByText('Not logged')).toBeNull();
+  expect(screen.queryByRole('button', { name: /^Cassette/ })).toBeNull();
+});
+it('logs a replacement without a task and selects its bike/component after saving', async () => {
+  await demo();
   fireEvent.click(screen.getByText('+ Log maintenance'));
+  expect((screen.getByLabelText('Bike') as HTMLSelectElement).value).toBe('demo-road');
+  fireEvent.change(screen.getByLabelText('Bike'), { target: { value: 'demo-gravel' } });
+  expect((screen.getByLabelText('Bike mileage at service (km)') as HTMLInputElement).value).toBe('2190.4');
   fireEvent.change(screen.getByLabelText('Component'), { target: { value: 'Headset' } });
   fireEvent.change(screen.getByLabelText('Work type'), { target: { value: 'replacement' } });
   expect(screen.queryByLabelText('Task')).toBeNull();
   fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2025-02-01' } });
-  fireEvent.change(screen.getByLabelText('Bike mileage at service (km)'), { target: { value: '4800' } });
+  fireEvent.change(screen.getByLabelText('Bike mileage at service (km)'), { target: { value: '2100' } });
   fireEvent.click(screen.getByText('Save maintenance'));
-  await waitFor(() => expect(screen.getByRole('heading', { name: 'Replaced headset' })).toBeTruthy());
-  expect(screen.getByText('26.5 km ago')).toBeTruthy();
-  const headset = screen.getByRole('button', { name: /^Headset. Since replacement/ });
-  expect(within(headset).getByText('26.5 km')).toBeTruthy();
-  expect(within(headset).queryByText('Not logged')).toBeNull();
-  expect(within(headset).queryByText('Since service')).toBeNull();
-  fireEvent.click(screen.getByRole('button', { name: 'Delete Replaced headset' }));
-  await waitFor(() => expect(screen.queryByRole('heading', { name: 'Replaced headset' })).toBeNull());
-  expect(screen.queryByRole('button', { name: /^Headset. Since replacement/ })).toBeNull();
-  fireEvent.click(screen.getByText('Exit demo'));
-  await waitFor(() => expect(screen.getByText('Connect with Strava')).toBeTruthy());
-});
-
-it('selects latest events by date, separately by work type and component', () => {
-  const entries = demoMaintenance().entries;
-  const chain = componentHistory(entries, 'Chain');
-  expect(componentMileage(4826500, chain, 'replacement')).toBe(226.5);
-  expect(componentMileage(4826500, chain, 'service')).toBe(36.5);
-  const backdated = { ...chain[0], id: 'older', performed_on: '2020-01-01', odometer_km: 100 };
-  expect(componentMileage(4826500, componentHistory([backdated, ...entries], 'Chain'), 'service')).toBe(36.5);
-  expect(componentMileage(1000, chain, 'replacement')).toBeNull();
-  expect(componentMileage(4826500, [], 'service')).toBeUndefined();
-  expect(componentHistory(entries, 'Headset')).toEqual([]);
-});
-it('merges component names case-insensitively and preserves unassigned legacy logs', () => {
-  const entry = demoMaintenance().entries[0];
-  const entries = [{ ...entry, component: ' chain ' }, { ...entry, component: 'Dropper post' }, { ...entry, component: 'dropper post' }, { ...entry, component: '' }];
-  expect(componentNames(entries).filter(name => name.toLowerCase() === 'chain')).toEqual(['Chain']);
-  expect(componentNames(entries).filter(name => name.toLowerCase() === 'dropper post')).toEqual(['Dropper post']);
-  expect(componentHistory(entries, 'Unassigned')).toHaveLength(1);
-});
-it('only shows tracked components while keeping untracked suggestions in the form', async () => {
-  render(<Maintenance />);
-  await waitFor(() => expect((screen.getByText('Explore a demo') as HTMLButtonElement).disabled).toBe(false));
-  fireEvent.click(screen.getByText('Explore a demo'));
-  expect(screen.queryByRole('button', { name: /^Cassette/ })).toBeNull();
-  expect(screen.queryByRole('button', { name: /^Front tire/ })).toBeNull();
-  const pads = screen.getByRole('button', { name: /^Rear brake pads/ });
-  expect(within(pads).queryByText('Since service')).toBeNull();
-  expect(within(pads).queryByText('Not logged')).toBeNull();
-  fireEvent.click(screen.getByText('+ Log maintenance'));
-  expect(document.querySelector('datalist#bike-components option[value="Cassette"]') ?? screen.getByText('Cassette', { selector: 'option' })).toBeTruthy();
-  expect(componentNames([])).toEqual([]);
+  await waitFor(() => expect(log().getByRole('heading', { name: 'Replaced headset' })).toBeTruthy());
+  expect(log().getAllByRole('article')).toHaveLength(1);
+  expect(log().getByText('90.4 km ago')).toBeTruthy();
+  expect(screen.getByText(/Demo entry added/)).toBeTruthy();
+  expect(screen.getByText(/Weekend gravel bike \/ Headset · 1 entry/)).toBeTruthy();
+  expect(localStorage.length).toBe(0);
 });
 it.each([
-  { task: 'Cleaned and lubricated chain', kind: 'service', component: 'Chain', notes: 'Degreased, dried, and applied wet lube.' },
-  { task: 'Replaced rear brake pads', kind: 'replacement', component: 'Rear brake pads', notes: 'Checked rotor thickness and bedded in the pads.' },
-])('repeats $kind as an editable draft at current mileage without changing the original', async ({ task, kind, component, notes }) => {
-  render(<Maintenance />);
-  await waitFor(() => expect((screen.getByText('Explore a demo') as HTMLButtonElement).disabled).toBe(false));
-  fireEvent.click(screen.getByText('Explore a demo'));
-  fireEvent.click(screen.getByRole('button', { name: new RegExp('^' + component + '\\. Since replacement') }));
-  const before = screen.getAllByRole('article').length;
-  fireEvent.click(screen.getByRole('button', { name: 'Repeat ' + task }));
-  expect((screen.getByLabelText('Component') as HTMLInputElement).value).toBe(component);
-  expect((screen.getByLabelText('Work type') as HTMLSelectElement).value).toBe(kind);
-  if (kind === 'service') expect((screen.getByLabelText('Task') as HTMLInputElement).value).toBe(task);
-  else expect(screen.queryByLabelText('Task')).toBeNull();
-  expect((screen.getByLabelText('Notes (optional)') as HTMLTextAreaElement).value).toBe(notes);
+  { task: 'Cleaned and lubricated chain', kind: 'service', component: 'Chain', date: '2026-10-30', mileage: '4790', current: '4826.5', bike: 'demo-road' },
+  { task: 'Refreshed tubeless sealant', kind: 'service', component: 'Front tire', date: '2026-10-12', mileage: '2010', current: '2190.4', bike: 'demo-gravel' },
+  { task: 'Replaced rear brake pads', kind: 'replacement', component: 'Rear brake pads', date: '2026-09-10', mileage: '3980', current: '4826.5', bike: 'demo-road' },
+])('uses the entry’s own bike when editing or repeating $task from the all-bikes log', async entry => {
+  await demo();
+  fireEvent.click(screen.getByRole('button', { name: 'Edit ' + entry.task }));
+  expect((screen.getByLabelText('Bike') as HTMLSelectElement).value).toBe(entry.bike);
+  expect((screen.getByLabelText('Component') as HTMLInputElement).value).toBe(entry.component);
+  expect((screen.getByLabelText('Date') as HTMLInputElement).value).toBe(entry.date);
+  expect((screen.getByLabelText('Bike mileage at service (km)') as HTMLInputElement).value).toBe(entry.mileage);
+  if (entry.kind === 'replacement') expect(screen.queryByLabelText('Task')).toBeNull();
+  fireEvent.click(screen.getByText('Cancel'));
+  expect(log().getAllByRole('article')).toHaveLength(4);
+  fireEvent.click(screen.getByRole('button', { name: 'Repeat ' + entry.task }));
   expect((screen.getByLabelText('Date') as HTMLInputElement).value).toBe(localDate());
-  expect((screen.getByLabelText('Bike mileage at service (km)') as HTMLInputElement).value).toBe('4826.5');
-  expect(screen.getAllByRole('article')).toHaveLength(before);
-  fireEvent.click(screen.getByText('Cancel'));
-  expect(screen.getAllByRole('article')).toHaveLength(before);
-  fireEvent.click(screen.getByRole('button', { name: 'Repeat ' + task }));
-  fireEvent.change(screen.getByLabelText('Notes (optional)'), { target: { value: 'Repeated today' } });
+  expect((screen.getByLabelText('Bike mileage at service (km)') as HTMLInputElement).value).toBe(entry.current);
+  expect(log().getAllByRole('article')).toHaveLength(4);
   fireEvent.click(screen.getByText('Save maintenance'));
-  await waitFor(() => expect(screen.getAllByRole('article')).toHaveLength(before + 1));
-  expect(screen.getByText(notes)).toBeTruthy();
-  expect(screen.getByText('Repeated today')).toBeTruthy();
-  expect(screen.getByText('0 km ago')).toBeTruthy();
-  const summary = screen.getByRole('button', { name: new RegExp('^' + component + '\\. Since replacement') });
-  expect(within(summary).getByText('0 km')).toBeTruthy();
+  await waitFor(() => expect(screen.getByText('0 km ago')).toBeTruthy());
+  showAll();
+  expect(log().getAllByRole('article')).toHaveLength(5);
 });
-it('shows an empty state after the last component entry is deleted', async () => {
-  vi.spyOn(window, 'confirm').mockReturnValue(true);
-  render(<Maintenance />);
-  await waitFor(() => expect((screen.getByText('Explore a demo') as HTMLButtonElement).disabled).toBe(false));
-  fireEvent.click(screen.getByText('Explore a demo'));
-  fireEvent.click(screen.getByRole('button', { name: /Weekend gravel bike/ }));
-  fireEvent.click(screen.getByRole('button', { name: /^Front tire/ }));
-  fireEvent.click(screen.getByRole('button', { name: 'Delete Refreshed tubeless sealant' }));
-  await waitFor(() => expect(screen.getByText('No components logged yet')).toBeTruthy());
-  expect(screen.queryByRole('button', { name: /^Front tire/ })).toBeNull();
-});
-
-it('edits an existing service in place, preserves the original draft on cancel, and refreshes counters', async () => {
-  render(<Maintenance />);
-  await waitFor(() => expect((screen.getByText('Explore a demo') as HTMLButtonElement).disabled).toBe(false));
-  fireEvent.click(screen.getByText('Explore a demo'));
-  fireEvent.click(screen.getByRole('button', { name: /^Chain. Since replacement/ }));
-  const count = screen.getAllByRole('article').length;
-  fireEvent.click(screen.getByRole('button', { name: 'Edit Cleaned and lubricated chain' }));
-  expect(screen.getByRole('heading', { name: 'Edit maintenance' })).toBeTruthy();
-  expect((screen.getByLabelText('Date') as HTMLInputElement).value).toBe('2026-10-30');
-  expect((screen.getByLabelText('Bike mileage at service (km)') as HTMLInputElement).value).toBe('4790');
-  expect((screen.getByLabelText('Task') as HTMLInputElement).value).toBe('Cleaned and lubricated chain');
-  expect((screen.getByLabelText('Notes (optional)') as HTMLTextAreaElement).value).toBe('Degreased, dried, and applied wet lube.');
-  fireEvent.change(screen.getByLabelText('Task'), { target: { value: 'Discarded draft' } });
-  fireEvent.click(screen.getByText('Cancel'));
-  expect(screen.queryByRole('heading', { name: 'Discarded draft' })).toBeNull();
+it('edits in place, updates component counters, and can move an entry between bikes', async () => {
+  await demo();
   fireEvent.click(screen.getByRole('button', { name: 'Edit Cleaned and lubricated chain' }));
   fireEvent.change(screen.getByLabelText('Task'), { target: { value: 'Waxed chain' } });
-  fireEvent.change(screen.getByLabelText('Bike mileage at service (km)'), { target: { value: '4800' } });
-  fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-10-29' } });
+  fireEvent.change(screen.getByLabelText('Bike'), { target: { value: 'demo-gravel' } });
+  fireEvent.change(screen.getByLabelText('Bike mileage at service (km)'), { target: { value: '2100' } });
   fireEvent.click(screen.getByText('Save changes'));
-  await waitFor(() => expect(screen.getByRole('heading', { name: 'Waxed chain' })).toBeTruthy());
-  expect(screen.getAllByRole('article')).toHaveLength(count);
-  expect(screen.queryByRole('heading', { name: 'Cleaned and lubricated chain' })).toBeNull();
-  expect(within(screen.getByRole('button', { name: /^Chain. Since replacement/ })).getByText('26.5 km')).toBeTruthy();
-  fireEvent.click(screen.getByText('+ Log maintenance'));
-  expect(screen.getByRole('heading', { name: 'Log maintenance' })).toBeTruthy();
-  expect((screen.getByLabelText('Task') as HTMLInputElement).value).toBe('');
+  await waitFor(() => expect(log().getByRole('heading', { name: 'Waxed chain' })).toBeTruthy());
+  expect(log().getByText('90.4 km ago')).toBeTruthy();
+  expect(screen.getByText(/Weekend gravel bike \/ Chain · 1 entry/)).toBeTruthy();
+  showAll();
+  expect(log().getAllByRole('article')).toHaveLength(4);
+  expect(log().queryByText('Cleaned and lubricated chain')).toBeNull();
 });
-it('edits a replacement without a task, can move it to another component, and can change its work type', async () => {
+it('deletes the last component entry without creating a ghost component', async () => {
+  vi.spyOn(window, 'confirm').mockReturnValue(true);
+  await demo();
+  fireEvent.click(componentButton('Front tire', 'Weekend gravel bike'));
+  fireEvent.click(screen.getByRole('button', { name: 'Delete Refreshed tubeless sealant' }));
+  await waitFor(() => expect(log().getByText('No maintenance logged for this selection')).toBeTruthy());
+  expect(screen.queryByRole('button', { name: /^Front tire/ })).toBeNull();
+  showAll();
+  expect(log().getAllByRole('article')).toHaveLength(3);
+});
+it('computes and groups latest service and replacement counters independently', () => {
+  const entries = demoMaintenance().entries;
+  const chain = componentHistory(entries, 'Chain');
+  expect(kilometersAgo(4826500, 4600)).toBe(226.5);
+  expect(kilometersAgo(4826500, 5000)).toBeNull();
+  expect(componentMileage(4826500, chain, 'replacement')).toBe(226.5);
+  expect(componentMileage(4826500, chain, 'service')).toBe(36.5);
+  expect(componentNames([])).toEqual([]);
+  expect(componentNames([{ ...entries[0], component: ' chain ' }, { ...entries[0], component: 'Chain' }])).toEqual(['Chain']);
+  expect(localDate(new Date(2026, 0, 2))).toBe('2026-01-02');
+});
+function mockAccount() {
+  return vi.spyOn(globalThis, 'fetch').mockImplementation(async url => new Response(JSON.stringify(String(url).endsWith('/gear') ? [{ id: 'b1', name: 'Real bike', type: 'Bike', component: false, distance: 4826537 }] : { id: 'i-test', name: 'Real rider' })));
+}
+it('persists local records and keys, then restores without selecting a filter', async () => {
+  const request = mockAccount();
+  const page = render(<Maintenance />);
+  fireEvent.change(screen.getByLabelText('Intervals.icu API key'), { target: { value: 'test-key' } });
+  fireEvent.click(screen.getByText('Connect Intervals.icu'));
+  await waitFor(() => expect(screen.getByText('Real bike')).toBeTruthy());
+  fireEvent.click(screen.getByText('+ Log maintenance'));
+  expect((screen.getByLabelText('Bike mileage at service (km)') as HTMLInputElement).value).toBe('4826.537');
+  fireEvent.change(screen.getByLabelText('Work type'), { target: { value: 'replacement' } });
+  fireEvent.click(screen.getByText('Save maintenance'));
+  await waitFor(() => expect(log().getByText('Replaced chain')).toBeTruthy());
+  expect(loadSavedApiKey()).toBe('test-key');
+  page.unmount();
   render(<Maintenance />);
-  await waitFor(() => expect((screen.getByText('Explore a demo') as HTMLButtonElement).disabled).toBe(false));
-  fireEvent.click(screen.getByText('Explore a demo'));
-  fireEvent.click(screen.getByRole('button', { name: /^Rear brake pads/ }));
-  fireEvent.click(screen.getByRole('button', { name: 'Edit Replaced rear brake pads' }));
-  expect(screen.queryByLabelText('Task')).toBeNull();
-  expect((screen.getByLabelText('Date') as HTMLInputElement).value).toBe('2026-09-10');
-  expect((screen.getByLabelText('Bike mileage at service (km)') as HTMLInputElement).value).toBe('3980');
-  fireEvent.change(screen.getByLabelText('Component'), { target: { value: 'Front brake pads' } });
-  fireEvent.click(screen.getByText('Save changes'));
-  await waitFor(() => expect(screen.getByRole('heading', { name: 'Replaced front brake pads' })).toBeTruthy());
-  expect(screen.queryByRole('button', { name: /^Rear brake pads/ })).toBeNull();
-  fireEvent.click(screen.getByRole('button', { name: 'Edit Replaced front brake pads' }));
-  fireEvent.change(screen.getByLabelText('Work type'), { target: { value: 'service' } });
-  fireEvent.change(screen.getByLabelText('Task'), { target: { value: 'Aligned pads' } });
-  fireEvent.click(screen.getByText('Save changes'));
-  await waitFor(() => expect(screen.getByRole('heading', { name: 'Aligned pads' })).toBeTruthy());
-  const summary = screen.getByRole('button', { name: /^Front brake pads/ });
-  expect(within(summary).getByText('Since service')).toBeTruthy();
-  expect(within(summary).getByText('Not logged')).toBeTruthy();
+  await waitFor(() => expect(log().getByText('Replaced chain')).toBeTruthy());
+  expect(screen.getByText('All bikes and components · 1 entry')).toBeTruthy();
+  fireEvent.click(screen.getByText('Refresh mileage'));
+  await waitFor(() => expect(screen.getByText(/Mileage refreshed from Intervals.icu/)).toBeTruthy());
+  expect(request.mock.calls.every(([, options]) => options?.method === 'GET')).toBe(true);
+  fireEvent.click(screen.getByText('Disconnect'));
+  expect(loadSavedApiKey()).toBeNull();
+  expect(localStorage.getItem('maintenance-intervals-v1:i-test')).toContain('4826.537');
+});
+it('restores a saved connection without duplicate requests in StrictMode', async () => {
+  saveApiKey('saved-key'); const request = mockAccount();
+  render(<StrictMode><Maintenance /></StrictMode>);
+  await waitFor(() => expect(screen.getByText('Real bike')).toBeTruthy());
+  expect(request).toHaveBeenCalledTimes(2);
+});
+it('can forget a rejected saved key without exposing it or deleting records', async () => {
+  saveApiKey('invalid-key'); localStorage.setItem('maintenance-intervals-v1:i1', '[]');
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('private upstream body', { status: 401 }));
+  render(<Maintenance />);
+  await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
+  expect(screen.getByRole('alert').textContent).not.toContain('invalid-key');
+  fireEvent.click(screen.getByText('Forget saved API key'));
+  expect(loadSavedApiKey()).toBeNull();
+  expect(localStorage.getItem('maintenance-intervals-v1:i1')).toBe('[]');
+});
+it('does not save a rejected key entered manually', async () => {
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status: 401 }));
+  render(<Maintenance />);
+  fireEvent.change(screen.getByLabelText('Intervals.icu API key'), { target: { value: 'invalid-key' } });
+  fireEvent.click(screen.getByText('Connect Intervals.icu'));
+  await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
+  expect(loadSavedApiKey()).toBeNull();
+});
+
+it('opens and closes a bike by its main row, including with the keyboard-compatible button', async () => {
+  await demo();
+  fireEvent.click(bikeButton());
+  expect(bikeButton().getAttribute('aria-expanded')).toBe('true');
+  expect(screen.getByRole('region', { name: 'Everyday road bike components' })).toBeTruthy();
+  fireEvent.click(bikeButton());
+  expect(bikeButton().getAttribute('aria-expanded')).toBe('false');
+  expect(screen.queryByRole('region', { name: 'Everyday road bike components' })).toBeNull();
+});
+it('shows the most recent service task, not a replacement title or an older backdated service', async () => {
+  await demo();
+  fireEvent.click(componentButton('Chain'));
+  fireEvent.click(screen.getByText('+ Log maintenance'));
+  fireEvent.change(screen.getByLabelText('Task'), { target: { value: 'Older chain service' } });
+  fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2025-01-01' } });
+  fireEvent.change(screen.getByLabelText('Bike mileage at service (km)'), { target: { value: '3000' } });
+  fireEvent.click(screen.getByText('Save maintenance'));
+  await waitFor(() => expect(log().getByRole('heading', { name: 'Older chain service' })).toBeTruthy());
+  const chain = screen.getByRole('button', { name: /^Chain. Since replacement/ });
+  expect(within(chain).getByText('Cleaned and lubricated chain')).toBeTruthy();
+  expect(within(chain).queryByText('Older chain service')).toBeNull();
+  expect(within(chain).queryByText('Replaced chain')).toBeNull();
+});
+
+it('keeps at most one bike expanded through either the row or its arrow', async () => {
+  await demo();
+  fireEvent.click(bikeButton());
+  expect(bikeButton().getAttribute('aria-expanded')).toBe('true');
+  fireEvent.click(screen.getByRole('button', { name: 'Show components for Weekend gravel bike' }));
+  expect(bikeButton().getAttribute('aria-expanded')).toBe('false');
+  expect(bikeButton('Weekend gravel bike').getAttribute('aria-expanded')).toBe('true');
+  expect(screen.queryByRole('region', { name: 'Everyday road bike components' })).toBeNull();
+  fireEvent.click(bikeButton());
+  expect(bikeButton('Weekend gravel bike').getAttribute('aria-expanded')).toBe('false');
+  expect(bikeButton().getAttribute('aria-expanded')).toBe('true');
+  fireEvent.click(bikeButton());
+  expect(bikeButton().getAttribute('aria-expanded')).toBe('false');
+  expect(screen.queryByRole('region', { name: 'Everyday road bike components' })).toBeNull();
+});
+
+it('clears the component filter when folding or switching bikes and restores whole-bike selection when reopening', async () => {
+  await demo();
+  fireEvent.click(componentButton('Chain'));
+  expect(log().getAllByRole('article')).toHaveLength(2);
+  fireEvent.click(bikeButton('Weekend gravel bike'));
+  expect(bikeButton().getAttribute('aria-pressed')).toBe('false');
+  expect(log().getAllByRole('article')).toHaveLength(1);
+  fireEvent.click(bikeButton());
+  expect(log().getAllByRole('article')).toHaveLength(3);
+  expect(screen.getByRole('button', { name: /^Chain. Since replacement/ }).getAttribute('aria-pressed')).toBe('false');
+  fireEvent.click(screen.getByRole('button', { name: /^Chain. Since replacement/ }));
+  showAll();
+  expect(log().getAllByRole('article')).toHaveLength(4);
+  fireEvent.click(bikeButton());
+  expect(log().getAllByRole('article')).toHaveLength(3);
 });

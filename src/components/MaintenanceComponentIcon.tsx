@@ -1,9 +1,11 @@
 import type { ComponentType } from 'react';
 import { getComponentType } from '../lib/maintenance';
-import { ChainIcon, CassetteIcon, DrivetrainIcon, BrakePadsIcon, TireIcon, BottomBracketIcon, HeadsetIcon, WheelIcon, BatteryIcon, BrakeDiscIcon, ForkIcon, ShockIcon, GenericComponentIcon } from '../icons';
+import { ChainIcon, CableIcon, DerailleurIcon, CassetteIcon, DrivetrainIcon, BrakePadsIcon, TireIcon, BottomBracketIcon, HeadsetIcon, WheelIcon, BatteryIcon, BrakeDiscIcon, ForkIcon, ShockIcon, GenericComponentIcon } from '../icons';
 
 export const maintenanceComponentIcons: Record<string, ComponentType> = {
   chain: ChainIcon,
+  cables: CableIcon,
+  'jockey-wheels': DerailleurIcon,
   cassette: CassetteIcon,
   chainrings: DrivetrainIcon,
   'brake-pads': BrakePadsIcon,

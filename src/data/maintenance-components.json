@@ -14,9 +14,27 @@
     },
     {
       "id": "chainrings",
-      "names": ["Chainrings"],
+      "names": ["Chainring", "Chainrings", "Small chainring", "Big chainring", "Middle chainring"],
       "icon": "chainrings",
       "services": ["Cleaned chainrings", "Checked chainring wear", "Tightened chainring bolts"]
+    },
+    {
+      "id": "inner-shifter-cables",
+      "names": ["Front inner shifter cable", "Rear inner shifter cable"],
+      "icon": "cables",
+      "services": ["Checked inner cable condition", "Adjusted shifter cable tension", "Cleaned cable guides"]
+    },
+    {
+      "id": "outer-shifter-cables",
+      "names": ["Front outer shifter cable", "Rear outer shifter cable"],
+      "icon": "cables",
+      "services": ["Checked cable housing condition", "Inspected cable housing ferrules", "Cleaned cable housing ends"]
+    },
+    {
+      "id": "jockey-wheels",
+      "names": ["Derailleur jockey wheels"],
+      "icon": "jockey-wheels",
+      "services": ["Cleaned jockey wheels", "Checked jockey wheel wear", "Serviced jockey wheel bearings"]
     },
     {
       "id": "brake-pads",

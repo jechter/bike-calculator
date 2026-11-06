@@ -24,7 +24,6 @@
 .maintenance .maintenance-bike:focus-visible { outline-offset: -3px; }
 .maintenance-bike > strong { font-size: 16px; overflow-wrap: anywhere; }
 .maintenance-bike-distance { display: flex; flex-direction: column; gap: 3px; }
-.maintenance-bike-distance .maintenance-fine { font-size: 12px; margin: 0; }
 .maintenance-mileage { font-size: 16px; font-weight: 600; }
 .maintenance-mileage small { font-size: inherit; font-weight: inherit; }
 @media(max-width: 600px) { .maintenance .maintenance-bike { grid-template-columns: minmax(0, 1fr) auto 14px; gap: 12px; padding: 16px; } }
@@ -37,13 +36,12 @@
 .maintenance-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .maintenance-form textarea { resize: vertical; }
 .maintenance-empty { text-align: center; padding: 36px 24px; color: var(--muted); }
-.maintenance-entry { display: flex; justify-content: space-between; padding: 24px; gap: 24px; }
+.maintenance-entry { display: flex; justify-content: space-between; padding: 18px; gap: 16px; }
 .maintenance-entry + .maintenance-entry { border-top: 1px solid var(--border); }
 .maintenance-entry time { color: var(--muted); font-size: 13px; }
 .maintenance-entry h3 { margin: 6px 0; font-size: 17px; }
 .maintenance-notes { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted); margin: 8px 0; }
-.maintenance-entry-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; text-align: right; min-width: 130px; }
-.maintenance-entry-meta > strong { color: var(--accent); }
+.maintenance-entry-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; text-align: right; flex-shrink: 0; }
 .maintenance-entry-meta button { font-size: 12px; padding: 4px 8px; color: var(--muted); }
 .maintenance-footer { margin-top: 20px; }
 @media(max-width: 600px) { .maintenance-welcome { padding: 28px 18px 0; } .maintenance-features { grid-template-columns: 1fr; } .maintenance-form-row { grid-template-columns: 1fr; gap: 0; } .maintenance-entry { padding: 18px; flex-direction: column; gap: 12px; } .maintenance-entry-meta { flex-direction: row; justify-content: space-between; align-items: center; text-align: left; } }
@@ -124,3 +122,10 @@
 .maintenance-type-icon { display: inline-flex; align-items: center; }
 .maintenance-item-label > span:last-child { min-width: 0; overflow-wrap: anywhere; }
 .maintenance-entry-context { display: flex; align-items: center; gap: 8px; }
+
+.maintenance-entry-body { min-width: 0; }
+.maintenance-entry-context { flex-wrap: wrap; gap: 6px 8px; margin-bottom: 6px; }
+.maintenance-entry-context .maintenance-kind { margin-left: 0; font-weight: 400; }
+.maintenance-entry-details { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; font-size: 13px; color: var(--muted); }
+.maintenance-entry-details > * { white-space: nowrap; }
+.maintenance-entry-meta > strong { color: var(--accent); font-weight: 600; white-space: nowrap; }

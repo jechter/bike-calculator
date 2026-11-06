@@ -296,3 +296,15 @@ it('shows decorative bike and component icons, including a fallback for custom n
   expect(custom.querySelector('[data-component-icon="component"] svg')).toBeTruthy();
   expect(log().getAllByRole('article')[0].querySelector('[data-component-icon="component"]')).toBeTruthy();
 });
+
+it('keeps compact entry metadata together and removes the visible total-distance label', async () => {
+  await demo();
+  expect(screen.queryByText('Total distance')).toBeNull();
+  const article = log().getAllByRole('article')[0];
+  expect(article.querySelector('.maintenance-entry-context .maintenance-kind')?.textContent).toBe('Service');
+  const details = article.querySelector('.maintenance-entry-details') as HTMLElement;
+  expect(details.querySelector('time')?.getAttribute('datetime')).toBe('2026-10-30');
+  expect(within(details).getByText('At 4,790 km')).toBeTruthy();
+  expect(within(details).queryByText('36.5 km ago')).toBeNull();
+  expect(article.querySelector('.maintenance-entry-meta > strong')?.textContent).toBe('36.5 km ago');
+});

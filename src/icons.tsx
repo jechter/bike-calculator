@@ -235,3 +235,9 @@ export const BrakeDiscIcon = () => (
     <path d="M12 3v7M21 12h-7M12 21v-7M3 12h7M6 5.5l2 2M18 5.5l-2 2M18 18.5l-2-2M6 18.5l2-2" />
   </svg>
 );
+
+export const CableIcon = () => (
+  <svg {...SVG_PROPS}>
+    <path d="M5 3v4a7 7 0 0 0 7 7h1a4 4 0 0 1 4 4v3M8 3v4a4 4 0 0 0 4 4h1a7 7 0 0 1 7 7v3M4 3h5M16 21h5" />
+  </svg>
+);

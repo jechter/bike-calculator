@@ -88,3 +88,30 @@ export function componentMileage(currentMeters: number, history: MaintenanceEntr
   const latest = history.find(entry => (entry.kind ?? 'service') === kind);
   return latest ? kilometersAgo(currentMeters, latest.odometer_km) : undefined;
 }
+
+export interface MaintenanceInterval {
+  previous: MaintenanceEntry;
+  distanceKm: number | null;
+  basis: 'service' | 'replacement';
+}
+/** Order by date and recorded mileage; at identical date/mileage, replacement starts the new lifetime. */
+export function maintenanceIntervals(entries: MaintenanceEntry[]): Map<string, MaintenanceInterval> {
+  const result = new Map<string, MaintenanceInterval>();
+  const states = new Map<string, { replacement?: MaintenanceEntry; services: Map<string, MaintenanceEntry> }>();
+  const chronological = [...entries].sort((a, b) => b.performed_on.localeCompare(a.performed_on) || b.odometer_km - a.odometer_km || Number(a.kind === 'replacement') - Number(b.kind === 'replacement')).reverse();
+  const taskKey = (task: string) => task.trim().replace(/\s+/g, ' ').toLowerCase();
+  for (const entry of chronological) {
+    const key = JSON.stringify([entry.bike_id, componentName(entry.component).toLowerCase()]);
+    let state = states.get(key);
+    if (!state) { state = { services: new Map() }; states.set(key, state); }
+    const replacement = entry.kind === 'replacement';
+    const previous = replacement ? state.replacement : state.services.get(taskKey(entry.task)) ?? state.replacement;
+    if (previous) {
+      const difference = entry.odometer_km - previous.odometer_km;
+      result.set(entry.id, { previous, basis: previous.kind === 'replacement' ? 'replacement' : 'service', distanceKm: difference < -0.001 ? null : Math.max(0, difference) });
+    }
+    if (replacement) { state.replacement = entry; state.services.clear(); }
+    else state.services.set(taskKey(entry.task), entry);
+  }
+  return result;
+}

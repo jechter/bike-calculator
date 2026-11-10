@@ -43,7 +43,6 @@
 .maintenance-notes { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted); margin: 8px 0; }
 .maintenance-entry-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; text-align: right; flex-shrink: 0; }
 .maintenance-entry-meta button { font-size: 12px; padding: 4px 8px; color: var(--muted); }
-.maintenance-footer { margin-top: 20px; }
 @media(max-width: 600px) { .maintenance-welcome { padding: 28px 18px 0; } .maintenance-features { grid-template-columns: 1fr; } .maintenance-form-row { grid-template-columns: 1fr; gap: 0; } .maintenance-entry { padding: 18px; flex-direction: column; gap: 12px; } .maintenance-entry-meta { flex-direction: row; justify-content: space-between; align-items: center; text-align: left; } }
 .maintenance-components { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--panel); }
 .maintenance-component + .maintenance-component { border-top: 1px solid var(--border); }
@@ -129,3 +128,65 @@
 .maintenance-entry-details { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; font-size: 13px; color: var(--muted); }
 .maintenance-entry-details > * { white-space: nowrap; }
 .maintenance-entry-meta > strong { color: var(--accent); font-weight: 600; white-space: nowrap; }
+
+.maintenance .maintenance-settings-link { display: inline-flex; align-items: center; padding: 10px 16px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel); color: var(--text); font: inherit; text-decoration: none; }
+.maintenance .maintenance-settings-link:hover { border-color: var(--accent); }
+.maintenance .maintenance-settings-link:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.maintenance-sync-help { margin: -8px 0 24px; }
+
+/* Match the shared title-bar actions; compact layouts portal them to the bottom bar. */
+.maintenance-page-head { flex: none; align-items: center; padding: 0 0 16px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+.maintenance-page-head > div:first-child { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; }
+.maintenance-page-head .subtitle { font-size: 13px; margin: 0; }
+.maintenance-header-actions { display: flex; align-items: center; gap: 8px; }
+.maintenance-header-actions .copy-link-btn { font-size: 13px; padding: 6px 10px; border-radius: 8px; background: var(--panel-2); white-space: nowrap; }
+.maintenance-header-actions .maintenance-primary { background: var(--accent); color: white; border-color: var(--accent); }
+.maintenance-header-actions button:disabled { cursor: default; opacity: .55; }
+.maintenance-more { position: relative; }
+.maintenance-more-popup { width: 300px; padding: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); color: var(--text); box-shadow: 0 8px 28px #0002; }
+.maintenance-more-popup > button, .maintenance-more-popup > a { display: block; width: 100%; text-align: left; font: inherit; font-size: 13px; padding: 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text); text-decoration: none; cursor: pointer; }
+.maintenance-more-popup > button:hover:not(:disabled), .maintenance-more-popup > a:hover { background: var(--accent-soft); }
+.maintenance-more-popup > p { font-size: 12px; line-height: 1.5; padding: 0 10px 8px; color: var(--muted); }
+.maintenance-more-popup > button:focus-visible, .maintenance-more-popup > a:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* Only the connected page fills the viewport; the welcome page scrolls normally. */
+.main.main--maintenance:has(.maintenance--connected) { height: 100dvh; display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding-bottom: 16px; }
+.maintenance--connected { display: flex; flex-direction: column; flex: 1; min-height: 0; padding-bottom: 0; width: 100%; }
+.maintenance--connected > .maintenance-notice { flex: none; max-height: 24dvh; overflow: auto; }
+.maintenance--connected > [role="status"] { flex: none; }
+.maintenance--connected .maintenance-layout { flex: 1; min-height: 0; grid-template-rows: minmax(120px, .4fr) minmax(160px, .6fr); gap: 20px; align-items: stretch; }
+.maintenance--connected .maintenance-bike-panel, .maintenance--connected .maintenance-log { display: flex; flex-direction: column; min-height: 0; }
+.maintenance--connected .maintenance-section-head { flex: none; margin-bottom: 12px; }
+.maintenance--connected .maintenance-section-head h2 { font-size: 18px; }
+.maintenance-list-scroll { min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; border-radius: 12px; }
+.maintenance--connected .maintenance-list-scroll { flex: 1; }
+.maintenance-list-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.maintenance-list-scroll .maintenance-bikes { margin-bottom: 0; }
+.maintenance-list-scroll .maintenance-form { margin-bottom: 14px; }
+@container maintenance-page (min-width: 1000px) {
+  .maintenance--connected .maintenance-layout { grid-template-rows: minmax(0, 1fr); }
+}
+@media(max-width: 1199px) {
+  .main.main--maintenance:has(.maintenance--connected) { padding-bottom: calc(var(--bottom-bar-height, 66px) + 12px); }
+  .maintenance-page-head { border: 0; margin: 0; padding: 0; }
+  .maintenance-page-head .subtitle { display: none; }
+  .maintenance-header-actions { gap: 6px; }
+  .maintenance-header-actions .maintenance-action-label { display: none; }
+  .maintenance-header-actions .copy-link-btn { font-size: 12px; padding: 7px 9px; }
+  .maintenance-header-actions .maintenance-refresh { width: 34px; height: 34px; padding: 7px; }
+}
+/* Auto-height embeds must not impose a fixed viewport on their host page. */
+html.embedded .main.main--maintenance:has(.maintenance--connected) { height: auto; overflow: visible; }
+html.embedded .maintenance--connected .maintenance-list-scroll { max-height: 65vh; flex: auto; }
+html.embedded .maintenance--connected .maintenance-layout { flex: auto; grid-template-rows: auto; }
+/* Short windows/landscape phones still need enough room to use each scroll view. */
+@media(max-height: 650px) {
+  .main.main--maintenance:has(.maintenance--connected) { height: auto; min-height: 100dvh; overflow: visible; }
+  .maintenance--connected .maintenance-layout { flex: none; grid-template-rows: auto; }
+  .maintenance--connected .maintenance-bike-panel, .maintenance--connected .maintenance-log { height: 55dvh; min-height: 220px; }
+  .maintenance-page-head { position: sticky; top: 0; z-index: 30; background: var(--bg); }
+}
+.maintenance-demo-note { flex: none; margin: 0 0 12px; }
+.maintenance-entry-details { align-items: center; }
+.maintenance-entry-metric { display: inline-flex; align-items: center; gap: 5px; cursor: help; }
+.maintenance-entry-metric svg { width: 16px; height: 16px; flex-shrink: 0; }

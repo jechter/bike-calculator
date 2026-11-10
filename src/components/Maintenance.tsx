@@ -1,9 +1,20 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { bikeComponents, suggestedServices, componentHistory, componentMileage, componentName, componentNames, demoMaintenance, kilometersAgo, localDate, type MaintenanceData, type MaintenanceEntry, type MaintenanceKind } from '../lib/maintenance';
+import { createPortal } from 'react-dom';
+import { useIsMobile } from '../useIsMobile';
+import { ResponsivePopover } from './ResponsivePopover';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { bikeComponents, suggestedServices, componentHistory, componentMileage, componentName, componentNames, maintenanceIntervals, demoMaintenance, kilometersAgo, localDate, type MaintenanceData, type MaintenanceEntry, type MaintenanceKind } from '../lib/maintenance';
 import { deleteLocalEntries, forgetApiKey, loadIntervals, loadSavedApiKey, saveApiKey, saveLocalEntries } from '../lib/intervals';
-import { RepeatIcon, EditIcon, DeleteIcon, BikeIcon } from '../icons';
+import { connectServer, downloadBrowserBackup, serverStorageEnabled, type ServerStore } from '../lib/maintenance-storage';
+import { RepeatIcon, EditIcon, DeleteIcon, BikeIcon, WrenchIcon, ThreadIcon } from '../icons';
 import { MaintenanceComponentIcon } from './MaintenanceComponentIcon';
 import './Maintenance.css';
+async function loadGarage(key: string) {
+  const garage = await loadIntervals(key);
+  const backup = garage.entries;
+  const store = serverStorageEnabled ? await connectServer(key, garage.athleteId) : null;
+  if (store) garage.entries = await store.load();
+  return { garage, backup, store };
+}
 const km = (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 1 });
 export function Maintenance() {
   const [data, setData] = useState<MaintenanceData | null>(null);
@@ -12,7 +23,10 @@ export function Maintenance() {
   const [apiKeyInput, setApiKeyInput] = useState('');
   const apiKey = useRef('');
   const athleteId = useRef('');
-  const restoreRequest = useRef<ReturnType<typeof loadIntervals> | null>(null);
+  const restoreRequest = useRef<ReturnType<typeof loadGarage> | null>(null);
+  const store = useRef<ServerStore | null>(null);
+  const draftId = useRef('');
+  const [localBackup, setLocalBackup] = useState<MaintenanceEntry[]>([]);
   const [hasSavedKey, setHasSavedKey] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -27,6 +41,16 @@ export function Maintenance() {
   const [odometer, setOdometer] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const isMobile = useIsMobile();
+  const [actionSlot, setActionSlot] = useState<HTMLElement | null>(null);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
+  const logScrollRef = useRef<HTMLDivElement>(null);
+  // The shared bottom bar can mount one render after the media query changes.
+  useLayoutEffect(() => { const target = isMobile ? document.getElementById('topbar-actions-slot') : null; if (actionSlot !== target) setActionSlot(target); });
+  useEffect(() => { setMoreOpen(false); }, [isMobile]);
+  useEffect(() => { logScrollRef.current?.scrollTo?.({ top: 0 }); }, [bikeId, componentFilter]);
+
   useEffect(() => {
     let mounted = true;
     try {
@@ -34,10 +58,10 @@ export function Maintenance() {
       if (key) {
         setHasSavedKey(true); setBusy(true);
         // Reuse the request during StrictMode's effect replay.
-        restoreRequest.current ??= loadIntervals(key);
-        void restoreRequest.current.then(garage => {
+        restoreRequest.current ??= loadGarage(key);
+        void restoreRequest.current.then(connection => {
           if (!mounted) return;
-          apiKey.current = key; athleteId.current = garage.athleteId; setData(garage);
+          apiKey.current = key; athleteId.current = connection.garage.athleteId; store.current = connection.store; setLocalBackup(connection.backup); setData(connection.garage);
         }).catch(error => {
           if (mounted) setError(error instanceof Error ? error.message : 'Could not reconnect to Intervals.icu.');
         }).finally(() => { if (mounted) setBusy(false); });
@@ -45,8 +69,10 @@ export function Maintenance() {
     } catch (error) { setError(error instanceof Error ? error.message : 'Could not read browser storage.'); }
     return () => { mounted = false; };
   }, []);
+  const missingBrowserRecords = localBackup.filter(entry => !data?.entries.some(remote => remote.id === entry.id)).length;
   const bike = data?.bikes.find(b => b.id === formBikeId);
   const entries = data?.entries.filter(e => (!bikeId || e.bike_id === bikeId) && (!componentFilter || componentName(e.component).toLowerCase() === componentFilter.toLowerCase())).slice().sort((a, b) => b.performed_on.localeCompare(a.performed_on)) ?? [];
+  const intervals = useMemo(() => maintenanceIntervals(data?.entries ?? []), [data?.entries]);
   const selectedBike = data?.bikes.find(b => b.id === bikeId);
   const filterLabel = selectedBike ? selectedBike.name + (componentFilter ? ' / ' + componentFilter : '') : 'All bikes and components';
   const clearFilter = () => { setBikeId(''); setComponentFilter(''); };
@@ -60,25 +86,27 @@ export function Maintenance() {
     event.preventDefault();
     const key = apiKeyInput.trim();
     void run(async () => {
-      const garage = await loadIntervals(key);
+      const connection = await loadGarage(key);
+      const garage = connection.garage;
       saveApiKey(key); setHasSavedKey(true);
-      apiKey.current = key; athleteId.current = garage.athleteId;
+      apiKey.current = key; athleteId.current = garage.athleteId; store.current = connection.store; setLocalBackup(connection.backup);
       setApiKeyInput(''); setDemo(false); clearFilter(); setData(garage);
     });
   };
   const disconnect = () => {
     try { forgetApiKey(); } catch (error) { setError(error instanceof Error ? error.message : 'Could not forget the saved key.'); return; }
+    void store.current?.logout().catch(() => {}); store.current = null; setLocalBackup([]);
     setHasSavedKey(false);
     apiKey.current = ''; athleteId.current = ''; setApiKeyInput('');
-    setData(null); setDemo(false); clearFilter(); setFormOpen(false); setMessage(''); setError('');
+    setMoreOpen(false); setData(null); setDemo(false); clearFilter(); setFormOpen(false); setMessage(''); setError('');
   };
   const storeEntries = (updated: MaintenanceEntry[]) => {
-    if (!demo) saveLocalEntries(athleteId.current, updated);
     setData(previous => previous && { ...previous, entries: updated });
     if (componentFilter && !updated.some(entry => entry.bike_id === bikeId && componentName(entry.component).toLowerCase() === componentFilter.toLowerCase())) setComponentFilter('');
   };
   const openForm = (name = componentFilter || 'Chain', targetBikeId = bikeId || data?.bikes[0]?.id || '') => {
     const targetBike = data?.bikes.find(b => b.id === targetBikeId);
+    draftId.current = crypto.randomUUID();
     setFormBikeId(targetBikeId); setEditingId(null); setError(''); setMessage(''); setComponent(name); setKind('service'); setTask(''); setNotes(''); setDate(localDate()); setOdometer(String((targetBike?.distance ?? 0) / 1000)); setFormOpen(true);
   };
   const repeat = (entry: MaintenanceEntry) => {
@@ -102,13 +130,42 @@ export function Maintenance() {
       const name = componentName(component);
       const entry = { component: name, kind, bike_id: bike.id, task: kind === 'replacement' ? `Replaced ${name.toLowerCase()}` : task.trim(), notes: notes.trim(), performed_on: date, odometer_km: mileage };
       if (!data) return;
-      const updated = (editingId ? data.entries.map(existing => existing.id === editingId ? { ...existing, ...entry } : existing) : [{ ...entry, id: crypto.randomUUID() }, ...data.entries]).sort((a, b) => b.performed_on.localeCompare(a.performed_on));
+      const record = { ...entry, id: editingId || draftId.current };
+      const updated = store.current && !demo ? await store.current.save(record, Boolean(editingId)) : (editingId ? data.entries.map(existing => existing.id === editingId ? record : existing) : [record, ...data.entries]).sort((a, b) => b.performed_on.localeCompare(a.performed_on));
+      if (!demo && !store.current) saveLocalEntries(athleteId.current, updated);
       storeEntries(updated);
       setBikeId(bike.id); setComponentFilter(name);
-      setFormOpen(false); setEditingId(null); setMessage(demo ? `Demo entry ${editingId ? 'updated' : 'added'}. It will disappear when you leave this page.` : 'Maintenance saved in this browser only. Nothing was uploaded to Intervals.icu.');
+      setFormOpen(false); setEditingId(null); setMessage(demo ? `Demo entry ${editingId ? 'updated' : 'added'}. It will disappear when you leave this page.` : store.current ? 'Maintenance saved on the server. Your browser backup is unchanged.' : 'Maintenance saved in this browser only. Nothing was uploaded to Intervals.icu.');
     });
   };
-  return <div className="maintenance">
+  const headerActions = data && <div className="maintenance-header-actions">
+    <button className="copy-link-btn maintenance-primary" disabled={busy || formOpen || !data.bikes.length} onClick={() => openForm()} aria-label="+ Log maintenance">{isMobile ? '+ Log' : '+ Log maintenance'}</button>
+    {!demo && <button className="copy-link-btn maintenance-refresh" title="Refresh mileage" aria-label="Refresh mileage" disabled={busy} onClick={() => void run(async () => { const garage = await loadIntervals(apiKey.current); if (garage.athleteId !== athleteId.current) throw new Error('Account changed. Disconnect and connect again.'); if (store.current) garage.entries = await store.current.load(); setData(garage); if (bikeId && !garage.bikes.some(b => b.id === bikeId)) clearFilter(); setMessage('Mileage refreshed from Intervals.icu. Saved service mileages are unchanged.'); })}><ThreadIcon /><span className="maintenance-action-label">Refresh mileage</span></button>}
+    <div className="maintenance-more" ref={moreRef}>
+      <button className="copy-link-btn" aria-expanded={moreOpen} aria-controls="maintenance-more-menu" onClick={() => setMoreOpen(open => !open)}>More <span aria-hidden="true">▾</span></button>
+      {moreOpen && <ResponsivePopover id="maintenance-more-menu" className="maintenance-more-popup" anchorRef={moreRef} onClose={() => setMoreOpen(false)}>
+        {!demo && <>
+          <a className="maintenance-settings-link" onClick={() => setMoreOpen(false)} href="https://intervals.icu/settings/gear" target="_blank" rel="noopener noreferrer">Open Intervals.icu gear settings</a>
+          <p className="maintenance-fine">To update mileage from Strava, open Intervals.icu gear settings, click “Update from Strava” there, then click “Refresh mileage” here.</p>
+          {!serverStorageEnabled && <button disabled={busy || formOpen} onClick={() => { setMoreOpen(false); if (!confirm('Delete all maintenance records for this Intervals.icu account from this browser? This cannot be undone.')) return; void run(async () => { deleteLocalEntries(athleteId.current); setData(previous => previous && { ...previous, entries: [] }); setMessage('Local maintenance records deleted. Nothing was changed in Intervals.icu.'); }); }}>Delete local records</button>}<button disabled={busy} onClick={() => { setMoreOpen(false); downloadBrowserBackup(athleteId.current, data.entries); }}>Download records backup</button>
+          {store.current && localBackup.length > 0 && <>
+            <button disabled={busy} onClick={() => { setMoreOpen(false); downloadBrowserBackup(athleteId.current, localBackup); }}>Download browser backup</button>
+            {missingBrowserRecords > 0 && <>
+              <p className="maintenance-fine">{missingBrowserRecords} browser records available to import. Existing server records will not be overwritten; your local backup will be kept.</p>
+              <button disabled={busy || formOpen} onClick={() => { setMoreOpen(false); void run(async () => {
+                const result = await store.current!.importEntries(localBackup);
+                storeEntries(result.entries);
+                setMessage(`Import verified: ${result.inserted} added; ${result.existing} already present and not overwritten. All browser records are represented on the server. Your local backup was kept.`);
+              }); }}>Import browser records</button>
+            </>}
+          </>}
+        </>}
+        <button disabled={busy} onClick={disconnect}>{demo ? 'Exit demo' : 'Disconnect'}</button>
+      </ResponsivePopover>}
+    </div>
+  </div>;
+  return <div className={'maintenance' + (data ? ' maintenance--connected' : '')}>
+    <div className="main-head maintenance-page-head"><div><h1>Maintenance Log</h1><p className="subtitle">Track maintenance tasks for your bikes</p></div>{actionSlot ? createPortal(headerActions, actionSlot) : <div className="main-actions">{headerActions}</div>}</div>
     {error && <div className="maintenance-notice maintenance-error" role="alert">{error}</div>}
     {message && <div className="maintenance-notice" role="status">{message}</div>}
     {busy && <p role="status">Connecting / loading…</p>}
@@ -121,18 +178,16 @@ export function Maintenance() {
         <button className="maintenance-primary" type="submit" disabled={busy}>Connect Intervals.icu</button>
       </form>
       <p className="maintenance-fine">Find your key in <a href="https://intervals.icu/settings" target="_blank" rel="noopener noreferrer">Intervals.icu Settings → Developer Settings</a>.</p>
-      <div className="maintenance-notice">Design prototype: your API key is saved unencrypted in this browser’s localStorage so we can reconnect automatically. Scripts on this site and anyone with access to this browser can read it. It is sent only to Intervals.icu. We only read your profile and bike mileage, but the key itself may grant write access. Only paste it into a deployment you trust. Maintenance records stay in this browser, not in a cloud account.</div>
+      <div className="maintenance-notice">Design prototype: your API key is saved unencrypted in this browser’s localStorage so we can reconnect automatically. Scripts on this site and anyone with access to this browser can read it. {serverStorageEnabled ? 'It is sent to Intervals.icu and the configured storage service to verify your identity; the server does not store it.' : 'It is sent only to Intervals.icu.'} Refresh only reads your profile and bike mileage. The key itself may grant broader write access. Only paste it into a deployment you trust. {serverStorageEnabled ? 'Maintenance records are saved on the server. Existing browser records are offered for import and kept as a backup.' : 'Server storage is not configured on this installation; records still stay in this browser.'}</div>
       {hasSavedKey && <button disabled={busy} onClick={disconnect}>Forget saved API key</button>}
       <button disabled={busy} onClick={() => { setDemo(true); setData(demoMaintenance()); setError(''); }}>Explore a demo</button>
-      <div className="maintenance-features"><div><strong>All your bikes</strong><span>Mileage from Intervals.icu</span></div><div><strong>A proper service history</strong><span>Tasks, dates, notes, and mileage</span></div><div><strong>Just for you</strong><span>Local records, no uploads</span></div></div>
+      <div className="maintenance-features"><div><strong>All your bikes</strong><span>Mileage from Intervals.icu</span></div><div><strong>A proper service history</strong><span>Tasks, dates, notes, and mileage</span></div><div><strong>Just for you</strong><span>{serverStorageEnabled ? 'Account-isolated server records' : 'Local records, no uploads'}</span></div></div>
     </section> : <>
-      <div className="maintenance-toolbar"><div><strong>{demo ? 'Demo garage' : data.name + '’s garage'}</strong><p className="maintenance-fine">{demo ? 'Sample data · changes are not saved' : `Last synced ${new Date(data.synced_at).toLocaleString()} · Records and API key saved in this browser only`}</p></div><div className="maintenance-actions">
-        {!demo && <><button disabled={busy} onClick={() => void run(async () => { const garage = await loadIntervals(apiKey.current); if (garage.athleteId !== athleteId.current) throw new Error('Account changed. Disconnect and connect again.'); setData(garage); setMessage('Mileage refreshed from Intervals.icu. Saved service mileages are unchanged.'); })}>Refresh mileage</button><button disabled={busy || formOpen} onClick={() => { if (!confirm('Delete all maintenance records for this Intervals.icu account from this browser? This cannot be undone.')) return; void run(async () => { deleteLocalEntries(athleteId.current); setData(previous => previous && { ...previous, entries: [] }); setMessage('Local maintenance records deleted. Nothing was changed in Intervals.icu.'); }); }}>Delete local records</button></>}
-        <button disabled={busy} onClick={disconnect}>{demo ? 'Exit demo' : 'Disconnect'}</button>
-      </div></div>
+      {demo && <p className="maintenance-fine maintenance-demo-note">Demo · sample data, changes are not saved</p>}
       <div className="maintenance-layout">
       <section className="maintenance-bike-panel" aria-label="Bikes and components">
       <div className="maintenance-section-head"><h2>Bikes</h2></div>
+      <div className="maintenance-list-scroll maintenance-bike-scroll" tabIndex={0} role="region" aria-label="Bikes and components list">
       {!data.bikes.length ? <div className="maintenance-empty"><h3>No bikes found</h3><p>Add a bike in Intervals.icu gear settings, then refresh mileage.</p></div> : <ul className="maintenance-bikes maintenance-bike-tree" aria-label="Your bikes">{data.bikes.map((b, index) => {
         const bikeEntries = data.entries.filter(entry => entry.bike_id === b.id);
         const open = bikeId === b.id;
@@ -160,9 +215,11 @@ export function Maintenance() {
           </div>}</div>
         </li>;
       })}</ul>}
+      </div>
       </section>
       <section className="maintenance-log" aria-label="Performed maintenance">
-        <div className="maintenance-section-head"><div><h2>Maintenance log</h2><p className="maintenance-fine" role="status">{filterLabel} · {entries.length} {entries.length === 1 ? 'entry' : 'entries'}</p></div><div className="maintenance-actions"><button className="maintenance-primary" disabled={busy || formOpen || !data.bikes.length} onClick={() => openForm()}>+ Log maintenance</button></div></div>
+        <div className="maintenance-section-head"><div><h2>Maintenance log</h2><p className="maintenance-fine" role="status">{filterLabel} · {entries.length} {entries.length === 1 ? 'entry' : 'entries'}</p></div></div>
+        <div className="maintenance-list-scroll maintenance-log-scroll" tabIndex={0} role="region" aria-label="Maintenance entries" ref={logScrollRef}>
         {formOpen && bike && <form className="maintenance-form" onSubmit={save}><h3>{editingId ? 'Edit maintenance' : 'Log maintenance'}</h3><p className="maintenance-fine">For older jobs, enter the bike’s mileage on the day you did the work. Synced mileage is only the current total.</p>
           <label>Bike<select required value={formBikeId} onChange={event => { setFormBikeId(event.target.value); const target = data.bikes.find(b => b.id === event.target.value); setOdometer(String((target?.distance ?? 0) / 1000)); }}>{data.bikes.map(b => <option value={b.id} key={b.id}>{b.name}</option>)}</select></label>
           <div className="maintenance-form-row"><label>Component<input autoFocus required maxLength={100} list="bike-components" value={component} onChange={e => setComponent(e.target.value)} placeholder="Choose or name a component" /></label><datalist id="bike-components">{[...new Set([...bikeComponents, ...componentNames(data.entries.filter(entry => entry.bike_id === formBikeId))])].map(name => <option key={name}>{name}</option>)}</datalist>
@@ -174,13 +231,19 @@ export function Maintenance() {
         </form>}
         {!entries.length ? <div className="maintenance-empty"><h3>No maintenance logged{bikeId ? ' for this selection' : ' yet'}</h3><p>Log maintenance to start tracking a component on your bike.</p></div> : <div className="maintenance-history">{entries.map(entry => {
           const entryBike = data.bikes.find(b => b.id === entry.bike_id);
+          const interval = intervals.get(entry.id);
+          const intervalExplanation = interval ? (interval.distanceKm === null ? 'Cannot calculate distance: the earlier entry has higher mileage.' : `Distance since ${interval.basis === 'service' ? 'the previous service of this type' : 'the previous replacement'}: ${km(interval.distanceKm)} km.`) + ` Previous: ${interval.previous.task} (${interval.previous.performed_on}), at ${km(interval.previous.odometer_km)} km.` : '';
           const ago = entryBike ? kilometersAgo(entryBike.distance, entry.odometer_km) : null;
           return <article className="maintenance-entry" key={entry.id}>
             <div className="maintenance-entry-body">
               <p className="maintenance-entry-context"><MaintenanceComponentIcon name={entry.component} /><span>{entryBike?.name ?? 'Bike unavailable'} / {componentName(entry.component)}</span><span className="maintenance-kind">{entry.kind === 'replacement' ? 'Replacement' : 'Service'}</span></p>
               <div className="maintenance-entry-details">
                 <time dateTime={entry.performed_on}>{new Date(entry.performed_on + 'T12:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</time>
-                <span>At {km(entry.odometer_km)} km</span>
+                <span className="maintenance-entry-metric" role="img" title={`Bike mileage when this work was performed: ${km(entry.odometer_km)} km`} aria-label={`Bike mileage when this work was performed: ${km(entry.odometer_km)} km`}><BikeIcon />{km(entry.odometer_km)} km</span>
+                {interval && <span className="maintenance-entry-metric" role="img" title={intervalExplanation} aria-label={intervalExplanation} data-interval-basis={interval.basis}>
+                  {interval.basis === 'service' ? <WrenchIcon /> : <MaintenanceComponentIcon name={entry.component} />}
+                  {interval.distanceKm === null ? '—' : `${km(interval.distanceKm)} km`}
+                </span>}
               </div>
               <h3>{entry.task}</h3>
               {entry.notes && <p className="maintenance-notes">{entry.notes}</p>}
@@ -189,13 +252,14 @@ export function Maintenance() {
             <div className="maintenance-entry-meta"><strong>{!entryBike ? 'Mileage unavailable' : ago === null ? 'Mileage changed' : km(ago) + ' km ago'}</strong><div className="maintenance-entry-actions">
               <button disabled={busy || formOpen || !entryBike} title="Repeat" aria-label={`Repeat ${entry.task}`} onClick={() => repeat(entry)}><RepeatIcon /></button>
               <button disabled={busy || formOpen || !entryBike} title="Edit" aria-label={`Edit ${entry.task}`} onClick={() => edit(entry)}><EditIcon /></button>
-              <button disabled={busy || formOpen} className="maintenance-delete" title="Delete" aria-label={`Delete ${entry.task}`} onClick={() => { if (!confirm('Delete this maintenance entry? This cannot be undone.')) return; void run(async () => { storeEntries(data.entries.filter(e => e.id !== entry.id)); }); }}><DeleteIcon /></button>
+              <button disabled={busy || formOpen} className="maintenance-delete" title="Delete" aria-label={`Delete ${entry.task}`} onClick={() => { if (!confirm('Delete this maintenance entry? This cannot be undone.')) return; void run(async () => { const updated = store.current && !demo ? await store.current.delete(entry.id) : data.entries.filter(e => e.id !== entry.id); if (!demo && !store.current) saveLocalEntries(athleteId.current, updated); storeEntries(updated); }); }}><DeleteIcon /></button>
             </div></div>
           </article>;
         })}</div>}
+        </div>
       </section>
       </div>
-        <p className="maintenance-fine maintenance-footer">Distances use the last synced Intervals.icu mileage. Replacement and service are tracked separately. Service mileage appears once a service is logged. {demo ? 'Demo only — no connection to Intervals.icu.' : 'Prototype: records are stored only in this browser. Disconnect removes the saved key but keeps records; clearing browser data removes them.'}</p>
+
     </>}
   </div>;
 }

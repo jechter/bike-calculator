@@ -101,5 +101,5 @@ export const CALCULATORS: CalculatorDef[] = [
     icon: <ThreadIcon />,
     Component: ThreadDirection,
   },
-  { id: "maintenance", title: "Maintenance Log", subtitle: "Your bikes, their mileage, and the care that keeps them rolling.", icon: <MaintenanceIcon />, Component: Maintenance },
+  { id: "maintenance", title: "Maintenance Log", subtitle: "Track maintenance tasks for your bikes", icon: <MaintenanceIcon />, Component: Maintenance, ownHeader: true },
 ];

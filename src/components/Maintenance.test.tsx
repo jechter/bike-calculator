@@ -5,7 +5,7 @@ import { StrictMode } from 'react';
 import { Maintenance } from './Maintenance';
 import { saveApiKey, loadSavedApiKey } from '../lib/intervals';
 import { componentHistory, componentMileage, componentNames, demoMaintenance, kilometersAgo, localDate } from '../lib/maintenance';
-afterEach(() => { cleanup(); localStorage.clear(); sessionStorage.clear(); vi.restoreAllMocks(); });
+afterEach(() => { cleanup(); localStorage.clear(); sessionStorage.clear(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 async function demo() { render(<Maintenance />); fireEvent.click(screen.getByText('Explore a demo')); }
 const showAll = () => fireEvent.click(screen.getByRole('button', { name: /^Hide components for/ }));
 const log = () => within(screen.getByRole('region', { name: 'Performed maintenance' }));
@@ -166,7 +166,10 @@ it('persists local records and keys, then restores without selecting a filter', 
   expect(screen.getByText('All bikes and components · 1 entry')).toBeTruthy();
   fireEvent.click(screen.getByText('Refresh mileage'));
   await waitFor(() => expect(screen.getByText(/Mileage refreshed from Intervals.icu/)).toBeTruthy());
+  expect(screen.queryByText(/Recalculation results/)).toBeNull();
+  expect(request.mock.calls.some(([url]) => String(url).endsWith('/calc'))).toBe(false);
   expect(request.mock.calls.every(([, options]) => options?.method === 'GET')).toBe(true);
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
   fireEvent.click(screen.getByText('Disconnect'));
   expect(loadSavedApiKey()).toBeNull();
   expect(localStorage.getItem('maintenance-intervals-v1:i-test')).toContain('4826.537');
@@ -304,7 +307,86 @@ it('keeps compact entry metadata together and removes the visible total-distance
   expect(article.querySelector('.maintenance-entry-context .maintenance-kind')?.textContent).toBe('Service');
   const details = article.querySelector('.maintenance-entry-details') as HTMLElement;
   expect(details.querySelector('time')?.getAttribute('datetime')).toBe('2026-10-30');
-  expect(within(details).getByText('At 4,790 km')).toBeTruthy();
+  expect(within(details).getByRole('img', { name: 'Bike mileage when this work was performed: 4,790 km' }).textContent).toBe('4,790 km');
   expect(within(details).queryByText('36.5 km ago')).toBeNull();
   expect(article.querySelector('.maintenance-entry-meta > strong')?.textContent).toBe('36.5 km ago');
+});
+
+it('keeps the current connection and key when mileage refresh fails', async () => {
+  saveApiKey('current-key'); let fail = false;
+  vi.spyOn(globalThis, 'fetch').mockImplementation(async url => {
+    if (fail) return new Response('upstream details omitted', { status: 401 });
+    return new Response(JSON.stringify(String(url).endsWith('/gear') ? [{ id: 'b1', name: 'Connected bike', type: 'Bike', distance: 100000 }] : { id: 'i1', name: 'Rider' }));
+  });
+  render(<Maintenance />);
+  await waitFor(() => expect(screen.getByText('Connected bike')).toBeTruthy());
+  fail = true;
+  fireEvent.click(screen.getByText('Refresh mileage'));
+  await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
+  expect(screen.getByText('Connected bike')).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  expect(screen.getByText('Disconnect')).toBeTruthy();
+  expect(loadSavedApiKey()).toBe('current-key');
+  expect(screen.queryByText('Connect Intervals.icu')).toBeNull();
+});
+
+it('links to gear settings without credentials, explains the manual update, and keeps refresh read-only', async () => {
+  saveApiKey('saved-key');
+  const request = mockAccount();
+  render(<Maintenance />);
+  await waitFor(() => expect(screen.getByText('Real bike')).toBeTruthy());
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  const link = screen.getByRole('link', { name: 'Open Intervals.icu gear settings', hidden: true });
+  expect(link.getAttribute('href')).toBe('https://intervals.icu/settings/gear');
+  expect(link.getAttribute('target')).toBe('_blank');
+  expect(link.getAttribute('rel')).toContain('noopener');
+  expect(screen.getByText(/click “Update from Strava” there/)).toBeTruthy();
+  expect(screen.queryByText('Sync from Strava (experimental)')).toBeNull();
+  fireEvent.click(screen.getByText('Refresh mileage'));
+  await waitFor(() => expect(screen.getByText(/Mileage refreshed from Intervals.icu/)).toBeTruthy());
+  expect(request.mock.calls.every(([, options]) => options?.method === 'GET')).toBe(true);
+  expect(request.mock.calls.some(([url]) => /\/(sync|calc)$/.test(String(url)))).toBe(false);
+  expect(loadSavedApiKey()).toBe('saved-key');
+});
+
+it('places primary actions in the title bar and gives both lists keyboard-focusable scroll views', async () => {
+  await demo();
+  const head = document.querySelector('.maintenance-page-head') as HTMLElement;
+  expect(within(head).getByRole('button', { name: '+ Log maintenance' })).toBeTruthy();
+  expect(within(head).getByRole('button', { name: /^More/ })).toBeTruthy();
+  expect(screen.getByRole('region', { name: 'Bikes and components list' }).getAttribute('tabindex')).toBe('0');
+  expect(screen.getByRole('region', { name: 'Maintenance entries' }).getAttribute('tabindex')).toBe('0');
+  expect(document.querySelector('.maintenance-log .maintenance-section-head button')).toBeNull();
+});
+it('moves header actions into the shared compact toolbar slot', async () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+  render(<><div id="topbar-actions-slot" /><Maintenance /></>);
+  fireEvent.click(screen.getByText('Explore a demo'));
+  const slot = document.getElementById('topbar-actions-slot')!;
+  expect(within(slot).getByRole('button', { name: '+ Log maintenance' })).toBeTruthy();
+  expect(document.querySelector('.maintenance-page-head button')).toBeNull();
+  fireEvent.click(within(slot).getByRole('button', { name: /^More/ }));
+  expect(screen.getByText('Exit demo')).toBeTruthy();
+  fireEvent.keyDown(document, { key: 'Escape' });
+  expect(screen.queryByText('Exit demo')).toBeNull();
+});
+
+it('shows historical service intervals next to date/mileage and keeps current km-ago separate', async () => {
+  await demo();
+  const articles = log().getAllByRole('article');
+  const service = articles.find(article => within(article).queryByRole('heading', { name: 'Cleaned and lubricated chain' }))!;
+  const replacementMetric = within(service).getByRole('img', { name: /^Distance since the previous replacement: 190 km/ });
+  expect(replacementMetric.textContent?.trim()).toBe('190 km');
+  expect(replacementMetric.getAttribute('title')).toContain('Replaced chain');
+  expect(replacementMetric.querySelector('[data-component-icon="chain"]')).toBeTruthy();
+  expect(service.querySelector('.maintenance-entry-meta > strong')?.textContent).toBe('36.5 km ago');
+  fireEvent.click(screen.getByRole('button', { name: 'Repeat Cleaned and lubricated chain' }));
+  fireEvent.click(screen.getByText('Save maintenance'));
+  await waitFor(() => expect(log().getByRole('img', { name: /^Distance since the previous service of this type: 36.5 km/ })).toBeTruthy());
+  const serviceMetric = log().getByRole('img', { name: /^Distance since the previous service of this type: 36.5 km/ });
+  expect(serviceMetric.textContent?.trim()).toBe('36.5 km');
+  expect(serviceMetric.getAttribute('data-interval-basis')).toBe('service');
+  expect(serviceMetric.querySelector('svg')).toBeTruthy();
+  expect(serviceMetric.querySelector('[data-component-icon]')).toBeNull();
+  expect(log().getByRole('img', { name: /^Distance since the previous replacement: 190 km/ })).toBeTruthy();
 });

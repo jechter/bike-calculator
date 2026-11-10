@@ -29,16 +29,18 @@ export function saveLocalEntries(athleteId: string, entries: MaintenanceEntry[])
 export function deleteLocalEntries(athleteId: string) {
   localStorage.removeItem(storageKey(athleteId));
 }
-export interface IntervalsGarage extends MaintenanceData { athleteId: string }
-export async function loadIntervals(apiKey: string): Promise<IntervalsGarage> {
-  if (!apiKey || !/^[\x21-\x7e]+$/.test(apiKey) || apiKey.includes(':') || apiKey.length > 4096) throw new Error('Enter your personal Intervals.icu API key, without quotes or API_KEY:.');
-  const get = async (path: string) => {
+async function getIntervals(apiKey: string, path: string) {
     let response: Response;
     try { response = await fetch(base + path, { method: 'GET', redirect: 'error', credentials: 'omit', cache: 'no-store', signal: AbortSignal.timeout(25000), headers: { Authorization: 'Basic ' + btoa('API_KEY:' + apiKey), Accept: 'application/json' } }); }
     catch { throw new Error('Could not reach Intervals.icu. Check your connection and try again.'); }
     if (!response.ok) throw new Error(response.status === 401 ? 'Intervals.icu rejected this API key. Check it in Developer Settings.' : response.status === 429 ? 'Intervals.icu rate limit reached. Please try again later.' : 'Intervals.icu denied or could not complete the request. Please try again.');
     try { return await response.json(); } catch { throw new Error('Intervals.icu returned an unexpected response.'); }
-  };
+}
+
+export interface IntervalsGarage extends MaintenanceData { athleteId: string }
+export async function loadIntervals(apiKey: string): Promise<IntervalsGarage> {
+  if (!apiKey || !/^[\x21-\x7e]+$/.test(apiKey) || apiKey.includes(':') || apiKey.length > 4096) throw new Error('Enter your personal Intervals.icu API key, without quotes or API_KEY:.');
+  const get = (path: string) => getIntervals(apiKey, path);
   const athlete = await get('');
   if (typeof athlete.id !== 'string' || !athlete.id || typeof athlete.name !== 'string') throw new Error('Intervals.icu did not return a valid athlete profile.');
   const gear = await get('/gear');

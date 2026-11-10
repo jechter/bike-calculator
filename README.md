@@ -29,18 +29,24 @@ You can try the calculator live on the [Rückenwind web site](https://rueckenwin
 
 ## Maintenance log
 
-The **Maintenance Log** currently connects directly to Intervals.icu using a
-personal API key for design iteration. It reads real bike mileage and stores
-maintenance records **only in this browser**, separately for each Intervals.icu
-athlete. The API key is saved **unencrypted in localStorage** for automatic
-reconnection after reloading. Disconnect removes the saved key, not the records.
-Nothing is uploaded or changed in Intervals.icu. Only use trusted deployments
-and browsers; scripts on the same origin can read the saved key.
+The **Maintenance Log** connects to Intervals.icu with a personal API key for
+bike mileage. It supports **shared Supabase server storage**, with explicit,
+retry-safe import of existing browser records. The original browser copy is kept
+as a backup. Users do not need their own Supabase project or another login.
 
-See [prototype usage and limitations](docs/maintenance-prototype.md). An
-account-free, in-memory demo is also available. The earlier Strava/Supabase
-scaffold remains in the repository but is not used by the current page; its
-[historical setup notes](docs/maintenance-setup.md) are retained for reference.
+See [server setup and safe migration](docs/maintenance-server-storage.md).
+Without a configured storage endpoint, it remains in clearly labeled
+[browser-only mode](docs/maintenance-prototype.md). You can download a JSON backup
+in either mode. Existing browser data is never migrated or erased automatically.
+
+The API key is still saved unencrypted in localStorage for reconnection. In server
+mode it is also sent over HTTPS to the configured function to verify identity;
+the application does not persist it on the server. Only use trusted deployments
+and browsers. Maintenance records are never uploaded to Intervals.icu. Update
+Strava mileage in Intervals.icu gear settings, then refresh here.
+
+The account-free demo stays entirely in memory. The old Strava/Supabase scaffold
+is retained for reference but is not used by the current page.
 
 ## Documentation
 
@@ -96,7 +102,8 @@ the files directly.
 ## Tech
 
 - **Vite + React + TypeScript**, all calculator math client-side. The maintenance
-  prototype reads Intervals.icu directly and stores records in browser storage.
+  page reads Intervals.icu directly and uses optional shared Supabase storage
+  or browser-only fallback when no endpoint is configured.
 - Pure calculation modules live in [`src/lib/`](src/lib/) and are unit-tested
   against the worked examples in the calculator specs (`npm test`).
 - UI components (one per calculator) live in [`src/components/`](src/components/);

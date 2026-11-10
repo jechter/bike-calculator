@@ -1,4 +1,8 @@
-# Intervals.icu maintenance design prototype
+# Browser-only maintenance mode
+
+> For shared server storage and preservation of existing local records, see
+> [server setup and safe migration](maintenance-server-storage.md). This page
+> describes the default mode when no server-storage URL is configured.
 
 Open **Maintenance Log** and paste a personal API key from
 [Intervals.icu Settings → Developer Settings](https://intervals.icu/settings).
@@ -8,9 +12,14 @@ in a deployment you trust, never into a shared link, chat, or source file.
 
 ## Where data goes
 
-- The page makes two authenticated HTTPS GET requests directly from your browser
-  to `intervals.icu`: your profile (for account ID/name) and gear list. It never
-  writes to Intervals.icu or requests activity files.
+- Connecting and **Refresh mileage** make two authenticated HTTPS GET requests
+  directly from your browser to `intervals.icu`: profile and gear. They do not
+  call gear recalculation or modify remote data. No activity files are requested.
+- **Open Intervals.icu gear settings** opens
+  `https://intervals.icu/settings/gear` in a separate tab, without passing the API
+  key or any credentials. Use “Update from Strava” there, then “Refresh mileage”
+  here. The experimental sync endpoints have been removed: the versioned URL
+  was unavailable and the internal web endpoint was blocked by browser CORS.
 - After a successful connection, the key is stored **unencrypted in localStorage**
   under `maintenance-intervals-api-key-v1`. The page reconnects automatically on
   reload. Anyone with access to this browser, or scripts on the same origin, can
@@ -28,14 +37,21 @@ in a deployment you trust, never into a shared link, chat, or source file.
   the current athlete from this browser only. Neither action revokes the API key
   or changes your Intervals.icu account. Revoke/regenerate keys in Intervals.icu.
 - Clearing site data removes records. They do not sync across browsers/devices,
-  and there is currently no export/backup feature. Keep important records
-  elsewhere while evaluating the prototype.
+  and are not automatically backed up. Use **Download records backup** to export
+  them before clearing site data or migrating. A file-restore UI is not yet
+  implemented; keep both the JSON export and the original browser copy.
 
 ## Behavior
 
 Real bike distance values are taken from Intervals.icu gear totals in meters and
-shown in kilometers. Refresh mileage performs another read; it never rewrites
-saved service mileages. Totals can differ from Strava if gear edits didn't sync.
+shown in kilometers. Refresh mileage only reloads the stored totals. The earlier
+recalculation experiment was removed because its results were unsuitable; there
+are no calls to `/gear/{gearId}/calc` and calculated values are never written
+back. To fetch new Strava gear totals, follow the external gear-settings link,
+trigger “Update from Strava” in Intervals.icu, then refresh this page's mileage.
+Saved maintenance odometer readings remain unchanged. Refresh failures preserve
+the existing garage, saved API key, and local records. Totals can differ from
+Strava if gear edits didn't sync.
 Retired bikes returned by the API are retained so they can still have a log.
 
 The top list is a bike/component tree. Clicking either the bike row or its arrow
@@ -54,6 +70,18 @@ Only components with records appear. Missing service counters stay hidden.
 The latest service task is shown below its distance counter. On wide screens,
 the bike/component tree and maintenance log sit side by side; narrow screens
 keep the stacked layout.
+Each log item also shows the distance ridden between its recorded odometer and
+its previous matching service task, or the latest replacement if that happened
+in between. A replacement compares with the previous replacement. Matching uses
+the same bike/component and case/whitespace-normalized task text; differently
+worded tasks are not treated as equivalent. Calculations use all records, not
+just the visible filter. With no baseline, the interval is omitted. Inconsistent
+odometer readings show a warning instead of negative distance. Same-day records
+are ordered by recorded mileage, with replacements before services when both
+are identical. These are derived values, not changes to stored history. The log displays a
+bike icon with the recorded mileage, then a component icon for distance since
+replacement or a wrench for distance since matching service. Hover titles and
+accessible labels explain the values and identify the baseline record.
 Replacement titles are generated automatically. Edit modifies an existing local
 record at its original date/mileage; Repeat opens a new draft at today's date and
 current synced mileage for that entry's bike, including from the all-bikes view.
@@ -65,10 +93,21 @@ A failed storage write reports an error and does not pretend the record was save
 
 The demo uses sample data in memory and never persists records or makes requests.
 
-## Production later
+## Layout
 
-The original Strava/Supabase scaffold remains for reference, but the current UI
-no longer calls it or uses `VITE_MAINTENANCE_API_URL`. OAuth application approval,
-server-side sessions, durable private storage, source-permission review, backups,
-and suitable rate limiting remain work for a production integration. API keys
-are intentionally only a temporary design/testing path.
+Primary actions live in the page title bar (the shared bottom toolbar on compact
+screens). More contains the external gear-settings link, backup download,
+disconnect, and browser-only deletion. The bike list and log have separate,
+keyboard-focusable scroll views; their headings stay outside the scrolling
+content. Wide screens show them side by side, while compact screens stack them.
+Forms open inside the log's scroll view. Browser-backup downloads and pending
+imports are available under More instead of printing a persistent notice.
+
+## Shared storage
+
+An optional shared Supabase backend is now implemented. It is enabled by
+`VITE_MAINTENANCE_STORAGE_URL`; see the [setup guide](maintenance-server-storage.md).
+It does not silently switch modes on failures. Keep the same frontend origin to
+access existing localStorage records, and use the explicit import action. The
+old Strava/Supabase function remains unused; its environment variable is not the
+new storage endpoint. OAuth login and a file-restore UI remain future work.

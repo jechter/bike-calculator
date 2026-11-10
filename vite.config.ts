@@ -8,6 +8,8 @@ export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
+    // Unit tests must not inherit a developer’s live storage endpoint.
+    env: { VITE_MAINTENANCE_STORAGE_URL: "" },
     environment: "node",
     setupFiles: ["./src/test-setup.ts"],
   },

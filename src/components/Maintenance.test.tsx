@@ -84,7 +84,7 @@ it('logs a replacement without a task and selects its bike/component after savin
   expect(log().getAllByRole('article')).toHaveLength(1);
   expect(log().getByText('90.4 km ago')).toBeTruthy();
   expect(screen.getByText(/Demo entry added/)).toBeTruthy();
-  expect(screen.getByText(/Weekend gravel bike \/ Headset · 1 entry/)).toBeTruthy();
+  expect(log().getByRole('status', { name: 'Weekend gravel bike / Headset · 1 entry' })).toBeTruthy();
   expect(localStorage.length).toBe(0);
 });
 it.each([
@@ -119,7 +119,7 @@ it('edits in place, updates component counters, and can move an entry between bi
   fireEvent.click(screen.getByText('Save changes'));
   await waitFor(() => expect(log().getByRole('heading', { name: 'Waxed chain' })).toBeTruthy());
   expect(log().getByText('90.4 km ago')).toBeTruthy();
-  expect(screen.getByText(/Weekend gravel bike \/ Chain · 1 entry/)).toBeTruthy();
+  expect(log().getByRole('status', { name: 'Weekend gravel bike / Chain · 1 entry' })).toBeTruthy();
   showAll();
   expect(log().getAllByRole('article')).toHaveLength(4);
   expect(log().queryByText('Cleaned and lubricated chain')).toBeNull();
@@ -163,7 +163,7 @@ it('persists local records and keys, then restores without selecting a filter', 
   page.unmount();
   render(<Maintenance />);
   await waitFor(() => expect(log().getByText('Replaced chain')).toBeTruthy());
-  expect(screen.getByText('All bikes and components · 1 entry')).toBeTruthy();
+  expect(log().getByRole('status', { name: 'All bikes and components · 1 entry' })).toBeTruthy();
   fireEvent.click(screen.getByText('Refresh mileage'));
   await waitFor(() => expect(screen.getByText(/Mileage refreshed from Intervals.icu/)).toBeTruthy());
   expect(screen.queryByText(/Recalculation results/)).toBeNull();
@@ -389,4 +389,45 @@ it('shows historical service intervals next to date/mileage and keeps current km
   expect(serviceMetric.querySelector('svg')).toBeTruthy();
   expect(serviceMetric.querySelector('[data-component-icon]')).toBeNull();
   expect(log().getByRole('img', { name: /^Distance since the previous replacement: 190 km/ })).toBeTruthy();
+});
+
+it('clears the component chip to its bike and the bike chip to all records', async () => {
+  await demo();
+  fireEvent.click(componentButton('Chain'));
+  expect(log().getAllByRole('article')).toHaveLength(2);
+  fireEvent.click(log().getByRole('button', { name: 'Clear component filter: Chain' }));
+  expect(log().getAllByRole('article')).toHaveLength(3);
+  expect(log().queryByRole('button', { name: /^Clear component filter:/ })).toBeNull();
+  expect(bikeButton().getAttribute('aria-pressed')).toBe('true');
+  fireEvent.click(log().getByRole('button', { name: 'Clear bike filter: Everyday road bike' }));
+  expect(log().getAllByRole('article')).toHaveLength(4);
+  expect(log().getByRole('status', { name: 'All bikes and components · 4 entries' })).toBeTruthy();
+  expect(bikeButton().getAttribute('aria-expanded')).toBe('false');
+  fireEvent.click(componentButton('Chain'));
+  fireEvent.click(log().getByRole('button', { name: 'Clear bike filter: Everyday road bike' }));
+  expect(log().getAllByRole('article')).toHaveLength(4);
+  expect(log().queryByRole('button', { name: /^Clear component filter:/ })).toBeNull();
+});
+
+it('filters from entry names, scopes components to their bike, and keeps the tree in sync', async () => {
+  await demo();
+  fireEvent.click(log().getAllByRole('button', { name: 'Filter by component: Chain on Everyday road bike' })[0]);
+  expect(log().getAllByRole('article')).toHaveLength(2);
+  expect(within(screen.getByRole('region', { name: 'Everyday road bike components' })).getByRole('button', { name: /^Chain. Since replacement/ }).getAttribute('aria-pressed')).toBe('true');
+  // Selecting the same shortcut again is idempotent, not a toggle.
+  fireEvent.click(log().getAllByRole('button', { name: 'Filter by component: Chain on Everyday road bike' })[0]);
+  expect(log().getAllByRole('article')).toHaveLength(2);
+  fireEvent.click(log().getAllByRole('button', { name: 'Filter by bike: Everyday road bike' })[0]);
+  expect(log().getAllByRole('article')).toHaveLength(3);
+  expect(log().queryByRole('button', { name: /^Clear component filter:/ })).toBeNull();
+  fireEvent.click(log().getByRole('button', { name: 'Clear bike filter: Everyday road bike' }));
+  fireEvent.click(log().getByRole('button', { name: 'Filter by component: Front tire on Weekend gravel bike' }));
+  expect(log().getAllByRole('article')).toHaveLength(1);
+  expect(log().getByRole('status', { name: 'Weekend gravel bike / Front tire · 1 entry' })).toBeTruthy();
+  expect(bikeButton('Weekend gravel bike').getAttribute('aria-expanded')).toBe('true');
+  expect(bikeButton().getAttribute('aria-expanded')).toBe('false');
+  // Filter shortcuts obey the same editing guard as the tree.
+  fireEvent.click(screen.getByRole('button', { name: '+ Log maintenance' }));
+  expect((log().getByRole('button', { name: 'Clear component filter: Front tire' }) as HTMLButtonElement).disabled).toBe(true);
+  expect((log().getByRole('button', { name: 'Filter by bike: Weekend gravel bike' }) as HTMLButtonElement).disabled).toBe(true);
 });

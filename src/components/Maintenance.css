@@ -190,3 +190,29 @@ html.embedded .maintenance--connected .maintenance-layout { flex: auto; grid-tem
 .maintenance-entry-details { align-items: center; }
 .maintenance-entry-metric { display: inline-flex; align-items: center; gap: 5px; cursor: help; }
 .maintenance-entry-metric svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* Compact screens use the shared Workbench drawer, not a stacked bike panel. */
+.maintenance--connected .maintenance-layout.workbench-mobile { display: grid; flex: 1; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 0; }
+.maintenance--connected .workbench-mobile .maintenance-log { height: auto; min-height: 0; }
+.main.main--maintenance:has(.workbench-mobile) { height: 100dvh; min-height: 0; overflow: hidden; }
+/* The drawer is portaled outside the page's containment so fixed positioning
+   covers the viewport. Retain the maintenance controls' scoped styles there. */
+.workbench-drawer-body.maintenance-drawer-content { display: flex; flex-direction: column; padding: 16px; max-width: none; }
+.maintenance-drawer-content .maintenance-bike-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.maintenance-drawer-content .maintenance-section-head { display: none; }
+.maintenance-drawer-content .maintenance-list-scroll { flex: 1; }
+.maintenance-drawer-content .maintenance-bike-row .maintenance-bike { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 16px; }
+.maintenance-drawer-content .maintenance-bike-components { padding-left: 12px; }
+.maintenance-drawer-content .maintenance-component-summary { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 14px; gap: 12px; padding: 16px; }
+.maintenance-drawer-content .maintenance-component-summary > strong { grid-column: 1 / 3; }
+.maintenance-drawer-content .maintenance-component-stat { grid-row: 2; align-self: start; }
+.maintenance-drawer-content .maintenance-component-summary .maintenance-chevron { grid-column: 3; grid-row: 1 / 3; }
+
+/* Active filter chips and entry shortcuts share the existing filter state. */
+.maintenance-log-filter { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.maintenance .maintenance-filter-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 4px 8px; background: var(--accent-soft); color: var(--accent); font-size: 12px; line-height: 1.5; text-align: left; overflow-wrap: anywhere; }
+.maintenance-filter-chip > span { font-size: 17px; line-height: 1; }
+.maintenance-filter-count { white-space: nowrap; }
+.maintenance .maintenance-filter-link { display: inline; padding: 0; border: 0; border-radius: 2px; background: transparent; color: inherit; font: inherit; text-align: left; overflow-wrap: anywhere; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; }
+.maintenance .maintenance-filter-link:hover:not(:disabled) { text-decoration-color: currentColor; }
+@media (pointer: coarse) { .maintenance .maintenance-filter-chip { min-height: 36px; } .maintenance .maintenance-filter-link { min-height: 32px; } }

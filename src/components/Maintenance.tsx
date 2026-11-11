@@ -1,4 +1,7 @@
 import { createPortal } from 'react-dom';
+import { Workbench } from './Workbench';
+import { SettingsButton } from './SettingsButton';
+import { useSettingsDrawer } from '../settingsDrawer';
 import { useIsMobile } from '../useIsMobile';
 import { ResponsivePopover } from './ResponsivePopover';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react';
@@ -42,6 +45,7 @@ export function Maintenance() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  const filtersDrawer = useSettingsDrawer();
   const [actionSlot, setActionSlot] = useState<HTMLElement | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
@@ -76,6 +80,7 @@ export function Maintenance() {
   const selectedBike = data?.bikes.find(b => b.id === bikeId);
   const filterLabel = selectedBike ? selectedBike.name + (componentFilter ? ' / ' + componentFilter : '') : 'All bikes and components';
   const clearFilter = () => { setBikeId(''); setComponentFilter(''); };
+  const selectFilter = (id: string, name = '') => { setBikeId(id); setComponentFilter(name); };
   const toggleBike = (id: string) => { setBikeId(previous => previous === id ? '' : id); setComponentFilter(''); };
   const run = async (fn: () => Promise<void>) => {
     setBusy(true); setError(''); setMessage('');
@@ -163,6 +168,7 @@ export function Maintenance() {
         <button disabled={busy} onClick={disconnect}>{demo ? 'Exit demo' : 'Disconnect'}</button>
       </ResponsivePopover>}
     </div>
+    {isMobile && <SettingsButton icon={<BikeIcon />} pageTitle="Maintenance Log" label="Bikes and components" />}
   </div>;
   return <div className={'maintenance' + (data ? ' maintenance--connected' : '')}>
     <div className="main-head maintenance-page-head"><div><h1>Maintenance Log</h1><p className="subtitle">Track maintenance tasks for your bikes</p></div>{actionSlot ? createPortal(headerActions, actionSlot) : <div className="main-actions">{headerActions}</div>}</div>
@@ -184,7 +190,7 @@ export function Maintenance() {
       <div className="maintenance-features"><div><strong>All your bikes</strong><span>Mileage from Intervals.icu</span></div><div><strong>A proper service history</strong><span>Tasks, dates, notes, and mileage</span></div><div><strong>Just for you</strong><span>{serverStorageEnabled ? 'Account-isolated server records' : 'Local records, no uploads'}</span></div></div>
     </section> : <>
       {demo && <p className="maintenance-fine maintenance-demo-note">Demo · sample data, changes are not saved</p>}
-      <div className="maintenance-layout">
+      <Workbench className="maintenance-layout" label="Maintenance Log" drawerTitle="Bikes and components" portalDrawer drawerContentClassName="maintenance maintenance-drawer-content">
       <section className="maintenance-bike-panel" aria-label="Bikes and components">
       <div className="maintenance-section-head"><h2>Bikes</h2></div>
       <div className="maintenance-list-scroll maintenance-bike-scroll" tabIndex={0} role="region" aria-label="Bikes and components list">
@@ -208,7 +214,7 @@ export function Maintenance() {
                 return distance === undefined ? 'Not logged' : distance === null ? 'Mileage changed' : km(distance) + ' km';
               };
               const selected = bikeId === b.id && componentFilter.toLowerCase() === name.toLowerCase();
-              return <button key={name} className="maintenance-component-summary" aria-pressed={selected} aria-label={`${name}. Since replacement: ${value('replacement')}. ${showService ? `Since service: ${value('service')}. ${lastService?.task}.` : ''}`} disabled={busy || formOpen} onClick={() => setComponentFilter(selected ? '' : name)}>
+              return <button key={name} className="maintenance-component-summary" aria-pressed={selected} aria-label={`${name}. Since replacement: ${value('replacement')}. ${showService ? `Since service: ${value('service')}. ${lastService?.task}.` : ''}`} disabled={busy || formOpen} onClick={() => { setComponentFilter(selected ? '' : name); if (isMobile) filtersDrawer.setOpen(false); }}>
                 <strong className="maintenance-item-label"><MaintenanceComponentIcon name={name} /><span>{name}</span></strong><span className="maintenance-component-stat"><span className="maintenance-fine">Since replacement</span><strong>{value('replacement')}</strong></span>{showService ? <span className="maintenance-component-stat"><span className="maintenance-fine">Since service</span><strong>{value('service')}</strong><span className="maintenance-service-task">{lastService?.task}</span></span> : <span aria-hidden="true" />}<span className="maintenance-chevron" aria-hidden="true">{selected ? '✓' : ''}</span>
               </button>;
             })}
@@ -218,7 +224,13 @@ export function Maintenance() {
       </div>
       </section>
       <section className="maintenance-log" aria-label="Performed maintenance">
-        <div className="maintenance-section-head"><div><h2>Maintenance log</h2><p className="maintenance-fine" role="status">{filterLabel} · {entries.length} {entries.length === 1 ? 'entry' : 'entries'}</p></div></div>
+        <div className="maintenance-section-head"><div><h2>Maintenance log</h2><p className="maintenance-fine maintenance-log-filter" role="status" aria-label={`${filterLabel} · ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`}>
+          {selectedBike ? <>
+            <button type="button" className="maintenance-filter-chip" disabled={busy || formOpen} aria-label={`Clear bike filter: ${selectedBike.name}`} title="Show all bikes and components" onClick={clearFilter}><span aria-hidden="true">×</span> {selectedBike.name}</button>
+            {componentFilter && <><span aria-hidden="true"> / </span><button type="button" className="maintenance-filter-chip" disabled={busy || formOpen} aria-label={`Clear component filter: ${componentFilter}`} title={`Show all components for ${selectedBike.name}`} onClick={() => setComponentFilter('')}><span aria-hidden="true">×</span> {componentFilter}</button></>}
+          </> : 'All bikes and components'}
+          <span className="maintenance-filter-count"> · {entries.length} {entries.length === 1 ? 'entry' : 'entries'}</span>
+        </p></div></div>
         <div className="maintenance-list-scroll maintenance-log-scroll" tabIndex={0} role="region" aria-label="Maintenance entries" ref={logScrollRef}>
         {formOpen && bike && <form className="maintenance-form" onSubmit={save}><h3>{editingId ? 'Edit maintenance' : 'Log maintenance'}</h3><p className="maintenance-fine">For older jobs, enter the bike’s mileage on the day you did the work. Synced mileage is only the current total.</p>
           <label>Bike<select required value={formBikeId} onChange={event => { setFormBikeId(event.target.value); const target = data.bikes.find(b => b.id === event.target.value); setOdometer(String((target?.distance ?? 0) / 1000)); }}>{data.bikes.map(b => <option value={b.id} key={b.id}>{b.name}</option>)}</select></label>
@@ -236,7 +248,7 @@ export function Maintenance() {
           const ago = entryBike ? kilometersAgo(entryBike.distance, entry.odometer_km) : null;
           return <article className="maintenance-entry" key={entry.id}>
             <div className="maintenance-entry-body">
-              <p className="maintenance-entry-context"><MaintenanceComponentIcon name={entry.component} /><span>{entryBike?.name ?? 'Bike unavailable'} / {componentName(entry.component)}</span><span className="maintenance-kind">{entry.kind === 'replacement' ? 'Replacement' : 'Service'}</span></p>
+              <p className="maintenance-entry-context"><MaintenanceComponentIcon name={entry.component} />{entryBike ? <button type="button" className="maintenance-filter-link" disabled={busy || formOpen} aria-label={`Filter by bike: ${entryBike.name}`} title={`Show all maintenance for ${entryBike.name}`} onClick={() => selectFilter(entry.bike_id)}>{entryBike.name}</button> : <span>Bike unavailable</span>}<span aria-hidden="true">/</span><button type="button" className="maintenance-filter-link" disabled={busy || formOpen || !entryBike} aria-label={`Filter by component: ${componentName(entry.component)} on ${entryBike?.name ?? 'unavailable bike'}`} title={`Show ${componentName(entry.component)} maintenance for ${entryBike?.name ?? 'this bike'}`} onClick={() => selectFilter(entry.bike_id, componentName(entry.component))}>{componentName(entry.component)}</button><span className="maintenance-kind">{entry.kind === 'replacement' ? 'Replacement' : 'Service'}</span></p>
               <div className="maintenance-entry-details">
                 <time dateTime={entry.performed_on}>{new Date(entry.performed_on + 'T12:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</time>
                 <span className="maintenance-entry-metric" role="img" title={`Bike mileage when this work was performed: ${km(entry.odometer_km)} km`} aria-label={`Bike mileage when this work was performed: ${km(entry.odometer_km)} km`}><BikeIcon />{km(entry.odometer_km)} km</span>
@@ -258,7 +270,7 @@ export function Maintenance() {
         })}</div>}
         </div>
       </section>
-      </div>
+      </Workbench>
 
     </>}
   </div>;

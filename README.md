@@ -29,24 +29,20 @@ You can try the calculator live on the [Rückenwind web site](https://rueckenwin
 
 ## Maintenance log
 
-The **Maintenance Log** connects to Intervals.icu with a personal API key for
-bike mileage. It supports **shared Supabase server storage**, with explicit,
-retry-safe import of existing browser records. The original browser copy is kept
-as a backup. Users do not need their own Supabase project or another login.
+The **Maintenance Log** supports manual bikes, mileage updates, and service
+history without an Intervals.icu account. Use a device-local browser garage
+without signing in, or optional **email-code sign-in with Supabase Auth** for
+cross-device cloud storage. The demo remains temporary and in memory.
 
-See [server setup and safe migration](docs/maintenance-server-storage.md).
-Without a configured storage endpoint, it remains in clearly labeled
-[browser-only mode](docs/maintenance-prototype.md). You can download a JSON backup
-in either mode. Existing browser data is never migrated or erased automatically.
+Intervals.icu is an optional, read-only bike/mileage integration, not an identity
+provider. Its API key stays in memory only, and visible pages refresh mileage
+every five minutes while no form is open. Maintenance is never sent upstream.
 
-The API key is still saved unencrypted in localStorage for reconnection. In server
-mode it is also sent over HTTPS to the configured function to verify identity;
-the application does not persist it on the server. Only use trusted deployments
-and browsers. Maintenance records are never uploaded to Intervals.icu. Update
-Strava mileage in Intervals.icu gear settings, then refresh here.
-
-The account-free demo stays entirely in memory. The old Strava/Supabase scaffold
-is retained for reference but is not used by the current page.
+See [setup, security, and migration](docs/maintenance-accounts.md). Cloud setup
+requires a database migration, public frontend configuration, and an email-code
+template. Browser and legacy records are not erased or silently uploaded.
+Export garage backups regularly. The old Intervals.icu and Strava server
+scaffolds remain available for legacy recovery, not current authentication.
 
 ## Documentation
 
@@ -102,8 +98,9 @@ the files directly.
 ## Tech
 
 - **Vite + React + TypeScript**, all calculator math client-side. The maintenance
-  page reads Intervals.icu directly and uses optional shared Supabase storage
-  or browser-only fallback when no endpoint is configured.
+  page supports independent browser garages and optional Supabase Auth/cloud
+  storage, with read-only Intervals.icu sync. Cloud failures never silently
+  fall back to local writes.
 - Pure calculation modules live in [`src/lib/`](src/lib/) and are unit-tested
   against the worked examples in the calculator specs (`npm test`).
 - UI components (one per calculator) live in [`src/components/`](src/components/);

@@ -6,5 +6,5 @@
   {"id":"derailleur","slug":"bicycle-component-database","legacySlugs":["bicycle-component-compatibility"],"title":"Bicycle Component Database","description":"Search bicycle component specifications for derailleurs, wheel hubs, internal gear hubs, gearboxes and cassettes."},
   {"id":"power","slug":"cycling-power-calculator","legacySlugs":[],"title":"Cycling Power Calculator","description":"Calculate cycling power for a given speed and gradient, estimate speed from watts, and explore ride energy requirements."},
   {"id":"thread-direction","slug":"bicycle-thread-direction","legacySlugs":[],"title":"Bicycle Thread Direction Guide","description":"Check which bicycle parts have left-hand threads and which way to turn them to tighten or loosen them."},
-  {"id":"maintenance","slug":"maintenance-log","legacySlugs":[],"title":"Bicycle Maintenance Log","description":"Connect Intervals.icu to track your bikes, mileage, and maintenance history. Record service jobs and see how far you have ridden since."}
+  {"id":"maintenance","slug":"maintenance-log","legacySlugs":[],"title":"Bicycle Maintenance Log","description":"Track your bikes, mileage, and maintenance history manually, with optional Intervals.icu sync. Record service jobs and see how far you have ridden since."}
 ]

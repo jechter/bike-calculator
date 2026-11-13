@@ -148,55 +148,54 @@ it('computes and groups latest service and replacement counters independently', 
 function mockAccount() {
   return vi.spyOn(globalThis, 'fetch').mockImplementation(async url => new Response(JSON.stringify(String(url).endsWith('/gear') ? [{ id: 'b1', name: 'Real bike', type: 'Bike', component: false, distance: 4826537 }] : { id: 'i-test', name: 'Real rider' })));
 }
-it('persists local records and keys, then restores without selecting a filter', async () => {
-  const request = mockAccount();
-  const page = render(<Maintenance />);
+async function openSync() {
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  fireEvent.click(screen.getByText('Connect Intervals.icu (optional)'));
   fireEvent.change(screen.getByLabelText('Intervals.icu API key'), { target: { value: 'test-key' } });
-  fireEvent.click(screen.getByText('Connect Intervals.icu'));
-  await waitFor(() => expect(screen.getByText('Real bike')).toBeTruthy());
+  fireEvent.click(screen.getByText('Sync bikes'));
+  await waitFor(() => expect(screen.queryByRole('form', { name: 'Optional Intervals.icu sync' })).toBeNull());
+}
+it('persists manual bikes and records, then restores without Intervals.icu or a selected filter', async () => {
+  const request = vi.spyOn(globalThis, 'fetch');
+  const page = render(<Maintenance />);
+  fireEvent.click(screen.getByText('Open my browser garage'));
+  await screen.findByText('No bikes found');
+  fireEvent.click(screen.getByText('+ Add bike'));
+  fireEvent.change(screen.getByLabelText('Bike name'), { target: { value: 'Tourer' } });
+  fireEvent.change(screen.getByLabelText('Current mileage (km)'), { target: { value: '1200' } });
+  fireEvent.click(screen.getByText('Save bike'));
+  await screen.findByText('Tourer');
   fireEvent.click(screen.getByText('+ Log maintenance'));
-  expect((screen.getByLabelText('Bike mileage at service (km)') as HTMLInputElement).value).toBe('4826.537');
   fireEvent.change(screen.getByLabelText('Work type'), { target: { value: 'replacement' } });
   fireEvent.click(screen.getByText('Save maintenance'));
-  await waitFor(() => expect(log().getByText('Replaced chain')).toBeTruthy());
-  expect(loadSavedApiKey()).toBe('test-key');
+  await screen.findByRole('heading', { name: 'Replaced chain' });
   page.unmount();
-  render(<Maintenance />);
-  await waitFor(() => expect(log().getByText('Replaced chain')).toBeTruthy());
-  expect(log().getByRole('status', { name: 'All bikes and components · 1 entry' })).toBeTruthy();
-  fireEvent.click(screen.getByText('Refresh mileage'));
-  await waitFor(() => expect(screen.getByText(/Mileage refreshed from Intervals.icu/)).toBeTruthy());
-  expect(screen.queryByText(/Recalculation results/)).toBeNull();
-  expect(request.mock.calls.some(([url]) => String(url).endsWith('/calc'))).toBe(false);
-  expect(request.mock.calls.every(([, options]) => options?.method === 'GET')).toBe(true);
-  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
-  fireEvent.click(screen.getByText('Disconnect'));
-  expect(loadSavedApiKey()).toBeNull();
-  expect(localStorage.getItem('maintenance-intervals-v1:i-test')).toContain('4826.537');
-});
-it('restores a saved connection without duplicate requests in StrictMode', async () => {
-  saveApiKey('saved-key'); const request = mockAccount();
   render(<StrictMode><Maintenance /></StrictMode>);
-  await waitFor(() => expect(screen.getByText('Real bike')).toBeTruthy());
-  expect(request).toHaveBeenCalledTimes(2);
+  expect(log().getByRole('heading', { name: 'Replaced chain' })).toBeTruthy();
+  expect(log().getByRole('status', { name: 'All bikes and components · 1 entry' })).toBeTruthy();
+  expect(request).not.toHaveBeenCalled();
 });
-it('can forget a rejected saved key without exposing it or deleting records', async () => {
-  saveApiKey('invalid-key'); localStorage.setItem('maintenance-intervals-v1:i1', '[]');
-  vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('private upstream body', { status: 401 }));
-  render(<Maintenance />);
-  await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
-  expect(screen.getByRole('alert').textContent).not.toContain('invalid-key');
-  fireEvent.click(screen.getByText('Forget saved API key'));
-  expect(loadSavedApiKey()).toBeNull();
+it('does not reconnect legacy saved keys automatically or delete their records', () => {
+  saveApiKey('legacy-key'); localStorage.setItem('maintenance-intervals-v1:i1', '[]');
+  const request = vi.spyOn(globalThis, 'fetch');
+  render(<StrictMode><Maintenance /></StrictMode>);
+  expect(screen.getByText('Open my browser garage')).toBeTruthy();
+  expect(request).not.toHaveBeenCalled();
+  expect(loadSavedApiKey()).toBe('legacy-key');
   expect(localStorage.getItem('maintenance-intervals-v1:i1')).toBe('[]');
 });
-it('does not save a rejected key entered manually', async () => {
+it('does not save a rejected optional sync key or lose the current garage', async () => {
   vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status: 401 }));
   render(<Maintenance />);
+  fireEvent.click(screen.getByText('Open my browser garage'));
+  await screen.findByText('No bikes found');
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  fireEvent.click(screen.getByText('Connect Intervals.icu (optional)'));
   fireEvent.change(screen.getByLabelText('Intervals.icu API key'), { target: { value: 'invalid-key' } });
-  fireEvent.click(screen.getByText('Connect Intervals.icu'));
-  await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
+  fireEvent.click(screen.getByText('Sync bikes'));
+  await screen.findByRole('alert');
   expect(loadSavedApiKey()).toBeNull();
+  expect(screen.getByText('No bikes found')).toBeTruthy();
 });
 
 it('opens and closes a bike by its main row, including with the keyboard-compatible button', async () => {
@@ -312,41 +311,31 @@ it('keeps compact entry metadata together and removes the visible total-distance
   expect(article.querySelector('.maintenance-entry-meta > strong')?.textContent).toBe('36.5 km ago');
 });
 
-it('keeps the current connection and key when mileage refresh fails', async () => {
-  saveApiKey('current-key'); let fail = false;
-  vi.spyOn(globalThis, 'fetch').mockImplementation(async url => {
-    if (fail) return new Response('upstream details omitted', { status: 401 });
-    return new Response(JSON.stringify(String(url).endsWith('/gear') ? [{ id: 'b1', name: 'Connected bike', type: 'Bike', distance: 100000 }] : { id: 'i1', name: 'Rider' }));
-  });
-  render(<Maintenance />);
-  await waitFor(() => expect(screen.getByText('Connected bike')).toBeTruthy());
-  fail = true;
-  fireEvent.click(screen.getByText('Refresh mileage'));
-  await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
-  expect(screen.getByText('Connected bike')).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
-  expect(screen.getByText('Disconnect')).toBeTruthy();
-  expect(loadSavedApiKey()).toBe('current-key');
-  expect(screen.queryByText('Connect Intervals.icu')).toBeNull();
-});
-
-it('links to gear settings without credentials, explains the manual update, and keeps refresh read-only', async () => {
-  saveApiKey('saved-key');
+it('keeps synced bikes on refresh failure and uses read-only requests without saving keys', async () => {
   const request = mockAccount();
   render(<Maintenance />);
-  await waitFor(() => expect(screen.getByText('Real bike')).toBeTruthy());
-  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
-  const link = screen.getByRole('link', { name: 'Open Intervals.icu gear settings', hidden: true });
-  expect(link.getAttribute('href')).toBe('https://intervals.icu/settings/gear');
-  expect(link.getAttribute('target')).toBe('_blank');
-  expect(link.getAttribute('rel')).toContain('noopener');
-  expect(screen.getByText(/click “Update from Strava” there/)).toBeTruthy();
-  expect(screen.queryByText('Sync from Strava (experimental)')).toBeNull();
-  fireEvent.click(screen.getByText('Refresh mileage'));
-  await waitFor(() => expect(screen.getByText(/Mileage refreshed from Intervals.icu/)).toBeTruthy());
+  fireEvent.click(screen.getByText('Open my browser garage'));
+  await screen.findByText('No bikes found');
+  await openSync();
+  expect(screen.getByText('Real bike')).toBeTruthy();
   expect(request.mock.calls.every(([, options]) => options?.method === 'GET')).toBe(true);
-  expect(request.mock.calls.some(([url]) => /\/(sync|calc)$/.test(String(url)))).toBe(false);
-  expect(loadSavedApiKey()).toBe('saved-key');
+  expect(loadSavedApiKey()).toBeNull();
+  request.mockResolvedValue(new Response('', { status: 401 }));
+  fireEvent.click(screen.getByText('Refresh mileage'));
+  await screen.findByRole('alert');
+  expect(screen.getByText('Real bike')).toBeTruthy();
+});
+it('edits manual bike names and mileage and rejects readings below service history', async () => {
+  await demo();
+  fireEvent.click(bikeButton());
+  fireEvent.click(screen.getByText('Edit bike / update mileage'));
+  fireEvent.change(screen.getByLabelText('Bike name'), { target: { value: 'Renamed bike' } });
+  fireEvent.change(screen.getByLabelText('Current mileage (km)'), { target: { value: '1' } });
+  fireEvent.click(screen.getByText('Save bike'));
+  expect(screen.getByRole('alert').textContent).toContain('highest service reading');
+  fireEvent.change(screen.getByLabelText('Current mileage (km)'), { target: { value: '5000' } });
+  fireEvent.click(screen.getByText('Save bike'));
+  await screen.findByRole('button', { name: /^Renamed bike. Total distance: 5,000/ });
 });
 
 it('places primary actions in the title bar and gives both lists keyboard-focusable scroll views', async () => {

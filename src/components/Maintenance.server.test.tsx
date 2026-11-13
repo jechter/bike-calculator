@@ -1,97 +1,109 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import type { MaintenanceEntry } from '../lib/maintenance';
 import { demoMaintenance } from '../lib/maintenance';
-import { loadLocalEntries, saveApiKey, saveLocalEntries } from '../lib/intervals';
-const mocks = vi.hoisted(() => ({ connect: vi.fn(), load: vi.fn(), save: vi.fn(), delete: vi.fn(), importEntries: vi.fn(), logout: vi.fn() }));
-vi.mock('../lib/maintenance-storage', async importOriginal => ({ ...await importOriginal<typeof import('../lib/maintenance-storage')>(), serverStorageEnabled: true, connectServer: mocks.connect }));
+import { loadBrowserGarage, saveBrowserGarage } from '../lib/maintenance-account';
+const mocks = vi.hoisted(() => ({ restore: vi.fn(), load: vi.fn(), save: vi.fn(), write: vi.fn(), logout: vi.fn(), send: vi.fn(), verify: vi.fn() }));
+vi.mock('../lib/maintenance-account', async original => ({ ...await original<typeof import('../lib/maintenance-account')>(), accountEnabled: true, restoreAccountOnce: mocks.restore, sendSignInCode: mocks.send, verifySignInCode: mocks.verify }));
 import { Maintenance } from './Maintenance';
-let remote: MaintenanceEntry[] = [];
+const account = { email: 'rider@example.com', loadGarage: mocks.load, save: mocks.save, write: mocks.write, logout: mocks.logout };
 beforeEach(() => {
-  remote = []; mocks.connect.mockReset(); mocks.importEntries.mockReset(); mocks.save.mockReset();
-  mocks.load.mockImplementation(async () => [...remote]);
-  mocks.logout.mockResolvedValue(undefined);
-  mocks.connect.mockResolvedValue({ athleteId: 'i1', load: mocks.load, save: mocks.save, delete: mocks.delete, importEntries: mocks.importEntries, logout: mocks.logout });
-  mocks.importEntries.mockImplementation(async (entries: MaintenanceEntry[]) => {
-    const added = entries.filter(e => !remote.some(r => r.id === e.id)); remote.push(...added);
-    return { entries: [...remote], inserted: added.length, existing: entries.length - added.length };
-  });
-  mocks.save.mockImplementation(async (entry: MaintenanceEntry, editing: boolean) => {
-    remote = editing ? remote.map(e => e.id === entry.id ? entry : e) : [entry, ...remote]; return [...remote];
-  });
-  mocks.delete.mockImplementation(async (id: string) => { remote = remote.filter(e => e.id !== id); return [...remote]; });
-  vi.spyOn(globalThis, 'fetch').mockImplementation(async url => new Response(JSON.stringify(String(url).endsWith('/gear') ? demoMaintenance().bikes.map(b => ({ ...b, type: 'Bike' })) : { id: 'i1', name: 'Rider' })));
+  vi.resetAllMocks();
+  mocks.load.mockResolvedValue(demoMaintenance()); mocks.restore.mockResolvedValue(account);
+  mocks.logout.mockResolvedValue(undefined); mocks.send.mockResolvedValue(undefined); mocks.verify.mockResolvedValue(account);
 });
-afterEach(() => { cleanup(); localStorage.clear(); vi.restoreAllMocks(); });
-async function startWithLocalBackup() {
-  const original = demoMaintenance().entries;
-  saveLocalEntries('i1', original); saveApiKey('key');
-  render(<Maintenance />);
-  await waitFor(() => expect(screen.getByRole('list', { name: 'Your bikes' })).toBeTruthy());
-  return original;
-}
-it('offers explicit import without displaying local records as if they were already on the server', async () => {
-  const original = await startWithLocalBackup();
-  expect(mocks.importEntries).not.toHaveBeenCalled();
-  expect(screen.queryByRole('heading', { name: 'Replaced chain' })).toBeNull();
-  expect(screen.queryByRole('group', { name: 'Browser data migration' })).toBeNull();
-  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
-  expect(screen.getByText(/4 browser records available to import/)).toBeTruthy();
-  fireEvent.click(screen.getByText('Import browser records'));
-  await waitFor(() => expect(screen.getByRole('heading', { name: 'Replaced chain' })).toBeTruthy());
-  expect(screen.getByText(/Import verified: 4 added/)).toBeTruthy();
-  expect(screen.queryByText('Import browser records')).toBeNull();
-  expect(loadLocalEntries('i1')).toEqual(original);
-  expect(remote.map(e => e.id)).toEqual(original.map(e => e.id));
+afterEach(() => { cleanup(); localStorage.clear(); sessionStorage.clear(); vi.restoreAllMocks(); });
+async function cloud() { sessionStorage.setItem('maintenance-account-v1', '{}'); render(<Maintenance />); await screen.findByRole('button', { name: /^Everyday road bike. Total distance/ }); }
+it('restores an independent account without calling Intervals.icu', async () => {
+  const fetch = vi.spyOn(globalThis, 'fetch');
+  await cloud();
+  expect(screen.getByText(/Cloud garage · rider@example.com/)).toBeTruthy(); expect(fetch).not.toHaveBeenCalled();
+});
+it('does not fall back to browser writes when cloud storage fails', async () => {
+  const backup = demoMaintenance(); saveBrowserGarage(backup);
+  await cloud(); mocks.save.mockRejectedValue(new Error('Storage unavailable'));
   fireEvent.click(screen.getByRole('button', { name: 'Edit Replaced chain' }));
-  fireEvent.change(screen.getByLabelText('Notes (optional)'), { target: { value: 'Server edit' } });
+  fireEvent.change(screen.getByLabelText('Notes (optional)'), { target: { value: 'Cloud draft' } });
   fireEvent.click(screen.getByText('Save changes'));
-  await waitFor(() => expect(screen.getByText('Server edit')).toBeTruthy());
-  expect(loadLocalEntries('i1')).toEqual(original);
-  expect(remote.find(e => e.id === 'demo-1')?.notes).toBe('Server edit');
+  await screen.findByRole('alert');
+  expect((screen.getByLabelText('Notes (optional)') as HTMLTextAreaElement).value).toBe('Cloud draft');
+  expect(loadBrowserGarage()).toEqual(backup);
 });
-it('keeps all browser records after a failed import and allows retry', async () => {
-  mocks.importEntries.mockRejectedValueOnce(new Error('Import interrupted; retry safely.'));
-  const original = await startWithLocalBackup();
-  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
-  fireEvent.click(screen.getByText('Import browser records'));
-  await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Import interrupted'));
-  expect(loadLocalEntries('i1')).toEqual(original);
-  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
-  fireEvent.click(screen.getByText('Import browser records'));
-  await waitFor(() => expect(screen.getByText(/Import verified/)).toBeTruthy());
-  expect(loadLocalEntries('i1')).toEqual(original);
+it('imports browser garage explicitly, keeps existing cloud IDs, and preserves the browser copy', async () => {
+  const backup = demoMaintenance(); backup.bikes[0].name = 'Local name'; backup.bikes.push({ id: 'new-bike', name: 'New bike', distance: 12000 });
+  saveBrowserGarage(backup); vi.spyOn(window, 'confirm').mockReturnValue(true);
+  mocks.write.mockImplementation(async data => data);
+  await cloud();
+  expect(mocks.write).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: /^More/ })); fireEvent.click(screen.getByText('Import browser garage'));
+  await screen.findByText(/Browser garage imported/);
+  expect(screen.getByRole('button', { name: /^Everyday road bike. Total distance/ })).toBeTruthy(); expect(screen.getByText('New bike')).toBeTruthy();
+  expect(loadBrowserGarage()).toEqual(backup);
+  expect(mocks.write.mock.calls[0][0].entries).toHaveLength(4);
 });
-it('preserves server edits on duplicate IDs and does not reimport already migrated browser records', async () => {
-  remote = demoMaintenance().entries.map(e => ({ ...e, notes: 'Server version' }));
-  const original = await startWithLocalBackup();
-  expect(screen.queryByText(/Browser backup retained/)).toBeNull();
-  expect(screen.queryByText(/garage/)).toBeNull();
-  expect(screen.queryByText(/Last synced/)).toBeNull();
-  expect(screen.queryByText(/Distances use the last synced/)).toBeNull();
-  expect(screen.getByText('Track maintenance tasks for your bikes')).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
-  expect(screen.getByText('Download browser backup')).toBeTruthy();
-  expect(screen.queryByText('Import browser records')).toBeNull();
-  expect(mocks.importEntries).not.toHaveBeenCalled();
-  expect(loadLocalEntries('i1')).toEqual(original);
-});
-it('does not fall back to local writes when server storage fails', async () => {
-  const original = await startWithLocalBackup();
-  mocks.save.mockRejectedValueOnce(new Error('Server unavailable.'));
-  fireEvent.click(screen.getByText('+ Log maintenance'));
-  fireEvent.change(screen.getByLabelText('Work type'), { target: { value: 'replacement' } });
-  fireEvent.click(screen.getByText('Save maintenance'));
-  await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Server unavailable'));
-  expect(loadLocalEntries('i1')).toEqual(original);
-  expect(screen.getByText('Save maintenance')).toBeTruthy();
-});
-it('leaves browser backup intact if server sign-in fails', async () => {
-  mocks.connect.mockRejectedValueOnce(new Error('Storage unavailable.'));
-  const original = demoMaintenance().entries; saveLocalEntries('i1', original); saveApiKey('key');
+it('uses email codes for sign-in and does not upload browser data automatically', async () => {
   render(<Maintenance />);
-  await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Storage unavailable'));
-  expect(loadLocalEntries('i1')).toEqual(original);
-  expect(screen.queryByText('+ Log maintenance')).toBeNull();
+  fireEvent.click(screen.getByText('Sign in / create account with email'));
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'rider@example.com' } });
+  fireEvent.click(screen.getByText('Send sign-in code'));
+  await screen.findByLabelText('Email code');
+  expect(mocks.send).toHaveBeenCalledWith('rider@example.com');
+  fireEvent.change(screen.getByLabelText('Email code'), { target: { value: '123456' } }); fireEvent.click(screen.getByText('Verify code'));
+  await screen.findByRole('button', { name: /^Everyday road bike. Total distance/ });
+  expect(mocks.verify).toHaveBeenCalledWith('rider@example.com', '123456'); expect(mocks.write).not.toHaveBeenCalled();
+});
+it('keeps the browser garage visible when code verification fails', async () => {
+  const backup = demoMaintenance(); saveBrowserGarage(backup); mocks.verify.mockRejectedValue(new Error('Invalid code'));
+  render(<Maintenance />);
+  fireEvent.click(screen.getByRole('button', { name: /^More/ })); fireEvent.click(screen.getByText('Sign in for cloud storage'));
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'rider@example.com' } }); fireEvent.click(screen.getByText('Send sign-in code'));
+  await screen.findByLabelText('Email code');
+  fireEvent.change(screen.getByLabelText('Email code'), { target: { value: 'wrong' } }); fireEvent.click(screen.getByText('Verify code'));
+  await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Invalid code'));
+  expect(screen.getByRole('button', { name: /^Everyday road bike. Total distance/ })).toBeTruthy(); expect(loadBrowserGarage()).toEqual(backup);
+});
+it('restores the code-entry step after a reload without sending another email or storing the code', async () => {
+  const page = render(<Maintenance />);
+  fireEvent.click(screen.getByText('Sign in / create account with email'));
+  const email = screen.getByLabelText('Email');
+  expect(email.getAttribute('autocomplete')).toBe('email');
+  expect(email.getAttribute('inputmode')).toBe('email');
+  expect(email.getAttribute('autocapitalize')).toBe('none');
+  expect(email.closest('form')?.getAttribute('autocomplete')).toBe('off');
+  fireEvent.change(email, { target: { value: 'rider@example.com' } });
+  fireEvent.click(screen.getByText('Send sign-in code'));
+  await screen.findByLabelText('Email code');
+  fireEvent.change(screen.getByLabelText('Email code'), { target: { value: '654321' } });
+  expect(sessionStorage.getItem('maintenance-pending-email-v1')).not.toContain('654321');
+  page.unmount();
+  render(<Maintenance />);
+  expect((screen.getByLabelText('Email') as HTMLInputElement).value).toBe('rider@example.com');
+  expect((screen.getByLabelText('Email code') as HTMLInputElement).value).toBe('');
+  expect(screen.getByLabelText('Email code').getAttribute('autocomplete')).toBe('one-time-code');
+  expect(mocks.send).toHaveBeenCalledTimes(1);
+  fireEvent.change(screen.getByLabelText('Email code'), { target: { value: '123456' } });
+  fireEvent.click(screen.getByText('Verify code'));
+  await screen.findByRole('button', { name: /^Everyday road bike. Total distance/ });
+  expect(mocks.verify).toHaveBeenCalledWith('rider@example.com', '123456');
+  expect(sessionStorage.getItem('maintenance-pending-email-v1')).toBeNull();
+});
+it.each(['Cancel', 'Use another email / resend'])('clears pending email when choosing %s', async action => {
+  sessionStorage.setItem('maintenance-pending-email-v1', JSON.stringify({ email: 'rider@example.com', createdAt: Date.now() }));
+  const page = render(<Maintenance />);
+  expect(screen.getByLabelText('Email code')).toBeTruthy();
+  fireEvent.click(screen.getByText(action));
+  expect(sessionStorage.getItem('maintenance-pending-email-v1')).toBeNull();
+  page.unmount(); render(<Maintenance />);
+  expect(screen.queryByLabelText('Email code')).toBeNull();
+});
+it('clears the pending step if requesting an email fails', async () => {
+  mocks.send.mockRejectedValue(new Error('Email service unavailable'));
+  const page = render(<Maintenance />);
+  fireEvent.click(screen.getByText('Sign in / create account with email'));
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'rider@example.com' } });
+  fireEvent.click(screen.getByText('Send sign-in code'));
+  await screen.findByRole('alert');
+  expect(sessionStorage.getItem('maintenance-pending-email-v1')).toBeNull();
+  page.unmount(); render(<Maintenance />);
+  expect(screen.queryByLabelText('Email code')).toBeNull();
 });

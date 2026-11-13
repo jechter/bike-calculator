@@ -9,7 +9,7 @@ export default defineConfig({
   test: {
     globals: true,
     // Unit tests must not inherit a developer’s live storage endpoint.
-    env: { VITE_MAINTENANCE_STORAGE_URL: "" },
+    env: { VITE_MAINTENANCE_STORAGE_URL: "", VITE_SUPABASE_URL: "", VITE_SUPABASE_ANON_KEY: "" },
     environment: "node",
     setupFiles: ["./src/test-setup.ts"],
   },

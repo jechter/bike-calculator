@@ -216,3 +216,10 @@ html.embedded .maintenance--connected .maintenance-layout { flex: auto; grid-tem
 .maintenance .maintenance-filter-link { display: inline; padding: 0; border: 0; border-radius: 2px; background: transparent; color: inherit; font: inherit; text-align: left; overflow-wrap: anywhere; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; }
 .maintenance .maintenance-filter-link:hover:not(:disabled) { text-decoration-color: currentColor; }
 @media (pointer: coarse) { .maintenance .maintenance-filter-chip { min-height: 36px; } .maintenance .maintenance-filter-link { min-height: 32px; } }
+
+/* Garage/account forms live above the workbench, outside its scroll panels. */
+.maintenance--connected > .maintenance-form { flex: none; }
+.main.main--maintenance:has(.maintenance--connected > .maintenance-form) { height: auto; min-height: 100dvh; overflow: visible; }
+.maintenance--connected:has(> .maintenance-form) .maintenance-layout { flex: none; grid-template-rows: auto; }
+.maintenance--connected:has(> .maintenance-form) .maintenance-list-scroll { flex: auto; max-height: 55dvh; }
+.maintenance-header-actions .maintenance-primary:hover { color: white; }

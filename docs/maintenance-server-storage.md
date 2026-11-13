@@ -1,3 +1,7 @@
+> **Legacy documentation:** the current page uses independent garages and optional
+> email sign-in. See [current setup and migration](maintenance-accounts.md).
+> The integration described below is retained for recovery/reference only.
+
 # Shared Supabase storage and browser-data migration
 
 ## What changes

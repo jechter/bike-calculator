@@ -334,8 +334,7 @@ it('keeps synced bikes on refresh failure and uses read-only requests without sa
 });
 it('edits manual bike names and mileage and rejects readings below service history', async () => {
   await cloudGarage();
-  fireEvent.click(bikeButton());
-  fireEvent.click(screen.getByText('Edit bike / update mileage'));
+  fireEvent.click(screen.getByRole('button', { name: 'Edit bike: Everyday road bike' }));
   fireEvent.change(screen.getByLabelText('Bike name'), { target: { value: 'Renamed bike' } });
   fireEvent.change(screen.getByLabelText('Current mileage (km)'), { target: { value: '1' } });
   fireEvent.click(screen.getByText('Save bike'));
@@ -428,4 +427,108 @@ it('filters from entry names, scopes components to their bike, and keeps the tre
   fireEvent.click(screen.getByRole('button', { name: '+ Log maintenance' }));
   expect((log().getByRole('button', { name: 'Clear component filter: Front tire' }) as HTMLButtonElement).disabled).toBe(true);
   expect((log().getByRole('button', { name: 'Filter by bike: Weekend gravel bike' }) as HTMLButtonElement).disabled).toBe(true);
+});
+it('places an accessible pencil after each bike mileage without expanding its component tree', async () => {
+  await cloudGarage();
+  const pencil = screen.getByRole('button', { name: 'Edit bike: Everyday road bike' });
+  expect(pencil.querySelector('svg')).toBeTruthy();
+  expect(pencil.getAttribute('title')).toBe('Edit bike / update mileage');
+  expect(pencil.previousElementSibling).toBe(bikeButton());
+  expect(pencil.nextElementSibling?.getAttribute('aria-label')).toBe('Show components for Everyday road bike');
+  expect(bikeButton().getAttribute('aria-expanded')).toBe('false');
+  fireEvent.click(pencil);
+  expect((screen.getByLabelText('Bike name') as HTMLInputElement).value).toBe('Everyday road bike');
+  expect(bikeButton().getAttribute('aria-expanded')).toBe('false');
+  expect((pencil as HTMLButtonElement).disabled).toBe(true);
+  expect(screen.getByRole('form', { name: 'Edit bike' })).toBeTruthy();
+});
+it('confirms deleting a bike and atomically removes only that bike and its history from the cloud', async () => {
+  const page = await cloudGarage();
+  fireEvent.click(componentButton('Chain'));
+  fireEvent.click(screen.getByRole('button', { name: 'Edit bike: Everyday road bike' }));
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+  fireEvent.click(screen.getByRole('button', { name: 'Delete bike' }));
+  expect(confirm.mock.calls[0][0]).toContain('Everyday road bike');
+  expect(confirm.mock.calls[0][0]).toContain('3 maintenance entries');
+  expect(page.account.write).not.toHaveBeenCalled();
+  expect(screen.getByRole('form', { name: 'Edit bike' })).toBeTruthy();
+  confirm.mockReturnValue(true);
+  fireEvent.click(screen.getByRole('button', { name: 'Delete bike' }));
+  await screen.findByText('Bike and its maintenance history deleted from your account.');
+  expect(screen.queryByRole('form', { name: 'Edit bike' })).toBeNull();
+  expect(screen.queryByRole('button', { name: /^Everyday road bike. Total distance/ })).toBeNull();
+  expect(log().getByRole('status', { name: 'All bikes and components · 1 entry' })).toBeTruthy();
+  expect(page.account.write).toHaveBeenCalledTimes(1);
+  const saved = page.account.write.mock.calls[0][0];
+  expect(saved.bikes.map(b => b.id)).toEqual(['demo-gravel']);
+  expect(saved.entries.map(e => e.id)).toEqual(['demo-3']);
+  page.unmount(); render(<Maintenance />);
+  await screen.findByRole('button', { name: /^Weekend gravel bike. Total distance/ });
+  expect(screen.queryByRole('button', { name: /^Everyday road bike. Total distance/ })).toBeNull();
+});
+it('keeps the bike editor and all existing history when cloud deletion fails', async () => {
+  const { account } = await cloudGarage();
+  account.write.mockRejectedValue(new Error('Cloud storage unavailable'));
+  vi.spyOn(window, 'confirm').mockReturnValue(true);
+  fireEvent.click(screen.getByRole('button', { name: 'Edit bike: Everyday road bike' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Delete bike' }));
+  await screen.findByRole('alert');
+  expect(screen.getByRole('form', { name: 'Edit bike' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Edit bike: Everyday road bike' })).toBeTruthy();
+  expect(log().getAllByRole('article')).toHaveLength(4);
+  expect(localStorage.getItem('maintenance-independent-garage-v1')).toBeNull();
+});
+it('supports deleting the last bike and does not offer deletion while adding a new bike', async () => {
+  const initial = emptyGarage(); initial.bikes = [{ id: 'only-bike', name: 'Only bike', distance: 0 }];
+  await cloudGarage(initial);
+  fireEvent.click(screen.getByText('+ Add bike'));
+  expect(screen.queryByRole('button', { name: 'Delete bike' })).toBeNull();
+  fireEvent.click(screen.getByText('Cancel'));
+  fireEvent.click(screen.getByRole('button', { name: 'Edit bike: Only bike' }));
+  vi.spyOn(window, 'confirm').mockReturnValue(true);
+  fireEvent.click(screen.getByRole('button', { name: 'Delete bike' }));
+  await screen.findByText('No bikes found');
+  expect((screen.getByRole('button', { name: '+ Log maintenance' }) as HTMLButtonElement).disabled).toBe(true);
+  expect((screen.getByRole('button', { name: '+ Add bike' }) as HTMLButtonElement).disabled).toBe(false);
+});
+it('preserves the current filter when deleting a different bike', async () => {
+  await cloudGarage();
+  fireEvent.click(bikeButton('Weekend gravel bike'));
+  fireEvent.click(screen.getByRole('button', { name: 'Edit bike: Everyday road bike' }));
+  vi.spyOn(window, 'confirm').mockReturnValue(true);
+  fireEvent.click(screen.getByRole('button', { name: 'Delete bike' }));
+  await screen.findByText('Bike and its maintenance history deleted from your account.');
+  expect(log().getByRole('status', { name: 'Weekend gravel bike · 1 entry' })).toBeTruthy();
+});
+it('shows a synced bike source note only in its editor and keeps deletion warnings in confirmation', async () => {
+  const initial = emptyGarage(); initial.bikes = [{ id: 'icu:i1:b1', name: 'Synced bike', distance: 1000 }];
+  await cloudGarage(initial);
+  fireEvent.click(screen.getByRole('button', { name: /^Synced bike. Total distance/ }));
+  expect(screen.queryByText(/This bike is imported from Intervals.icu/)).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Edit bike: Synced bike' }));
+  const editor = within(screen.getByRole('form', { name: 'Edit bike' }));
+  expect(editor.getByText('This bike is imported from Intervals.icu.').tagName).toBe('STRONG');
+  expect(editor.getByText(/Syncing replaces its current name and mileage/)).toBeTruthy();
+  expect(screen.queryByText(/This bike is tracked manually/)).toBeNull();
+  expect(screen.queryByText(/Deleting this bike does not delete it from Intervals.icu/)).toBeNull();
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+  fireEvent.click(screen.getByRole('button', { name: 'Delete bike' }));
+  expect(confirm.mock.calls[0][0]).toContain('Intervals.icu may add this bike again');
+  expect(confirm.mock.calls[0][0]).toContain('does not delete the bike from Intervals.icu');
+});
+
+it('shows manual mileage guidance only when editing an existing manual bike', async () => {
+  await cloudGarage();
+  fireEvent.click(bikeButton());
+  expect(screen.queryByText(/Manual mileage ·/)).toBeNull();
+  expect(screen.queryByText(/This bike is tracked manually/)).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Edit bike: Everyday road bike' }));
+  const editor = within(screen.getByRole('form', { name: 'Edit bike' }));
+  expect(editor.getByText('This bike is tracked manually.').tagName).toBe('STRONG');
+  expect(editor.getByText(/Update its mileage after your rides/)).toBeTruthy();
+  expect(screen.queryByText(/Use your odometer or total distance ridden/)).toBeNull();
+  expect(screen.queryByText(/This bike is imported from Intervals.icu/)).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+  fireEvent.click(screen.getByRole('button', { name: '+ Add bike' }));
+  expect(screen.queryByText(/This bike is tracked manually/)).toBeNull();
 });

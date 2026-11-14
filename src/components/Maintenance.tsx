@@ -152,6 +152,22 @@ export function Maintenance() {
       setBikeEditor(null); setMessage('Bike saved to your account.');
     });
   };
+  const deleteBike = () => {
+    if (!data || !bikeEditor?.id) return;
+    const target = data.bikes.find(b => b.id === bikeEditor.id);
+    if (!target) return;
+    const count = data.entries.filter(entry => entry.bike_id === target.id).length;
+    const historyWarning = count ? `This also permanently deletes its ${count} maintenance ${count === 1 ? 'entry' : 'entries'}. ` : '';
+    const syncWarning = target.id.startsWith('icu:') ? 'Deleting here does not delete the bike from Intervals.icu. Intervals.icu may add this bike again on a later sync. ' : '';
+    if (!confirm(`Delete “${target.name}”? ${historyWarning}${syncWarning}This cannot be undone.`)) return;
+    void run(async () => {
+      const bikes = data.bikes.filter(b => b.id !== target.id);
+      await persistGarage({ ...data, bikes, entries: data.entries.filter(entry => entry.bike_id !== target.id) });
+      if (bikeId === target.id) clearFilter();
+      setFormBikeId(previous => previous === target.id ? bikes[0]?.id || '' : previous);
+      setBikeEditor(null); setMessage('Bike and its maintenance history deleted from your account.');
+    });
+  };
   const storeEntries = (updated: MaintenanceEntry[]) => {
     setData(previous => previous && { ...previous, entries: updated });
     if (componentFilter && !updated.some(entry => entry.bike_id === bikeId && componentName(entry.component).toLowerCase() === componentFilter.toLowerCase())) setComponentFilter('');
@@ -246,8 +262,8 @@ export function Maintenance() {
       {bikeEditor && <form className="maintenance-form" onSubmit={saveBike} aria-label={bikeEditor.id ? 'Edit bike' : 'Add bike'}><h2>{bikeEditor.id ? 'Edit bike' : 'Add bike'}</h2>
         <div className="maintenance-form-row"><label>Bike name<input autoFocus required maxLength={100} value={bikeEditor.name} onChange={e => setBikeEditor({ ...bikeEditor, name: e.target.value })} placeholder="e.g. Touring bike" /></label>
         <label>Current mileage (km)<input required type="number" min="0" step="any" value={bikeEditor.mileage} onChange={e => setBikeEditor({ ...bikeEditor, mileage: e.target.value })} /></label></div>
-        <p className="maintenance-fine">Use your odometer or total distance ridden. Service readings stay unchanged.</p>
-        <div className="maintenance-actions"><button className="maintenance-primary" disabled={busy}>Save bike</button><button type="button" disabled={busy} onClick={() => setBikeEditor(null)}>Cancel</button></div>
+        {bikeEditor.id && <p className="maintenance-fine">{bikeEditor.id.startsWith('icu:') ? <><strong>This bike is imported from Intervals.icu.</strong> Syncing replaces its current name and mileage.</> : <><strong>This bike is tracked manually.</strong> Update its mileage after your rides.</>}</p>}
+        <div className="maintenance-actions maintenance-bike-editor-actions"><button className="maintenance-primary" disabled={busy}>Save bike</button><button type="button" disabled={busy} onClick={() => setBikeEditor(null)}>Cancel</button>{bikeEditor.id && <button className="maintenance-danger" type="button" disabled={busy} onClick={deleteBike}><DeleteIcon />Delete bike</button>}</div>
       </form>}
       <Workbench className="maintenance-layout" label="Maintenance Log" drawerTitle="Bikes and components" portalDrawer drawerContentClassName="maintenance maintenance-drawer-content">
       <section className="maintenance-bike-panel" aria-label="Bikes and components">
@@ -260,11 +276,10 @@ export function Maintenance() {
         return <li key={b.id}>
           <div className="maintenance-bike-row">
             <button className={'maintenance-bike' + (open ? ' selected' : '')} aria-label={`${b.name}. Total distance: ${km(b.distance / 1000)} km.`} aria-pressed={open} aria-expanded={open} aria-controls={panelId} disabled={busy || formOpen || Boolean(bikeEditor)} onClick={() => toggleBike(b.id)}><strong className="maintenance-item-label"><BikeIcon /><span>{b.name}</span></strong><span className="maintenance-bike-distance"><span className="maintenance-mileage">{km(b.distance / 1000)} <small>km</small></span></span></button>
+            <button className="maintenance-bike-edit" type="button" title="Edit bike / update mileage" aria-label={`Edit bike: ${b.name}`} disabled={busy || formOpen || Boolean(bikeEditor)} onClick={() => { setError(''); setMessage(''); setBikeEditor({ id: b.id, name: b.name, mileage: String(b.distance / 1000) }); if (isMobile) filtersDrawer.setOpen(false); }}><EditIcon /></button>
             <button className="maintenance-bike-toggle" disabled={busy || formOpen || Boolean(bikeEditor)} aria-expanded={open} aria-controls={panelId} aria-label={`${open ? 'Hide' : 'Show'} components for ${b.name}`} onClick={() => toggleBike(b.id)}><span aria-hidden="true">{open ? '▾' : '▸'}</span></button>
           </div>
           <div id={panelId} hidden={!open}>{open && <div className="maintenance-bike-components" role="region" aria-label={`${b.name} components`}>
-            <button disabled={busy || formOpen || Boolean(bikeEditor)} onClick={() => { setBikeEditor({ id: b.id, name: b.name, mileage: String(b.distance / 1000) }); if (isMobile) filtersDrawer.setOpen(false); }}>Edit bike / update mileage</button>
-            <p className="maintenance-fine">{b.id.startsWith('icu:') ? 'Intervals.icu bike · syncing replaces its current name and mileage.' : 'Manual mileage · update after your rides.'}</p>
             {!bikeEntries.length && <p className="maintenance-fine maintenance-tree-empty">No components logged yet.</p>}
             {componentNames(bikeEntries).map(name => {
               const history = componentHistory(bikeEntries, name);
@@ -309,7 +324,7 @@ export function Maintenance() {
           const ago = entryBike ? kilometersAgo(entryBike.distance, entry.odometer_km) : null;
           return <article className="maintenance-entry" key={entry.id}>
             <div className="maintenance-entry-body">
-              <p className="maintenance-entry-context"><MaintenanceComponentIcon name={entry.component} />{entryBike ? <button type="button" className="maintenance-filter-link" disabled={busy || formOpen || Boolean(bikeEditor)} aria-label={`Filter by bike: ${entryBike.name}`} title={`Show all maintenance for ${entryBike.name}`} onClick={() => selectFilter(entry.bike_id)}>{entryBike.name}</button> : <span>Bike unavailable</span>}<span aria-hidden="true">/</span><button type="button" className="maintenance-filter-link" disabled={busy || formOpen || !entryBike} aria-label={`Filter by component: ${componentName(entry.component)} on ${entryBike?.name ?? 'unavailable bike'}`} title={`Show ${componentName(entry.component)} maintenance for ${entryBike?.name ?? 'this bike'}`} onClick={() => selectFilter(entry.bike_id, componentName(entry.component))}>{componentName(entry.component)}</button><span className="maintenance-kind">{entry.kind === 'replacement' ? 'Replacement' : 'Service'}</span></p>
+              <p className="maintenance-entry-context"><MaintenanceComponentIcon name={entry.component} />{entryBike ? <button type="button" className="maintenance-filter-link" disabled={busy || formOpen || Boolean(bikeEditor)} aria-label={`Filter by bike: ${entryBike.name}`} title={`Show all maintenance for ${entryBike.name}`} onClick={() => selectFilter(entry.bike_id)}>{entryBike.name}</button> : <span>Bike unavailable</span>}<span aria-hidden="true">/</span><button type="button" className="maintenance-filter-link" disabled={busy || formOpen || Boolean(bikeEditor) || !entryBike} aria-label={`Filter by component: ${componentName(entry.component)} on ${entryBike?.name ?? 'unavailable bike'}`} title={`Show ${componentName(entry.component)} maintenance for ${entryBike?.name ?? 'this bike'}`} onClick={() => selectFilter(entry.bike_id, componentName(entry.component))}>{componentName(entry.component)}</button><span className="maintenance-kind">{entry.kind === 'replacement' ? 'Replacement' : 'Service'}</span></p>
               <div className="maintenance-entry-details">
                 <time dateTime={entry.performed_on}>{new Date(entry.performed_on + 'T12:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</time>
                 <span className="maintenance-entry-metric" role="img" title={`Bike mileage when this work was performed: ${km(entry.odometer_km)} km`} aria-label={`Bike mileage when this work was performed: ${km(entry.odometer_km)} km`}><BikeIcon />{km(entry.odometer_km)} km</span>
@@ -323,8 +338,8 @@ export function Maintenance() {
               {entryBike && ago === null && <span className="maintenance-fine">Recorded mileage exceeds the bike’s current total.</span>}
             </div>
             <div className="maintenance-entry-meta"><strong>{!entryBike ? 'Mileage unavailable' : ago === null ? 'Mileage changed' : km(ago) + ' km ago'}</strong><div className="maintenance-entry-actions">
-              <button disabled={busy || formOpen || !entryBike} title="Repeat" aria-label={`Repeat ${entry.task}`} onClick={() => repeat(entry)}><RepeatIcon /></button>
-              <button disabled={busy || formOpen || !entryBike} title="Edit" aria-label={`Edit ${entry.task}`} onClick={() => edit(entry)}><EditIcon /></button>
+              <button disabled={busy || formOpen || Boolean(bikeEditor) || !entryBike} title="Repeat" aria-label={`Repeat ${entry.task}`} onClick={() => repeat(entry)}><RepeatIcon /></button>
+              <button disabled={busy || formOpen || Boolean(bikeEditor) || !entryBike} title="Edit" aria-label={`Edit ${entry.task}`} onClick={() => edit(entry)}><EditIcon /></button>
               <button disabled={busy || formOpen || Boolean(bikeEditor)} className="maintenance-delete" title="Delete" aria-label={`Delete ${entry.task}`} onClick={() => { if (!confirm('Delete this maintenance entry? This cannot be undone.')) return; void run(async () => { const updated = await requireStore().delete(entry.id); storeEntries(updated); }); }}><DeleteIcon /></button>
             </div></div>
           </article>;

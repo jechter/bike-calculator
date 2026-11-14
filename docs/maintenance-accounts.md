@@ -9,8 +9,15 @@
   state or storage. There is no editable demo or browser-only garage. New records
   and edits are saved only to Supabase.
   Add a bike, set its current mileage in kilometers, and log services/replacements.
-  Expand a bike to edit its name or update mileage. Current mileage cannot be lower
-  than any saved service reading.
+  Use the pencil after a bike's mileage to edit its name or update mileage, without
+  expanding its components. Source-specific guidance (manual mileage or imported
+  Intervals.icu sync behavior) appears only in this editor, not in the bike list.
+  Current mileage cannot be lower than any saved service
+  reading. The editor's **Delete bike** action requires confirmation and atomically
+  removes that bike and all its maintenance entries from the cloud. Other bikes
+  and their history are unchanged; a failed cloud write leaves the editor open.
+  Deleting a synced bike does not delete upstream gear, so a later Intervals.icu
+  sync can add that bike again (without restoring its deleted maintenance history).
 - The sign-in banner opens directly to the email field. **Send sign-in code** uses
   a Supabase Auth one-time email code.
   The first successful code creates a free account. No password, Intervals.icu account,

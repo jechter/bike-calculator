@@ -63,8 +63,8 @@
 .maintenance-connect label { display: flex; flex: 1; flex-direction: column; gap: 8px; font-weight: 600; min-width: 0; }
 .maintenance-connect input { width: 100%; font: inherit; padding: 10px; border: 1px solid var(--border); border-radius: 6px; color: var(--text); background: var(--bg); }
 @media(max-width: 600px) { .maintenance-connect { align-items: stretch; flex-direction: column; } }
-.maintenance-bike-row { display: grid; grid-template-columns: minmax(0, 1fr) 48px; }
-.maintenance-bike-row .maintenance-bike { grid-template-columns: minmax(0, 1fr) 180px; }
+.maintenance-bike-row { display: grid; grid-template-columns: minmax(0, 1fr) 36px 36px; }
+.maintenance-bike-row .maintenance-bike { grid-template-columns: minmax(0, 1fr) auto; }
 .maintenance .maintenance-bike-toggle { border: 0; border-radius: 0; padding: 12px; background: var(--panel); color: var(--muted); }
 .maintenance .maintenance-bike-toggle:hover { background: var(--accent-soft); }
 .maintenance-bike-toggle:focus-visible { outline-offset: -3px; }
@@ -76,7 +76,7 @@
 .maintenance-entry-context { color: var(--accent); font-size: 13px; font-weight: 600; margin: 0 0 8px; overflow-wrap: anywhere; }
 .maintenance-log { margin-top: 36px; }
 @media(max-width: 600px) {
-  .maintenance-bike-row { grid-template-columns: minmax(0, 1fr) 36px; }
+  .maintenance-bike-row { grid-template-columns: minmax(0, 1fr) 36px 36px; }
   .maintenance-bike-row .maintenance-bike { grid-template-columns: minmax(0, 1fr) auto; }
   .maintenance-bike-components { padding-left: 12px; }
 }
@@ -201,7 +201,7 @@ html.embedded .maintenance--connected .maintenance-layout { flex: auto; grid-tem
 .maintenance-drawer-content .maintenance-bike-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .maintenance-drawer-content .maintenance-section-head { display: none; }
 .maintenance-drawer-content .maintenance-list-scroll { flex: 1; }
-.maintenance-drawer-content .maintenance-bike-row .maintenance-bike { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 16px; }
+.maintenance-drawer-content .maintenance-bike-row .maintenance-bike { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 12px 8px; }
 .maintenance-drawer-content .maintenance-bike-components { padding-left: 12px; }
 .maintenance-drawer-content .maintenance-component-summary { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 14px; gap: 12px; padding: 16px; }
 .maintenance-drawer-content .maintenance-component-summary > strong { grid-column: 1 / 3; }
@@ -240,7 +240,7 @@ html.embedded .maintenance--connected .maintenance-layout { flex: auto; grid-tem
 .maintenance-preview .maintenance-section-head h2 { font-size: 18px; }
 .maintenance-preview .maintenance-section-head p { margin-top: 6px; }
 .maintenance-preview-control { display: inline-block; padding: 8px 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel); font-size: 12px; white-space: nowrap; }
-.maintenance-preview-bike { display: grid; grid-template-columns: minmax(0, 1fr) auto 12px; gap: 14px; align-items: center; padding: 20px 18px; }
+.maintenance-preview-bike { display: grid; grid-template-columns: minmax(0, 1fr) auto 18px 12px; gap: 14px; align-items: center; padding: 20px 18px; }
 .maintenance-preview-bike > span { white-space: nowrap; font-weight: 600; }
 .maintenance-preview-bike small { font-size: inherit; }
 .maintenance-preview-bike--selected { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
@@ -260,3 +260,19 @@ html.embedded .maintenance--connected .maintenance-layout { flex: auto; grid-tem
   .maintenance-preview-bike { padding: 16px; }
   .maintenance-preview-layout { gap: 22px; }
 }
+
+/* Bike-row actions are siblings, never buttons nested inside the filter button. */
+.maintenance .maintenance-bike-edit { display: flex; align-items: center; justify-content: center; width: 36px; padding: 8px; border: 0; border-radius: 0; background: var(--panel); color: var(--muted); }
+.maintenance .maintenance-bike-edit:hover:not(:disabled) { background: var(--accent-soft); color: var(--accent); }
+.maintenance-bike-edit:focus-visible { outline-offset: -3px; }
+.maintenance-bike-edit svg { width: 18px; height: 18px; }
+.maintenance-bike-editor-actions { margin-top: 12px; }
+.maintenance .maintenance-danger { display: inline-flex; align-items: center; gap: 8px; color: var(--danger); border-color: var(--danger); margin-left: auto; }
+.maintenance .maintenance-danger:hover:not(:disabled) { border-color: var(--danger); background: var(--panel-2); }
+@media(pointer: coarse) {
+  .maintenance-bike-row { grid-template-columns: minmax(0, 1fr) 44px 44px; }
+  .maintenance .maintenance-bike-edit { width: 44px; min-height: 44px; }
+}
+
+.maintenance-preview-bike-edit { display: inline-flex; align-items: center; justify-content: center; }
+.maintenance-preview-bike-edit svg { width: 18px; height: 18px; }

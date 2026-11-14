@@ -93,3 +93,13 @@ it('sets and clears filters directly in the compact log without opening the bike
   fireEvent.click(screen.getByRole('button', { name: 'Open Bikes and components' }));
   expect(within(screen.getByRole('dialog')).getByRole('button', { name: 'Hide components for Weekend gravel bike' })).toBeTruthy();
 });
+it('opens the bike editor from the pencil in the compact drawer and closes the drawer', async () => {
+  await renderCompactApp();
+  fireEvent.click(screen.getByRole('button', { name: 'Open Bikes and components' }));
+  const drawer = screen.getByRole('dialog', { name: 'Bikes and components' });
+  fireEvent.click(within(drawer).getByRole('button', { name: 'Edit bike: Everyday road bike' }));
+  expect(screen.queryByRole('dialog', { name: 'Bikes and components' })).toBeNull();
+  expect(screen.getByRole('form', { name: 'Edit bike' })).toBeTruthy();
+  expect((screen.getByLabelText('Bike name') as HTMLInputElement).value).toBe('Everyday road bike');
+  expect(screen.getByRole('button', { name: 'Delete bike' })).toBeTruthy();
+});

@@ -1,4 +1,4 @@
-import { BikeIcon, WrenchIcon } from '../icons';
+import { BikeIcon, EditIcon, WrenchIcon } from '../icons';
 import { MaintenanceComponentIcon } from './MaintenanceComponentIcon';
 
 const sampleJobs = [
@@ -16,13 +16,13 @@ export function MaintenancePreview() {
         <div className="maintenance-section-head"><h2>Bikes</h2><span className="maintenance-preview-control">+ Add bike</span></div>
         <ul className="maintenance-bikes">
           <li>
-            <div className="maintenance-preview-bike maintenance-preview-bike--selected"><strong className="maintenance-item-label"><BikeIcon />City commuter</strong><span>4,862 <small>km</small></span><span>▾</span></div>
+            <div className="maintenance-preview-bike maintenance-preview-bike--selected"><strong className="maintenance-item-label"><BikeIcon />City commuter</strong><span>4,862 <small>km</small></span><span className="maintenance-preview-bike-edit"><EditIcon /></span><span>▾</span></div>
             <div className="maintenance-preview-components">
               <div className="maintenance-preview-component"><strong className="maintenance-item-label"><MaintenanceComponentIcon name="Chain" />Chain</strong><div><span className="maintenance-fine">Since replacement</span><strong>362 km</strong></div><div><span className="maintenance-fine">Since service</span><strong>42 km</strong></div></div>
               <div className="maintenance-preview-component"><strong className="maintenance-item-label"><MaintenanceComponentIcon name="Rear brake pads" />Rear brake pads</strong><div><span className="maintenance-fine">Since replacement</span><strong>682 km</strong></div></div>
             </div>
           </li>
-          <li><div className="maintenance-preview-bike"><strong className="maintenance-item-label"><BikeIcon />Weekend gravel</strong><span>2,186 <small>km</small></span><span>▸</span></div></li>
+          <li><div className="maintenance-preview-bike"><strong className="maintenance-item-label"><BikeIcon />Weekend gravel</strong><span>2,186 <small>km</small></span><span className="maintenance-preview-bike-edit"><EditIcon /></span><span>▸</span></div></li>
         </ul>
       </div>
       <div className="maintenance-log">

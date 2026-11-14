@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
+import { sampleMaintenance } from '../test-fixtures/maintenance';
 import { afterEach, expect, it, vi } from 'vitest';
 import { browserBackup, ServerStore } from './maintenance-storage';
-import { demoMaintenance } from './maintenance';
+
 import { loadLocalEntries, saveApiKey, saveLocalEntries } from './intervals';
 afterEach(() => { vi.restoreAllMocks(); localStorage.clear(); vi.unstubAllEnvs(); vi.resetModules(); });
 const endpoint = 'https://storage.example.com/functions/v1/maintenance-storage';
 it('imports in batches, preserves IDs and local backup, and safely retries after a partial failure', async () => {
-  const source = Array.from({ length: 73 }, (_, i) => ({ ...demoMaintenance().entries[0], id: String(i) }));
+  const source = Array.from({ length: 73 }, (_, i) => ({ ...sampleMaintenance().entries[0], id: String(i) }));
   saveLocalEntries('i1', source); saveApiKey('private-key');
   const remote = new Map(); let failSecond = true; let batches = 0;
   vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, options) => {
@@ -35,10 +36,10 @@ it('imports in batches, preserves IDs and local backup, and safely retries after
 });
 it('does not report migration success unless all original IDs are present in the server readback', async () => {
   vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, options) => new Response(JSON.stringify(JSON.parse(String(options?.body)).action === 'import' ? { inserted: 1 } : { entries: [], hasMore: false })));
-  await expect(new ServerStore('i1', 'token', endpoint).importEntries([demoMaintenance().entries[0]])).rejects.toThrow('could not be fully verified');
+  await expect(new ServerStore('i1', 'token', endpoint).importEntries([sampleMaintenance().entries[0]])).rejects.toThrow('could not be fully verified');
 });
 it('loads multiple pages so records beyond the default database row limit are not silently lost', async () => {
-  const source = demoMaintenance().entries;
+  const source = sampleMaintenance().entries;
   const request = vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, options) => {
     const { page } = JSON.parse(String(options?.body));
     return new Response(JSON.stringify({ entries: page === 0 ? source.slice(0, 2) : source.slice(2), hasMore: page === 0 }));
@@ -65,8 +66,8 @@ it('rejects mismatched identities before reading or importing records', async ()
 });
 it('exports records and identity metadata, never the stored API key', () => {
   saveApiKey('private-key');
-  const backup = browserBackup('i1', demoMaintenance().entries);
-  expect(backup.entries).toEqual(demoMaintenance().entries);
+  const backup = browserBackup('i1', sampleMaintenance().entries);
+  expect(backup.entries).toEqual(sampleMaintenance().entries);
   expect(backup.athleteId).toBe('i1');
   expect(JSON.stringify(backup)).not.toContain('private-key');
 });

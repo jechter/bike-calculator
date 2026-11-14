@@ -5,28 +5,29 @@ import { useSettingsDrawer } from '../settingsDrawer';
 import { useIsMobile } from '../useIsMobile';
 import { ResponsivePopover } from './ResponsivePopover';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { bikeComponents, suggestedServices, componentHistory, componentMileage, componentName, componentNames, maintenanceIntervals, demoMaintenance, kilometersAgo, localDate, type MaintenanceData, type MaintenanceEntry, type MaintenanceKind } from '../lib/maintenance';
+import { bikeComponents, suggestedServices, componentHistory, componentMileage, componentName, componentNames, maintenanceIntervals, kilometersAgo, localDate, type MaintenanceData, type MaintenanceEntry, type MaintenanceKind } from '../lib/maintenance';
 import { forgetApiKey, loadIntervals } from '../lib/intervals';
 import { connectServer, serverStorageEnabled } from '../lib/maintenance-storage';
-import { accountEnabled, clearPendingEmailSignIn, loadPendingEmailSignIn, rememberPendingEmailSignIn, AccountGarage, downloadGarage, emptyGarage, forgetAccount, loadBrowserGarage, mergeIntervalsBikes, restoreAccountOnce, saveBrowserGarage, sendSignInCode, verifySignInCode } from '../lib/maintenance-account';
+import { accountEnabled, accountSessionKey, hasSavedAccount, clearPendingEmailSignIn, loadPendingEmailSignIn, rememberPendingEmailSignIn, AccountGarage, downloadGarage, forgetAccount, hasLegacyBrowserGarage, loadLegacyBrowserGarage, mergeIntervalsBikes, restoreAccountOnce, sendSignInCode, verifySignInCode } from '../lib/maintenance-account';
 import { RepeatIcon, EditIcon, DeleteIcon, BikeIcon, WrenchIcon, ThreadIcon } from '../icons';
 import { MaintenanceComponentIcon } from './MaintenanceComponentIcon';
+import { MaintenancePreview } from './MaintenancePreview';
 import './Maintenance.css';
 const km = (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 1 });
 export function Maintenance() {
   const [data, setData] = useState<MaintenanceData | null>(null);
-  const [demo, setDemo] = useState(false);
   const [busy, setBusy] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState('');
   const apiKey = useRef('');
   const [intervalsConnected, setIntervalsConnected] = useState(false);
   const store = useRef<AccountGarage | null>(null);
+  const sessionGeneration = useRef(0);
   const [accountEmail, setAccountEmail] = useState('');
+  const [hasBrowserBackup, setHasBrowserBackup] = useState(false);
   const [pendingEmail] = useState(() => accountEnabled ? loadPendingEmailSignIn() : null);
   const [email, setEmail] = useState(pendingEmail || '');
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(Boolean(pendingEmail));
-  const [accountOpen, setAccountOpen] = useState(Boolean(pendingEmail));
   const [syncOpen, setSyncOpen] = useState(false);
   const [bikeEditor, setBikeEditor] = useState<{ id: string; name: string; mileage: string } | null>(null);
   const draftId = useRef('');
@@ -56,18 +57,35 @@ export function Maintenance() {
 
   useEffect(() => {
     let mounted = true;
+    const generation = sessionGeneration.current;
     try {
-      if (!sessionStorage.getItem('maintenance-account-v1')) { setData(loadBrowserGarage()); return; }
+      if (!accountEnabled || !hasSavedAccount()) return;
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not read browser storage.'); return; }
     setBusy(true);
     void restoreAccountOnce().then(async account => {
-      const garage = account ? await account.loadGarage() : loadBrowserGarage();
-      if (!mounted) return;
+      const garage = account ? await account.loadGarage() : null;
+      if (!mounted || generation !== sessionGeneration.current) return;
       store.current = account; setAccountEmail(account?.email || ''); setData(garage);
-      if (account) { clearPendingEmailSignIn(); setAccountOpen(false); setCodeSent(false); }
+      if (account) { setHasBrowserBackup(hasLegacyBrowserGarage()); clearPendingEmailSignIn(); setCodeSent(false); }
     }).catch(error => { if (mounted) setError(error instanceof Error ? error.message : 'Could not load your garage.'); })
       .finally(() => { if (mounted) setBusy(false); });
     return () => { mounted = false; };
+  }, []);
+  useEffect(() => {
+    const changed = (event: StorageEvent) => {
+      if (event.key !== accountSessionKey && event.key !== null) return;
+      const active = store.current;
+      let nextUser: string | undefined;
+      try { nextUser = event.newValue ? JSON.parse(event.newValue).user?.id : undefined; } catch { /* Invalid saved session is treated as signed out. */ }
+      if (active && nextUser && nextUser === active.userId) return; // Ordinary token refresh in another tab.
+      sessionGeneration.current++;
+      try { sessionStorage.removeItem(accountSessionKey); } catch { /* Tab storage may be unavailable. */ }
+      store.current = null; setData(null); setAccountEmail(''); setFormOpen(false); setBikeEditor(null);
+      apiKey.current = ''; setIntervalsConnected(false); setSyncOpen(false); setMoreOpen(false);
+      setMessage('Sign-in changed in another tab. Reload or sign in again to continue.');
+    };
+    window.addEventListener('storage', changed);
+    return () => window.removeEventListener('storage', changed);
   }, []);
   const bike = data?.bikes.find(b => b.id === formBikeId);
   const entries = data?.entries.filter(e => (!bikeId || e.bike_id === bikeId) && (!componentFilter || componentName(e.component).toLowerCase() === componentFilter.toLowerCase())).slice().sort((a, b) => b.performed_on.localeCompare(a.performed_on)) ?? [];
@@ -82,8 +100,12 @@ export function Maintenance() {
     try { await fn(); } catch (e) { setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.'); }
     finally { setBusy(false); }
   };
+  const requireStore = () => {
+    if (!store.current) throw new Error('Sign in to save your maintenance log. No changes were saved.');
+    return store.current;
+  };
   const persistGarage = async (garage: MaintenanceData) => {
-    if (!demo) { if (store.current) await store.current.write(garage); else saveBrowserGarage(garage); }
+    await requireStore().write(garage);
     setData(garage);
   };
   const syncMileage = async (key: string, offerImport = false, recoverCloud = false) => {
@@ -105,17 +127,17 @@ export function Maintenance() {
     setMessage('Bike mileage synced. Manual bikes and service history were kept. The API key is held only until you leave this page.');
   };
   useEffect(() => {
-    if (!intervalsConnected || demo || busy || formOpen || bikeEditor || syncOpen || accountOpen || !data) return;
+    if (!intervalsConnected || busy || formOpen || bikeEditor || syncOpen || !data) return;
     const timer = window.setInterval(() => { if (document.visibilityState === 'visible') void run(() => syncMileage(apiKey.current)); }, 5 * 60 * 1000);
     return () => window.clearInterval(timer);
-  }, [intervalsConnected, demo, busy, formOpen, bikeEditor, syncOpen, accountOpen, data]);
+  }, [intervalsConnected, busy, formOpen, bikeEditor, syncOpen, data]);
   const connect = (event: FormEvent) => { event.preventDefault(); void run(() => syncMileage(apiKeyInput.trim(), true)); };
   const disconnect = () => {
     void run(async () => {
       if (store.current) await store.current.logout().catch(() => { setMessage('Signed out on this device. The server could not be reached to revoke the session.'); });
       else forgetAccount();
       store.current = null; setAccountEmail(''); apiKey.current = ''; setIntervalsConnected(false); setApiKeyInput('');
-      setMoreOpen(false); setData(null); setDemo(false); clearFilter(); setFormOpen(false); setBikeEditor(null); clearPendingEmailSignIn(); setAccountOpen(false); setCodeSent(false); setCode('');
+      setMoreOpen(false); setData(null); setSyncOpen(false); setHasBrowserBackup(false); clearFilter(); setFormOpen(false); setBikeEditor(null); clearPendingEmailSignIn(); setCodeSent(false); setCode('');
     });
   };
   const saveBike = (event: FormEvent) => {
@@ -127,7 +149,7 @@ export function Maintenance() {
     void run(async () => {
       const bike = { id: bikeEditor.id || crypto.randomUUID(), name: bikeEditor.name.trim(), distance: mileage * 1000 };
       await persistGarage({ ...data, bikes: bikeEditor.id ? data.bikes.map(b => b.id === bike.id ? bike : b) : [...data.bikes, bike] });
-      setBikeEditor(null); setMessage(demo ? 'Demo bike saved temporarily.' : store.current ? 'Bike saved to your account.' : 'Bike saved in this browser. Export a backup to keep it safe.');
+      setBikeEditor(null); setMessage('Bike saved to your account.');
     });
   };
   const storeEntries = (updated: MaintenanceEntry[]) => {
@@ -161,37 +183,28 @@ export function Maintenance() {
       const entry = { component: name, kind, bike_id: bike.id, task: kind === 'replacement' ? `Replaced ${name.toLowerCase()}` : task.trim(), notes: notes.trim(), performed_on: date, odometer_km: mileage };
       if (!data) return;
       const record = { ...entry, id: editingId || draftId.current };
-      const updated = store.current && !demo ? await store.current.save(record, Boolean(editingId)) : (editingId ? data.entries.map(existing => existing.id === editingId ? record : existing) : [record, ...data.entries]).sort((a, b) => b.performed_on.localeCompare(a.performed_on));
-      if (!demo && !store.current) saveBrowserGarage({ ...data, entries: updated });
+      const updated = await requireStore().save(record, Boolean(editingId));
       storeEntries(updated);
       setBikeId(bike.id); setComponentFilter(name);
-      setFormOpen(false); setEditingId(null); setMessage(demo ? `Demo entry ${editingId ? 'updated' : 'added'}. It will disappear when you leave this page.` : store.current ? 'Maintenance saved on the server. Your browser backup is unchanged.' : 'Maintenance saved in this browser only.');
+      setFormOpen(false); setEditingId(null); setMessage('Maintenance saved to your account.');
     });
   };
   const headerActions = data && <div className="maintenance-header-actions">
     <button className="copy-link-btn maintenance-primary" disabled={busy || formOpen || Boolean(bikeEditor) || !data.bikes.length} onClick={() => openForm()} aria-label="+ Log maintenance">{isMobile ? '+ Log' : '+ Log maintenance'}</button>
-    {!demo && apiKey.current && <button className="copy-link-btn maintenance-refresh" disabled={busy || formOpen || Boolean(bikeEditor)} onClick={() => void run(() => syncMileage(apiKey.current))}><ThreadIcon /><span className="maintenance-action-label">Refresh mileage</span></button>}
+    {apiKey.current && <button className="copy-link-btn maintenance-refresh" disabled={busy || formOpen || Boolean(bikeEditor)} onClick={() => void run(() => syncMileage(apiKey.current))}><ThreadIcon /><span className="maintenance-action-label">Refresh mileage</span></button>}
     <div className="maintenance-more" ref={moreRef}>
       <button className="copy-link-btn" aria-expanded={moreOpen} aria-controls="maintenance-more-menu" onClick={() => setMoreOpen(open => !open)}>More <span aria-hidden="true">▾</span></button>
       {moreOpen && <ResponsivePopover id="maintenance-more-menu" className="maintenance-more-popup" anchorRef={moreRef} onClose={() => setMoreOpen(false)}>
         <button disabled={busy} onClick={() => { setMoreOpen(false); downloadGarage(data); }}>Download garage backup</button>
-        {!demo && <>
-          {store.current && <button disabled={busy || formOpen || Boolean(bikeEditor)} onClick={() => { setMoreOpen(false); void run(async () => { if (!data) return; const source = loadBrowserGarage(); if (!source) { setMessage('No browser garage to import.'); return; } if (!confirm('Copy browser bikes and records into your cloud garage? Existing cloud IDs will be kept. The browser copy will not be deleted.')) return; const bikes = [...data.bikes, ...source.bikes.filter(b => !data.bikes.some(old => old.id === b.id))]; const entries = [...data.entries, ...source.entries.filter(e => !data.entries.some(old => old.id === e.id))]; await persistGarage({ ...data, bikes, entries }); setMessage('Browser garage imported. Existing cloud records were kept; browser backup unchanged.'); }); }}>Import browser garage</button>}
-          <button disabled={busy || formOpen || Boolean(bikeEditor)} onClick={() => { setMoreOpen(false); setSyncOpen(true); }}>Connect Intervals.icu (optional)</button>
-          {apiKey.current && <button disabled={busy} onClick={() => { apiKey.current = ''; setIntervalsConnected(false); setMoreOpen(false); setMessage('Intervals.icu disconnected. Your bikes and records were kept.'); }}>Disconnect Intervals.icu</button>}
-          {!store.current && accountEnabled && <button disabled={busy || formOpen || Boolean(bikeEditor)} onClick={() => { setMoreOpen(false); setAccountOpen(true); }}>Sign in for cloud storage</button>}
-        </>}
-        <button disabled={busy} onClick={disconnect}>{demo ? 'Exit demo' : store.current ? 'Sign out' : 'Close garage'}</button>
+        {hasBrowserBackup && <button disabled={busy || formOpen || Boolean(bikeEditor)} onClick={() => { setMoreOpen(false); void run(async () => { if (!data) return; const source = loadLegacyBrowserGarage(); if (!source) { setMessage('No browser garage to import.'); return; } if (!confirm('Copy browser bikes and records into your cloud garage? Existing cloud IDs will be kept. The browser copy will not be deleted.')) return; const bikes = [...data.bikes, ...source.bikes.filter(b => !data.bikes.some(old => old.id === b.id))]; const entries = [...data.entries, ...source.entries.filter(e => !data.entries.some(old => old.id === e.id))]; await persistGarage({ ...data, bikes, entries }); setMessage('Browser garage imported. Existing cloud records were kept; browser backup unchanged.'); }); }}>Import existing browser records</button>}
+        <button disabled={busy || formOpen || Boolean(bikeEditor)} onClick={() => { setMoreOpen(false); setSyncOpen(true); }}>Connect Intervals.icu (optional)</button>
+        {apiKey.current && <button disabled={busy} onClick={() => { apiKey.current = ''; setIntervalsConnected(false); setMoreOpen(false); setMessage('Intervals.icu disconnected. Your bikes and records were kept.'); }}>Disconnect Intervals.icu</button>}
+        <button disabled={busy} onClick={disconnect}>Sign out</button>
       </ResponsivePopover>}
     </div>
     {isMobile && <SettingsButton icon={<BikeIcon />} pageTitle="Maintenance Log" label="Bikes and components" />}
   </div>;
-  return <div className={'maintenance' + (data ? ' maintenance--connected' : '')}>
-    <div className="main-head maintenance-page-head"><div><h1>Maintenance Log</h1><p className="subtitle">Track maintenance tasks for your bikes</p></div>{actionSlot ? createPortal(headerActions, actionSlot) : <div className="main-actions">{headerActions}</div>}</div>
-    {error && <div className="maintenance-notice maintenance-error" role="alert">{error}{!data && <button disabled={busy} onClick={disconnect}>Clear saved sign-in</button>}</div>}
-    {message && <div className="maintenance-notice" role="status">{message}</div>}
-    {busy && <p role="status">Connecting / loading…</p>}
-    {accountOpen && <form className="maintenance-form" aria-label="Email sign-in" autoComplete="off" onSubmit={event => { event.preventDefault(); void run(async () => {
+  const signInForm = <form className="maintenance-form" aria-label="Email sign-in" autoComplete="off" onSubmit={event => { event.preventDefault(); void run(async () => {
       if (!codeSent) {
         // Persist before the request so suspension while opening Mail is safe too.
         const remembered = rememberPendingEmailSignIn(email.trim());
@@ -200,35 +213,36 @@ export function Maintenance() {
       }
       else {
         const account = await verifySignInCode(email.trim(), code.trim());
-        // Do not replace the visible local/demo garage until cloud loading succeeds.
+        // Do not open the garage until authenticated cloud loading succeeds.
         let garage: MaintenanceData;
         try { garage = await account.loadGarage(); } catch (error) { forgetAccount(); throw error; }
-        store.current = account; setAccountEmail(account.email); setData(garage); setDemo(false); clearFilter(); clearPendingEmailSignIn(); setAccountOpen(false); setCode(''); setCodeSent(false);
-        setMessage('Signed in. Your browser garage is kept separately.');
+        store.current = account; setAccountEmail(account.email); setData(garage); setHasBrowserBackup(hasLegacyBrowserGarage()); clearFilter(); clearPendingEmailSignIn(); setCode(''); setCodeSent(false);
+        setMessage('Signed in. Your bikes and maintenance are saved to your cloud account.');
       }
-    }); }}><h2>Sign in with email</h2><p className="maintenance-fine">No password or Intervals.icu account needed. Your first code creates an account. Your browser garage stays separate and is not uploaded automatically.</p>
+    }); }}><h2>Sign in with email</h2><p className="maintenance-fine">Your first code creates a free account. Your bikes and maintenance are saved securely to your cloud account.</p><p className="maintenance-fine">Stay signed in for up to 30 days on this browser. Sign out when using a shared device.</p>
       <label>Email<input required type="email" name="contact_email" inputMode="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} disabled={busy || codeSent} value={email} onChange={e => setEmail(e.target.value)} /></label>
       {codeSent && <label>Email code<input required type="text" name="verification_code" autoCapitalize="none" spellCheck={false} inputMode="numeric" autoComplete="one-time-code" value={code} onChange={e => setCode(e.target.value)} /></label>}
-      <div className="maintenance-actions"><button className="maintenance-primary" disabled={busy}>{codeSent ? 'Verify code' : 'Send sign-in code'}</button><button type="button" disabled={busy} onClick={() => { clearPendingEmailSignIn(); setAccountOpen(false); setCodeSent(false); setCode(''); }}>Cancel</button>{codeSent && <button type="button" disabled={busy} onClick={() => { clearPendingEmailSignIn(); setCodeSent(false); setCode(''); }}>Use another email / resend</button>}</div>
-    </form>}
+      <div className="maintenance-actions"><button className="maintenance-primary" disabled={busy}>{codeSent ? 'Verify code' : 'Send sign-in code'}</button>{codeSent && <button type="button" disabled={busy} onClick={() => { clearPendingEmailSignIn(); setCodeSent(false); setCode(''); }}>Cancel</button>}{codeSent && <button type="button" disabled={busy} onClick={() => { clearPendingEmailSignIn(); setCodeSent(false); setCode(''); }}>Use another email / resend</button>}</div>
+    </form>;
+  return <div className={'maintenance' + (data ? ' maintenance--connected' : '')}>
+    <div className="main-head maintenance-page-head"><div><h1>Maintenance Log</h1><p className="subtitle">Track maintenance tasks for your bikes</p></div>{actionSlot ? createPortal(headerActions, actionSlot) : <div className="main-actions">{headerActions}</div>}</div>
+    {error && <div className="maintenance-notice maintenance-error" role="alert">{error}{!data && <button disabled={busy} onClick={disconnect}>Clear saved sign-in</button>}</div>}
+    {message && <div className="maintenance-notice" role="status">{message}</div>}
+    {busy && <p role="status">Connecting / loading…</p>}
     {syncOpen && <form className="maintenance-form" aria-label="Optional Intervals.icu sync" onSubmit={connect}><h2>Optional Intervals.icu sync</h2><p>Read bike names and current mileage. Manual bikes and maintenance records are never overwritten. While connected, mileage refreshes automatically every five minutes when this page is visible and no form is open. Reconnect after leaving the page.</p>
       <label>Intervals.icu API key<input type="password" required autoComplete="off" spellCheck={false} value={apiKeyInput} maxLength={4096} onChange={e => setApiKeyInput(e.target.value)} /></label>
       <p className="maintenance-fine">Find your key in <a href="https://intervals.icu/settings" target="_blank" rel="noopener noreferrer">Developer Settings</a>. Sent only to Intervals.icu and held in memory for refresh, not saved. Only use a deployment you trust; this key may grant broader write access.</p>
       <div className="maintenance-actions"><button className="maintenance-primary" disabled={busy}>Sync bikes</button><button type="button" disabled={busy} onClick={() => { setSyncOpen(false); setApiKeyInput(''); }}>Cancel</button><button type="button" disabled={busy} onClick={() => void run(async () => { forgetApiKey(); setMessage('Legacy saved API key removed. Existing records were kept.'); })}>Forget legacy saved key</button></div>
       {serverStorageEnabled && <><p className="maintenance-fine">Previously used cloud storage with an Intervals.icu login? Recover its records below. This recovery action also sends the key to the configured legacy storage service to verify ownership. It does not sign you into a new account.</p><button type="button" disabled={busy || !apiKeyInput.trim()} onClick={() => { if (confirm('Send this key to the legacy storage service to recover your old cloud records into the current garage?')) void run(() => syncMileage(apiKeyInput.trim(), true, true)); }}>Recover legacy cloud records</button></>}
     </form>}
-    {!data ? <section className="maintenance-welcome">
-      <div className="maintenance-emblem" aria-hidden="true">↻</div>
-      <h2>A little care. Many more kilometers.</h2>
-      <p>Add your bikes, update their mileage, and keep a service history. No Intervals.icu account required.</p>
-      <button className="maintenance-primary" disabled={busy} onClick={() => void run(async () => { const garage = loadBrowserGarage() || emptyGarage(); saveBrowserGarage(garage); setData(garage); setDemo(false); })}>Open my browser garage</button>
-      <p className="maintenance-fine">Browser-only storage needs no sign-in. Data stays on this device; download backups regularly.</p>
-      {accountEnabled ? <button disabled={busy} onClick={() => setAccountOpen(true)}>Sign in / create account with email</button> : <p className="maintenance-fine">Cloud sign-in is not configured on this installation.</p>}
-      <button disabled={busy} onClick={() => { setDemo(true); setData(demoMaintenance()); setError(''); }}>Explore a demo</button>
-      <div className="maintenance-features"><div><strong>Your own garage</strong><span>Add bikes and mileage yourself</span></div><div><strong>A proper service history</strong><span>Tasks, dates, notes, and mileage</span></div><div><strong>Optional sync</strong><span>Connect Intervals.icu when you want</span></div></div>
-    </section> : <>
-      {demo && <p className="maintenance-fine maintenance-demo-note">Demo · sample data, changes are not saved</p>}
-      <p className="maintenance-fine">{demo ? 'Demo garage' : accountEmail ? `Cloud garage · ${accountEmail}` : 'Browser-only garage · export backups regularly'}{data.synced_at && ` · Last mileage sync: ${new Date(data.synced_at).toLocaleString()}`}</p>
+    {!data ? <div className="maintenance-locked">
+      <section className="maintenance-signin-banner" aria-label="Sign in to maintenance">
+        {accountEnabled ? signInForm : <div className="maintenance-notice" role="status">Cloud sign-in is not configured on this installation. The site operator needs to configure Supabase before you can use the maintenance log.</div>}
+      </section>
+      <p className="maintenance-fine maintenance-preview-caption">Sample bikes and maintenance below · sign in to start your own log</p>
+      <MaintenancePreview />
+    </div> : <>
+      <p className="maintenance-fine">Cloud garage · {accountEmail}{data.synced_at && ` · Last mileage sync: ${new Date(data.synced_at).toLocaleString()}`}</p>
       {bikeEditor && <form className="maintenance-form" onSubmit={saveBike} aria-label={bikeEditor.id ? 'Edit bike' : 'Add bike'}><h2>{bikeEditor.id ? 'Edit bike' : 'Add bike'}</h2>
         <div className="maintenance-form-row"><label>Bike name<input autoFocus required maxLength={100} value={bikeEditor.name} onChange={e => setBikeEditor({ ...bikeEditor, name: e.target.value })} placeholder="e.g. Touring bike" /></label>
         <label>Current mileage (km)<input required type="number" min="0" step="any" value={bikeEditor.mileage} onChange={e => setBikeEditor({ ...bikeEditor, mileage: e.target.value })} /></label></div>
@@ -311,7 +325,7 @@ export function Maintenance() {
             <div className="maintenance-entry-meta"><strong>{!entryBike ? 'Mileage unavailable' : ago === null ? 'Mileage changed' : km(ago) + ' km ago'}</strong><div className="maintenance-entry-actions">
               <button disabled={busy || formOpen || !entryBike} title="Repeat" aria-label={`Repeat ${entry.task}`} onClick={() => repeat(entry)}><RepeatIcon /></button>
               <button disabled={busy || formOpen || !entryBike} title="Edit" aria-label={`Edit ${entry.task}`} onClick={() => edit(entry)}><EditIcon /></button>
-              <button disabled={busy || formOpen || Boolean(bikeEditor)} className="maintenance-delete" title="Delete" aria-label={`Delete ${entry.task}`} onClick={() => { if (!confirm('Delete this maintenance entry? This cannot be undone.')) return; void run(async () => { const updated = store.current && !demo ? await store.current.delete(entry.id) : data.entries.filter(e => e.id !== entry.id); if (!demo && !store.current) saveBrowserGarage({ ...data, entries: updated }); storeEntries(updated); }); }}><DeleteIcon /></button>
+              <button disabled={busy || formOpen || Boolean(bikeEditor)} className="maintenance-delete" title="Delete" aria-label={`Delete ${entry.task}`} onClick={() => { if (!confirm('Delete this maintenance entry? This cannot be undone.')) return; void run(async () => { const updated = await requireStore().delete(entry.id); storeEntries(updated); }); }}><DeleteIcon /></button>
             </div></div>
           </article>;
         })}</div>}

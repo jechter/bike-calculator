@@ -4,7 +4,9 @@ const project = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const publicKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 export const accountEnabled = Boolean(project && publicKey);
 const localKey = 'maintenance-independent-garage-v1';
-const sessionKey = 'maintenance-account-v1';
+export const accountSessionKey = 'maintenance-account-v1';
+const sessionKey = accountSessionKey;
+const rememberedLifetime = 30 * 24 * 60 * 60 * 1000;
 const pendingEmailKey = 'maintenance-pending-email-v1';
 const pendingEmailLifetime = 60 * 60 * 1000;
 // Keep only the email and code-entry step in this tab, never the one-time code.
@@ -26,16 +28,83 @@ export function rememberPendingEmailSignIn(email: string): boolean {
 export function clearPendingEmailSignIn() {
   try { sessionStorage.removeItem(pendingEmailKey); } catch { /* Sign-in still works without tab storage. */ }
 }
-interface Session { access_token: string; refresh_token: string; user: { id: string; email?: string } }
+interface Session { access_token: string; refresh_token: string; expires_at?: number; expires_in?: number; user: { id: string; email?: string } }
+interface RememberedSession extends Session { remembered_until: number }
+const signInAgain = () => new Error('Your saved sign-in expired or changed. Sign in again to continue. Your draft is unchanged.');
+function rememberSession(session: Session, until: number): RememberedSession {
+  if (!session?.access_token || !session.refresh_token || !session.user?.id) throw new Error('Account service returned an invalid session. Please sign in again.');
+  const saved = { ...session, remembered_until: until };
+  if (!Number.isFinite(saved.expires_at) && Number.isFinite(saved.expires_in)) saved.expires_at = Date.now() / 1000 + saved.expires_in!;
+  localStorage.setItem(sessionKey, JSON.stringify(saved));
+  sessionStorage.removeItem(sessionKey);
+  return saved;
+}
+export function hasSavedAccount(): boolean {
+  return Boolean(localStorage.getItem(sessionKey) || sessionStorage.getItem(sessionKey));
+}
+function readSession(): RememberedSession | null {
+  const persistent = localStorage.getItem(sessionKey);
+  const raw = persistent || sessionStorage.getItem(sessionKey);
+  if (!raw) return null;
+  let saved: RememberedSession;
+  try { saved = JSON.parse(raw); } catch { forgetAccount(); return null; }
+  if (!saved?.access_token || !saved.refresh_token || !saved.user?.id) { forgetAccount(); return null; }
+  // Migrate the old tab-only session without requiring another email code.
+  const until = saved.remembered_until ?? Date.now() + rememberedLifetime;
+  if (!Number.isFinite(until) || until <= Date.now()) { forgetAccount(); return null; }
+  if (!persistent || !saved.remembered_until) return rememberSession(saved, until);
+  return saved;
+}
+class AccountServiceError extends Error {
+  constructor(message: string, readonly status: number) { super(message); }
+}
+const refreshing = new Map<string, Promise<RememberedSession>>();
+function refreshSession(previous: Session): Promise<RememberedSession> {
+  const key = previous.user.id + ':' + previous.refresh_token;
+  const pending = refreshing.get(key);
+  if (pending) return pending;
+  const refresh = async () => {
+    const current = readSession();
+    if (!current || current.user.id !== previous.user.id) throw signInAgain();
+    // Another tab/request may already have rotated this refresh token.
+    if (current.access_token !== previous.access_token || current.refresh_token !== previous.refresh_token) return current;
+    let next: Session;
+    try { next = await request('/auth/v1/token?grant_type=refresh_token', 'POST', { refresh_token: current.refresh_token }); }
+    catch (error) {
+      if (error instanceof AccountServiceError && [400, 401, 403].includes(error.status)) {
+        const saved = readSession();
+        if (saved?.refresh_token === current.refresh_token) forgetAccount();
+        throw signInAgain();
+      }
+      throw error; // An offline/network failure must not discard a valid remembered session.
+    }
+    const saved = readSession();
+    // Never resurrect a session after sign-out or overwrite a different account's login.
+    if (!saved || saved.refresh_token !== current.refresh_token || saved.user.id !== current.user.id) throw signInAgain();
+    if (next.user?.id !== current.user.id) { forgetAccount(); throw signInAgain(); }
+    return rememberSession(next, current.remembered_until);
+  };
+  // Web Locks serialize token rotation across tabs; the map covers same-tab callers
+  // and browsers without Web Locks. Supabase also provides a token-reuse grace window.
+  const promise = (async () => {
+    if (typeof navigator !== 'undefined' && navigator.locks) return await navigator.locks.request('maintenance-account-refresh', refresh);
+    return refresh();
+  })().finally(() => { refreshing.delete(key); });
+  refreshing.set(key, promise);
+  return promise;
+}
 export const emptyGarage = (): MaintenanceData => ({ name: 'My garage', synced_at: '', bikes: [], entries: [] });
-export function loadBrowserGarage(): MaintenanceData | null {
+export function loadLegacyBrowserGarage(): MaintenanceData | null {
   const raw = localStorage.getItem(localKey);
   if (!raw) return null;
   const data = JSON.parse(raw);
   if (!data || !Array.isArray(data.bikes) || !Array.isArray(data.entries)) throw new Error('Your browser garage could not be read. Do not clear browser data; recover your backup first.');
   return data;
 }
-export function saveBrowserGarage(data: MaintenanceData) { localStorage.setItem(localKey, JSON.stringify(data)); }
+// Read-only recovery for users of the former browser garage; never a storage mode.
+export function hasLegacyBrowserGarage(): boolean {
+  try { return localStorage.getItem(localKey) !== null; } catch { return false; }
+}
 export function downloadGarage(data: MaintenanceData) {
   const url = URL.createObjectURL(new Blob([JSON.stringify({ format: 'bike-maintenance-garage', version: 1, exportedAt: new Date().toISOString(), ...data }, null, 2)], { type: 'application/json' }));
   const a = document.createElement('a'); a.href = url; a.download = 'maintenance-garage.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -53,32 +122,50 @@ async function request(path: string, method: string, body?: unknown, token?: str
     try { result = JSON.parse(text); }
     catch { throw new Error('Account service returned an unexpected response. Please retry. Your browser backup is unchanged.'); }
   }
-  if (!response.ok) throw new Error(response.status === 401 ? 'Your session expired. Sign out and sign in again. Your draft and browser backup are unchanged.' : result?.msg || result?.message || result?.error_description || 'Account service failed. Nothing was saved locally as a fallback.');
+  if (!response.ok) throw new AccountServiceError(response.status === 401 ? 'Your session expired. Sign out and sign in again. Your draft and browser backup are unchanged.' : result?.msg || result?.message || result?.error_description || 'Account service failed. Nothing was saved locally as a fallback.', response.status);
   return result;
 }
 export async function sendSignInCode(email: string) { await request('/auth/v1/otp', 'POST', { email, create_user: true }); }
 export async function verifySignInCode(email: string, code: string) {
   const session: Session = await request('/auth/v1/verify', 'POST', { email, token: code, type: 'email' });
-  sessionStorage.setItem(sessionKey, JSON.stringify(session));
-  return new AccountGarage(session);
+  return new AccountGarage(rememberSession(session, Date.now() + rememberedLifetime));
 }
 export async function restoreAccount(): Promise<AccountGarage | null> {
-  const saved = sessionStorage.getItem(sessionKey);
-  if (!saved) return null;
-  const previous: Session = JSON.parse(saved);
-  const session: Session = await request('/auth/v1/token?grant_type=refresh_token', 'POST', { refresh_token: previous.refresh_token });
-  sessionStorage.setItem(sessionKey, JSON.stringify(session));
-  return new AccountGarage(session);
+  const previous = readSession();
+  if (!previous) return null;
+  return new AccountGarage(await refreshSession(previous));
 }
+
 let restoring: ReturnType<typeof restoreAccount> | undefined;
 export function restoreAccountOnce() { return restoring ??= restoreAccount().finally(() => { restoring = undefined; }); }
-export function forgetAccount() { sessionStorage.removeItem(sessionKey); }
+export function forgetAccount() {
+  localStorage.removeItem(sessionKey);
+  sessionStorage.removeItem(sessionKey);
+}
 export class AccountGarage {
   private revision = 0;
   private data = emptyGarage();
   constructor(private session: Session) {}
   get email() { return this.session.user.email || 'Signed in'; }
-  private call(method: string, body?: unknown, suffix = '', extra?: Record<string, string>) { return request('/rest/v1/maintenance_user_garages?user_id=eq.' + encodeURIComponent(this.session.user.id) + suffix, method, body, this.session.access_token, extra); }
+  get userId() { return this.session.user.id; }
+  private async call(method: string, body?: unknown, suffix = '', extra?: Record<string, string>) {
+    const saved = readSession();
+    if (!saved || saved.user.id !== this.session.user.id) throw signInAgain();
+    this.session = saved;
+    if (saved.expires_at && saved.expires_at * 1000 <= Date.now() + 60000) this.session = await refreshSession(saved);
+    const send = async () => {
+      const result = await request('/rest/v1/maintenance_user_garages?user_id=eq.' + encodeURIComponent(this.session.user.id) + suffix, method, body, this.session.access_token, extra);
+      if (readSession()?.user.id !== this.session.user.id) throw signInAgain();
+      return result;
+    };
+    try { return await send(); }
+    catch (error) {
+      if (!(error instanceof AccountServiceError) || error.status !== 401) throw error;
+      this.session = await refreshSession(this.session);
+      return send(); // One retry only; do not retry ambiguous network/write failures.
+    }
+  }
+
   async loadGarage(): Promise<MaintenanceData> {
     let rows = await this.call('GET');
     if (!rows.length) {
@@ -96,7 +183,11 @@ export class AccountGarage {
   }
   async save(entry: MaintenanceEntry, editing: boolean) { const entries = editing ? this.data.entries.map(e => e.id === entry.id ? entry : e) : [entry, ...this.data.entries]; return (await this.write({ ...this.data, entries })).entries; }
   async delete(id: string) { return (await this.write({ ...this.data, entries: this.data.entries.filter(e => e.id !== id) })).entries; }
-  async logout() { try { await request('/auth/v1/logout', 'POST', undefined, this.session.access_token); } finally { forgetAccount(); } }
+  async logout() {
+    const token = readSession()?.access_token || this.session.access_token;
+    forgetAccount(); // Clear first so a simultaneous refresh cannot restore this login.
+    await request('/auth/v1/logout?scope=local', 'POST', undefined, token);
+  }
 }
 // Provider IDs are namespaced so manual bikes and different upstream accounts cannot collide.
 export function mergeIntervalsBikes(existing: MaintenanceBike[], incoming: MaintenanceBike[], athleteId: string): MaintenanceBike[] {

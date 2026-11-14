@@ -3,9 +3,15 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { App } from '../App';
 
+import { testMaintenanceAccount } from '../test-fixtures/maintenance-account';
+const mocks = vi.hoisted(() => ({ restore: vi.fn() }));
+vi.mock('../lib/maintenance-account', async original => ({ ...await original<typeof import('../lib/maintenance-account')>(), accountEnabled: true, restoreAccountOnce: mocks.restore }));
+
 const changes = new Set<() => void>();
 let compact = true;
-function renderCompactApp() {
+async function renderCompactApp() {
+  mocks.restore.mockResolvedValue(testMaintenanceAccount());
+  sessionStorage.setItem('maintenance-account-v1', '{}');
   compact = true;
   vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
   vi.stubGlobal('matchMedia', vi.fn((query: string) => ({
@@ -17,15 +23,15 @@ function renderCompactApp() {
   render(<App />);
   fireEvent.click(screen.getByRole('button', { name: 'Close navigation' }));
   expect(screen.queryByRole('button', { name: 'Open Bikes and components' })).toBeNull();
-  fireEvent.click(screen.getByText('Explore a demo'));
+  await screen.findByText(/Cloud garage ·/);
 }
 afterEach(() => {
   cleanup(); localStorage.clear(); sessionStorage.clear(); changes.clear(); vi.unstubAllGlobals();
   window.history.replaceState(null, '', '/');
 });
 
-it('keeps the log as the base view and opens bike filters from the actual App toolbar', () => {
-  renderCompactApp();
+it('keeps the log as the base view and opens bike filters from the actual App toolbar', async () => {
+  await renderCompactApp();
   const slot = document.getElementById('topbar-actions-slot')!;
   const toggle = within(slot).getByRole('button', { name: 'Open Bikes and components' });
   expect(slot.querySelector('.maintenance-header-actions')!.lastElementChild).toBe(toggle);
@@ -49,8 +55,8 @@ it('keeps the log as the base view and opens bike filters from the actual App to
   expect(document.body.classList.contains('mobile-nav-lock')).toBe(false);
 });
 
-it('traps drawer focus, closes from the backdrop, and restores the in-flow bike panel on desktop', () => {
-  renderCompactApp();
+it('traps drawer focus, closes from the backdrop, and restores the in-flow bike panel on desktop', async () => {
+  await renderCompactApp();
   const toggle = screen.getByRole('button', { name: 'Open Bikes and components' });
   fireEvent.click(toggle);
   const drawer = screen.getByRole('dialog', { name: 'Bikes and components' });
@@ -71,8 +77,8 @@ it('traps drawer focus, closes from the backdrop, and restores the in-flow bike 
   expect(document.body.classList.contains('mobile-nav-lock')).toBe(false);
 });
 
-it('sets and clears filters directly in the compact log without opening the bike drawer', () => {
-  renderCompactApp();
+it('sets and clears filters directly in the compact log without opening the bike drawer', async () => {
+  await renderCompactApp();
   const log = within(screen.getByRole('region', { name: 'Performed maintenance' }));
   fireEvent.click(log.getAllByRole('button', { name: 'Filter by component: Chain on Everyday road bike' })[0]);
   expect(log.getAllByRole('article')).toHaveLength(2);

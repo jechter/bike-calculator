@@ -1,4 +1,4 @@
-> **Legacy documentation:** the current page uses independent garages and optional
+> **Legacy documentation:** the current page uses cloud-only garages with required
 > email sign-in. See [current setup and migration](maintenance-accounts.md).
 > The integration described below is retained for recovery/reference only.
 

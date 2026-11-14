@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
+import { sampleMaintenance } from '../test-fixtures/maintenance';
 import { afterEach, expect, it, vi } from 'vitest';
 import { deleteLocalEntries, forgetApiKey, loadSavedApiKey, saveApiKey, loadIntervals, loadLocalEntries, saveLocalEntries } from './intervals';
-import { demoMaintenance } from './maintenance';
+
 afterEach(() => { localStorage.clear(); vi.restoreAllMocks(); });
 it('loads only profile and bikes with GET, preserves meters, and never persists credentials', async () => {
   const request = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ id: 'i1', name: 'Rider' }))).mockResolvedValueOnce(new Response(JSON.stringify([
@@ -29,7 +30,7 @@ it.each([401, 403, 429, 500])('returns safe errors for status %s', async status 
   try { await loadIntervals('test-key'); } catch (error) { expect(String(error)).not.toContain('secret-key'); }
 });
 it('keeps local records separate for different athletes and preserves service mileage', () => {
-  const entries = demoMaintenance().entries;
+  const entries = sampleMaintenance().entries;
   saveLocalEntries('i1', entries);
   expect(loadLocalEntries('i2')).toEqual([]);
   expect(loadLocalEntries('i1')).toEqual(entries);
@@ -51,15 +52,15 @@ it('rejects invalid credentials without sending a request', async () => {
 });
 
 it('remembers and forgets API keys separately from maintenance entries', () => {
-  saveLocalEntries('i1', demoMaintenance().entries);
+  saveLocalEntries('i1', sampleMaintenance().entries);
   saveApiKey('test-key');
   expect(loadSavedApiKey()).toBe('test-key');
   deleteLocalEntries('i1');
   expect(loadSavedApiKey()).toBe('test-key');
-  saveLocalEntries('i1', demoMaintenance().entries);
+  saveLocalEntries('i1', sampleMaintenance().entries);
   forgetApiKey();
   expect(loadSavedApiKey()).toBeNull();
-  expect(loadLocalEntries('i1')).toHaveLength(demoMaintenance().entries.length);
+  expect(loadLocalEntries('i1')).toHaveLength(sampleMaintenance().entries.length);
 });
 it('reports credential storage failures without including the key', () => {
   vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('secret-key'); });

@@ -16,7 +16,7 @@ export const session = () => sessionStorage.getItem(sessionKey);
 export const saveSession = (value: string) => sessionStorage.setItem(sessionKey, value);
 export const clearSession = () => sessionStorage.removeItem(sessionKey);
 export async function maintenanceApi<T = MaintenanceData>(action: string, values: Record<string, unknown> = {}): Promise<T> {
-  if (!maintenanceEndpoint) throw new Error('Strava connection is not configured yet. Try the demo below.');
+  if (!maintenanceEndpoint) throw new Error('Strava connection is not configured.');
   const response = await fetch(maintenanceEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(session() ? { Authorization: `Bearer ${session()}` } : {}) }, body: JSON.stringify({ action, ...values }) });
   const data = await response.json();
   if (response.status === 401) clearSession();
@@ -58,15 +58,6 @@ export function kilometersAgo(currentMeters: number, recordedKm: number): number
 export function localDate(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
-export function demoMaintenance(): MaintenanceData {
-  return { name: 'Demo rider', synced_at: new Date().toISOString(), bikes: [{ id: 'demo-road', name: 'Everyday road bike', distance: 4826500 }, { id: 'demo-gravel', name: 'Weekend gravel bike', distance: 2190400 }], entries: [
-    { id: 'demo-1', bike_id: 'demo-road', component: 'Chain', kind: 'replacement', task: 'Replaced chain', notes: 'New 11-speed chain. Cleaned the cassette and checked wear.', performed_on: '2026-10-25', odometer_km: 4600 },
-    { id: 'demo-4', bike_id: 'demo-road', component: 'Chain', kind: 'service', task: 'Cleaned and lubricated chain', notes: 'Degreased, dried, and applied wet lube.', performed_on: '2026-10-30', odometer_km: 4790 },
-    { id: 'demo-2', bike_id: 'demo-road', component: 'Rear brake pads', kind: 'replacement', task: 'Replaced rear brake pads', notes: 'Checked rotor thickness and bedded in the pads.', performed_on: '2026-09-10', odometer_km: 3980 },
-    { id: 'demo-3', bike_id: 'demo-gravel', component: 'Front tire', kind: 'service', task: 'Refreshed tubeless sealant', notes: '60 ml per tire.', performed_on: '2026-10-12', odometer_km: 2010 },
-  ] };
-}
-
 /** Preserve legacy jobs under Unassigned rather than guessing from free text. */
 export function componentName(value: string | undefined): string {
   const trimmed = value?.trim() || 'Unassigned';

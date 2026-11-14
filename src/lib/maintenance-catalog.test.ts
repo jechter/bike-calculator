@@ -1,6 +1,7 @@
+import { sampleMaintenance } from '../test-fixtures/maintenance';
 import { expect, it } from 'vitest';
 import catalog from '../data/maintenance-components.json';
-import { bikeComponents, componentName, componentHistory, componentNames, demoMaintenance, getComponentType, suggestedServices } from './maintenance';
+import { bikeComponents, componentName, componentHistory, componentNames, getComponentType, suggestedServices } from './maintenance';
 import { maintenanceComponentIcons } from '../components/MaintenanceComponentIcon';
 
 it('defines unique component names, valid icon IDs, and useful service suggestions', () => {
@@ -53,7 +54,7 @@ it('offers shifter cables and derailleur jockey wheels with relevant services an
 
 it('keeps front/rear inner/outer shifter cable histories separate', () => {
   const names = ['Front inner shifter cable', 'Rear inner shifter cable', 'Front outer shifter cable', 'Rear outer shifter cable'];
-  const entry = demoMaintenance().entries[0];
+  const entry = sampleMaintenance().entries[0];
   const entries = names.map((component, index) => ({ ...entry, id: String(index), component }));
   expect(componentNames(entries)).toEqual(names);
   names.forEach((name, index) => {
@@ -71,7 +72,7 @@ it('keeps front/rear inner/outer shifter cable histories separate', () => {
 
 it('offers individual and grouped chainrings without merging their maintenance histories', () => {
   const names = ['Chainring', 'Chainrings', 'Small chainring', 'Big chainring', 'Middle chainring'];
-  const template = demoMaintenance().entries[0];
+  const template = sampleMaintenance().entries[0];
   const entries = names.map((component, index) => ({ ...template, id: String(index), component }));
   expect(componentNames(entries)).toEqual(names);
   names.forEach((name, index) => {

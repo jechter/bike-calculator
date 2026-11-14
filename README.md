@@ -30,9 +30,12 @@ You can try the calculator live on the [Rückenwind web site](https://rueckenwin
 ## Maintenance log
 
 The **Maintenance Log** supports manual bikes, mileage updates, and service
-history without an Intervals.icu account. Use a device-local browser garage
-without signing in, or optional **email-code sign-in with Supabase Auth** for
-cross-device cloud storage. The demo remains temporary and in memory.
+history without an Intervals.icu account. **Email-code sign-in with Supabase Auth**
+is required; bikes and maintenance are stored in the cloud and available across
+devices. Sign-in is remembered on this browser for up to 30 days, with automatic
+access-token refresh. Signed-out visitors see a muted, non-interactive sample log
+with a sign-in banner. There is no editable demo or browser-only editing mode. Existing browser records
+can still be imported explicitly after signing in.
 
 Intervals.icu is an optional, read-only bike/mileage integration, not an identity
 provider. Its API key stays in memory only, and visible pages refresh mileage
@@ -98,9 +101,8 @@ the files directly.
 ## Tech
 
 - **Vite + React + TypeScript**, all calculator math client-side. The maintenance
-  page supports independent browser garages and optional Supabase Auth/cloud
-  storage, with read-only Intervals.icu sync. Cloud failures never silently
-  fall back to local writes.
+  page requires Supabase Auth/cloud storage, with read-only Intervals.icu sync.
+  Cloud failures never silently fall back to local writes.
 - Pure calculation modules live in [`src/lib/`](src/lib/) and are unit-tested
   against the worked examples in the calculator specs (`npm test`).
 - UI components (one per calculator) live in [`src/components/`](src/components/);

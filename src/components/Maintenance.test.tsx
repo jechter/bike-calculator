@@ -1,12 +1,25 @@
 // @vitest-environment jsdom
-import { afterEach, expect, it, vi } from 'vitest';
+import { sampleMaintenance } from '../test-fixtures/maintenance';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { StrictMode } from 'react';
 import { Maintenance } from './Maintenance';
 import { saveApiKey, loadSavedApiKey } from '../lib/intervals';
-import { componentHistory, componentMileage, componentNames, demoMaintenance, kilometersAgo, localDate } from '../lib/maintenance';
+import { componentHistory, componentMileage, componentNames, kilometersAgo, localDate } from '../lib/maintenance';
+const cloudMocks = vi.hoisted(() => ({ restore: vi.fn() }));
+vi.mock('../lib/maintenance-account', async original => ({ ...await original<typeof import('../lib/maintenance-account')>(), accountEnabled: true, restoreAccountOnce: cloudMocks.restore }));
+import { testMaintenanceAccount } from '../test-fixtures/maintenance-account';
+import { emptyGarage } from '../lib/maintenance-account';
+beforeEach(() => { cloudMocks.restore.mockReset(); });
 afterEach(() => { cleanup(); localStorage.clear(); sessionStorage.clear(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
-async function demo() { render(<Maintenance />); fireEvent.click(screen.getByText('Explore a demo')); }
+async function cloudGarage(initial = sampleMaintenance()) {
+  const account = testMaintenanceAccount(initial);
+  cloudMocks.restore.mockResolvedValue(account);
+  sessionStorage.setItem('maintenance-account-v1', '{}');
+  const page = render(<Maintenance />);
+  await screen.findByText(/Cloud garage ·/);
+  return { ...page, account };
+}
 const showAll = () => fireEvent.click(screen.getByRole('button', { name: /^Hide components for/ }));
 const log = () => within(screen.getByRole('region', { name: 'Performed maintenance' }));
 const bikeButton = (name = 'Everyday road bike') => screen.getByRole('button', { name: new RegExp('^' + name + '. Total distance') });
@@ -17,7 +30,7 @@ function componentButton(name: string, bikeName = 'Everyday road bike') {
 }
 it('shows all maintenance newest first with nothing selected and all bikes folded initially', async () => {
   const request = vi.spyOn(globalThis, 'fetch');
-  await demo();
+  await cloudGarage();
   expect(screen.getByRole('list', { name: 'Your bikes' })).toBeTruthy();
   expect(bikeButton().getAttribute('aria-pressed')).toBe('false');
   expect(screen.getAllByRole('button', { name: /^Show components for/ })).toHaveLength(2);
@@ -26,7 +39,7 @@ it('shows all maintenance newest first with nothing selected and all bikes folde
   expect(request).not.toHaveBeenCalled();
 });
 it('selects bikes on expansion and clears selection on collapse through either control', async () => {
-  await demo();
+  await cloudGarage();
   expect(screen.queryByRole('button', { name: 'All bikes' })).toBeNull();
   expect(screen.queryByRole('button', { name: 'Show all maintenance' })).toBeNull();
   fireEvent.click(screen.getByRole('button', { name: 'Show components for Everyday road bike' }));
@@ -43,7 +56,7 @@ it('selects bikes on expansion and clears selection on collapse through either c
   expect(log().getAllByRole('article')).toHaveLength(4);
 });
 it('filters the separate log by component and toggles selection off without rendering logs in the tree', async () => {
-  await demo();
+  await cloudGarage();
   const chain = componentButton('Chain');
   expect(within(chain).getByText('226.5 km')).toBeTruthy();
   expect(within(chain).getByText('36.5 km')).toBeTruthy();
@@ -62,14 +75,14 @@ it('filters the separate log by component and toggles selection off without rend
   expect(log().getByText('Refreshed tubeless sealant')).toBeTruthy();
 });
 it('only shows components with entries and hides missing service counters', async () => {
-  await demo();
+  await cloudGarage();
   const pads = componentButton('Rear brake pads');
   expect(within(pads).queryByText('Since service')).toBeNull();
   expect(within(pads).queryByText('Not logged')).toBeNull();
   expect(screen.queryByRole('button', { name: /^Cassette/ })).toBeNull();
 });
 it('logs a replacement without a task and selects its bike/component after saving', async () => {
-  await demo();
+  await cloudGarage();
   fireEvent.click(screen.getByText('+ Log maintenance'));
   expect((screen.getByLabelText('Bike') as HTMLSelectElement).value).toBe('demo-road');
   fireEvent.change(screen.getByLabelText('Bike'), { target: { value: 'demo-gravel' } });
@@ -83,7 +96,7 @@ it('logs a replacement without a task and selects its bike/component after savin
   await waitFor(() => expect(log().getByRole('heading', { name: 'Replaced headset' })).toBeTruthy());
   expect(log().getAllByRole('article')).toHaveLength(1);
   expect(log().getByText('90.4 km ago')).toBeTruthy();
-  expect(screen.getByText(/Demo entry added/)).toBeTruthy();
+  expect(screen.getByText('Maintenance saved to your account.')).toBeTruthy();
   expect(log().getByRole('status', { name: 'Weekend gravel bike / Headset · 1 entry' })).toBeTruthy();
   expect(localStorage.length).toBe(0);
 });
@@ -92,7 +105,7 @@ it.each([
   { task: 'Refreshed tubeless sealant', kind: 'service', component: 'Front tire', date: '2026-10-12', mileage: '2010', current: '2190.4', bike: 'demo-gravel' },
   { task: 'Replaced rear brake pads', kind: 'replacement', component: 'Rear brake pads', date: '2026-09-10', mileage: '3980', current: '4826.5', bike: 'demo-road' },
 ])('uses the entry’s own bike when editing or repeating $task from the all-bikes log', async entry => {
-  await demo();
+  await cloudGarage();
   fireEvent.click(screen.getByRole('button', { name: 'Edit ' + entry.task }));
   expect((screen.getByLabelText('Bike') as HTMLSelectElement).value).toBe(entry.bike);
   expect((screen.getByLabelText('Component') as HTMLInputElement).value).toBe(entry.component);
@@ -111,7 +124,7 @@ it.each([
   expect(log().getAllByRole('article')).toHaveLength(5);
 });
 it('edits in place, updates component counters, and can move an entry between bikes', async () => {
-  await demo();
+  await cloudGarage();
   fireEvent.click(screen.getByRole('button', { name: 'Edit Cleaned and lubricated chain' }));
   fireEvent.change(screen.getByLabelText('Task'), { target: { value: 'Waxed chain' } });
   fireEvent.change(screen.getByLabelText('Bike'), { target: { value: 'demo-gravel' } });
@@ -126,7 +139,7 @@ it('edits in place, updates component counters, and can move an entry between bi
 });
 it('deletes the last component entry without creating a ghost component', async () => {
   vi.spyOn(window, 'confirm').mockReturnValue(true);
-  await demo();
+  await cloudGarage();
   fireEvent.click(componentButton('Front tire', 'Weekend gravel bike'));
   fireEvent.click(screen.getByRole('button', { name: 'Delete Refreshed tubeless sealant' }));
   await waitFor(() => expect(log().getByText('No maintenance logged for this selection')).toBeTruthy());
@@ -135,7 +148,7 @@ it('deletes the last component entry without creating a ghost component', async 
   expect(log().getAllByRole('article')).toHaveLength(3);
 });
 it('computes and groups latest service and replacement counters independently', () => {
-  const entries = demoMaintenance().entries;
+  const entries = sampleMaintenance().entries;
   const chain = componentHistory(entries, 'Chain');
   expect(kilometersAgo(4826500, 4600)).toBe(226.5);
   expect(kilometersAgo(4826500, 5000)).toBeNull();
@@ -157,9 +170,7 @@ async function openSync() {
 }
 it('persists manual bikes and records, then restores without Intervals.icu or a selected filter', async () => {
   const request = vi.spyOn(globalThis, 'fetch');
-  const page = render(<Maintenance />);
-  fireEvent.click(screen.getByText('Open my browser garage'));
-  await screen.findByText('No bikes found');
+  const page = await cloudGarage(emptyGarage());
   fireEvent.click(screen.getByText('+ Add bike'));
   fireEvent.change(screen.getByLabelText('Bike name'), { target: { value: 'Tourer' } });
   fireEvent.change(screen.getByLabelText('Current mileage (km)'), { target: { value: '1200' } });
@@ -171,7 +182,7 @@ it('persists manual bikes and records, then restores without Intervals.icu or a 
   await screen.findByRole('heading', { name: 'Replaced chain' });
   page.unmount();
   render(<StrictMode><Maintenance /></StrictMode>);
-  expect(log().getByRole('heading', { name: 'Replaced chain' })).toBeTruthy();
+  await screen.findByRole('heading', { name: 'Replaced chain' });
   expect(log().getByRole('status', { name: 'All bikes and components · 1 entry' })).toBeTruthy();
   expect(request).not.toHaveBeenCalled();
 });
@@ -179,16 +190,14 @@ it('does not reconnect legacy saved keys automatically or delete their records',
   saveApiKey('legacy-key'); localStorage.setItem('maintenance-intervals-v1:i1', '[]');
   const request = vi.spyOn(globalThis, 'fetch');
   render(<StrictMode><Maintenance /></StrictMode>);
-  expect(screen.getByText('Open my browser garage')).toBeTruthy();
+  expect(screen.getByRole('form', { name: 'Email sign-in' })).toBeTruthy();
   expect(request).not.toHaveBeenCalled();
   expect(loadSavedApiKey()).toBe('legacy-key');
   expect(localStorage.getItem('maintenance-intervals-v1:i1')).toBe('[]');
 });
 it('does not save a rejected optional sync key or lose the current garage', async () => {
   vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status: 401 }));
-  render(<Maintenance />);
-  fireEvent.click(screen.getByText('Open my browser garage'));
-  await screen.findByText('No bikes found');
+  await cloudGarage(emptyGarage());
   fireEvent.click(screen.getByRole('button', { name: /^More/ }));
   fireEvent.click(screen.getByText('Connect Intervals.icu (optional)'));
   fireEvent.change(screen.getByLabelText('Intervals.icu API key'), { target: { value: 'invalid-key' } });
@@ -199,7 +208,7 @@ it('does not save a rejected optional sync key or lose the current garage', asyn
 });
 
 it('opens and closes a bike by its main row, including with the keyboard-compatible button', async () => {
-  await demo();
+  await cloudGarage();
   fireEvent.click(bikeButton());
   expect(bikeButton().getAttribute('aria-expanded')).toBe('true');
   expect(screen.getByRole('region', { name: 'Everyday road bike components' })).toBeTruthy();
@@ -208,7 +217,7 @@ it('opens and closes a bike by its main row, including with the keyboard-compati
   expect(screen.queryByRole('region', { name: 'Everyday road bike components' })).toBeNull();
 });
 it('shows the most recent service task, not a replacement title or an older backdated service', async () => {
-  await demo();
+  await cloudGarage();
   fireEvent.click(componentButton('Chain'));
   fireEvent.click(screen.getByText('+ Log maintenance'));
   fireEvent.change(screen.getByLabelText('Task'), { target: { value: 'Older chain service' } });
@@ -223,7 +232,7 @@ it('shows the most recent service task, not a replacement title or an older back
 });
 
 it('keeps at most one bike expanded through either the row or its arrow', async () => {
-  await demo();
+  await cloudGarage();
   fireEvent.click(bikeButton());
   expect(bikeButton().getAttribute('aria-expanded')).toBe('true');
   fireEvent.click(screen.getByRole('button', { name: 'Show components for Weekend gravel bike' }));
@@ -239,7 +248,7 @@ it('keeps at most one bike expanded through either the row or its arrow', async 
 });
 
 it('clears the component filter when folding or switching bikes and restores whole-bike selection when reopening', async () => {
-  await demo();
+  await cloudGarage();
   fireEvent.click(componentButton('Chain'));
   expect(log().getAllByRole('article')).toHaveLength(2);
   fireEvent.click(bikeButton('Weekend gravel bike'));
@@ -256,7 +265,7 @@ it('clears the component filter when folding or switching bikes and restores who
 });
 
 it('uses labeled, tooltip-equipped icons for each maintenance action', async () => {
-  await demo();
+  await cloudGarage();
   for (const action of ['Repeat', 'Edit', 'Delete']) {
     const button = screen.getByRole('button', { name: `${action} Replaced chain` });
     expect(button.getAttribute('title')).toBe(action);
@@ -266,7 +275,7 @@ it('uses labeled, tooltip-equipped icons for each maintenance action', async () 
 });
 
 it('suggests services for the current component without overwriting a typed task', async () => {
-  await demo();
+  await cloudGarage();
   fireEvent.click(screen.getByText('+ Log maintenance'));
   const suggestions = () => [...document.querySelectorAll('#maintenance-tasks option')].map(option => option.textContent);
   expect(suggestions()).toContain('Lubricated chain');
@@ -285,7 +294,7 @@ it('suggests services for the current component without overwriting a typed task
   expect(screen.queryByLabelText('Task')).toBeNull();
 });
 it('shows decorative bike and component icons, including a fallback for custom names', async () => {
-  await demo();
+  await cloudGarage();
   expect(bikeButton().querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
   const chain = componentButton('Chain');
   expect(chain.querySelector('[data-component-icon="chain"] svg')).toBeTruthy();
@@ -300,7 +309,7 @@ it('shows decorative bike and component icons, including a fallback for custom n
 });
 
 it('keeps compact entry metadata together and removes the visible total-distance label', async () => {
-  await demo();
+  await cloudGarage();
   expect(screen.queryByText('Total distance')).toBeNull();
   const article = log().getAllByRole('article')[0];
   expect(article.querySelector('.maintenance-entry-context .maintenance-kind')?.textContent).toBe('Service');
@@ -313,9 +322,7 @@ it('keeps compact entry metadata together and removes the visible total-distance
 
 it('keeps synced bikes on refresh failure and uses read-only requests without saving keys', async () => {
   const request = mockAccount();
-  render(<Maintenance />);
-  fireEvent.click(screen.getByText('Open my browser garage'));
-  await screen.findByText('No bikes found');
+  await cloudGarage(emptyGarage());
   await openSync();
   expect(screen.getByText('Real bike')).toBeTruthy();
   expect(request.mock.calls.every(([, options]) => options?.method === 'GET')).toBe(true);
@@ -326,7 +333,7 @@ it('keeps synced bikes on refresh failure and uses read-only requests without sa
   expect(screen.getByText('Real bike')).toBeTruthy();
 });
 it('edits manual bike names and mileage and rejects readings below service history', async () => {
-  await demo();
+  await cloudGarage();
   fireEvent.click(bikeButton());
   fireEvent.click(screen.getByText('Edit bike / update mileage'));
   fireEvent.change(screen.getByLabelText('Bike name'), { target: { value: 'Renamed bike' } });
@@ -339,7 +346,7 @@ it('edits manual bike names and mileage and rejects readings below service histo
 });
 
 it('places primary actions in the title bar and gives both lists keyboard-focusable scroll views', async () => {
-  await demo();
+  await cloudGarage();
   const head = document.querySelector('.maintenance-page-head') as HTMLElement;
   expect(within(head).getByRole('button', { name: '+ Log maintenance' })).toBeTruthy();
   expect(within(head).getByRole('button', { name: /^More/ })).toBeTruthy();
@@ -349,19 +356,21 @@ it('places primary actions in the title bar and gives both lists keyboard-focusa
 });
 it('moves header actions into the shared compact toolbar slot', async () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+  cloudMocks.restore.mockResolvedValue(testMaintenanceAccount());
+  sessionStorage.setItem('maintenance-account-v1', '{}');
   render(<><div id="topbar-actions-slot" /><Maintenance /></>);
-  fireEvent.click(screen.getByText('Explore a demo'));
+  await screen.findByText(/Cloud garage ·/);
   const slot = document.getElementById('topbar-actions-slot')!;
   expect(within(slot).getByRole('button', { name: '+ Log maintenance' })).toBeTruthy();
   expect(document.querySelector('.maintenance-page-head button')).toBeNull();
   fireEvent.click(within(slot).getByRole('button', { name: /^More/ }));
-  expect(screen.getByText('Exit demo')).toBeTruthy();
+  expect(screen.getByText('Sign out')).toBeTruthy();
   fireEvent.keyDown(document, { key: 'Escape' });
-  expect(screen.queryByText('Exit demo')).toBeNull();
+  expect(screen.queryByText('Sign out')).toBeNull();
 });
 
 it('shows historical service intervals next to date/mileage and keeps current km-ago separate', async () => {
-  await demo();
+  await cloudGarage();
   const articles = log().getAllByRole('article');
   const service = articles.find(article => within(article).queryByRole('heading', { name: 'Cleaned and lubricated chain' }))!;
   const replacementMetric = within(service).getByRole('img', { name: /^Distance since the previous replacement: 190 km/ });
@@ -381,7 +390,7 @@ it('shows historical service intervals next to date/mileage and keeps current km
 });
 
 it('clears the component chip to its bike and the bike chip to all records', async () => {
-  await demo();
+  await cloudGarage();
   fireEvent.click(componentButton('Chain'));
   expect(log().getAllByRole('article')).toHaveLength(2);
   fireEvent.click(log().getByRole('button', { name: 'Clear component filter: Chain' }));
@@ -399,7 +408,7 @@ it('clears the component chip to its bike and the bike chip to all records', asy
 });
 
 it('filters from entry names, scopes components to their bike, and keeps the tree in sync', async () => {
-  await demo();
+  await cloudGarage();
   fireEvent.click(log().getAllByRole('button', { name: 'Filter by component: Chain on Everyday road bike' })[0]);
   expect(log().getAllByRole('article')).toHaveLength(2);
   expect(within(screen.getByRole('region', { name: 'Everyday road bike components' })).getByRole('button', { name: /^Chain. Since replacement/ }).getAttribute('aria-pressed')).toBe('true');

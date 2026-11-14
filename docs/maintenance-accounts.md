@@ -1,15 +1,19 @@
-# Independent maintenance garages
+# Cloud-only maintenance garages
 
 ## User experience
 
-- **Open my browser garage** needs no account. Add a bike, set its current mileage
-  in kilometers, and log services/replacements. Expand a bike to edit its name or
-  update mileage. Current mileage cannot be lower than any saved service reading.
-- Browser data is device/origin-specific, not an authenticated account. Other users
-  of the same browser can access it. Download garage backups regularly; clearing
-  site data deletes it. Closing the garage does not delete it.
-- **Sign in / create account with email** uses a Supabase Auth one-time email code.
-  The first successful code creates the account. No password, Intervals.icu account,
+- Sign-in is required before viewing or editing your bikes and maintenance. The
+  signed-out page shows a greyed, lightly blurred illustration of a bike list and
+  service history, with a sign-in banner above it. Its sample records are static,
+  non-interactive, hidden from assistive technology, and never loaded into account
+  state or storage. There is no editable demo or browser-only garage. New records
+  and edits are saved only to Supabase.
+  Add a bike, set its current mileage in kilometers, and log services/replacements.
+  Expand a bike to edit its name or update mileage. Current mileage cannot be lower
+  than any saved service reading.
+- The sign-in banner opens directly to the email field. **Send sign-in code** uses
+  a Supabase Auth one-time email code.
+  The first successful code creates a free account. No password, Intervals.icu account,
   or user-owned Supabase project is needed. Cloud garages are keyed to Auth user IDs.
   The pending email/code-entry step is kept in sessionStorage for up to one hour,
   so a same-tab reload when returning from Mail restores the form without resending
@@ -17,17 +21,31 @@
   login clears the pending step. This retention does not extend the server's OTP
   expiration; request a new code if it expires. Email autofill and one-time-code
   hints are explicit, but Safari controls its own password-manager suggestions.
-- Cloud and browser garages remain separate. **More → Import browser garage** copies
-  missing bike/entry IDs into the cloud only after confirmation, keeps existing cloud
-  IDs, and leaves the local copy untouched. Download a backup of each before merging.
+- Existing local records are preserved, not displayed as an editable garage.
+  After signing in, **More → Import existing browser records** appears only if this
+  browser has an old garage. It copies missing bike/entry IDs to the cloud after
+  confirmation, keeps existing cloud IDs, and leaves the original local copy
+  untouched. This is a read-only migration path, not an offline storage mode.
 - Cloud writes are atomic revision-checked snapshots (5 MB maximum). Concurrent
   edits on another device produce a conflict, not silent lost updates. Export the
   current state and reload before retrying. Failed writes leave drafts open and never
   fall back to local writes. Reload to refresh the cloud garage and session.
-- Cloud sessions are stored in sessionStorage, not localStorage; closing the tab
-  normally ends persistence. Tokens are readable by same-origin scripts: deploy only
-  to a trusted origin. Reload refreshes the session; an expired/revoked session asks
-  the user to sign in again. Sign-out clears local tokens even if revocation fails.
+- Cloud sign-in is remembered in localStorage for **up to 30 days from sign-in**,
+  including after closing tabs or restarting the browser. Existing tab-only sessions
+  migrate automatically on reload; the email-code pending step stays tab-only.
+  Access tokens remain short-lived: the app refreshes before expiry when accessing
+  the cloud, and retries a rejected (401) request only once after refresh. Token
+  rotation is serialized across tabs with Web Locks where supported. Refresh does
+  not restart the 30-day window. Shorter Supabase session policies or revocation can
+  require an earlier sign-in; this feature does not change server Auth settings.
+- Remembered access/refresh tokens are readable by same-origin scripts and anyone
+  using this browser profile. Deploy only to a trusted origin and sign out on shared
+  devices. Sign-out removes both persistent and old tab-only credentials immediately,
+  even offline, and attempts to revoke this session (not other devices' sessions).
+  Other open tabs hide the garage on sign-out/account changes. Clearing site data,
+  private browsing, or Safari storage eviction can also require signing in again.
+  Temporary network errors keep the saved session for retry; revoked/invalid refresh
+  credentials are removed. A concurrent refresh cannot undo a sign-out.
 - **More → Connect Intervals.icu (optional)** reads bikes and total mileage. It keeps
   manual bikes and retired/missing upstream bikes, never changes maintenance readings,
   and namespaces IDs by provider/athlete. A second athlete cannot overwrite the first.
@@ -67,7 +85,8 @@
    VITE_SUPABASE_ANON_KEY=YOUR_PUBLIC_ANON_OR_PUBLISHABLE_KEY
    ```
    Never put a service-role key in the frontend. HTTPS is required except localhost.
-   Without both variables the page explicitly offers browser storage, not cloud login.
+   Without both variables the page shows a configuration notice and cannot be used.
+   There is no local-storage fallback.
    `VITE_MAINTENANCE_STORAGE_URL` alone no longer enables current account sign-in.
 6. Deploy all of `dist/` at the existing calculator origin/path; do not overwrite
    WordPress. Preserve the origin so old localStorage remains accessible.
@@ -86,7 +105,9 @@ No automatic identity linking occurs. An Intervals.icu athlete ID is not a Supab
 Auth user ID, and an email address does not prove ownership of an old athlete account.
 Legacy records and keys are left untouched; keys are no longer automatically used.
 
-1. Open a browser garage or sign into the intended new cloud account first.
+1. Sign into the intended cloud account first. If an independent browser garage
+   exists on this device, use **More → Import existing browser records** to copy it
+   into the account. It is never opened or modified locally.
 2. Open optional Intervals.icu sync with the same athlete key. It offers an explicit
    import of old browser records, retaining the original localStorage copy. IDs are
    migrated consistently as `icu:<athleteId>:<oldId>` for both bikes and entries.
@@ -111,6 +132,7 @@ once users have migrated according to the operator's retention plan.
 
 `npm run build` and `NODE_OPTIONS=--no-experimental-webstorage npm test` cover
 manual bikes, mileage validation, optional sync, namespace merging, email-code
-requests, session refresh, revision conflicts, browser-to-cloud imports, and failed
-cloud drafts. Auth/REST requests are mocked; no production migration, SMTP setup,
+requests, remembered-session migration/expiration, automatic token refresh,
+logout/refresh races, revision conflicts, legacy browser-to-cloud imports,
+signed-out/configuration gates, and failed cloud drafts. Auth/REST requests are mocked; no production migration, SMTP setup,
 live RLS verification, or deployment is implied by these tests.

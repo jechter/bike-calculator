@@ -32,6 +32,21 @@ A two-pane layout:
   (Live validation messages — e.g. "height outside the table range" — stay inline
   rather than hiding in a popover.)
 
+### Header dividers and content widths
+
+On desktop, title bars span the entire main column, from the sidebar edge to the
+right edge of the viewport. Tire, Cycling Power, and Thread Direction constrain
+only their content cards to the existing reading width, not their main column.
+Maintenance likewise caps its log content separately from its full-bleed header.
+Compact layouts retain their bottom toolbar and omit the in-content divider.
+
+Check the rendered geometry for all routes, sidebar states, and viewport widths
+with a running dev/preview server:
+
+```sh
+CHROME_PATH=/path/to/chromium PREVIEW_URL=http://localhost:5173/ node scripts/check-header-dividers.mjs
+```
+
 ## Navigation & state
 
 - The selected calculator should be reflected in the URL (e.g. hash route

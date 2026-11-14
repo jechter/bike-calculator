@@ -82,7 +82,9 @@
 }
 /* Use actual page width so a collapsed sidebar also frees space for the split. */
 .main.main--maintenance { max-width: none; min-width: 0; }
-.maintenance { max-width: 1440px; container-type: inline-size; container-name: maintenance-page; }
+.maintenance { max-width: none; container-type: inline-size; container-name: maintenance-page; }
+/* Keep the log's reading width without capping its full-bleed title divider. */
+.maintenance > :not(.maintenance-page-head) { max-width: 1440px; }
 .maintenance-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 36px; align-items: start; }
 .maintenance-bike-panel, .maintenance-log { min-width: 0; }
 .maintenance-layout .maintenance-log { margin-top: 0; }
@@ -129,6 +131,11 @@
 
 /* Match the shared title-bar actions; compact layouts portal them to the bottom bar. */
 .maintenance-page-head { flex: none; align-items: center; padding: 0 0 16px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+@media(min-width: 1200px) {
+  .maintenance-page-head { margin: -28px -32px 16px; padding: 16px 32px 12px; }
+}
+/* Auto-height embeds keep their own 24px inset, like the other page headers. */
+html.embedded .maintenance-page-head { margin: 0 0 18px; }
 .maintenance-page-head > div:first-child { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; }
 .main--maintenance .maintenance-page-head h1 { margin: 0; }
 .main--maintenance .maintenance-page-head .subtitle { font-size: 13px; margin: 0; }

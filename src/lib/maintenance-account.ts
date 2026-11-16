@@ -6,7 +6,7 @@ const publicKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 export const accountEnabled = Boolean(project && publicKey);
 export const accountSessionKey = 'maintenance-account-v1';
 const sessionKey = accountSessionKey;
-const rememberedLifetime = 30 * 24 * 60 * 60 * 1000;
+const rememberedLifetime = 180 * 24 * 60 * 60 * 1000;
 const pendingEmailKey = 'maintenance-pending-email-v1';
 const pendingEmailLifetime = 60 * 60 * 1000;
 // Keep only the email and code-entry step in this tab, never the one-time code.
@@ -29,14 +29,19 @@ export function clearPendingEmailSignIn() {
   try { sessionStorage.removeItem(pendingEmailKey); } catch { /* Sign-in still works without tab storage. */ }
 }
 interface Session { access_token: string; refresh_token: string; expires_at?: number; expires_in?: number; user: { id: string; email?: string } }
-interface RememberedSession extends Session { remembered_until: number }
+interface RememberedSession extends Session { remembered_until: number; remember_me: boolean }
 const signInAgain = () => new Error('Your saved sign-in expired or changed. Sign in again to continue. Your draft is unchanged.');
-function rememberSession(session: Session, until: number): RememberedSession {
+function rememberSession(session: Session, until: number, rememberMe: boolean): RememberedSession {
   if (!session?.access_token || !session.refresh_token || !session.user?.id) throw new Error('Account service returned an invalid session. Please sign in again.');
-  const saved = { ...session, remembered_until: until };
+  const saved = { ...session, remembered_until: until, remember_me: rememberMe };
   if (!Number.isFinite(saved.expires_at) && Number.isFinite(saved.expires_in)) saved.expires_at = Date.now() / 1000 + saved.expires_in!;
-  localStorage.setItem(sessionKey, JSON.stringify(saved));
-  sessionStorage.removeItem(sessionKey);
+  if (rememberMe) {
+    localStorage.setItem(sessionKey, JSON.stringify(saved));
+    sessionStorage.removeItem(sessionKey);
+  } else {
+    sessionStorage.setItem(sessionKey, JSON.stringify(saved));
+    localStorage.removeItem(sessionKey);
+  }
   return saved;
 }
 export function hasSavedAccount(): boolean {
@@ -49,10 +54,12 @@ function readSession(): RememberedSession | null {
   let saved: RememberedSession;
   try { saved = JSON.parse(raw); } catch { forgetAccount(); return null; }
   if (!saved?.access_token || !saved.refresh_token || !saved.user?.id) { forgetAccount(); return null; }
-  // Migrate the old tab-only session without requiring another email code.
+  // Legacy logins had no explicit remember-me choice. Keep them tab-only,
+  // never upgrade them to persistent storage without the user opting in.
   const until = saved.remembered_until ?? Date.now() + rememberedLifetime;
   if (!Number.isFinite(until) || until <= Date.now()) { forgetAccount(); return null; }
-  if (!persistent || !saved.remembered_until) return rememberSession(saved, until);
+  const rememberMe = Boolean(persistent) && saved.remember_me === true;
+  if (!saved.remembered_until || saved.remember_me !== rememberMe || (persistent && !rememberMe)) return rememberSession(saved, until, rememberMe);
   return saved;
 }
 class AccountServiceError extends Error {
@@ -82,7 +89,7 @@ function refreshSession(previous: Session): Promise<RememberedSession> {
     // Never resurrect a session after sign-out or overwrite a different account's login.
     if (!saved || saved.refresh_token !== current.refresh_token || saved.user.id !== current.user.id) throw signInAgain();
     if (next.user?.id !== current.user.id) { forgetAccount(); throw signInAgain(); }
-    return rememberSession(next, current.remembered_until);
+    return rememberSession(next, current.remembered_until, current.remember_me);
   };
   // Web Locks serialize token rotation across tabs; the map covers same-tab callers
   // and browsers without Web Locks. Supabase also provides a token-reuse grace window.
@@ -115,9 +122,9 @@ async function request(path: string, method: string, body?: unknown, token?: str
   return result;
 }
 export async function sendSignInCode(email: string) { await request('/auth/v1/otp', 'POST', { email, create_user: true }); }
-export async function verifySignInCode(email: string, code: string) {
+export async function verifySignInCode(email: string, code: string, rememberMe = false) {
   const session: Session = await request('/auth/v1/verify', 'POST', { email, token: code, type: 'email' });
-  return new AccountGarage(rememberSession(session, Date.now() + rememberedLifetime));
+  return new AccountGarage(rememberSession(session, Date.now() + rememberedLifetime, rememberMe));
 }
 export async function restoreAccount(): Promise<AccountGarage | null> {
   const previous = readSession();
@@ -137,13 +144,13 @@ export class AccountGarage {
   constructor(private session: Session) {}
   get email() { return this.session.user.email || 'Signed in'; }
   get userId() { return this.session.user.id; }
-  private async call(method: string, body?: unknown, suffix = '', extra?: Record<string, string>) {
+  private async authenticatedRequest(path: string, method: string, body?: unknown, extra?: Record<string, string>) {
     const saved = readSession();
     if (!saved || saved.user.id !== this.session.user.id) throw signInAgain();
     this.session = saved;
     if (saved.expires_at && saved.expires_at * 1000 <= Date.now() + 60000) this.session = await refreshSession(saved);
     const send = async () => {
-      const result = await request('/rest/v1/maintenance_user_garages?user_id=eq.' + encodeURIComponent(this.session.user.id) + suffix, method, body, this.session.access_token, extra);
+      const result = await request(path, method, body, this.session.access_token, extra);
       if (readSession()?.user.id !== this.session.user.id) throw signInAgain();
       return result;
     };
@@ -153,6 +160,19 @@ export class AccountGarage {
       this.session = await refreshSession(this.session);
       return send(); // One retry only; do not retry ambiguous network/write failures.
     }
+  }
+
+  private call(method: string, body?: unknown, suffix = '', extra?: Record<string, string>) {
+    return this.authenticatedRequest('/rest/v1/maintenance_user_garages?user_id=eq.' + encodeURIComponent(this.session.user.id) + suffix, method, body, extra);
+  }
+
+  async deleteAccount() {
+    // Only clear the session after confirmed server success. Never fall back to
+    // deleting a local snapshot or send a caller-selected account ID.
+    await this.authenticatedRequest('/rest/v1/rpc/delete_maintenance_account', 'POST', {});
+    forgetAccount();
+    clearPendingEmailSignIn();
+    this.data = emptyGarage();
   }
 
   async loadGarage(): Promise<MaintenanceData> {

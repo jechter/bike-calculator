@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Privacy notice | Rückenwind Bike Workshop Calculator</title>
+<style>
+:root { color-scheme: light dark; font: 17px/1.65 system-ui, sans-serif; background: #f6f7f9; color: #202936; }
+body { max-width: 780px; margin: auto; padding: 28px 22px 72px; }
+a { color: #176a78; text-underline-offset: 3px; }
+h1,h2 { line-height: 1.25; } h1 { margin-top: 32px; } h2 { margin-top: 36px; font-size: 1.35rem; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; } th,td { text-align: left; vertical-align: top; padding: 10px 7px; border-bottom: 1px solid #89939d; overflow-wrap: anywhere; } code { overflow-wrap: anywhere; }
+@media (prefers-color-scheme: dark) { :root { background: #14181d; color: #e1e7ee; } a { color: #80ced9; } }
+</style>
+</head>
+<body>
+<nav><a href="../">Back to calculators</a></nav>
+<header><h1>Privacy notice</h1><p>Rückenwind Bike Workshop Calculator and Maintenance Log</p></header>
+<main>
+<h2>1. Who is responsible?</h2>
+<p>The controller responsible for this service is:</p>
+<address>Jonas Echterhoff<br><span id="privacy-postal"></span><a id="privacy-email"></a><noscript>Enable JavaScript to display the postal address and email contact details.</noscript></address>
+<script>
+// Assemble contact details at runtime to deter simple source-scanning harvesters.
+// Like the component proposal mailbox, use shifted character codes, not plaintext.
+(() => {
+  const decode = codes => String.fromCharCode(...codes.map(code => code - 1));
+  const postalLines = [[83, 106, 102, 116, 102, 116, 117, 115, 33, 50, 56], [50, 51, 52, 53, 56, 33, 67, 102, 115, 109, 106, 111], [72, 102, 115, 110, 98, 111, 122]];
+  const postal = document.getElementById('privacy-postal');
+  for (const line of postalLines) {
+    postal.append(document.createTextNode(decode(line)), document.createElement('br'));
+  }
+  const email = decode([99, 106, 108, 102, 120, 112, 115, 108, 116, 105, 112, 113, 100, 98, 109, 100, 118, 109, 98, 117, 112, 115, 65, 107, 112, 111, 98, 116, 102, 100, 105, 117, 102, 115, 105, 112, 103, 103, 47, 100, 112, 110]);
+  const link = document.getElementById('privacy-email');
+  link.textContent = email;
+  link.href = 'mailto:' + email;
+})();
+</script>
+<p>Please use this email address for privacy questions, account-deletion requests, and other data-protection requests.</p>
+<p>Effective date: <time datetime="2026-11-16">November 16, 2026</time>.</p>
+<h2>2. Visiting and using the calculators</h2>
+<p>The calculator interface and its assets are delivered by our web hosting provider. Requests involve your IP address, request time, requested address, and browser/request information. Hosting and security logs may contain these details. We use this processing to deliver and protect the service under Article 6(1)(f) GDPR; our legitimate interests are reliable operation, troubleshooting, and prevention of abuse.</p>
+<p>The calculators will be hosted on <strong>rueckenwind.berlin</strong> by <strong>IONOS SE, Elgendorfer Str. 57, 56410 Montabaur, Germany</strong>. As described in section 2 (“Hosting”) of the <a href="https://rueckenwind.berlin/datenschutzerklaerung/">Rückenwind website privacy notice</a>, IONOS collects server logfiles, including visitors' IP addresses. Further information is available in the <a href="https://www.ionos.de/terms-gtc/terms-privacy">IONOS privacy notice</a>. Our legitimate interest under Article 6(1)(f) GDPR is reliable delivery and secure operation of the website. This calculator notice supplements the main website's information for accounts and the Maintenance Log.</p>
+<p>IONOS's general privacy notice covers its own website visitors and customers. It identifies technical data such as IP addresses, browser type/version, operating system, and device information, and refers to a separate data processing agreement for services it provides as a processor. Its general retention examples describe logfiles and temporary data as often kept for a few days up to 60–90 days depending on security or operational needs; those examples do not establish the retention setting for rueckenwind.berlin.</p>
+<p>Ordinary calculator inputs are calculated in your browser, not saved to your maintenance account. Some calculators put configuration into a shareable URL when you request a link. Anyone receiving that link can read its parameters; requested URLs may also appear in hosting logs. Avoid sharing personal information in links.</p>
+<h2>3. Email sign-in and your maintenance account</h2>
+<p>When you request a sign-in code, your email address is sent to Supabase Auth. A code is delivered through our configured STRATO SMTP service. Successfully verifying your first code creates an account. An email address is necessary for this sign-in method; without it, you cannot use the cloud Maintenance Log. The other calculators do not require an account.</p>
+<p>We process your email address, account identifier, authentication/session information, and the bikes and maintenance history you choose to save. Garage data includes bike names and mileage, components, tasks, service/replacement dates, odometer readings, free-text notes, and synchronization metadata. Please do not enter health information or unnecessary information about other people.</p>
+<p>The purpose is to provide your requested account, save your garage, and make it available across devices. The legal basis is Article 6(1)(b) GDPR, to provide the agreed service and take steps at your request before it begins. Proportionate authentication and security logging is based on Article 6(1)(f) GDPR to protect accounts and prevent abuse. Sign-in emails are service messages, not marketing.</p>
+<p>Garage data is not published as a public profile. Our authorized administrators and service providers may access data where necessary to operate, support, or secure the service.</p>
+<h2>4. Providers and international transfers</h2>
+<ul>
+<li><strong>Supabase:</strong> provides account authentication and database storage. The primary database region is West EU, <code>eu-west-1</code> (Ireland), as confirmed in the project dashboard. Our use of Supabase is covered by its <a href="https://supabase.com/legal/customer-resources/data-processing-addendum">Data Processing Addendum (DPA)</a>.</li>
+<li><strong>STRATO GmbH:</strong> acts as our processor for SMTP delivery of sign-in emails, processing recipient addresses, email content including the code, and delivery metadata. Our SMTP service is covered by STRATO's <a href="https://www.strato.de/agb/avv/">data processing agreement (AVV)</a>. The reviewed AVV (version 3.5, March 18, 2024) provides for processing in the EU/EEA, unless a third-country transfer is necessary to provide the service. In that case, STRATO undertakes to meet the requirements of Articles 44 onward GDPR. Its subprocessor appendix identifies service-specific providers and, for certain third-country services, standard contractual clauses under Article 46(2)(c) GDPR. Not every listed subprocessor is used for our SMTP service.</li>
+<li><strong>IONOS SE:</strong> hosts the calculators on rueckenwind.berlin and processes website requests and server logfiles, including IP addresses. See section 2 above and the <a href="https://rueckenwind.berlin/datenschutzerklaerung/">Rückenwind website privacy notice</a>. IONOS web hosting is separate from STRATO SMTP delivery and Supabase account/database storage.</li>
+</ul>
+<h2>5. Optional Intervals.icu connection</h2>
+<p>You can use the Maintenance Log without Intervals.icu. If you choose to connect, your browser sends your API key directly to Intervals.icu over HTTPS to request your athlete profile and gear. Intervals.icu receives your IP address and request information. We read the athlete identifier and bike names and mileage; the athlete profile response also contains your name. The imported bike identifiers include the athlete identifier, and the imported bikes and synchronization timestamp are saved in your Supabase garage.</p>
+<p>The application only makes read requests. The API key may grant broader permissions at Intervals.icu, so protect it carefully. The current application keeps it only in page memory, not in its cloud database or browser storage. It is discarded when you leave or reload the Maintenance Log. While connected, the app refreshes mileage about every five minutes when the page is visible and no editing form is open. Leaving the page stops refresh; saved imported bikes are not thereby deleted. You can revoke the key at Intervals.icu.</p>
+<p>We process this information to provide the optional synchronization you request under Article 6(1)(b) GDPR. Intervals.icu is operated by <strong>Intervals.icu Ltd., 71-75 Shelton Street, Covent Garden, London WC2H 9JQ, United Kingdom</strong>. It acts as a separate controller for its own service, not as the processor hosting your maintenance garage. Its handling of your account is described in its <a href="https://www.intervals.icu/privacy-policy/">privacy policy</a>.</p>
+<p>According to that policy (effective November 10, 2026), Intervals.icu processes account, activity, and wellness data in Germany and Finland, with cloud storage in EU regions using Google, Backblaze, Wasabi, and Scaleway. It reports error/crash processing by Sentry in Germany and also lists other providers for its own analytics, notifications, and payments. These describe Intervals.icu's service; our calculator does not embed those analytics, payment, or notification services merely by connecting to its API.</p>
+<p>You can delete your separate Intervals.icu account under “Settings → Delete Account” in its website or apps. Its policy states that deleted data is removed from its backups within 30 days, subject to legally required retention such as purchase invoices. This is Intervals.icu's retention statement, not a backup-deletion deadline for our Supabase garage. For requests concerning Intervals.icu, its policy also provides a <a href="https://app.prighter.com/portal/intervals-icu">privacy representative portal</a>.</p>
+<h2>6. Cookies and browser storage</h2>
+<p>The current calculator application does not itself set cookies and does not include advertising or analytics scripts. It does use localStorage and sessionStorage. These technologies are also covered by Germany's terminal-equipment storage rules (§25 TDDDG). This statement does not cover cookies or scripts supplied by the surrounding website, hosting infrastructure, or an embedding page.</p>
+<table><thead><tr><th>Storage</th><th>Purpose and contents</th><th>Duration</th></tr></thead><tbody>
+<tr><td><code>maintenance-account-v1</code><br>sessionStorage by default; localStorage only with “Remember me”</td><td>Email/account identifier and access/refresh tokens. The unchecked “Remember me” option explicitly requests persistence across browser sessions. Older automatically persistent logins become tab-only when read.</td><td>By default, limited to this tab's browser session, which some browsers may restore when reopening tabs. With “Remember me,” accepted for up to 180 days from sign-in. Both modes have a maximum 180-day acceptance window and may expire sooner under server policies. Sign-out removes the saved credentials. Expiry is checked when read; stored bytes are not automatically erased at the deadline.</td></tr>
+<tr><td><code>maintenance-pending-email-v1</code><br>sessionStorage</td><td>Email address and pending code-entry step. The code itself is not saved.</td><td>Accepted for up to one hour. Cleared on successful sign-in, cancellation, or changing/resending the email; otherwise limited to the browser tab's session. Expired state is removed when read.</td></tr>
+<tr><td><code>bwc.speedUnit</code><br>localStorage</td><td>Preferred speed unit, saved only when you explicitly select a unit. The default is not written on page load.</td><td>Until changed or site data is cleared.</td></tr>
+<tr><td><code>nav-collapsed</code><br>localStorage</td><td>Whether you chose to collapse the navigation.</td><td>Until changed or site data is cleared.</td></tr>
+</tbody></table>
+<p>Older versions may have left tab-only sessions, local garages, or Intervals.icu keys in browser storage. The current interface does not read or import those legacy garages or saved API keys and does not automatically erase them. Clearing site data removes them but may destroy your only copy of old local records; back up needed records first. Clearing site data does not delete your cloud account; use “More → Delete account” or contact us.</p>
+<p>By default, we store sign-in credentials only in the tab's session storage. Selecting “Remember me for up to 180 days on this browser” requests persistent sign-in; leaving it unchecked does not write sign-in credentials to localStorage. This choice is not permission for analytics, advertising, or other unrelated processing. Sign out to end saved sign-in on this browser, especially on shared devices.</p>
+<h2>7. How long we keep information</h2>
+<p>We keep your account and garage to provide your ongoing maintenance history. There is currently no fixed account-expiration date or automatic inactivity deletion. You can delete individual bikes and entries, delete your account using “More → Delete account” when signed in, or request deletion using the contact above. Sign-out only ends the saved sign-in; it does not delete your account or garage.</p>
+<p>We do not currently maintain separate operator-managed logs or server backups. This does not establish whether our hosting, authentication, database, and email providers retain their own operational logs or backup copies. Garage backups you choose to download remain under your control.</p>
+<p>Account deletion must include the associated garage and relevant processor-held data, subject to justified retention obligations. If providers retain backup copies, document when they expire and ensure deleted data is not reintroduced into active service after restoration.</p>
+<h2>8. Your choices and rights</h2>
+<p>You can edit or delete bikes and maintenance entries and use “Download garage backup” to export your garage. A downloaded backup is a file under your control and is not removed when cloud records are deleted.</p>
+<p>When signed in, choose “More → Delete account” and confirm to permanently delete your account and current cloud garage. Deletion is not just sign-out and cannot be undone. Download a garage backup first if you want a copy. Successful deletion clears this browser's saved sign-in and removes the server account and its associated garage and Auth-owned sessions. It does not delete your Intervals.icu account, downloaded files, or independent legacy records. Provider logs and backup copies, if any, follow their applicable retention schedules.</p>
+<p>For other privacy requests, any legacy-data deletion, or help deleting your account, contact the controller above. We may request proportionate information to verify your identity. We normally respond within one month; GDPR permits extensions in specified circumstances, which we will explain if needed.</p>
+<p>Subject to the GDPR's conditions, you have rights of access (Article 15), correction (Article 16), erasure (Article 17), restriction (Article 18), and portability (Article 20). Where processing relies on legitimate interests, you may object on grounds relating to your particular situation (Article 21). If we rely on consent for any additional processing, you can withdraw it at any time without affecting earlier lawful processing.</p>
+<p>You may lodge a complaint with a data protection supervisory authority, in particular in the member state of your habitual residence, workplace, or the alleged infringement. For this Berlin-based controller, the competent local supervisory authority is the <a href="https://www.datenschutz-berlin.de/">Berlin Commissioner for Data Protection and Freedom of Information</a>.</p>
+<h2>9. Scope and changes</h2>
+<p>This notice describes the calculator application. WordPress, its plugins, and the main website's other processing are addressed separately in the <a href="https://rueckenwind.berlin/datenschutzerklaerung/">Rückenwind website privacy notice</a>. We will update this notice when the calculator service or its processing changes.</p>
+</main>
+</body>
+</html>

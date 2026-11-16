@@ -35,15 +35,21 @@
   edits on another device produce a conflict, not silent lost updates. Export the
   current state and reload before retrying. Failed writes leave drafts open and never
   fall back to local writes. Reload to refresh the cloud garage and session.
-- Cloud sign-in is remembered in localStorage for **up to 30 days from sign-in**,
-  including after closing tabs or restarting the browser. Existing tab-only sessions
-  migrate automatically on reload; the email-code pending step stays tab-only.
+- Sign-in is **tab-session-only by default**, using sessionStorage. The unchecked
+  **Remember me for up to 180 days on this browser** checkbox explicitly enables
+  localStorage persistence across tabs/browser restarts. The choice is used when
+  verifying the email code and is not saved with the pending-email step; a reload
+  before verification resets it to unchecked. Browser session restoration may
+  restore sessionStorage too, so sign out rather than relying on closing a tab
+  on shared devices. Both modes have an absolute maximum 180-day acceptance window.
+  Legacy automatically remembered logins (without an explicit `remember_me: true`)
+  become tab-only when read; existing tab-only logins are never promoted.
   Access tokens remain short-lived: the app refreshes before expiry when accessing
   the cloud, and retries a rejected (401) request only once after refresh. Token
-  rotation is serialized across tabs with Web Locks where supported. Refresh does
-  not restart the 30-day window. Shorter Supabase session policies or revocation can
-  require an earlier sign-in; this feature does not change server Auth settings.
-- Remembered access/refresh tokens are readable by same-origin scripts and anyone
+  rotation is serialized across tabs with Web Locks where supported. Refresh keeps
+  the original storage mode and does not restart the 180-day window. Shorter Supabase
+  policies or revocation can require earlier sign-in; server Auth settings are unchanged.
+- Saved access/refresh tokens in either storage mode are readable by same-origin scripts and anyone
   using this browser profile. Deploy only to a trusted origin and sign out on shared
   devices. Sign-out removes both persistent and old tab-only credentials immediately,
   even offline, and attempts to revoke this session (not other devices' sessions).
@@ -111,9 +117,26 @@
    Use two real Auth users to verify read/update/insert isolation, and confirm
    anonymous REST requests cannot access `maintenance_user_garages`. RLS enforces
    `auth.uid() = user_id`; browser-provided IDs alone do not authorize access.
-8. Enable managed backups/retention and document privacy/account deletion policies.
-   Deleting an Auth user cascades to the new garage, but not legacy ICU history or
-   managed database backups. The UI does not yet offer account deletion or email change.
+8. Apply `supabase/migrations/202611160001_delete_maintenance_account.sql`
+   before shipping the self-service **More → Delete account** menu action.
+   This narrowly scoped SECURITY DEFINER RPC accepts no user ID: it deletes only
+   `auth.uid()` from Auth. Anonymous/PUBLIC execution is revoked; authenticated
+   users may call it. The current garage and Auth-owned sessions/identities cascade
+   in the same transaction. No service-role credential is sent to the browser.
+   Verify in staging with two users and run
+   `supabase/tests/account_deletion.sql` as an administrator in a disposable test
+   project (it rolls its fixtures back). Anonymous deletion must be rejected and
+   deleting one user must leave the other untouched. This migration has not been
+   applied automatically. Without it, the UI reports an error, not fake success.
+9. Configure appropriate recovery/backup measures and document retention and
+   deletion policies. Self-service deletion does not erase independent legacy ICU
+   history, provider logs/backups, downloaded files, or upstream Intervals.icu data.
+   Handle remaining privacy requests through the operator contact. Already issued
+   access JWTs can remain valid until expiry, but the deleted user has no garage
+   and cannot recreate one because of its Auth foreign key. Other devices must
+   reauthenticate; the current browser's remembered credentials are removed and
+   same-origin tabs hide the garage on the storage change. The UI does not offer
+   email change.
 
 ## Retired legacy storage
 
@@ -132,7 +155,7 @@ their retention policy without changing current Supabase Auth garage storage.
 
 `npm run build` and `NODE_OPTIONS=--no-experimental-webstorage npm test` cover
 manual bikes, mileage validation, optional sync, namespace merging, email-code
-requests, remembered-session migration/expiration, automatic token refresh,
+requests, explicit remember-me opt-in, default tab-only storage, legacy-session downgrade/expiration, automatic token refresh,
 logout/refresh races, revision conflicts, ignored legacy browser-garage data, validated backup-file imports,
 signed-out/configuration gates, and failed cloud drafts. Auth/REST requests are mocked; no production migration, SMTP setup,
 live RLS verification, or deployment is implied by these tests.

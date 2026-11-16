@@ -26,6 +26,8 @@
 .maintenance-form { padding: 24px; margin-bottom: 24px; }
 .maintenance-form h3 { margin-top: 0; }
 .maintenance-form label { display: flex; flex-direction: column; gap: 6px; font-weight: 500; margin: 18px 0; }
+.maintenance-form .maintenance-remember { flex-direction: row; align-items: center; gap: 9px; }
+.maintenance-form .maintenance-remember input { width: auto; flex: 0 0 auto; padding: 0; accent-color: var(--accent); }
 .maintenance-form input, .maintenance-form textarea { width: 100%; min-width: 0; font: inherit; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 10px; }
 .maintenance-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .maintenance-form textarea { resize: vertical; }

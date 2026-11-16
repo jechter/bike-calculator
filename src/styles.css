@@ -122,6 +122,8 @@ body {
 .app--nav-collapsed .repo-link { justify-content: center; }
 .app--nav-collapsed .repo-link span { display: none; }
 .app--nav-collapsed .unit-switcher { display: none; }
+.sidebar-footer-links { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.app--nav-collapsed .privacy-link { display: none; }
 .repo-link {
   display: flex; align-items: center; gap: 6px;
   color: var(--muted); font-size: 12px; text-decoration: none;
@@ -1695,6 +1697,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   .app--nav-collapsed .repo-link { justify-content: flex-start; }
   .app--nav-collapsed .repo-link span { display: inline; }
   .app--nav-collapsed .unit-switcher { display: block; }
+  .app--nav-collapsed .privacy-link { display: flex; }
 
   /* Larger tap targets for the nav rows in the drawer. */
   .nav a { padding: 11px 12px; }

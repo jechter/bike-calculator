@@ -4,13 +4,14 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import { readLegacyBrowserGarageFixture, seedLegacyBrowserGarage } from '../test-fixtures/maintenance-account';
-const mocks = vi.hoisted(() => ({ enabled: true, restore: vi.fn(), load: vi.fn(), save: vi.fn(), write: vi.fn(), logout: vi.fn(), send: vi.fn(), verify: vi.fn() }));
+const mocks = vi.hoisted(() => ({ enabled: true, restore: vi.fn(), load: vi.fn(), save: vi.fn(), write: vi.fn(), logout: vi.fn(), deleteAccount: vi.fn(), send: vi.fn(), verify: vi.fn() }));
 vi.mock('../lib/maintenance-account', async original => ({ ...await original<typeof import('../lib/maintenance-account')>(), get accountEnabled() { return mocks.enabled; }, restoreAccountOnce: mocks.restore, sendSignInCode: mocks.send, verifySignInCode: mocks.verify }));
 import { Maintenance } from './Maintenance';
-const account = { email: 'rider@example.com', loadGarage: mocks.load, save: mocks.save, write: mocks.write, logout: mocks.logout };
+const account = { email: 'rider@example.com', loadGarage: mocks.load, save: mocks.save, write: mocks.write, logout: mocks.logout, deleteAccount: mocks.deleteAccount };
 beforeEach(() => {
   vi.resetAllMocks(); mocks.enabled = true;
   mocks.load.mockResolvedValue(sampleMaintenance()); mocks.restore.mockResolvedValue(account);
+  mocks.deleteAccount.mockResolvedValue(undefined);
   mocks.logout.mockResolvedValue(undefined); mocks.send.mockResolvedValue(undefined); mocks.verify.mockResolvedValue(account);
 });
 afterEach(() => { cleanup(); localStorage.clear(); sessionStorage.clear(); vi.restoreAllMocks(); });
@@ -52,7 +53,7 @@ it('uses email codes for sign-in and does not upload browser data automatically'
   expect(mocks.send).toHaveBeenCalledWith('rider@example.com');
   fireEvent.change(screen.getByLabelText('Email code'), { target: { value: '123456' } }); fireEvent.click(screen.getByText('Verify code'));
   await screen.findByRole('button', { name: /^Everyday road bike. Total distance/ });
-  expect(mocks.verify).toHaveBeenCalledWith('rider@example.com', '123456'); expect(mocks.write).not.toHaveBeenCalled();
+  expect(mocks.verify).toHaveBeenCalledWith('rider@example.com', '123456', false); expect(mocks.write).not.toHaveBeenCalled();
 });
 it('keeps legacy browser data untouched and hidden when code verification fails', async () => {
   const backup = sampleMaintenance(); seedLegacyBrowserGarage(backup); mocks.verify.mockRejectedValue(new Error('Invalid code'));
@@ -84,7 +85,7 @@ it('restores the code-entry step after a reload without sending another email or
   fireEvent.change(screen.getByLabelText('Email code'), { target: { value: '123456' } });
   fireEvent.click(screen.getByText('Verify code'));
   await screen.findByRole('button', { name: /^Everyday road bike. Total distance/ });
-  expect(mocks.verify).toHaveBeenCalledWith('rider@example.com', '123456');
+  expect(mocks.verify).toHaveBeenCalledWith('rider@example.com', '123456', false);
   expect(sessionStorage.getItem('maintenance-pending-email-v1')).toBeNull();
 });
 it.each(['Cancel', 'Use another email / resend'])('clears pending email when choosing %s', async action => {
@@ -296,4 +297,60 @@ it('rejects an invalid backup file without a cloud write or losing the garage', 
   expect((screen.getByRole('button', { name: 'Import backup' }) as HTMLButtonElement).disabled).toBe(true);
   expect(mocks.write).not.toHaveBeenCalled();
   expect(screen.getByRole('button', { name: /^Everyday road bike. Total distance/ })).toBeTruthy();
+});
+
+it('requires confirmation before account deletion', async () => {
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+  await cloud();
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  fireEvent.click(screen.getByText('Delete account'));
+  expect(confirm).toHaveBeenCalledWith(expect.stringContaining('rider@example.com'));
+  expect(mocks.deleteAccount).not.toHaveBeenCalled();
+  expect(screen.getByText(/Cloud garage · rider@example.com/)).toBeTruthy();
+});
+it('deletes the account and hides the garage only after server success', async () => {
+  vi.spyOn(window, 'confirm').mockReturnValue(true);
+  let resolve!: () => void;
+  mocks.deleteAccount.mockImplementation(() => new Promise<void>(done => { resolve = done; }));
+  await cloud();
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  fireEvent.click(screen.getByText('Delete account'));
+  expect((screen.getByText('Delete account') as HTMLButtonElement).disabled).toBe(true);
+  expect(screen.getByText(/Cloud garage · rider@example.com/)).toBeTruthy();
+  resolve();
+  await screen.findByText(/Your account and cloud garage have been deleted/);
+  expect(screen.queryByText(/Cloud garage ·/)).toBeNull();
+  expect(screen.getByRole('form', { name: 'Email sign-in' })).toBeTruthy();
+  expect(mocks.logout).not.toHaveBeenCalled();
+  expect(mocks.write).not.toHaveBeenCalled();
+});
+it('keeps the garage visible and allows retry when server deletion fails', async () => {
+  vi.spyOn(window, 'confirm').mockReturnValue(true);
+  mocks.deleteAccount.mockRejectedValue(new Error('Account deletion unavailable'));
+  await cloud();
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  fireEvent.click(screen.getByText('Delete account'));
+  await screen.findByRole('alert');
+  expect(screen.getByText(/Cloud garage · rider@example.com/)).toBeTruthy();
+  expect((screen.getByText('Delete account') as HTMLButtonElement).disabled).toBe(false);
+  expect(mocks.logout).not.toHaveBeenCalled();
+});
+
+it('offers an unchecked remember-me choice and passes the explicit opt-in on verification', async () => {
+  render(<Maintenance />);
+  const remember = screen.getByRole('checkbox', { name: /Remember me for up to 180 days/ }) as HTMLInputElement;
+  expect(remember.checked).toBe(false);
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'rider@example.com' } });
+  fireEvent.click(screen.getByText('Send sign-in code'));
+  await screen.findByLabelText('Email code');
+  fireEvent.click(remember);
+  fireEvent.change(screen.getByLabelText('Email code'), { target: { value: '123456' } });
+  fireEvent.click(screen.getByText('Verify code'));
+  await screen.findByText(/Cloud garage · rider@example.com/);
+  expect(mocks.verify).toHaveBeenCalledWith('rider@example.com', '123456', true);
+});
+it('does not restore an earlier remember-me choice when reloading a pending sign-in', () => {
+  sessionStorage.setItem('maintenance-pending-email-v1', JSON.stringify({ email: 'rider@example.com', createdAt: Date.now() }));
+  render(<Maintenance />);
+  expect((screen.getByRole('checkbox', { name: /Remember me for up to 180 days/ }) as HTMLInputElement).checked).toBe(false);
 });

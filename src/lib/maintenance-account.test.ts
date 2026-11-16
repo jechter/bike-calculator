@@ -9,7 +9,7 @@ const session = { access_token: 'access', refresh_token: 'refresh', user: { id: 
 it('sends email OTP and verifies via Supabase Auth, not Intervals.icu', async () => {
   const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('{}')).mockResolvedValueOnce(new Response(JSON.stringify(session)));
   const { sendSignInCode, verifySignInCode } = await import('./maintenance-account');
-  await sendSignInCode('rider@example.com'); const account = await verifySignInCode('rider@example.com', '123456');
+  await sendSignInCode('rider@example.com'); const account = await verifySignInCode('rider@example.com', '123456', true);
   expect(account.email).toBe('rider@example.com');
   expect(fetch.mock.calls.map(c => c[0])).toEqual(['https://example.supabase.co/auth/v1/otp', 'https://example.supabase.co/auth/v1/verify']);
   expect(JSON.parse(fetch.mock.calls[1][1]?.body as string)).toEqual({ email: 'rider@example.com', token: '123456', type: 'email' });
@@ -20,7 +20,7 @@ it('scopes cloud requests to the authenticated user and uses revision checks to 
   const data = sampleMaintenance();
   const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify([{ garage: data, revision: 7 }]))).mockResolvedValueOnce(new Response('[]'));
   const { AccountGarage } = await import('./maintenance-account');
-  localStorage.setItem('maintenance-account-v1', JSON.stringify({ ...session, remembered_until: Date.now() + 86400000 }));
+  localStorage.setItem('maintenance-account-v1', JSON.stringify({ ...session, remember_me: true, remembered_until: Date.now() + 86400000 }));
   const account = new AccountGarage(session); await account.loadGarage();
   await expect(account.write({ ...data, name: 'Changed' })).rejects.toThrow('another device');
   expect(String(fetch.mock.calls[1][0])).toContain('user_id=eq.user-1&revision=eq.7');
@@ -80,11 +80,11 @@ it('handles unavailable tab storage without crashing the sign-in form', async ()
 const sessionKey = 'maintenance-account-v1';
 const day = 24 * 60 * 60 * 1000;
 function saveRemembered(values: Record<string, unknown> = {}) {
-  const saved = { ...session, expires_at: Date.now() / 1000 + 3600, remembered_until: Date.now() + 30 * day, ...values };
+  const saved = { ...session, remember_me: true, expires_at: Date.now() / 1000 + 3600, remembered_until: Date.now() + 180 * day, ...values };
   localStorage.setItem(sessionKey, JSON.stringify(saved));
   return saved;
 }
-it('restores a remembered session after tab storage has been cleared and keeps its original 30-day limit', async () => {
+it('restores a remembered session after tab storage has been cleared and keeps its original 180-day limit', async () => {
   const saved = saveRemembered(); sessionStorage.clear();
   const next = { ...session, access_token: 'new-access', refresh_token: 'new-refresh', expires_in: 3600 };
   vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(next)));
@@ -92,13 +92,13 @@ it('restores a remembered session after tab storage has been cleared and keeps i
   expect((await restoreAccount())?.email).toBe('rider@example.com');
   expect(JSON.parse(localStorage.getItem(sessionKey)!)).toMatchObject({ access_token: 'new-access', refresh_token: 'new-refresh', remembered_until: saved.remembered_until });
 });
-it('migrates an existing tab-only login to persistent storage without another email code', async () => {
+it('keeps an existing tab-only login tab-only without another email code', async () => {
   sessionStorage.setItem(sessionKey, JSON.stringify(session));
   const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(session)));
   const { restoreAccount } = await import('./maintenance-account');
   await restoreAccount();
-  expect(sessionStorage.getItem(sessionKey)).toBeNull();
-  expect(JSON.parse(localStorage.getItem(sessionKey)!).remembered_until).toBeGreaterThan(Date.now() + 29 * day);
+  expect(localStorage.getItem(sessionKey)).toBeNull();
+  expect(JSON.parse(sessionStorage.getItem(sessionKey)!).remember_me).toBe(false);
   expect(fetch).toHaveBeenCalledTimes(1);
 });
 it('requires sign-in after the remembered session expires without making a refresh request', async () => {
@@ -199,4 +199,97 @@ it('blocks an old garage from writing after another tab signs into a different a
   const { AccountGarage } = await import('./maintenance-account');
   await expect(new AccountGarage(saved).write(sampleMaintenance())).rejects.toThrow('Sign in again');
   expect(fetch).not.toHaveBeenCalled();
+});
+
+it('deletes through an authenticated no-ID RPC and clears credentials on success', async () => {
+  localStorage.setItem('maintenance-account-v1', JSON.stringify({ ...session, remember_me: true, remembered_until: Date.now() + 86400000 }));
+  sessionStorage.setItem('maintenance-pending-email-v1', JSON.stringify({ email: 'rider@example.com', createdAt: Date.now() }));
+  const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 204 }));
+  const { AccountGarage } = await import('./maintenance-account');
+  await new AccountGarage(session).deleteAccount();
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(fetch.mock.calls[0][0]).toBe('https://example.supabase.co/rest/v1/rpc/delete_maintenance_account');
+  expect(fetch.mock.calls[0][1]).toMatchObject({ method: 'POST', body: '{}', headers: { Authorization: 'Bearer access', apikey: 'public-key' } });
+  expect(localStorage.getItem('maintenance-account-v1')).toBeNull();
+  expect(sessionStorage.getItem('maintenance-pending-email-v1')).toBeNull();
+});
+it('keeps credentials on deletion failure and does not retry ambiguous failures', async () => {
+  const saved = JSON.stringify({ ...session, remember_me: true, remembered_until: Date.now() + 86400000 });
+  localStorage.setItem('maintenance-account-v1', saved);
+  const fetch = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Network lost'));
+  const { AccountGarage } = await import('./maintenance-account');
+  await expect(new AccountGarage(session).deleteAccount()).rejects.toThrow('Network lost');
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(localStorage.getItem('maintenance-account-v1')).toBe(saved);
+});
+it('refreshes an expired access token before account deletion', async () => {
+  localStorage.setItem('maintenance-account-v1', JSON.stringify({ ...session, remember_me: true, expires_at: 1, remembered_until: Date.now() + 86400000 }));
+  const fetch = vi.spyOn(globalThis, 'fetch')
+    .mockResolvedValueOnce(new Response(JSON.stringify({ ...session, access_token: 'new-access' })))
+    .mockResolvedValueOnce(new Response(null, { status: 204 }));
+  const { AccountGarage } = await import('./maintenance-account');
+  await new AccountGarage(session).deleteAccount();
+  expect(String(fetch.mock.calls[0][0])).toContain('grant_type=refresh_token');
+  expect(fetch.mock.calls[1][1]?.headers).toMatchObject({ Authorization: 'Bearer new-access' });
+  expect(localStorage.getItem('maintenance-account-v1')).toBeNull();
+});
+it('does not send account deletion if the saved account has changed', async () => {
+  localStorage.setItem('maintenance-account-v1', JSON.stringify({ ...session, user: { id: 'other' }, remembered_until: Date.now() + 86400000 }));
+  const fetch = vi.spyOn(globalThis, 'fetch');
+  const { AccountGarage } = await import('./maintenance-account');
+  await expect(new AccountGarage(session).deleteAccount()).rejects.toThrow('changed');
+  expect(fetch).not.toHaveBeenCalled();
+});
+
+it('defaults to tab-only sign-in and keeps refreshes out of localStorage', async () => {
+  const fetch = vi.spyOn(globalThis, 'fetch')
+    .mockResolvedValueOnce(new Response(JSON.stringify(session)))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ ...session, access_token: 'renewed' })));
+  const { verifySignInCode, restoreAccount } = await import('./maintenance-account');
+  await verifySignInCode('rider@example.com', '123456');
+  expect(localStorage.getItem(sessionKey)).toBeNull();
+  expect(JSON.parse(sessionStorage.getItem(sessionKey)!)).toMatchObject({ remember_me: false, access_token: 'access' });
+  await restoreAccount();
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(localStorage.getItem(sessionKey)).toBeNull();
+  expect(JSON.parse(sessionStorage.getItem(sessionKey)!)).toMatchObject({ remember_me: false, access_token: 'renewed' });
+  sessionStorage.clear(); // Simulate a new browser tab session without restored storage.
+  expect(await restoreAccount()).toBeNull();
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
+it('downgrades an old automatically remembered login to tab-only storage', async () => {
+  const until = Date.now() + 86400000;
+  localStorage.setItem(sessionKey, JSON.stringify({ ...session, remembered_until: until }));
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(session)));
+  const { restoreAccount } = await import('./maintenance-account');
+  expect((await restoreAccount())?.email).toBe(session.user.email);
+  expect(localStorage.getItem(sessionKey)).toBeNull();
+  expect(JSON.parse(sessionStorage.getItem(sessionKey)!)).toMatchObject({ remember_me: false, remembered_until: until });
+});
+it('removes any previous persistent session when signing in without remember me', async () => {
+  saveRemembered();
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(session)));
+  const { verifySignInCode } = await import('./maintenance-account');
+  await verifySignInCode(session.user.email, '123456', false);
+  expect(localStorage.getItem(sessionKey)).toBeNull();
+  expect(JSON.parse(sessionStorage.getItem(sessionKey)!)).toMatchObject({ remember_me: false });
+});
+
+it('gives a new explicitly remembered login a fixed 180-day deadline', async () => {
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(session)));
+  const { verifySignInCode } = await import('./maintenance-account');
+  const before = Date.now();
+  await verifySignInCode(session.user.email, '123456', true);
+  const saved = JSON.parse(localStorage.getItem(sessionKey)!);
+  expect(saved.remember_me).toBe(true);
+  expect(saved.remembered_until).toBeGreaterThanOrEqual(before + 180 * day);
+  expect(saved.remembered_until).toBeLessThanOrEqual(Date.now() + 180 * day);
+});
+it('does not extend an existing 30-day deadline when restoring after the lifetime increase', async () => {
+  const until = Date.now() + 30 * day;
+  saveRemembered({ remembered_until: until });
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(session)));
+  const { restoreAccount } = await import('./maintenance-account');
+  await restoreAccount();
+  expect(JSON.parse(localStorage.getItem(sessionKey)!).remembered_until).toBe(until);
 });

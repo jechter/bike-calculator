@@ -13,6 +13,7 @@ import { MaintenanceComponentIcon } from './MaintenanceComponentIcon';
 import { MaintenancePreview } from './MaintenancePreview';
 import { planGarageImport, readGarageBackupFile } from '../lib/maintenance-backup';
 import './Maintenance.css';
+import { getBasePath } from '../useHashRoute';
 const km = (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 1 });
 export function Maintenance() {
   const [data, setData] = useState<MaintenanceData | null>(null);
@@ -26,6 +27,7 @@ export function Maintenance() {
   const [pendingEmail] = useState(() => accountEnabled ? loadPendingEmailSignIn() : null);
   const [email, setEmail] = useState(pendingEmail || '');
   const [code, setCode] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [codeSent, setCodeSent] = useState(Boolean(pendingEmail));
   const [syncOpen, setSyncOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -123,12 +125,26 @@ export function Maintenance() {
     return () => window.clearInterval(timer);
   }, [intervalsConnected, busy, formOpen, bikeEditor, syncOpen, importOpen, data]);
   const connect = (event: FormEvent) => { event.preventDefault(); void run(() => syncMileage(apiKeyInput.trim())); };
+  const clearSignedInState = () => {
+    sessionGeneration.current++;
+    store.current = null; setAccountEmail(''); apiKey.current = ''; setIntervalsConnected(false); setApiKeyInput('');
+    setMoreOpen(false); setData(null); setSyncOpen(false); setImportOpen(false); setBackupImport(null); clearFilter(); setFormOpen(false); setBikeEditor(null); clearPendingEmailSignIn(); setCodeSent(false); setCode(''); setEmail(''); setRememberMe(false);
+  };
   const disconnect = () => {
     void run(async () => {
       if (store.current) await store.current.logout().catch(() => { setMessage('Signed out on this device. The server could not be reached to revoke the session.'); });
       else forgetAccount();
-      store.current = null; setAccountEmail(''); apiKey.current = ''; setIntervalsConnected(false); setApiKeyInput('');
-      setMoreOpen(false); setData(null); setSyncOpen(false); setImportOpen(false); setBackupImport(null); clearFilter(); setFormOpen(false); setBikeEditor(null); clearPendingEmailSignIn(); setCodeSent(false); setCode('');
+      clearSignedInState();
+    });
+  };
+  const deleteAccount = () => {
+    if (!confirm(`Permanently delete the account ${accountEmail} and ALL its bikes and maintenance history? This cannot be undone. Download a garage backup first if you want a copy. Intervals.icu data and files you downloaded are not deleted. Provider logs/backups may expire separately.`)) return;
+    void run(async () => {
+      const account = requireStore();
+      await account.deleteAccount();
+      if (store.current !== account) return;
+      clearSignedInState();
+      setMessage('Your account and cloud garage have been deleted. Downloaded files and your Intervals.icu account are unchanged.');
     });
   };
   const saveBike = (event: FormEvent) => {
@@ -218,6 +234,7 @@ export function Maintenance() {
         <button disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => { setMoreOpen(false); setSyncOpen(true); }}>Connect Intervals.icu (sync bikes and mileage)</button>
         {apiKey.current && <button disabled={busy} onClick={() => { apiKey.current = ''; setIntervalsConnected(false); setMoreOpen(false); setMessage('Intervals.icu disconnected. Your bikes and records were kept.'); }}>Disconnect Intervals.icu</button>}
         <button disabled={busy} onClick={disconnect}>Sign out</button>
+        <button className="maintenance-danger" disabled={busy} onClick={deleteAccount}>Delete account</button>
       </ResponsivePopover>}
     </div>
     {isMobile && <SettingsButton icon={<BikeIcon />} pageTitle="Maintenance Log" label="Bikes and components" />}
@@ -230,16 +247,18 @@ export function Maintenance() {
         setCodeSent(true); setMessage(remembered ? 'Check your email for your sign-in code. You can switch to Mail and return to this tab.' : 'Check your email for your sign-in code. Tab storage is unavailable, so a reload cannot restore this step.');
       }
       else {
-        const account = await verifySignInCode(email.trim(), code.trim());
+        const account = await verifySignInCode(email.trim(), code.trim(), rememberMe);
         // Do not open the garage until authenticated cloud loading succeeds.
         let garage: MaintenanceData;
         try { garage = await account.loadGarage(); } catch (error) { forgetAccount(); throw error; }
         store.current = account; setAccountEmail(account.email); setData(garage); clearFilter(); clearPendingEmailSignIn(); setCode(''); setCodeSent(false);
         setMessage('Signed in. Your bikes and maintenance are saved to your cloud account.');
       }
-    }); }}><h2>Sign in with email</h2><p className="maintenance-fine">Your first code creates a free account. Your bikes and maintenance are saved securely to your cloud account.</p><p className="maintenance-fine">Stay signed in for up to 30 days on this browser. Sign out when using a shared device.</p>
+    }); }}><h2>Sign in with email</h2><p className="maintenance-fine">Your first code creates a free account. Your bikes and maintenance are saved securely to your cloud account.</p><p className="maintenance-fine">By default, sign-in is saved only for this tab's browser session. Sign out when using a shared device.</p>
+      <p className="maintenance-fine">How we use your email, garage data, and browser storage: <a href={`${getBasePath()}privacy/index.html`} target="_blank" rel="noopener noreferrer">Privacy notice</a>.</p>
       <label>Email<input required type="email" name="contact_email" inputMode="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} disabled={busy || codeSent} value={email} onChange={e => setEmail(e.target.value)} /></label>
       {codeSent && <label>Email code<input required type="text" name="verification_code" autoCapitalize="none" spellCheck={false} inputMode="numeric" autoComplete="one-time-code" value={code} onChange={e => setCode(e.target.value)} /></label>}
+      <label className="maintenance-remember"><input type="checkbox" checked={rememberMe} disabled={busy} onChange={event => setRememberMe(event.target.checked)} />Remember me for up to 180 days on this browser</label>
       <div className="maintenance-actions"><button className="maintenance-primary" disabled={busy}>{codeSent ? 'Verify code' : 'Send sign-in code'}</button>{codeSent && <button type="button" disabled={busy} onClick={() => { clearPendingEmailSignIn(); setCodeSent(false); setCode(''); }}>Cancel</button>}{codeSent && <button type="button" disabled={busy} onClick={() => { clearPendingEmailSignIn(); setCodeSent(false); setCode(''); }}>Use another email / resend</button>}</div>
     </form>;
   return <div className={'maintenance' + (data ? ' maintenance--connected' : '')}>

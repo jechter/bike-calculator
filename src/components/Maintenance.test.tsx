@@ -17,7 +17,7 @@ async function cloudGarage(initial = sampleMaintenance()) {
   cloudMocks.restore.mockResolvedValue(account);
   sessionStorage.setItem('maintenance-account-v1', '{}');
   const page = render(<Maintenance />);
-  await screen.findByText(/Cloud garage ·/);
+  await screen.findByRole('region', { name: 'Performed maintenance' });
   return { ...page, account };
 }
 const showAll = () => fireEvent.click(screen.getByRole('button', { name: /^Hide components for/ }));
@@ -358,7 +358,7 @@ it('moves header actions into the shared compact toolbar slot', async () => {
   cloudMocks.restore.mockResolvedValue(testMaintenanceAccount());
   sessionStorage.setItem('maintenance-account-v1', '{}');
   render(<><div id="topbar-actions-slot" /><Maintenance /></>);
-  await screen.findByText(/Cloud garage ·/);
+  await screen.findByRole('region', { name: 'Performed maintenance' });
   const slot = document.getElementById('topbar-actions-slot')!;
   expect(within(slot).getByRole('button', { name: '+ Log maintenance' })).toBeTruthy();
   expect(document.querySelector('.maintenance-page-head button')).toBeNull();
@@ -553,4 +553,32 @@ it('offers only bike/mileage sync, without legacy recovery, key controls, or his
   expect(account.write.mock.calls[0][0].entries).toEqual(legacy);
   expect(loadSavedApiKey()).toBe('old-key');
   expect(localStorage.getItem('maintenance-intervals-v1:i-test')).toBe(JSON.stringify(legacy));
+});
+
+it('shows a compact mileage sync date beside Bikes and the account only at the top of More', async () => {
+  const garage = sampleMaintenance();
+  garage.synced_at = new Date(new Date().getFullYear() - 1, 10, 13, 9, 8, 24).toISOString();
+  await cloudGarage(garage);
+  expect(screen.queryByText(/Cloud garage ·|Last mileage sync:/)).toBeNull();
+  expect(screen.queryByText('rider@example.com')).toBeNull();
+  const heading = screen.getByRole('heading', { name: 'Bikes' }).parentElement!;
+  const sync = within(heading).getByText(/^Last sync:/);
+  expect(sync.tagName).toBe('TIME');
+  expect(sync.getAttribute('datetime')).toBe(garage.synced_at);
+  expect(sync.textContent).toBe('Last sync: ' + new Date(garage.synced_at).toLocaleDateString());
+  expect(sync.getAttribute('title')).toBe(new Date(garage.synced_at).toLocaleString());
+  expect(sync.textContent).not.toMatch(/:08:24/);
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  const menu = document.getElementById('maintenance-more-menu')!;
+  const account = within(menu).getByText('rider@example.com');
+  expect(menu.firstElementChild).toBe(account);
+  expect(account.tagName).toBe('P');
+  expect(account.hasAttribute('tabindex')).toBe(false);
+  expect(within(menu).queryByRole('button', { name: 'rider@example.com' })).toBeNull();
+});
+
+it('omits the last-sync label for garages that have never synced', async () => {
+  await cloudGarage({ ...sampleMaintenance(), synced_at: '' });
+  expect(screen.getByRole('heading', { name: 'Bikes' })).toBeTruthy();
+  expect(screen.queryByText(/^Last sync:/)).toBeNull();
 });

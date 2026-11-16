@@ -23,7 +23,7 @@ async function renderCompactApp() {
   render(<App />);
   fireEvent.click(screen.getByRole('button', { name: 'Close navigation' }));
   expect(screen.queryByRole('button', { name: 'Open Bikes and components' })).toBeNull();
-  await screen.findByText(/Cloud garage ·/);
+  await screen.findByRole('region', { name: 'Performed maintenance' });
 }
 afterEach(() => {
   cleanup(); localStorage.clear(); sessionStorage.clear(); changes.clear(); vi.unstubAllGlobals();
@@ -102,4 +102,12 @@ it('opens the bike editor from the pencil in the compact drawer and closes the d
   expect(screen.getByRole('form', { name: 'Edit bike' })).toBeTruthy();
   expect((screen.getByLabelText('Bike name') as HTMLInputElement).value).toBe('Everyday road bike');
   expect(screen.getByRole('button', { name: 'Delete bike' })).toBeTruthy();
+});
+
+it('keeps the compact Bikes heading and its last-sync time visible inside the selector drawer', async () => {
+  await renderCompactApp();
+  fireEvent.click(screen.getByRole('button', { name: 'Open Bikes and components' }));
+  const drawer = within(screen.getByRole('dialog', { name: 'Bikes and components' }));
+  const heading = drawer.getByRole('heading', { name: 'Bikes' }).parentElement!;
+  expect(within(heading).getByText(/^Last sync:/)).toBeTruthy();
 });

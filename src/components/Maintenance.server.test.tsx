@@ -19,7 +19,7 @@ async function cloud() { sessionStorage.setItem('maintenance-account-v1', '{}');
 it('restores an independent account without calling Intervals.icu', async () => {
   const fetch = vi.spyOn(globalThis, 'fetch');
   await cloud();
-  expect(screen.getByText(/Cloud garage · rider@example.com/)).toBeTruthy(); expect(fetch).not.toHaveBeenCalled();
+  expect(screen.getByRole('region', { name: 'Performed maintenance' })).toBeTruthy(); expect(fetch).not.toHaveBeenCalled();
 });
 it('does not fall back to browser writes when cloud storage fails', async () => {
   const backup = sampleMaintenance(); seedLegacyBrowserGarage(backup);
@@ -306,7 +306,7 @@ it('requires confirmation before account deletion', async () => {
   fireEvent.click(screen.getByText('Delete account'));
   expect(confirm).toHaveBeenCalledWith(expect.stringContaining('rider@example.com'));
   expect(mocks.deleteAccount).not.toHaveBeenCalled();
-  expect(screen.getByText(/Cloud garage · rider@example.com/)).toBeTruthy();
+  expect(screen.getByRole('region', { name: 'Performed maintenance' })).toBeTruthy();
 });
 it('deletes the account and hides the garage only after server success', async () => {
   vi.spyOn(window, 'confirm').mockReturnValue(true);
@@ -316,10 +316,10 @@ it('deletes the account and hides the garage only after server success', async (
   fireEvent.click(screen.getByRole('button', { name: /^More/ }));
   fireEvent.click(screen.getByText('Delete account'));
   expect((screen.getByText('Delete account') as HTMLButtonElement).disabled).toBe(true);
-  expect(screen.getByText(/Cloud garage · rider@example.com/)).toBeTruthy();
+  expect(screen.getByRole('region', { name: 'Performed maintenance' })).toBeTruthy();
   resolve();
   await screen.findByText(/Your account and cloud garage have been deleted/);
-  expect(screen.queryByText(/Cloud garage ·/)).toBeNull();
+  expect(screen.queryByRole('region', { name: 'Performed maintenance' })).toBeNull();
   expect(screen.getByRole('form', { name: 'Email sign-in' })).toBeTruthy();
   expect(mocks.logout).not.toHaveBeenCalled();
   expect(mocks.write).not.toHaveBeenCalled();
@@ -331,7 +331,7 @@ it('keeps the garage visible and allows retry when server deletion fails', async
   fireEvent.click(screen.getByRole('button', { name: /^More/ }));
   fireEvent.click(screen.getByText('Delete account'));
   await screen.findByRole('alert');
-  expect(screen.getByText(/Cloud garage · rider@example.com/)).toBeTruthy();
+  expect(screen.getByRole('region', { name: 'Performed maintenance' })).toBeTruthy();
   expect((screen.getByText('Delete account') as HTMLButtonElement).disabled).toBe(false);
   expect(mocks.logout).not.toHaveBeenCalled();
 });
@@ -346,7 +346,7 @@ it('offers an unchecked remember-me choice and passes the explicit opt-in on ver
   fireEvent.click(remember);
   fireEvent.change(screen.getByLabelText('Email code'), { target: { value: '123456' } });
   fireEvent.click(screen.getByText('Verify code'));
-  await screen.findByText(/Cloud garage · rider@example.com/);
+  await screen.findByRole('region', { name: 'Performed maintenance' });
   expect(mocks.verify).toHaveBeenCalledWith('rider@example.com', '123456', true);
 });
 it('does not restore an earlier remember-me choice when reloading a pending sign-in', () => {

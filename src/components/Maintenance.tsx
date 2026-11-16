@@ -12,6 +12,7 @@ import { RepeatIcon, EditIcon, DeleteIcon, BikeIcon, WrenchIcon, ThreadIcon } fr
 import { MaintenanceComponentIcon } from './MaintenanceComponentIcon';
 import { MaintenancePreview } from './MaintenancePreview';
 import { planGarageImport, readGarageBackupFile } from '../lib/maintenance-backup';
+import { formatSyncTime } from '../lib/maintenance-sync-time';
 import './Maintenance.css';
 import { getBasePath } from '../useHashRoute';
 const km = (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 1 });
@@ -229,6 +230,7 @@ export function Maintenance() {
     <div className="maintenance-more" ref={moreRef}>
       <button className="copy-link-btn" aria-expanded={moreOpen} aria-controls="maintenance-more-menu" onClick={() => setMoreOpen(open => !open)}>More <span aria-hidden="true">▾</span></button>
       {moreOpen && <ResponsivePopover id="maintenance-more-menu" className="maintenance-more-popup" anchorRef={moreRef} onClose={() => setMoreOpen(false)}>
+        <p className="maintenance-menu-account">{accountEmail}</p>
         <button disabled={busy} onClick={() => { setMoreOpen(false); downloadGarage(data); }}>Download garage backup</button>
         <button disabled={busy || formOpen || Boolean(bikeEditor) || importOpen || syncOpen} onClick={() => { setMoreOpen(false); setError(''); setMessage(''); setBackupImport(null); setImportOpen(true); }}>Import garage backup</button>
         <button disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => { setMoreOpen(false); setSyncOpen(true); }}>Connect Intervals.icu (sync bikes and mileage)</button>
@@ -304,7 +306,6 @@ export function Maintenance() {
       <p className="maintenance-fine maintenance-preview-caption">Sample bikes and maintenance below · sign in to start your own log</p>
       <MaintenancePreview />
     </div> : <>
-      <p className="maintenance-fine">Cloud garage · {accountEmail}{data.synced_at && ` · Last mileage sync: ${new Date(data.synced_at).toLocaleString()}`}</p>
       {bikeEditor && <form className="maintenance-form" onSubmit={saveBike} aria-label={bikeEditor.id ? 'Edit bike' : 'Add bike'}><h2>{bikeEditor.id ? 'Edit bike' : 'Add bike'}</h2>
         <div className="maintenance-form-row"><label>Bike name<input autoFocus required maxLength={100} value={bikeEditor.name} onChange={e => setBikeEditor({ ...bikeEditor, name: e.target.value })} placeholder="e.g. Touring bike" /></label>
         <label>Current mileage (km)<input required type="number" min="0" step="any" value={bikeEditor.mileage} onChange={e => setBikeEditor({ ...bikeEditor, mileage: e.target.value })} /></label></div>
@@ -313,7 +314,7 @@ export function Maintenance() {
       </form>}
       <Workbench className="maintenance-layout" label="Maintenance Log" drawerTitle="Bikes and components" portalDrawer drawerContentClassName="maintenance maintenance-drawer-content">
       <section className="maintenance-bike-panel" aria-label="Bikes and components">
-      <div className="maintenance-section-head"><h2>Bikes</h2><button disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => { setBikeEditor({ id: '', name: '', mileage: '0' }); if (isMobile) filtersDrawer.setOpen(false); }}>+ Add bike</button></div>
+      <div className="maintenance-section-head"><div className="maintenance-bike-heading"><h2>Bikes</h2>{data.synced_at && <time className="maintenance-last-sync" dateTime={data.synced_at} title={new Date(data.synced_at).toLocaleString()}>Last sync: {formatSyncTime(data.synced_at)}</time>}</div><button disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => { setBikeEditor({ id: '', name: '', mileage: '0' }); if (isMobile) filtersDrawer.setOpen(false); }}>+ Add bike</button></div>
       <div className="maintenance-list-scroll maintenance-bike-scroll" tabIndex={0} role="region" aria-label="Bikes and components list">
       {!data.bikes.length ? <div className="maintenance-empty"><h3>No bikes found</h3><p>Add your first bike and its current mileage to start logging maintenance.</p></div> : <ul className="maintenance-bikes maintenance-bike-tree" aria-label="Your bikes">{data.bikes.map((b, index) => {
         const bikeEntries = data.entries.filter(entry => entry.bike_id === b.id);

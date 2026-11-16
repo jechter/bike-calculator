@@ -4,13 +4,19 @@
       "id": "chain",
       "names": ["Chain"],
       "icon": "chain",
-      "services": ["Lubricated chain", "Cleaned and lubricated chain", "Waxed chain", "Checked chain wear"]
+      "services": ["Lubricated chain", "Cleaned and lubricated chain", "Waxed chain", "Checked chain wear", "Adjusted chain tension"]
     },
     {
       "id": "cassette",
       "names": ["Cassette"],
       "icon": "cassette",
       "services": ["Cleaned cassette", "Checked cassette wear", "Tightened cassette lockring"]
+    },
+    {
+      "id": "sprocket",
+      "names": ["Sprocket"],
+      "icon": "chainrings",
+      "services": ["Cleaned sprocket", "Checked sprocket wear", "Checked sprocket mounting"]
     },
     {
       "id": "chainrings",
@@ -20,13 +26,13 @@
     },
     {
       "id": "inner-shifter-cables",
-      "names": ["Front inner shifter cable", "Rear inner shifter cable"],
+      "names": ["Inner shifter cable", "Front inner shifter cable", "Rear inner shifter cable"],
       "icon": "cables",
       "services": ["Checked inner cable condition", "Adjusted shifter cable tension", "Cleaned cable guides"]
     },
     {
       "id": "outer-shifter-cables",
-      "names": ["Front outer shifter cable", "Rear outer shifter cable"],
+      "names": ["Outer shifter cable", "Front outer shifter cable", "Rear outer shifter cable"],
       "icon": "cables",
       "services": ["Checked cable housing condition", "Inspected cable housing ferrules", "Cleaned cable housing ends"]
     },

@@ -164,9 +164,14 @@ export const BikeIcon = () => (
   </svg>
 );
 
+/** Bicycle chain side plate with two rivet heads and a narrowed waist. */
 export const ChainIcon = () => (
   <svg {...SVG_PROPS}>
-    <path d="m9 14-2 2a3.5 3.5 0 0 1-5-5l4-4a3.5 3.5 0 0 1 5 0M15 10l2-2a3.5 3.5 0 0 1 5 5l-4 4a3.5 3.5 0 0 1-5 0M8 12l8 0" />
+    <g transform="rotate(-35 12 12)">
+      <path d="M6 7.5C8.5 7.5 9 9 12 9s3.5-1.5 6-1.5a4.5 4.5 0 0 1 0 9c-2.5 0-3-1.5-6-1.5s-3.5 1.5-6 1.5a4.5 4.5 0 0 1 0-9Z" />
+      <circle cx="6" cy="12" r="1.6" />
+      <circle cx="18" cy="12" r="1.6" />
+    </g>
   </svg>
 );
 

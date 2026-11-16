@@ -83,3 +83,36 @@ it('offers individual and grouped chainrings without merging their maintenance h
   });
   expect(componentName(' Small Chainring ')).toBe('Small chainring');
 });
+
+it('offers single-shifter cable names with the same icons and services but separate histories', () => {
+  const names = ['Inner shifter cable', 'Outer shifter cable', 'Front inner shifter cable', 'Rear inner shifter cable', 'Front outer shifter cable', 'Rear outer shifter cable'];
+  const template = sampleMaintenance().entries[0];
+  const entries = names.map((component, index) => ({ ...template, id: String(index), component }));
+  names.forEach((name, index) => {
+    expect(bikeComponents).toContain(name);
+    expect(getComponentType(name).icon).toBe('cables');
+    expect(componentHistory(entries, name).map(entry => entry.id)).toEqual([String(index)]);
+  });
+  expect(componentName(' inner shifter cable ')).toBe('Inner shifter cable');
+  expect(componentName(' OUTER SHIFTER CABLE ')).toBe('Outer shifter cable');
+  expect(suggestedServices('Inner shifter cable')).toEqual(suggestedServices('Rear inner shifter cable'));
+  expect(suggestedServices('Outer shifter cable')).toEqual(suggestedServices('Rear outer shifter cable'));
+});
+
+it('recommends adjusting chain tension for chain service', () => {
+  expect(suggestedServices('Chain')).toContain('Adjusted chain tension');
+  expect(suggestedServices('Cassette')).not.toContain('Adjusted chain tension');
+});
+
+it('offers a single-speed sprocket with its own services and history', () => {
+  expect(bikeComponents).toContain('Sprocket');
+  expect(componentName(' sprocket ')).toBe('Sprocket');
+  expect(catalog.types.find(type => type.id === 'sprocket')?.names).toEqual(['Sprocket']);
+  expect(getComponentType('Sprocket').icon).toBe('chainrings');
+  expect(suggestedServices('Sprocket')).toContain('Cleaned sprocket');
+  expect(suggestedServices('Sprocket')).toContain('Checked sprocket wear');
+  expect(suggestedServices('Sprocket')).not.toContain('Tightened cassette lockring');
+  const template = sampleMaintenance().entries[0];
+  const entries = ['Sprocket', 'Cassette', 'Chainring'].map((component, index) => ({ ...template, id: String(index), component }));
+  expect(componentHistory(entries, 'Sprocket').map(entry => entry.id)).toEqual(['0']);
+});

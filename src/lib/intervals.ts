@@ -49,5 +49,5 @@ export async function loadIntervals(apiKey: string): Promise<IntervalsGarage> {
     if (typeof item.id !== 'string' || typeof item.name !== 'string' || typeof item.distance !== 'number' || !Number.isFinite(item.distance) || item.distance < 0) throw new Error('A bike has missing or invalid mileage in Intervals.icu. Please check its gear settings.');
     return { id: item.id, name: item.name, distance: item.distance };
   });
-  return { athleteId: athlete.id, name: athlete.name, synced_at: new Date().toISOString(), bikes, entries: loadLocalEntries(athlete.id) };
+  return { athleteId: athlete.id, name: athlete.name, synced_at: new Date().toISOString(), bikes, entries: [] };
 }

@@ -6,8 +6,7 @@ import { useIsMobile } from '../useIsMobile';
 import { ResponsivePopover } from './ResponsivePopover';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { bikeComponents, suggestedServices, componentHistory, componentMileage, componentName, componentNames, maintenanceIntervals, kilometersAgo, localDate, type MaintenanceData, type MaintenanceEntry, type MaintenanceKind } from '../lib/maintenance';
-import { forgetApiKey, loadIntervals } from '../lib/intervals';
-import { connectServer, serverStorageEnabled } from '../lib/maintenance-storage';
+import { loadIntervals } from '../lib/intervals';
 import { accountEnabled, accountSessionKey, hasSavedAccount, clearPendingEmailSignIn, loadPendingEmailSignIn, rememberPendingEmailSignIn, AccountGarage, downloadGarage, forgetAccount, mergeIntervalsBikes, restoreAccountOnce, sendSignInCode, verifySignInCode } from '../lib/maintenance-account';
 import { RepeatIcon, EditIcon, DeleteIcon, BikeIcon, WrenchIcon, ThreadIcon } from '../icons';
 import { MaintenanceComponentIcon } from './MaintenanceComponentIcon';
@@ -110,21 +109,11 @@ export function Maintenance() {
     await requireStore().write(garage);
     setData(garage);
   };
-  const syncMileage = async (key: string, offerImport = false, recoverCloud = false) => {
+  const syncMileage = async (key: string) => {
     if (!data) return;
     const incoming = await loadIntervals(key);
     const bikes = mergeIntervalsBikes(data.bikes, incoming.bikes, incoming.athleteId);
-    // Legacy verification is used only for explicit recovery, never current sign-in.
-    let source = incoming.entries;
-    if (recoverCloud) {
-      const legacyStore = await connectServer(key, incoming.athleteId);
-      try { source = await legacyStore.load(); } finally { await legacyStore.logout().catch(() => {}); }
-    }
-    const importLegacy = offerImport && source.some(e => !data.entries.some(old => old.id === `icu:${incoming.athleteId}:${e.id}`)) && confirm(`Import ${source.length} legacy ${recoverCloud ? 'cloud' : 'browser'} records for this Intervals.icu account? Existing records will not be overwritten. The source backup will be kept.`);
-    const legacy = importLegacy ? source.map(e => ({ ...e, id: `icu:${incoming.athleteId}:${e.id}`, bike_id: `icu:${incoming.athleteId}:${e.bike_id}` })) : [];
-    const entries = [...data.entries, ...legacy.filter(e => !data.entries.some(old => old.id === e.id))];
-    for (const entry of legacy) if (!bikes.some(b => b.id === entry.bike_id)) bikes.push({ id: entry.bike_id, name: 'Retired bike', distance: Math.max(...legacy.filter(e => e.bike_id === entry.bike_id).map(e => e.odometer_km)) * 1000 });
-    await persistGarage({ ...data, bikes, entries, synced_at: incoming.synced_at });
+    await persistGarage({ ...data, bikes, synced_at: incoming.synced_at });
     apiKey.current = key; setIntervalsConnected(true); setApiKeyInput(''); setSyncOpen(false);
     setMessage('Bike mileage synced. Manual bikes and service history were kept. The API key is held only until you leave this page.');
   };
@@ -133,7 +122,7 @@ export function Maintenance() {
     const timer = window.setInterval(() => { if (document.visibilityState === 'visible') void run(() => syncMileage(apiKey.current)); }, 5 * 60 * 1000);
     return () => window.clearInterval(timer);
   }, [intervalsConnected, busy, formOpen, bikeEditor, syncOpen, importOpen, data]);
-  const connect = (event: FormEvent) => { event.preventDefault(); void run(() => syncMileage(apiKeyInput.trim(), true)); };
+  const connect = (event: FormEvent) => { event.preventDefault(); void run(() => syncMileage(apiKeyInput.trim())); };
   const disconnect = () => {
     void run(async () => {
       if (store.current) await store.current.logout().catch(() => { setMessage('Signed out on this device. The server could not be reached to revoke the session.'); });
@@ -226,7 +215,7 @@ export function Maintenance() {
       {moreOpen && <ResponsivePopover id="maintenance-more-menu" className="maintenance-more-popup" anchorRef={moreRef} onClose={() => setMoreOpen(false)}>
         <button disabled={busy} onClick={() => { setMoreOpen(false); downloadGarage(data); }}>Download garage backup</button>
         <button disabled={busy || formOpen || Boolean(bikeEditor) || importOpen || syncOpen} onClick={() => { setMoreOpen(false); setError(''); setMessage(''); setBackupImport(null); setImportOpen(true); }}>Import garage backup</button>
-        <button disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => { setMoreOpen(false); setSyncOpen(true); }}>Connect Intervals.icu (optional)</button>
+        <button disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => { setMoreOpen(false); setSyncOpen(true); }}>Connect Intervals.icu (sync bikes and mileage)</button>
         {apiKey.current && <button disabled={busy} onClick={() => { apiKey.current = ''; setIntervalsConnected(false); setMoreOpen(false); setMessage('Intervals.icu disconnected. Your bikes and records were kept.'); }}>Disconnect Intervals.icu</button>}
         <button disabled={busy} onClick={disconnect}>Sign out</button>
       </ResponsivePopover>}
@@ -284,11 +273,10 @@ export function Maintenance() {
       </div>}
       <div className="maintenance-actions"><button className="maintenance-primary" disabled={busy || !backupImport || (!backupImport.plan.addedBikes && !backupImport.plan.addedEntries)}>Import backup</button><button type="button" disabled={busy} onClick={() => { setImportOpen(false); setBackupImport(null); }}>Cancel</button></div>
     </form>}
-    {syncOpen && <form className="maintenance-form" aria-label="Optional Intervals.icu sync" onSubmit={connect}><h2>Optional Intervals.icu sync</h2><p>Read bike names and current mileage. Manual bikes and maintenance records are never overwritten. While connected, mileage refreshes automatically every five minutes when this page is visible and no form is open. Reconnect after leaving the page.</p>
+    {syncOpen && <form className="maintenance-form" aria-label="Intervals.icu sync (Experimental)" onSubmit={connect}><h2>Intervals.icu sync (Experimental)</h2><p>Read bike names and current mileage. Manual bikes and maintenance records are never overwritten. While connected, mileage refreshes automatically every five minutes when this page is visible and no form is open. Reconnect after leaving the page.</p>
       <label>Intervals.icu API key<input type="password" required autoComplete="off" spellCheck={false} value={apiKeyInput} maxLength={4096} onChange={e => setApiKeyInput(e.target.value)} /></label>
       <p className="maintenance-fine">Find your key in <a href="https://intervals.icu/settings" target="_blank" rel="noopener noreferrer">Developer Settings</a>. Sent only to Intervals.icu and held in memory for refresh, not saved. Only use a deployment you trust; this key may grant broader write access.</p>
-      <div className="maintenance-actions"><button className="maintenance-primary" disabled={busy}>Sync bikes</button><button type="button" disabled={busy} onClick={() => { setSyncOpen(false); setApiKeyInput(''); }}>Cancel</button><button type="button" disabled={busy} onClick={() => void run(async () => { forgetApiKey(); setMessage('Legacy saved API key removed. Existing records were kept.'); })}>Forget legacy saved key</button></div>
-      {serverStorageEnabled && <><p className="maintenance-fine">Previously used cloud storage with an Intervals.icu login? Recover its records below. This recovery action also sends the key to the configured legacy storage service to verify ownership. It does not sign you into a new account.</p><button type="button" disabled={busy || !apiKeyInput.trim()} onClick={() => { if (confirm('Send this key to the legacy storage service to recover your old cloud records into the current garage?')) void run(() => syncMileage(apiKeyInput.trim(), true, true)); }}>Recover legacy cloud records</button></>}
+      <div className="maintenance-actions"><button className="maintenance-primary" disabled={busy}>Sync bikes</button><button type="button" disabled={busy} onClick={() => { setSyncOpen(false); setApiKeyInput(''); }}>Cancel</button></div>
     </form>}
     {!data ? <div className="maintenance-locked">
       <section className="maintenance-signin-banner" aria-label="Sign in to maintenance">

@@ -51,7 +51,7 @@
   private browsing, or Safari storage eviction can also require signing in again.
   Temporary network errors keep the saved session for retry; revoked/invalid refresh
   credentials are removed. A concurrent refresh cannot undo a sign-out.
-- **More → Connect Intervals.icu (optional)** reads bikes and total mileage. It keeps
+- **More → Connect Intervals.icu (sync bikes and mileage)** reads bikes and total mileage. It keeps
   manual bikes and retired/missing upstream bikes, never changes maintenance readings,
   and namespaces IDs by provider/athlete. A second athlete cannot overwrite the first.
   Syncing replaces the upstream bike's current name/mileage, including manual edits.
@@ -115,33 +115,18 @@
    Deleting an Auth user cascades to the new garage, but not legacy ICU history or
    managed database backups. The UI does not yet offer account deletion or email change.
 
-## Existing records and keys
+## Retired legacy storage
 
-No automatic identity linking occurs. An Intervals.icu athlete ID is not a Supabase
-Auth user ID, and an email address does not prove ownership of an old athlete account.
-Legacy records and keys are left untouched; keys are no longer automatically used.
+The Intervals.icu connection only reads upstream bike names and current mileage.
+It does not import old browser maintenance records, recover legacy cloud records,
+or manage old saved API keys. Maintenance history remains in the signed-in cloud
+account, and JSON garage backups can be imported separately from the More menu.
 
-1. Sign into the intended cloud account first. The former independent browser
-   garage import UI is retired; any old data remains untouched on the device.
-2. Open optional Intervals.icu sync with the same athlete key. It offers an explicit
-   import of old browser records, retaining the original localStorage copy. IDs are
-   migrated consistently as `icu:<athleteId>:<oldId>` for both bikes and entries.
-3. If the legacy storage endpoint remains configured, **Recover legacy cloud records**
-   in the sync form verifies ownership through that service and offers import into
-   the currently open garage. Only this explicit action sends the key to the legacy
-   service. Temporary legacy sessions are logged out after reading. Both source
-   cloud records and browser backups remain unchanged. Existing destination IDs win.
-4. Missing/retired bikes get a placeholder and a total based on the highest imported
-   service reading, not a guessed lifetime total. Edit its name/current mileage after
-   recovery. Legacy imports never infer a replacement or alter service dates/readings.
-5. Verify the imported history and export a complete garage backup before retiring
-   the old function/tables. Use **Forget legacy saved key** in the sync form to remove
-   the old unencrypted key without deleting records. Existing standalone exports
-   and server backup procedures remain useful recovery paths.
-
-Keeping the legacy recovery service does not make Intervals.icu the new auth
-mechanism: it verifies access only to the legacy dataset being copied. Disable it
-once users have migrated according to the operator's retention plan.
+Legacy browser data, saved keys, and server tables are left untouched; removing
+these controls does not erase them. Old server scaffolds and legacy documentation
+remain for operator reference, but the current page no longer uses the legacy
+storage endpoint or sends API keys to it. Operators can retire that service under
+their retention policy without changing current Supabase Auth garage storage.
 
 ## Validation
 

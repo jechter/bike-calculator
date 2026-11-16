@@ -163,10 +163,10 @@ function mockAccount() {
 }
 async function openSync() {
   fireEvent.click(screen.getByRole('button', { name: /^More/ }));
-  fireEvent.click(screen.getByText('Connect Intervals.icu (optional)'));
+  fireEvent.click(screen.getByText('Connect Intervals.icu (sync bikes and mileage)'));
   fireEvent.change(screen.getByLabelText('Intervals.icu API key'), { target: { value: 'test-key' } });
   fireEvent.click(screen.getByText('Sync bikes'));
-  await waitFor(() => expect(screen.queryByRole('form', { name: 'Optional Intervals.icu sync' })).toBeNull());
+  await waitFor(() => expect(screen.queryByRole('form', { name: 'Intervals.icu sync (Experimental)' })).toBeNull());
 }
 it('persists manual bikes and records, then restores without Intervals.icu or a selected filter', async () => {
   const request = vi.spyOn(globalThis, 'fetch');
@@ -199,7 +199,7 @@ it('does not save a rejected optional sync key or lose the current garage', asyn
   vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status: 401 }));
   await cloudGarage(emptyGarage());
   fireEvent.click(screen.getByRole('button', { name: /^More/ }));
-  fireEvent.click(screen.getByText('Connect Intervals.icu (optional)'));
+  fireEvent.click(screen.getByText('Connect Intervals.icu (sync bikes and mileage)'));
   fireEvent.change(screen.getByLabelText('Intervals.icu API key'), { target: { value: 'invalid-key' } });
   fireEvent.click(screen.getByText('Sync bikes'));
   await screen.findByRole('alert');
@@ -531,4 +531,26 @@ it('shows manual mileage guidance only when editing an existing manual bike', as
   fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
   fireEvent.click(screen.getByRole('button', { name: '+ Add bike' }));
   expect(screen.queryByText(/This bike is tracked manually/)).toBeNull();
+});
+it('offers only bike/mileage sync, without legacy recovery, key controls, or history import', async () => {
+  const request = mockAccount();
+  const legacy = sampleMaintenance().entries;
+  localStorage.setItem('maintenance-intervals-v1:i-test', JSON.stringify(legacy));
+  saveApiKey('old-key');
+  const confirm = vi.spyOn(window, 'confirm');
+  const { account } = await cloudGarage();
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  expect(screen.queryByText('Connect Intervals.icu (optional)')).toBeNull();
+  fireEvent.click(screen.getByText('Connect Intervals.icu (sync bikes and mileage)'));
+  expect(screen.queryByText('Recover legacy cloud records')).toBeNull();
+  expect(screen.queryByText('Forget legacy saved key')).toBeNull();
+  fireEvent.change(screen.getByLabelText('Intervals.icu API key'), { target: { value: 'test-key' } });
+  fireEvent.click(screen.getByText('Sync bikes'));
+  await screen.findByRole('button', { name: /^Real bike. Total distance/ });
+  expect(confirm).not.toHaveBeenCalled();
+  expect(request.mock.calls).toHaveLength(2);
+  expect(request.mock.calls.every(([url, options]) => String(url).startsWith('https://intervals.icu/api/v1/') && options?.method === 'GET')).toBe(true);
+  expect(account.write.mock.calls[0][0].entries).toEqual(legacy);
+  expect(loadSavedApiKey()).toBe('old-key');
+  expect(localStorage.getItem('maintenance-intervals-v1:i-test')).toBe(JSON.stringify(legacy));
 });

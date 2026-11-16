@@ -67,3 +67,10 @@ it('reports credential storage failures without including the key', () => {
   expect(() => saveApiKey('secret-key')).toThrow('Could not save the API key');
   try { saveApiKey('secret-key'); } catch (error) { expect(String(error)).not.toContain('secret-key'); }
 });
+it('ignores legacy browser history when loading bikes and mileage', async () => {
+  localStorage.setItem('maintenance-intervals-v1:i1', '{unreadable legacy records');
+  vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ id: 'i1', name: 'Rider' }))).mockResolvedValueOnce(new Response(JSON.stringify([{ id: 'b1', name: 'Road', type: 'Bike', distance: 100000 }])));
+  const data = await loadIntervals('test-key');
+  expect(data.bikes).toHaveLength(1); expect(data.entries).toEqual([]);
+  expect(localStorage.getItem('maintenance-intervals-v1:i1')).toBe('{unreadable legacy records');
+});

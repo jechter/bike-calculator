@@ -39,7 +39,7 @@ it('does not offer browser import or change legacy records after cloud sign-in',
   expect(screen.queryByText('Import existing browser records')).toBeNull();
   expect(screen.queryByText('Local-only bike')).toBeNull();
   expect(screen.getByText('Download garage backup')).toBeTruthy();
-  expect(screen.getByText('Connect Intervals.icu (optional)')).toBeTruthy();
+  expect(screen.getByText('Connect Intervals.icu (sync bikes and mileage)')).toBeTruthy();
   expect(screen.getByText('Sign out')).toBeTruthy();
   expect(mocks.write).not.toHaveBeenCalled();
   expect(readLegacyBrowserGarageFixture()).toEqual(backup);

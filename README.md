@@ -46,7 +46,7 @@ requires a database migration, public frontend configuration, and an email-code
 template. Browser and legacy records are not erased or silently uploaded.
 Export garage backups regularly; **More → Import garage backup** restores missing
 bikes and entries from those files without overwriting existing cloud records. The old Intervals.icu and Strava server
-scaffolds remain available for legacy recovery, not current authentication.
+scaffolds remain for operator reference, not current authentication or in-page recovery.
 
 ## Documentation
 

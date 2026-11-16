@@ -276,3 +276,9 @@ html.embedded .maintenance--connected .maintenance-layout { flex: auto; grid-tem
 
 .maintenance-preview-bike-edit { display: inline-flex; align-items: center; justify-content: center; }
 .maintenance-preview-bike-edit svg { width: 18px; height: 18px; }
+
+.maintenance-import-review { padding: 16px; margin: 16px 0; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; overflow-wrap: anywhere; }
+.maintenance-import-review > p:first-child { margin-top: 0; }
+.maintenance-import-summary { display: flex; gap: 28px; flex-wrap: wrap; margin: 16px 0; }
+.maintenance-import-summary dt { font-size: 13px; color: var(--muted); }
+.maintenance-import-summary dd { margin: 4px 0 0; font-size: 24px; font-weight: 600; }

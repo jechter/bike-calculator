@@ -34,8 +34,8 @@ history without an Intervals.icu account. **Email-code sign-in with Supabase Aut
 is required; bikes and maintenance are stored in the cloud and available across
 devices. Sign-in is remembered on this browser for up to 30 days, with automatic
 access-token refresh. Signed-out visitors see a muted, non-interactive sample log
-with a sign-in banner. There is no editable demo or browser-only editing mode. Existing browser records
-can still be imported explicitly after signing in.
+with a sign-in banner. There is no editable demo, browser-only editing mode, or
+independent browser-garage import option.
 
 Intervals.icu is an optional, read-only bike/mileage integration, not an identity
 provider. Its API key stays in memory only, and visible pages refresh mileage
@@ -44,7 +44,8 @@ every five minutes while no form is open. Maintenance is never sent upstream.
 See [setup, security, and migration](docs/maintenance-accounts.md). Cloud setup
 requires a database migration, public frontend configuration, and an email-code
 template. Browser and legacy records are not erased or silently uploaded.
-Export garage backups regularly. The old Intervals.icu and Strava server
+Export garage backups regularly; **More → Import garage backup** restores missing
+bikes and entries from those files without overwriting existing cloud records. The old Intervals.icu and Strava server
 scaffolds remain available for legacy recovery, not current authentication.
 
 ## Documentation

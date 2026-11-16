@@ -24,3 +24,8 @@ export function testMaintenanceAccount(initial: MaintenanceData = sampleMaintena
 export function seedLegacyBrowserGarage(data: MaintenanceData) {
   localStorage.setItem('maintenance-independent-garage-v1', JSON.stringify(data));
 }
+
+export function readLegacyBrowserGarageFixture(): MaintenanceData | null {
+  const raw = localStorage.getItem('maintenance-independent-garage-v1');
+  return raw ? JSON.parse(raw) : null;
+}

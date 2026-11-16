@@ -1,9 +1,9 @@
 import type { MaintenanceBike, MaintenanceData, MaintenanceEntry } from './maintenance';
+import { garageBackup } from './maintenance-backup';
 
 const project = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const publicKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 export const accountEnabled = Boolean(project && publicKey);
-const localKey = 'maintenance-independent-garage-v1';
 export const accountSessionKey = 'maintenance-account-v1';
 const sessionKey = accountSessionKey;
 const rememberedLifetime = 30 * 24 * 60 * 60 * 1000;
@@ -94,19 +94,8 @@ function refreshSession(previous: Session): Promise<RememberedSession> {
   return promise;
 }
 export const emptyGarage = (): MaintenanceData => ({ name: 'My garage', synced_at: '', bikes: [], entries: [] });
-export function loadLegacyBrowserGarage(): MaintenanceData | null {
-  const raw = localStorage.getItem(localKey);
-  if (!raw) return null;
-  const data = JSON.parse(raw);
-  if (!data || !Array.isArray(data.bikes) || !Array.isArray(data.entries)) throw new Error('Your browser garage could not be read. Do not clear browser data; recover your backup first.');
-  return data;
-}
-// Read-only recovery for users of the former browser garage; never a storage mode.
-export function hasLegacyBrowserGarage(): boolean {
-  try { return localStorage.getItem(localKey) !== null; } catch { return false; }
-}
 export function downloadGarage(data: MaintenanceData) {
-  const url = URL.createObjectURL(new Blob([JSON.stringify({ format: 'bike-maintenance-garage', version: 1, exportedAt: new Date().toISOString(), ...data }, null, 2)], { type: 'application/json' }));
+  const url = URL.createObjectURL(new Blob([JSON.stringify(garageBackup(data), null, 2)], { type: 'application/json' }));
   const a = document.createElement('a'); a.href = url; a.download = 'maintenance-garage.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 async function request(path: string, method: string, body?: unknown, token?: string, extra: Record<string, string> = {}) {

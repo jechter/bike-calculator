@@ -3,8 +3,7 @@ import { sampleMaintenance } from '../test-fixtures/maintenance';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-import { loadLegacyBrowserGarage } from '../lib/maintenance-account';
-import { seedLegacyBrowserGarage } from '../test-fixtures/maintenance-account';
+import { readLegacyBrowserGarageFixture, seedLegacyBrowserGarage } from '../test-fixtures/maintenance-account';
 const mocks = vi.hoisted(() => ({ enabled: true, restore: vi.fn(), load: vi.fn(), save: vi.fn(), write: vi.fn(), logout: vi.fn(), send: vi.fn(), verify: vi.fn() }));
 vi.mock('../lib/maintenance-account', async original => ({ ...await original<typeof import('../lib/maintenance-account')>(), get accountEnabled() { return mocks.enabled; }, restoreAccountOnce: mocks.restore, sendSignInCode: mocks.send, verifySignInCode: mocks.verify }));
 import { Maintenance } from './Maintenance';
@@ -29,19 +28,21 @@ it('does not fall back to browser writes when cloud storage fails', async () => 
   fireEvent.click(screen.getByText('Save changes'));
   await screen.findByRole('alert');
   expect((screen.getByLabelText('Notes (optional)') as HTMLTextAreaElement).value).toBe('Cloud draft');
-  expect(loadLegacyBrowserGarage()).toEqual(backup);
+  expect(readLegacyBrowserGarageFixture()).toEqual(backup);
 });
-it('imports browser garage explicitly, keeps existing cloud IDs, and preserves the browser copy', async () => {
-  const backup = sampleMaintenance(); backup.bikes[0].name = 'Local name'; backup.bikes.push({ id: 'new-bike', name: 'New bike', distance: 12000 });
-  seedLegacyBrowserGarage(backup); vi.spyOn(window, 'confirm').mockReturnValue(true);
-  mocks.write.mockImplementation(async data => data);
+it('does not offer browser import or change legacy records after cloud sign-in', async () => {
+  const backup = sampleMaintenance();
+  backup.bikes.push({ id: 'local-only-bike', name: 'Local-only bike', distance: 12000 });
+  seedLegacyBrowserGarage(backup);
   await cloud();
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  expect(screen.queryByText('Import existing browser records')).toBeNull();
+  expect(screen.queryByText('Local-only bike')).toBeNull();
+  expect(screen.getByText('Download garage backup')).toBeTruthy();
+  expect(screen.getByText('Connect Intervals.icu (optional)')).toBeTruthy();
+  expect(screen.getByText('Sign out')).toBeTruthy();
   expect(mocks.write).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole('button', { name: /^More/ })); fireEvent.click(screen.getByText('Import existing browser records'));
-  await screen.findByText(/Browser garage imported/);
-  expect(screen.getByRole('button', { name: /^Everyday road bike. Total distance/ })).toBeTruthy(); expect(screen.getByText('New bike')).toBeTruthy();
-  expect(loadLegacyBrowserGarage()).toEqual(backup);
-  expect(mocks.write.mock.calls[0][0].entries).toHaveLength(4);
+  expect(readLegacyBrowserGarageFixture()).toEqual(backup);
 });
 it('uses email codes for sign-in and does not upload browser data automatically', async () => {
   render(<Maintenance />);
@@ -60,7 +61,7 @@ it('keeps legacy browser data untouched and hidden when code verification fails'
   await screen.findByLabelText('Email code');
   fireEvent.change(screen.getByLabelText('Email code'), { target: { value: 'wrong' } }); fireEvent.click(screen.getByText('Verify code'));
   await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Invalid code'));
-  expect(screen.queryByRole('region', { name: 'Performed maintenance' })).toBeNull(); expect(loadLegacyBrowserGarage()).toEqual(backup);
+  expect(screen.queryByRole('region', { name: 'Performed maintenance' })).toBeNull(); expect(readLegacyBrowserGarageFixture()).toEqual(backup);
 });
 it('restores the code-entry step after a reload without sending another email or storing the code', async () => {
   const page = render(<Maintenance />);
@@ -114,7 +115,7 @@ it('requires sign-in even when a legacy browser garage exists', () => {
   expect(screen.queryByText('Open my browser garage')).toBeNull();
   expect(screen.queryByText('Import existing browser records')).toBeNull();
   expect(mocks.restore).not.toHaveBeenCalled();
-  expect(loadLegacyBrowserGarage()).toEqual(legacy);
+  expect(readLegacyBrowserGarageFixture()).toEqual(legacy);
 });
 it('shows a configuration notice rather than a demo or local fallback when Supabase is not configured', () => {
   mocks.enabled = false; seedLegacyBrowserGarage(sampleMaintenance());
@@ -135,7 +136,7 @@ it('does not expose local records if restoring the cloud session fails', async (
   await screen.findByRole('alert');
   expect(screen.queryByRole('region', { name: 'Performed maintenance' })).toBeNull();
   expect(screen.getByRole('form', { name: 'Email sign-in' })).toBeTruthy();
-  expect(loadLegacyBrowserGarage()).toEqual(legacy);
+  expect(readLegacyBrowserGarageFixture()).toEqual(legacy);
 });
 it('hides the legacy import option for accounts with no local records', async () => {
   await cloud();
@@ -150,7 +151,7 @@ it('keeps a bike draft open and never writes locally when its cloud save fails',
   fireEvent.click(screen.getByText('Save bike'));
   await screen.findByRole('alert');
   expect((screen.getByLabelText('Bike name') as HTMLInputElement).value).toBe('Cloud-only draft');
-  expect(loadLegacyBrowserGarage()).toBeNull();
+  expect(readLegacyBrowserGarageFixture()).toBeNull();
   expect(screen.queryByRole('button', { name: /^Cloud-only draft. Total distance/ })).toBeNull();
 });
 it('returns to sign-in on sign-out without opening a legacy browser garage', async () => {
@@ -160,7 +161,7 @@ it('returns to sign-in on sign-out without opening a legacy browser garage', asy
   fireEvent.click(screen.getByText('Sign out'));
   await screen.findByRole('form', { name: 'Email sign-in' });
   expect(screen.queryByRole('region', { name: 'Performed maintenance' })).toBeNull();
-  expect(loadLegacyBrowserGarage()).toEqual(legacy);
+  expect(readLegacyBrowserGarageFixture()).toEqual(legacy);
 });
 it('restores a persistent login without any tab-only session', async () => {
   localStorage.setItem('maintenance-account-v1', JSON.stringify({ user: { id: 'user-1' } }));
@@ -217,4 +218,82 @@ it('shows email entry immediately with the free-account copy and no intermediate
   expect(screen.getByText(/Your first code creates a free account/)).toBeTruthy();
   expect(screen.queryByLabelText('Email code')).toBeNull();
   expect(mocks.send).not.toHaveBeenCalled();
+});
+
+it('ignores unreadable legacy browser records rather than blocking cloud access', async () => {
+  localStorage.setItem('maintenance-independent-garage-v1', '{invalid JSON');
+  await cloud();
+  expect(screen.queryByRole('alert')).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  expect(screen.queryByText('Import existing browser records')).toBeNull();
+  expect(localStorage.getItem('maintenance-independent-garage-v1')).toBe('{invalid JSON');
+});
+async function openBackupImport() {
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  fireEvent.click(screen.getByText('Import garage backup'));
+}
+function uploadBackup(source: string, name = 'maintenance-garage.json') {
+  const file = new File([source], name, { type: 'application/json' });
+  Object.defineProperty(file, 'text', { value: async () => source });
+  fireEvent.change(screen.getByLabelText('Garage backup JSON file'), { target: { files: [file] } });
+}
+it('validates and previews a garage backup, then adds new records without overwriting cloud IDs', async () => {
+  const { garageBackup } = await import('../lib/maintenance-backup');
+  const current = sampleMaintenance(); mocks.load.mockResolvedValue(current);
+  const source = structuredClone(current); source.bikes[0].name = 'Older bike name'; source.entries[0].notes = 'Older notes';
+  source.bikes.push({ id: 'imported-bike', name: 'Imported touring bike', distance: 100000 });
+  source.entries.push({ ...source.entries[0], id: 'imported-entry', bike_id: 'imported-bike', odometer_km: 80, task: 'Serviced touring bike' });
+  mocks.write.mockImplementation(async data => data);
+  await cloud(); await openBackupImport();
+  expect((screen.getByRole('button', { name: 'Import backup' }) as HTMLButtonElement).disabled).toBe(true);
+  uploadBackup(JSON.stringify({ ...garageBackup(source), user_id: 'another-user', access_token: 'not-a-real-token' }));
+  await screen.findByText('maintenance-garage.json');
+  expect(screen.getByText(/2 records have different values/)).toBeTruthy();
+  expect(screen.getByRole('form', { name: 'Import garage backup' }).textContent).toContain('rider@example.com');
+  expect(mocks.write).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'Import backup' }));
+  await screen.findByText(/Garage backup imported: 1 bike and 1 maintenance entry added/);
+  expect(screen.getByRole('button', { name: /^Imported touring bike. Total distance/ })).toBeTruthy();
+  expect(screen.getByRole('heading', { name: 'Serviced touring bike' })).toBeTruthy();
+  const saved = mocks.write.mock.calls[0][0];
+  expect(saved.bikes[0]).toEqual(current.bikes[0]); expect(saved.entries[0]).toEqual(current.entries[0]);
+  expect(saved.name).toBe(current.name); expect(saved.synced_at).toBe(current.synced_at);
+  expect(saved.user_id).toBeUndefined(); expect(saved.access_token).toBeUndefined();
+  expect(saved.bikes).toHaveLength(3); expect(saved.entries).toHaveLength(5);
+  await openBackupImport(); uploadBackup(JSON.stringify(garageBackup(source)));
+  await screen.findByText('This backup has no new records to add.');
+  expect((screen.getByRole('button', { name: 'Import backup' }) as HTMLButtonElement).disabled).toBe(true);
+  expect(mocks.write).toHaveBeenCalledTimes(1);
+});
+it('allows canceling a reviewed backup without writing anything', async () => {
+  const { garageBackup } = await import('../lib/maintenance-backup');
+  await cloud(); await openBackupImport();
+  uploadBackup(JSON.stringify(garageBackup(sampleMaintenance())));
+  await screen.findByText('maintenance-garage.json');
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(screen.queryByRole('form', { name: 'Import garage backup' })).toBeNull();
+  expect(mocks.write).not.toHaveBeenCalled();
+});
+it('keeps the backup review available after a failed cloud import and supports retry', async () => {
+  const { garageBackup } = await import('../lib/maintenance-backup');
+  const source = sampleMaintenance(); source.bikes.push({ id: 'new-bike', name: 'Retry bike', distance: 0 });
+  mocks.write.mockRejectedValueOnce(new Error('Cloud unavailable')).mockImplementationOnce(async data => data);
+  await cloud(); await openBackupImport(); uploadBackup(JSON.stringify(garageBackup(source)));
+  await screen.findByText('maintenance-garage.json');
+  fireEvent.click(screen.getByRole('button', { name: 'Import backup' }));
+  await screen.findByRole('alert');
+  expect(screen.getByRole('form', { name: 'Import garage backup' })).toBeTruthy();
+  expect(screen.queryByRole('button', { name: /^Retry bike. Total distance/ })).toBeNull();
+  expect(localStorage.getItem('maintenance-independent-garage-v1')).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Import backup' }));
+  await screen.findByText(/Garage backup imported/);
+  expect(mocks.write).toHaveBeenCalledTimes(2);
+  expect(mocks.write.mock.calls[0][0]).toEqual(mocks.write.mock.calls[1][0]);
+});
+it('rejects an invalid backup file without a cloud write or losing the garage', async () => {
+  await cloud(); await openBackupImport(); uploadBackup('{invalid JSON');
+  await screen.findByRole('alert');
+  expect((screen.getByRole('button', { name: 'Import backup' }) as HTMLButtonElement).disabled).toBe(true);
+  expect(mocks.write).not.toHaveBeenCalled();
+  expect(screen.getByRole('button', { name: /^Everyday road bike. Total distance/ })).toBeTruthy();
 });

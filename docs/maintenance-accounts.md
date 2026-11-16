@@ -28,11 +28,9 @@
   login clears the pending step. This retention does not extend the server's OTP
   expiration; request a new code if it expires. Email autofill and one-time-code
   hints are explicit, but Safari controls its own password-manager suggestions.
-- Existing local records are preserved, not displayed as an editable garage.
-  After signing in, **More → Import existing browser records** appears only if this
-  browser has an old garage. It copies missing bike/entry IDs to the cloud after
-  confirmation, keeps existing cloud IDs, and leaves the original local copy
-  untouched. This is a read-only migration path, not an offline storage mode.
+- The former independent browser-garage import option has been removed. Old
+  records are left untouched, but the app no longer reads or imports that garage.
+  Browser storage is still used for remembered sign-in, not for maintenance data.
 - Cloud writes are atomic revision-checked snapshots (5 MB maximum). Concurrent
   edits on another device produce a conflict, not silent lost updates. Export the
   current state and reload before retrying. Failed writes leave drafts open and never
@@ -63,8 +61,19 @@
   not busy, and no bike or maintenance form is open. Refresh is also available manually.
   There is no server scheduler or closed-page background sync. Strava's own mileage
   refresh must still be performed in Intervals.icu. All upstream calls are GET requests.
-- Garage backups contain bikes and maintenance, not API keys or auth tokens. JSON
-  file restoration is not yet implemented; preserve the downloaded files for recovery.
+- **More → Download garage backup** exports bikes and maintenance, not credentials.
+  **More → Import garage backup** accepts a version 1 JSON garage backup (up to 20 MB
+  on disk). It validates fields, calendar dates, mileage, unique IDs, and bike
+  references, then previews added/existing/conflicting counts before confirmation.
+  Confirming merges missing bike/entry IDs into the signed-in cloud account in one
+  revision-checked write. Existing IDs always keep their cloud values, even when a
+  backup differs. Garage metadata is not replaced, and importing again is idempotent.
+  The merged garage must fit the database's 5 MB limit. Invalid files never write;
+  failed/conflicted cloud writes keep the review open and never fall back locally.
+  A backup can restore deleted bikes/entries; review before importing an old file.
+  This is an additive restore, not a replace-all or overwrite-existing operation.
+  Legacy browser-record exports (`bike-maintenance-backup`) are a different format
+  and are not accepted by this file importer.
 
 ## Operator setup (not performed automatically)
 
@@ -112,9 +121,8 @@ No automatic identity linking occurs. An Intervals.icu athlete ID is not a Supab
 Auth user ID, and an email address does not prove ownership of an old athlete account.
 Legacy records and keys are left untouched; keys are no longer automatically used.
 
-1. Sign into the intended cloud account first. If an independent browser garage
-   exists on this device, use **More → Import existing browser records** to copy it
-   into the account. It is never opened or modified locally.
+1. Sign into the intended cloud account first. The former independent browser
+   garage import UI is retired; any old data remains untouched on the device.
 2. Open optional Intervals.icu sync with the same athlete key. It offers an explicit
    import of old browser records, retaining the original localStorage copy. IDs are
    migrated consistently as `icu:<athleteId>:<oldId>` for both bikes and entries.
@@ -140,6 +148,6 @@ once users have migrated according to the operator's retention plan.
 `npm run build` and `NODE_OPTIONS=--no-experimental-webstorage npm test` cover
 manual bikes, mileage validation, optional sync, namespace merging, email-code
 requests, remembered-session migration/expiration, automatic token refresh,
-logout/refresh races, revision conflicts, legacy browser-to-cloud imports,
+logout/refresh races, revision conflicts, ignored legacy browser-garage data, validated backup-file imports,
 signed-out/configuration gates, and failed cloud drafts. Auth/REST requests are mocked; no production migration, SMTP setup,
 live RLS verification, or deployment is implied by these tests.

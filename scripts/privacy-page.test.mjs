@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest';
 import { createServer } from 'vite';
 import { JSDOM } from 'jsdom';
+import { readFile } from 'node:fs/promises';
 
 it('serves the linked privacy document in Vite without falling back to the calculator app', async () => {
   const server = await createServer({ server: { host: '127.0.0.1', port: 0 }, logLevel: 'error' });
@@ -15,6 +16,12 @@ it('serves the linked privacy document in Vite without falling back to the calcu
     const street = ['Riesestr', '17'].join(' ');
     const city = ['12347', 'Berlin'].join(' ');
     expect(html).not.toContain(email);
+    const componentSource = await readFile(new URL('../src/components/Derailleur.tsx', import.meta.url), 'utf8');
+    const encodedMailbox = componentSource.match(/const PROPOSAL_MAILBOX = (\[[\d,\s]+\]);/);
+    expect(encodedMailbox).not.toBeNull();
+    const proposalEmail = String.fromCharCode(...JSON.parse(encodedMailbox[1]).map(code => code - 1));
+    expect(proposalEmail).toBe(email);
+    expect(componentSource).not.toContain(email);
     expect(html).not.toContain(street);
     expect(html).not.toContain(city);
     const dom = new JSDOM(html, { runScripts: 'dangerously' });

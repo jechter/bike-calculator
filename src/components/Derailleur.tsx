@@ -27,8 +27,9 @@ const NEW_COMPONENT_EVENT = "components:propose-new";
 
 // Address proposals are mailed to. Stored as shifted character codes so the plain
 // address never appears in the source or bundle (keeps it from address-harvesting
-// crawlers); it's only assembled when someone submits.
-const PROPOSAL_MAILBOX = [99, 106, 108, 102, 46, 100, 112, 110, 113, 112, 111, 102, 111, 117, 46, 101, 98, 117, 98, 99, 98, 116, 102, 65, 107, 112, 111, 98, 116, 102, 100, 105, 117, 102, 115, 105, 112, 103, 103, 47, 100, 112, 110];
+// crawlers); it's only assembled when someone submits. JavaScript-capable
+// crawlers can still decode it.
+const PROPOSAL_MAILBOX = [99, 106, 108, 102, 120, 112, 115, 108, 116, 105, 112, 113, 100, 98, 109, 100, 118, 109, 98, 117, 112, 115, 65, 107, 112, 111, 98, 116, 102, 100, 105, 117, 102, 115, 105, 112, 103, 103, 47, 100, 112, 110];
 const proposalMailbox = () => String.fromCharCode(...PROPOSAL_MAILBOX.map((code) => code - 1));
 
 /** Page-header button that opens the "New component" proposal form. */

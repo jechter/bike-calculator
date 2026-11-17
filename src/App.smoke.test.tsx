@@ -28,8 +28,10 @@ describe("App shell", () => {
 
   it("links to the static privacy notice from nested calculator paths", () => {
     window.history.replaceState(null, '', '/bikeworkshopcalc/maintenance-log/');
-    const { getByRole } = render(<App />);
-    expect(getByRole('link', { name: 'Privacy notice' }).getAttribute('href')).toBe('/bikeworkshopcalc/privacy/index.html');
+    const { getAllByRole } = render(<App />);
+    for (const link of getAllByRole('link', { name: 'Privacy notice' })) {
+      expect(link.getAttribute('href')).toBe('/bikeworkshopcalc/privacy/index.html');
+    }
     window.history.replaceState(null, '', '/');
   });
 

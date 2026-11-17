@@ -241,6 +241,7 @@ export function Maintenance() {
     </div>
     {isMobile && <SettingsButton icon={<BikeIcon />} pageTitle="Maintenance Log" label="Bikes and components" />}
   </div>;
+  const privacyLink = <a className="maintenance-privacy-link" href={`${getBasePath()}privacy/index.html`} target="_blank" rel="noopener noreferrer">Privacy notice</a>;
   const signInForm = <form className="maintenance-form" aria-label="Email sign-in" autoComplete="off" onSubmit={event => { event.preventDefault(); void run(async () => {
       if (!codeSent) {
         // Persist before the request so suspension while opening Mail is safe too.
@@ -256,12 +257,11 @@ export function Maintenance() {
         store.current = account; setAccountEmail(account.email); setData(garage); clearFilter(); clearPendingEmailSignIn(); setCode(''); setCodeSent(false);
         setMessage('Signed in. Your bikes and maintenance are saved to your cloud account.');
       }
-    }); }}><h2>Sign in with email</h2><p className="maintenance-fine">Your first code creates a free account. Your bikes and maintenance are saved securely to your cloud account.</p><p className="maintenance-fine">By default, sign-in is saved only for this tab's browser session. Sign out when using a shared device.</p>
-      <p className="maintenance-fine">How we use your email, garage data, and browser storage: <a href={`${getBasePath()}privacy/index.html`} target="_blank" rel="noopener noreferrer">Privacy notice</a>.</p>
+    }); }}><h2>Sign in with email</h2><p className="maintenance-fine">This page lets you track maintenance and mileage for all your bikes. You need a free account to store your maintenance data in the cloud database.</p><p className="maintenance-fine">Enter your email address to login or create an account.</p>
       <label>Email<input required type="email" name="contact_email" inputMode="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} disabled={busy || codeSent} value={email} onChange={e => setEmail(e.target.value)} /></label>
-      {codeSent && <label>Email code<input required type="text" name="verification_code" autoCapitalize="none" spellCheck={false} inputMode="numeric" autoComplete="one-time-code" value={code} onChange={e => setCode(e.target.value)} /></label>}
+      {codeSent && <label>Type or paste the code we sent to your email here<input required type="text" name="verification_code" autoCapitalize="none" spellCheck={false} inputMode="numeric" autoComplete="one-time-code" value={code} onChange={e => setCode(e.target.value)} /></label>}
       <label className="maintenance-remember"><input type="checkbox" checked={rememberMe} disabled={busy} onChange={event => setRememberMe(event.target.checked)} />Remember me for up to 180 days on this browser</label>
-      <div className="maintenance-actions"><button className="maintenance-primary" disabled={busy}>{codeSent ? 'Verify code' : 'Send sign-in code'}</button>{codeSent && <button type="button" disabled={busy} onClick={() => { clearPendingEmailSignIn(); setCodeSent(false); setCode(''); }}>Cancel</button>}{codeSent && <button type="button" disabled={busy} onClick={() => { clearPendingEmailSignIn(); setCodeSent(false); setCode(''); }}>Use another email / resend</button>}</div>
+      <div className="maintenance-actions maintenance-signin-actions"><button className="maintenance-primary" disabled={busy}>{codeSent ? 'Verify code' : 'Send sign-in code'}</button>{codeSent && <button type="button" disabled={busy} onClick={() => { clearPendingEmailSignIn(); setCodeSent(false); setCode(''); }}>Cancel</button>}{codeSent && <button type="button" disabled={busy} onClick={() => { clearPendingEmailSignIn(); setCodeSent(false); setCode(''); }}>Use another email / resend</button>}{privacyLink}</div>
     </form>;
   return <div className={'maintenance' + (data ? ' maintenance--connected' : '')}>
     <div className="main-head maintenance-page-head"><div><h1>Maintenance Log</h1><p className="subtitle">Track maintenance tasks for your bikes</p></div>{actionSlot ? createPortal(headerActions, actionSlot) : <div className="main-actions">{headerActions}</div>}</div>
@@ -302,6 +302,7 @@ export function Maintenance() {
     {!data ? <div className="maintenance-locked">
       <section className="maintenance-signin-banner" aria-label="Sign in to maintenance">
         {accountEnabled ? signInForm : <div className="maintenance-notice" role="status">Cloud sign-in is not configured on this installation. The site operator needs to configure Supabase before you can use the maintenance log.</div>}
+        {!accountEnabled && <footer className="maintenance-signin-footer">{privacyLink}</footer>}
       </section>
       <p className="maintenance-fine maintenance-preview-caption">Sample bikes and maintenance below · sign in to start your own log</p>
       <MaintenancePreview />
@@ -316,7 +317,7 @@ export function Maintenance() {
       <section className="maintenance-bike-panel" aria-label="Bikes and components">
       <div className="maintenance-section-head"><div className="maintenance-bike-heading"><h2>Bikes</h2>{data.synced_at && <time className="maintenance-last-sync" dateTime={data.synced_at} title={new Date(data.synced_at).toLocaleString()}>Last sync: {formatSyncTime(data.synced_at)}</time>}</div><button disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => { setBikeEditor({ id: '', name: '', mileage: '0' }); if (isMobile) filtersDrawer.setOpen(false); }}>+ Add bike</button></div>
       <div className="maintenance-list-scroll maintenance-bike-scroll" tabIndex={0} role="region" aria-label="Bikes and components list">
-      {!data.bikes.length ? <div className="maintenance-empty"><h3>No bikes found</h3><p>Add your first bike and its current mileage to start logging maintenance.</p></div> : <ul className="maintenance-bikes maintenance-bike-tree" aria-label="Your bikes">{data.bikes.map((b, index) => {
+      {!data.bikes.length ? <div className="maintenance-empty"><h3>No bikes found</h3><p>Add your first bike and its current mileage to start logging maintenance.</p><p>Or <button type="button" className="maintenance-inline-link" disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => { setSyncOpen(true); if (isMobile) filtersDrawer.setOpen(false); }}>connect Intervals.icu</button> to import your bikes</p></div> : <ul className="maintenance-bikes maintenance-bike-tree" aria-label="Your bikes">{data.bikes.map((b, index) => {
         const bikeEntries = data.entries.filter(entry => entry.bike_id === b.id);
         const open = bikeId === b.id;
         const panelId = `bike-components-${index}`;

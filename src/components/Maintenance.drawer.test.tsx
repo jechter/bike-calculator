@@ -111,3 +111,17 @@ it('keeps the compact Bikes heading and its last-sync time visible inside the se
   const heading = drawer.getByRole('heading', { name: 'Bikes' }).parentElement!;
   expect(within(heading).getByText(/^Last sync:/)).toBeTruthy();
 });
+
+it('places the signed-out Privacy notice inside the sign-in box, not the compact toolbar', async () => {
+  await renderCompactApp();
+  expect(within(document.getElementById('topbar-actions-slot')!).queryByRole('link', { name: 'Privacy notice' })).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  fireEvent.click(screen.getByText('Sign out'));
+  await screen.findByRole('form', { name: 'Email sign-in' });
+  const slot = document.getElementById('topbar-actions-slot')!;
+  expect(within(slot).queryByRole('link', { name: 'Privacy notice' })).toBeNull();
+  const banner = screen.getByRole('region', { name: 'Sign in to maintenance' });
+  const privacy = within(banner).getByRole('link', { name: 'Privacy notice' });
+  expect(privacy.parentElement).toBe(screen.getByRole('button', { name: 'Send sign-in code' }).parentElement);
+  expect(privacy.closest('form')).toBe(screen.getByRole('form', { name: 'Email sign-in' }));
+});

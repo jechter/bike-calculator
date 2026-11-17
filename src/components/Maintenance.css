@@ -228,11 +228,11 @@ html.embedded .maintenance--connected .maintenance-layout { flex: auto; grid-tem
 
 /* The signed-out page shows the product, not an editable demo. Only the banner
    is interactive; illustrative records are separate from the real garage state. */
-.maintenance-signin-banner { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 24px; border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: 12px; background: var(--panel); box-shadow: 0 4px 20px #00000005; }
+.maintenance-signin-banner { display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; gap: 20px; padding: 24px; border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: 12px; background: var(--panel); box-shadow: 0 4px 20px #00000005; }
 .maintenance-signin-banner h2 { margin: 0 0 8px; font-size: 21px; letter-spacing: -.3px; }
 .maintenance-signin-banner p { color: var(--muted); margin: 0; font-size: 14px; line-height: 1.6; }
 .maintenance-signin-banner > button { flex-shrink: 0; }
-.maintenance-signin-banner > .maintenance-form { width: 100%; max-width: 640px; border: 0; padding: 0; margin: 0; background: transparent; }
+.maintenance-signin-banner > .maintenance-form { width: 100%; max-width: none; border: 0; padding: 0; margin: 0; background: transparent; }
 .maintenance-signin-banner > .maintenance-notice { margin: 0; max-width: 420px; }
 .maintenance-preview-caption { margin: 22px 0 16px; font-size: 12px; }
 .maintenance-preview { pointer-events: none; user-select: none; opacity: .55; filter: grayscale(.8) blur(.6px); mask-image: linear-gradient(to bottom, #000 70%, #0004); }
@@ -288,3 +288,16 @@ html.embedded .maintenance--connected .maintenance-layout { flex: auto; grid-tem
 .maintenance-bike-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; min-width: 0; }
 .maintenance-last-sync { color: var(--muted); font-size: 12px; font-weight: 400; line-height: 1.5; }
 .maintenance-more-popup > .maintenance-menu-account { margin: 0 0 6px; padding: 8px 10px 12px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+
+/* Keep legal details out of the sign-in introduction, but easy to find. */
+.maintenance-signin-banner .maintenance-form > p + p { margin-top: 12px; }
+.maintenance-signin-footer { text-align: right; }
+.maintenance-privacy-link { color: var(--muted); font-size: 12px; text-underline-offset: 3px; }
+.maintenance-privacy-link:hover { color: var(--accent); }
+.maintenance-privacy-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.maintenance-signin-banner .maintenance-form > p, .maintenance-signin-banner .maintenance-form > label { max-width: 640px; }
+.maintenance-signin-actions { align-items: center; gap: 12px; }
+.maintenance-signin-actions > .maintenance-privacy-link { margin-left: auto; white-space: nowrap; }
+
+.maintenance .maintenance-inline-link { padding: 0; border: 0; border-radius: 2px; background: transparent; color: var(--accent); font: inherit; text-decoration: underline; text-underline-offset: 3px; }

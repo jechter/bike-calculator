@@ -49,9 +49,9 @@ it('uses email codes for sign-in and does not upload browser data automatically'
   render(<Maintenance />);
   fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'rider@example.com' } });
   fireEvent.click(screen.getByText('Send sign-in code'));
-  await screen.findByLabelText('Email code');
+  await screen.findByLabelText('Type or paste the code we sent to your email here');
   expect(mocks.send).toHaveBeenCalledWith('rider@example.com');
-  fireEvent.change(screen.getByLabelText('Email code'), { target: { value: '123456' } }); fireEvent.click(screen.getByText('Verify code'));
+  fireEvent.change(screen.getByLabelText('Type or paste the code we sent to your email here'), { target: { value: '123456' } }); fireEvent.click(screen.getByText('Verify code'));
   await screen.findByRole('button', { name: /^Everyday road bike. Total distance/ });
   expect(mocks.verify).toHaveBeenCalledWith('rider@example.com', '123456', false); expect(mocks.write).not.toHaveBeenCalled();
 });
@@ -59,8 +59,8 @@ it('keeps legacy browser data untouched and hidden when code verification fails'
   const backup = sampleMaintenance(); seedLegacyBrowserGarage(backup); mocks.verify.mockRejectedValue(new Error('Invalid code'));
   render(<Maintenance />);
   fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'rider@example.com' } }); fireEvent.click(screen.getByText('Send sign-in code'));
-  await screen.findByLabelText('Email code');
-  fireEvent.change(screen.getByLabelText('Email code'), { target: { value: 'wrong' } }); fireEvent.click(screen.getByText('Verify code'));
+  await screen.findByLabelText('Type or paste the code we sent to your email here');
+  fireEvent.change(screen.getByLabelText('Type or paste the code we sent to your email here'), { target: { value: 'wrong' } }); fireEvent.click(screen.getByText('Verify code'));
   await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Invalid code'));
   expect(screen.queryByRole('region', { name: 'Performed maintenance' })).toBeNull(); expect(readLegacyBrowserGarageFixture()).toEqual(backup);
 });
@@ -73,16 +73,16 @@ it('restores the code-entry step after a reload without sending another email or
   expect(email.closest('form')?.getAttribute('autocomplete')).toBe('off');
   fireEvent.change(email, { target: { value: 'rider@example.com' } });
   fireEvent.click(screen.getByText('Send sign-in code'));
-  await screen.findByLabelText('Email code');
-  fireEvent.change(screen.getByLabelText('Email code'), { target: { value: '654321' } });
+  await screen.findByLabelText('Type or paste the code we sent to your email here');
+  fireEvent.change(screen.getByLabelText('Type or paste the code we sent to your email here'), { target: { value: '654321' } });
   expect(sessionStorage.getItem('maintenance-pending-email-v1')).not.toContain('654321');
   page.unmount();
   render(<Maintenance />);
   expect((screen.getByLabelText('Email') as HTMLInputElement).value).toBe('rider@example.com');
-  expect((screen.getByLabelText('Email code') as HTMLInputElement).value).toBe('');
-  expect(screen.getByLabelText('Email code').getAttribute('autocomplete')).toBe('one-time-code');
+  expect((screen.getByLabelText('Type or paste the code we sent to your email here') as HTMLInputElement).value).toBe('');
+  expect(screen.getByLabelText('Type or paste the code we sent to your email here').getAttribute('autocomplete')).toBe('one-time-code');
   expect(mocks.send).toHaveBeenCalledTimes(1);
-  fireEvent.change(screen.getByLabelText('Email code'), { target: { value: '123456' } });
+  fireEvent.change(screen.getByLabelText('Type or paste the code we sent to your email here'), { target: { value: '123456' } });
   fireEvent.click(screen.getByText('Verify code'));
   await screen.findByRole('button', { name: /^Everyday road bike. Total distance/ });
   expect(mocks.verify).toHaveBeenCalledWith('rider@example.com', '123456', false);
@@ -91,11 +91,11 @@ it('restores the code-entry step after a reload without sending another email or
 it.each(['Cancel', 'Use another email / resend'])('clears pending email when choosing %s', async action => {
   sessionStorage.setItem('maintenance-pending-email-v1', JSON.stringify({ email: 'rider@example.com', createdAt: Date.now() }));
   const page = render(<Maintenance />);
-  expect(screen.getByLabelText('Email code')).toBeTruthy();
+  expect(screen.getByLabelText('Type or paste the code we sent to your email here')).toBeTruthy();
   fireEvent.click(screen.getByText(action));
   expect(sessionStorage.getItem('maintenance-pending-email-v1')).toBeNull();
   page.unmount(); render(<Maintenance />);
-  expect(screen.queryByLabelText('Email code')).toBeNull();
+  expect(screen.queryByLabelText('Type or paste the code we sent to your email here')).toBeNull();
 });
 it('clears the pending step if requesting an email fails', async () => {
   mocks.send.mockRejectedValue(new Error('Email service unavailable'));
@@ -105,7 +105,7 @@ it('clears the pending step if requesting an email fails', async () => {
   await screen.findByRole('alert');
   expect(sessionStorage.getItem('maintenance-pending-email-v1')).toBeNull();
   page.unmount(); render(<Maintenance />);
-  expect(screen.queryByLabelText('Email code')).toBeNull();
+  expect(screen.queryByLabelText('Type or paste the code we sent to your email here')).toBeNull();
 });
 it('requires sign-in even when a legacy browser garage exists', () => {
   const legacy = sampleMaintenance(); seedLegacyBrowserGarage(legacy);
@@ -200,10 +200,15 @@ it('replaces the illustration with the actual empty cloud garage without importi
   expect(document.querySelector('.maintenance-preview')).toBeTruthy();
   fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'rider@example.com' } });
   fireEvent.click(screen.getByText('Send sign-in code'));
-  await screen.findByLabelText('Email code');
-  fireEvent.change(screen.getByLabelText('Email code'), { target: { value: '123456' } });
+  await screen.findByLabelText('Type or paste the code we sent to your email here');
+  fireEvent.change(screen.getByLabelText('Type or paste the code we sent to your email here'), { target: { value: '123456' } });
   fireEvent.click(screen.getByText('Verify code'));
   await screen.findByText('No bikes found');
+  expect(screen.getByText('Add your first bike and its current mileage to start logging maintenance.')).toBeTruthy();
+  const connect = screen.getByRole('button', { name: 'connect Intervals.icu' });
+  expect(connect.parentElement?.textContent).toBe('Or connect Intervals.icu to import your bikes');
+  fireEvent.click(connect);
+  expect(screen.getByRole('form', { name: 'Intervals.icu sync (Experimental)' })).toBeTruthy();
   expect(document.querySelector('.maintenance-preview')).toBeNull();
   expect(screen.queryByText('City commuter')).toBeNull();
   expect(mocks.save).not.toHaveBeenCalled(); expect(mocks.write).not.toHaveBeenCalled();
@@ -216,8 +221,17 @@ it('shows email entry immediately with the free-account copy and no intermediate
   expect(screen.getByRole('button', { name: 'Send sign-in code' })).toBeTruthy();
   expect(screen.queryByRole('button', { name: 'Sign in / create account with email' })).toBeNull();
   expect(screen.queryByText(/No password or Intervals.icu account needed/)).toBeNull();
-  expect(screen.getByText(/Your first code creates a free account/)).toBeTruthy();
-  expect(screen.queryByLabelText('Email code')).toBeNull();
+  expect(screen.getByText('This page lets you track maintenance and mileage for all your bikes. You need a free account to store your maintenance data in the cloud database.')).toBeTruthy();
+  expect(screen.getByText('Enter your email address to login or create an account.')).toBeTruthy();
+  expect(screen.queryByText(/By default, sign-in is saved|How we use your email/)).toBeNull();
+  const privacy = screen.getByRole('link', { name: 'Privacy notice' });
+  expect(privacy.getAttribute('href')).toMatch(/privacy\/index\.html$/);
+  expect(privacy.getAttribute('target')).toBe('_blank');
+  expect(privacy.closest('form')).toBe(screen.getByRole('form', { name: 'Email sign-in' }));
+  expect(privacy.closest('.maintenance-signin-banner')).toBeTruthy();
+  expect(privacy.parentElement).toBe(screen.getByRole('button', { name: 'Send sign-in code' }).parentElement);
+  expect(privacy.classList.contains('maintenance-privacy-link')).toBe(true);
+  expect(screen.queryByLabelText('Type or paste the code we sent to your email here')).toBeNull();
   expect(mocks.send).not.toHaveBeenCalled();
 });
 
@@ -342,9 +356,9 @@ it('offers an unchecked remember-me choice and passes the explicit opt-in on ver
   expect(remember.checked).toBe(false);
   fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'rider@example.com' } });
   fireEvent.click(screen.getByText('Send sign-in code'));
-  await screen.findByLabelText('Email code');
+  await screen.findByLabelText('Type or paste the code we sent to your email here');
   fireEvent.click(remember);
-  fireEvent.change(screen.getByLabelText('Email code'), { target: { value: '123456' } });
+  fireEvent.change(screen.getByLabelText('Type or paste the code we sent to your email here'), { target: { value: '123456' } });
   fireEvent.click(screen.getByText('Verify code'));
   await screen.findByRole('region', { name: 'Performed maintenance' });
   expect(mocks.verify).toHaveBeenCalledWith('rider@example.com', '123456', true);

@@ -89,15 +89,24 @@
    applied migration. This creates `maintenance_user_garages`; it does not drop or
    rewrite legacy tables. This flow requires no Edge Function deployment.
 2. Enable the **Email** Auth provider and email signups in Supabase.
-3. Configure **Authentication → Email Templates → Magic Link** to display the
-   one-time code, not just a confirmation URL. For example:
+3. Configure **both** **Authentication → Email Templates → Confirm signup** and
+   **Magic Link** to use the subject **Your sign-in code** and display the one-time
+   code, not a confirmation URL. Supabase uses **Confirm signup** for a new email
+   address and **Magic Link** for an existing account. Configuring only Magic Link
+   makes new users receive a separate confirmation-link email first. Use the same
+   code-only content for both templates, for example:
    ```html
    <h2>Your Maintenance Log sign-in code</h2>
    <p>{{ .Token }}</p>
    <p>If you did not request this code, ignore this email.</p>
    ```
+   Keep **Confirm email** enabled: entering the emailed code verifies ownership
+   and signs the user in, including on their first signup. Do not enable automatic
+   email confirmation to bypass the confirmation-link email.
    The frontend uses `/auth/v1/otp` with account creation allowed, then
    `/auth/v1/verify` with `type: email`. No redirect/callback URL is consumed.
+   Verify the first-signup path with a new email address as well as the existing
+   account path; both should receive a code immediately without a separate link.
 4. Configure a production SMTP provider, sender identity, delivery monitoring,
    OTP expiration, and Auth rate limits. Supabase's default email service is limited
    and may restrict recipients; it is not a production mail delivery solution.

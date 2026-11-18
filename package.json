@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "screenshot": "node scripts/screenshot.mjs"
+    "screenshot": "node scripts/screenshot.mjs",
+    "probe:intervals": "node scripts/probe-intervals.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

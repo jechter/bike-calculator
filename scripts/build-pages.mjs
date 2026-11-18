@@ -8,10 +8,13 @@ const escape = text => text.replaceAll('&', '&amp;').replaceAll('"', '&quot;').r
 function pageHtml(page, nested) {
   const prefix = nested ? '../' : './';
   const links = routes.map(r => `<li><a href="${prefix}${r.slug}/">${escape(r.title)}</a></li>`).join('\n');
+  const introduction = page.id === 'maintenance'
+    ? 'Keep a private bike service history with the Rückenwind community bike workshop. Enable JavaScript to connect Intervals.icu or explore a demo.'
+    : 'Use this free interactive calculator from the Rückenwind community bike workshop. Enable JavaScript to enter your measurements and see results.';
   return template
     .replaceAll('./assets/', `${prefix}assets/`)
     .replace(/<title>.*?<\/title>/, `<title>${escape(page.title)} | Rückenwind</title>\n    <meta name="description" content="${escape(page.description)}" />\n    <link rel="canonical" href="${origin}${page.slug}/" />`)
-    .replace('<div id="root"></div>', `<div id="root"><main><h1>${escape(page.title)}</h1><p>${escape(page.description)}</p><p>Use this free interactive calculator from the Rückenwind community bike workshop. Enable JavaScript to enter your measurements and see results.</p><nav aria-label="Calculators"><ul>${links}</ul></nav></main></div>`);
+    .replace('<div id="root"></div>', `<div id="root"><main><h1>${escape(page.title)}</h1><p>${escape(page.description)}</p><p>${introduction}</p><nav aria-label="Calculators"><ul>${links}</ul></nav><p><a href="${prefix}privacy/index.html">Privacy notice</a></p></main></div>`);
 }
 for (const page of routes) {
   await mkdir(`dist/${page.slug}`, { recursive: true });

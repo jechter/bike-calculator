@@ -1,0 +1,5 @@
+[functions.maintenance]
+verify_jwt = false
+
+[functions.maintenance-storage]
+verify_jwt = false

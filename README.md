@@ -27,6 +27,27 @@ You can try the calculator live on the [Rückenwind web site](https://rueckenwin
 | 6 | [Cycling power](https://rueckenwind.berlin/bikeworkshopcalc/cycling-power-calculator/) | Watts needed for a speed/gradient, speed from watts, and work / food energy over a ride | [power.md](docs/calculators/power.md) |
 | 7 | [Thread direction](https://rueckenwind.berlin/bikeworkshopcalc/bicycle-thread-direction/) | Reference: which parts are left-hand threaded, and which way to turn to loosen/tighten | [thread-direction.md](docs/calculators/thread-direction.md) |
 
+## Maintenance log
+
+The **Maintenance Log** supports manual bikes, mileage updates, and service
+history without an Intervals.icu account. **Email-code sign-in with Supabase Auth**
+is required; bikes and maintenance are stored in the cloud and available across
+devices. Sign-in is remembered on this browser for up to 30 days, with automatic
+access-token refresh. Signed-out visitors see a muted, non-interactive sample log
+with a sign-in banner. There is no editable demo, browser-only editing mode, or
+independent browser-garage import option.
+
+Intervals.icu is an optional, read-only bike/mileage integration, not an identity
+provider. Its API key stays in memory only, and visible pages refresh mileage
+every five minutes while no form is open. Maintenance is never sent upstream.
+
+See [setup, security, and migration](docs/maintenance-accounts.md). Cloud setup
+requires a database migration, public frontend configuration, and an email-code
+template. Browser and legacy records are not erased or silently uploaded.
+Export garage backups regularly; **More → Import garage backup** restores missing
+bikes and entries from those files without overwriting existing cloud records. The old Intervals.icu and Strava server
+scaffolds remain for operator reference, not current authentication or in-page recovery.
+
 ## Documentation
 
 - [`docs/architecture.md`](docs/architecture.md) — page layout, navigation, and
@@ -80,7 +101,9 @@ the files directly.
 
 ## Tech
 
-- **Vite + React + TypeScript**, all math client-side (no backend).
+- **Vite + React + TypeScript**, all calculator math client-side. The maintenance
+  page requires Supabase Auth/cloud storage, with read-only Intervals.icu sync.
+  Cloud failures never silently fall back to local writes.
 - Pure calculation modules live in [`src/lib/`](src/lib/) and are unit-tested
   against the worked examples in the calculator specs (`npm test`).
 - UI components (one per calculator) live in [`src/components/`](src/components/);

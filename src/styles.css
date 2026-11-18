@@ -122,6 +122,8 @@ body {
 .app--nav-collapsed .repo-link { justify-content: center; }
 .app--nav-collapsed .repo-link span { display: none; }
 .app--nav-collapsed .unit-switcher { display: none; }
+.sidebar-footer-links { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.app--nav-collapsed .privacy-link { display: none; }
 .repo-link {
   display: flex; align-items: center; gap: 6px;
   color: var(--muted); font-size: 12px; text-decoration: none;
@@ -157,7 +159,13 @@ body {
 .nav .icon svg { display: block; }
 
 /* Main */
-.main { padding: 28px 32px 60px; max-width: 900px; }
+.main { --main-inline-padding: 32px; padding: 28px 32px 60px; max-width: 900px; }
+/* Reading-width calculators still get an edge-to-edge page header. Limit only
+   their content cards, rather than the main column that also contains the bar. */
+.main--tire, .main--power, .main--thread-direction { max-width: none; min-width: 0; }
+.main--tire > .section,
+.main--power > .section,
+.main--thread-direction > .section { max-width: calc(900px - 2 * var(--main-inline-padding)); }
 .main h1 { margin: 0 0 4px; font-size: 24px; }
 .main .subtitle { color: var(--muted); margin: 0 0 24px; }
 .main-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
@@ -1689,6 +1697,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   .app--nav-collapsed .repo-link { justify-content: flex-start; }
   .app--nav-collapsed .repo-link span { display: inline; }
   .app--nav-collapsed .unit-switcher { display: block; }
+  .app--nav-collapsed .privacy-link { display: flex; }
 
   /* Larger tap targets for the nav rows in the drawer. */
   .nav a { padding: 11px 12px; }
@@ -1773,7 +1782,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   .botbar-actions .preset-list { top: auto; bottom: calc(100% + 6px); }
 
   /* Bottom padding clears the fixed bottom bar (its height + the safe-area inset). */
-  .main { padding: 20px 16px calc(66px + env(safe-area-inset-bottom, 0px)); }
+  .main { --main-inline-padding: 16px; padding: 20px 16px calc(66px + env(safe-area-inset-bottom, 0px)); }
   /* Fullscreen home-screen web app: the bar reaches the physical screen edge, so
      pad it further in from the rounded corners and above the home indicator /
      gesture bar. The minimum covers devices that report no safe-area inset. */
@@ -1945,7 +1954,7 @@ html.embedded .main h1 {
 }
 /* No edge tab to clear, so drop the compact left gutter; trim the trailing
    whitespace since the frame is sized to fit (plus the last block's own margin). */
-html.embedded .main { padding: 24px 24px 24px; }
+html.embedded .main { --main-inline-padding: 24px; padding: 24px 24px 24px; }
 html.embedded .main > :last-child { margin-bottom: 0; }
 /* The workbench header isn't collapsed into a top bar here, so give it back its
    normal spacing. */

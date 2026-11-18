@@ -1,4 +1,5 @@
-import { Children, useEffect, type ReactNode } from "react";
+import { Children, useEffect, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useIsMobile } from "../useIsMobile";
 import { useSettingsDrawer } from "../settingsDrawer";
 
@@ -18,14 +19,26 @@ export function Workbench({
   className,
   label,
   children,
+  drawerTitle,
+  portalDrawer = false,
+  drawerContentClassName = "",
 }: {
   className: string;
   /** Page name, so the tab/header read e.g. "Drivetrain settings". */
   label: string;
   children: ReactNode;
+  /** Optional non-settings wording, e.g. a bike/component selector. */
+  drawerTitle?: string;
+  /** Escape a containing page's size/layout containment for fixed drawers. */
+  portalDrawer?: boolean;
+  drawerContentClassName?: string;
 }) {
   const isMobile = useIsMobile();
   const { open, setOpen } = useSettingsDrawer();
+  const title = drawerTitle ?? `${label} settings`;
+  const closeLabel = drawerTitle ? `Close ${drawerTitle}` : 'Close settings';
+  const layoutRef = useRef<HTMLDivElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
 
   // Close on Escape and lock the page scroll while the drawer is open.
   useEffect(() => {
@@ -43,39 +56,46 @@ export function Workbench({
     if (!isMobile && open) setOpen(false);
   }, [isMobile, open]);
 
-  if (!isMobile) return <div className={className}>{children}</div>;
+  useEffect(() => {
+    if (!isMobile || !open || !drawerRef.current) return;
+    const drawer = drawerRef.current;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const focusable = () => [...drawer.querySelectorAll<HTMLElement>(':is(button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"])')].filter(el => !el.closest('[hidden]'));
+    focusable()[0]?.focus({ preventScroll: true });
+    const trapTab = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return;
+      const elements = focusable();
+      const first = elements[0], last = elements[elements.length - 1];
+      if (!first) { event.preventDefault(); return; }
+      if (event.shiftKey && (document.activeElement === first || !drawer.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && (document.activeElement === last || !drawer.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', trapTab);
+    return () => { document.removeEventListener('keydown', trapTab); if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true }); };
+  }, [isMobile, open]);
+
+  if (!isMobile) return <div className={className} ref={layoutRef}>{children}</div>;
 
   const [controls, viz] = Children.toArray(children);
-  return (
-    <div className={className + " workbench-mobile"}>
-      {viz}
-      {open && (
-        <button
-          type="button"
-          className="workbench-backdrop"
-          aria-label="Close settings"
-          onClick={() => setOpen(false)}
-        />
-      )}
+  const drawer = <>
+      {open && <button type="button" className="workbench-backdrop" aria-label={closeLabel} onClick={() => setOpen(false)} />}
       <div
+        ref={drawerRef}
         className={"workbench-drawer" + (open ? " workbench-drawer--open" : "")}
         role="dialog"
         aria-modal={open}
-        aria-label={`${label} settings`}
+        aria-hidden={!open}
+        aria-label={title}
       >
         <div className="workbench-drawer-head">
-          <strong>{label} settings</strong>
-          <button
-            type="button"
-            className="workbench-drawer-close"
-            aria-label="Close settings"
-            onClick={() => setOpen(false)}
-          >
-            ✕
-          </button>
+          <strong>{title}</strong>
+          <button type="button" className="workbench-drawer-close" aria-label={closeLabel} onClick={() => setOpen(false)}>✕</button>
         </div>
-        <div className="workbench-drawer-body">{controls}</div>
+        <div className={"workbench-drawer-body " + drawerContentClassName}>{controls}</div>
       </div>
-    </div>
-  );
+    </>;
+  return <div className={className + " workbench-mobile"} ref={layoutRef}>
+    {viz}
+    {portalDrawer ? createPortal(drawer, layoutRef.current?.closest('.app') ?? document.body) : drawer}
+  </div>;
 }

@@ -1,0 +1,104 @@
+{
+  "types": [
+    {
+      "id": "chain",
+      "names": ["Chain"],
+      "icon": "chain",
+      "services": ["Lubricated chain", "Cleaned and lubricated chain", "Waxed chain", "Checked chain wear", "Adjusted chain tension"]
+    },
+    {
+      "id": "cassette",
+      "names": ["Cassette"],
+      "icon": "cassette",
+      "services": ["Cleaned cassette", "Checked cassette wear", "Tightened cassette lockring"]
+    },
+    {
+      "id": "sprocket",
+      "names": ["Sprocket"],
+      "icon": "chainrings",
+      "services": ["Cleaned sprocket", "Checked sprocket wear", "Checked sprocket mounting"]
+    },
+    {
+      "id": "chainrings",
+      "names": ["Chainring", "Chainrings", "Small chainring", "Big chainring", "Middle chainring"],
+      "icon": "chainrings",
+      "services": ["Cleaned chainrings", "Checked chainring wear", "Tightened chainring bolts"]
+    },
+    {
+      "id": "inner-shifter-cables",
+      "names": ["Inner shifter cable", "Front inner shifter cable", "Rear inner shifter cable"],
+      "icon": "cables",
+      "services": ["Checked inner cable condition", "Adjusted shifter cable tension", "Cleaned cable guides"]
+    },
+    {
+      "id": "outer-shifter-cables",
+      "names": ["Outer shifter cable", "Front outer shifter cable", "Rear outer shifter cable"],
+      "icon": "cables",
+      "services": ["Checked cable housing condition", "Inspected cable housing ferrules", "Cleaned cable housing ends"]
+    },
+    {
+      "id": "jockey-wheels",
+      "names": ["Derailleur jockey wheels"],
+      "icon": "jockey-wheels",
+      "services": ["Cleaned jockey wheels", "Checked jockey wheel wear", "Serviced jockey wheel bearings"]
+    },
+    {
+      "id": "brake-pads",
+      "names": ["Front brake pads", "Rear brake pads"],
+      "icon": "brake-pads",
+      "services": ["Checked brake pad wear", "Aligned brake pads", "Cleaned brake pads", "Bedded in brake pads"]
+    },
+    {
+      "id": "brake-disc",
+      "names": ["Front brake disc", "Rear brake disc"],
+      "icon": "brake-disc",
+      "services": ["Cleaned brake disc", "Trued brake disc", "Checked brake disc thickness", "Checked brake disc mounting"]
+    },
+    {
+      "id": "tire",
+      "names": ["Front tire", "Rear tire"],
+      "icon": "tire",
+      "services": ["Refreshed tubeless sealant", "Checked tire pressure", "Inspected tire wear", "Repaired puncture"]
+    },
+    {
+      "id": "bottom-bracket",
+      "names": ["Bottom bracket"],
+      "icon": "bottom-bracket",
+      "services": ["Cleaned and greased bottom bracket", "Checked bottom bracket play", "Serviced bottom bracket bearings"]
+    },
+    {
+      "id": "headset",
+      "names": ["Headset"],
+      "icon": "headset",
+      "services": ["Adjusted headset preload", "Cleaned and greased headset", "Serviced headset bearings"]
+    },
+    {
+      "id": "wheel",
+      "names": ["Front wheel", "Rear wheel"],
+      "icon": "wheel",
+      "services": ["Trued wheel", "Checked spoke tension", "Tensioned spokes", "Replaced spoke", "Serviced hub bearings", "Adjusted hub bearings", "Checked hub bearing play"]
+    },
+    {
+      "id": "fork",
+      "names": ["Fork"],
+      "icon": "fork",
+      "services": ["Cleaned fork stanchions", "Serviced fork lowers", "Serviced fork damper", "Checked fork air pressure"]
+    },
+    {
+      "id": "rear-shock",
+      "names": ["Rear shock"],
+      "icon": "shock",
+      "services": ["Cleaned rear shock", "Serviced shock air can", "Serviced shock damper", "Checked shock air pressure"]
+    },
+    {
+      "id": "groupset-battery",
+      "names": ["Electronic groupset battery"],
+      "icon": "battery",
+      "services": ["Charged groupset battery", "Checked groupset battery charge"]
+    }
+  ],
+  "custom": {
+    "icon": "component",
+    "services": ["Inspected component", "Cleaned component"]
+  }
+}

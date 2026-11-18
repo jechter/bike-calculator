@@ -1,4 +1,5 @@
 import React from "react";
+import { Maintenance } from "./components/Maintenance";
 import { Drivetrain } from "./components/Drivetrain";
 import { WheelBuilding } from "./components/WheelBuilding";
 import { WheelExamplesMenu } from "./components/WheelExamplesMenu";
@@ -16,6 +17,7 @@ import {
   ComponentsIcon,
   PowerIcon,
   ThreadIcon,
+  MaintenanceIcon,
 } from "./icons";
 
 export interface CalculatorDef {
@@ -39,6 +41,7 @@ export interface CalculatorDef {
 }
 
 export const CALCULATORS: CalculatorDef[] = [
+
   {
     id: "drivetrain",
     title: "Drivetrain",
@@ -98,4 +101,5 @@ export const CALCULATORS: CalculatorDef[] = [
     icon: <ThreadIcon />,
     Component: ThreadDirection,
   },
+  { id: "maintenance", title: "Maintenance Log", subtitle: "Track maintenance tasks for your bikes", icon: <MaintenanceIcon />, Component: Maintenance, ownHeader: true },
 ];

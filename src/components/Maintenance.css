@@ -301,3 +301,36 @@ html.embedded .maintenance--connected .maintenance-layout { flex: auto; grid-tem
 .maintenance-signin-actions > .maintenance-privacy-link { margin-left: auto; white-space: nowrap; }
 
 .maintenance .maintenance-inline-link { padding: 0; border: 0; border-radius: 2px; background: transparent; color: var(--accent); font: inherit; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Narrow bike selectors: reserve the full first line for the name. The filter
+   button spans both rows; edit and expand remain separate, 44px tap targets. */
+@container maintenance-page (max-width: 600px) {
+  .maintenance .maintenance-bike-row { grid-template-columns: minmax(0, 1fr) 44px; grid-template-rows: 44px 44px; }
+  .maintenance .maintenance-bike-row .maintenance-bike { grid-area: 1 / 1 / 3 / 3; grid-template-columns: minmax(0, 1fr); grid-template-rows: 44px 44px; gap: 0; padding: 0 12px; }
+  .maintenance-bike-row .maintenance-item-label { grid-row: 1; padding-right: 32px; gap: 8px; }
+  .maintenance-bike-row .maintenance-item-label > span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .maintenance-bike-row .maintenance-bike-distance { grid-row: 2; padding-right: 44px; }
+  .maintenance-bike-row .maintenance-mileage { font-size: 14px; font-weight: 500; color: var(--muted); }
+  .maintenance .maintenance-bike-row .maintenance-bike-edit { grid-area: 2 / 2; width: 44px; height: 44px; }
+  .maintenance .maintenance-bike-row .maintenance-bike-toggle { grid-area: 1 / 2; width: 44px; height: 44px; padding: 12px; }
+  .maintenance-bike-row:has(.maintenance-bike.selected) .maintenance-bike-edit,
+  .maintenance-bike-row:has(.maintenance-bike.selected) .maintenance-bike-toggle { background: var(--accent-soft); }
+}
+
+/* Phone-width log cards: tighter rhythm without shrinking action tap targets
+   or hiding notes, historical distances, or filter shortcuts. */
+@container maintenance-log (max-width: 420px) {
+  .maintenance-log .maintenance-entry { padding: 10px 12px; gap: 2px; }
+  .maintenance-log .maintenance-entry-context { gap: 0 6px; margin-bottom: 0; font-size: 12px; line-height: 1.4; }
+  .maintenance-log .maintenance-kind { font-size: 10px; padding: 2px 4px; }
+  .maintenance-log .maintenance-entry-details, .maintenance-log .maintenance-entry time { font-size: 12px; }
+  .maintenance-log .maintenance-entry-details { gap: 2px 8px; }
+  .maintenance-log .maintenance-entry h3 { margin: 3px 0; font-size: 15px; line-height: 1.35; }
+  .maintenance-log .maintenance-notes { margin: 3px 0; font-size: 13px; line-height: 1.4; }
+  .maintenance-log .maintenance-entry-meta { gap: 4px; font-size: 14px; }
+  .maintenance-log .maintenance-entry-actions { gap: 4px; }
+}
+
+.maintenance-notice--dismissible { position: relative; min-height: 50px; padding-right: 54px; }
+.maintenance .maintenance-notice-close { position: absolute; top: 3px; right: 3px; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; }
+.maintenance .maintenance-notice-close:hover { color: var(--text); background: var(--panel); }

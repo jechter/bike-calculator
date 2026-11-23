@@ -265,8 +265,8 @@ export function Maintenance() {
     </form>;
   return <div className={'maintenance' + (data ? ' maintenance--connected' : '')}>
     <div className="main-head maintenance-page-head"><div><h1>Maintenance Log</h1><p className="subtitle">Track maintenance tasks for your bikes</p></div>{actionSlot ? createPortal(headerActions, actionSlot) : <div className="main-actions">{headerActions}</div>}</div>
-    {error && <div className="maintenance-notice maintenance-error" role="alert">{error}{!data && <button disabled={busy} onClick={disconnect}>Clear saved sign-in</button>}</div>}
-    {message && <div className="maintenance-notice" role="status">{message}</div>}
+    {error && <div className="maintenance-notice maintenance-error maintenance-notice--dismissible" role="alert"><div>{error}{!data && <button disabled={busy} onClick={disconnect}>Clear saved sign-in</button>}</div><button type="button" className="maintenance-notice-close" aria-label="Dismiss error" title="Dismiss error" onClick={() => setError('')}><span aria-hidden="true">×</span></button></div>}
+    {message && <div className="maintenance-notice maintenance-notice--dismissible" role="status"><span>{message}</span><button type="button" className="maintenance-notice-close" aria-label="Dismiss notification" title="Dismiss notification" onClick={() => setMessage('')}><span aria-hidden="true">×</span></button></div>}
     {busy && <p role="status">Connecting / loading…</p>}
     {data && importOpen && <form className="maintenance-form" aria-label="Import garage backup" onSubmit={importBackup}>
       <h2>Import garage backup</h2>
@@ -323,7 +323,7 @@ export function Maintenance() {
         const panelId = `bike-components-${index}`;
         return <li key={b.id}>
           <div className="maintenance-bike-row">
-            <button className={'maintenance-bike' + (open ? ' selected' : '')} aria-label={`${b.name}. Total distance: ${km(b.distance / 1000)} km.`} aria-pressed={open} aria-expanded={open} aria-controls={panelId} disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => toggleBike(b.id)}><strong className="maintenance-item-label"><BikeIcon /><span>{b.name}</span></strong><span className="maintenance-bike-distance"><span className="maintenance-mileage">{km(b.distance / 1000)} <small>km</small></span></span></button>
+            <button className={'maintenance-bike' + (open ? ' selected' : '')} aria-label={`${b.name}. Total distance: ${km(b.distance / 1000)} km.`} aria-pressed={open} aria-expanded={open} aria-controls={panelId} disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => toggleBike(b.id)}><strong className="maintenance-item-label"><BikeIcon /><span title={b.name}>{b.name}</span></strong><span className="maintenance-bike-distance"><span className="maintenance-mileage">{km(b.distance / 1000)} <small>km</small></span></span></button>
             <button className="maintenance-bike-edit" type="button" title="Edit bike / update mileage" aria-label={`Edit bike: ${b.name}`} disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => { setError(''); setMessage(''); setBikeEditor({ id: b.id, name: b.name, mileage: String(b.distance / 1000) }); if (isMobile) filtersDrawer.setOpen(false); }}><EditIcon /></button>
             <button className="maintenance-bike-toggle" disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} aria-expanded={open} aria-controls={panelId} aria-label={`${open ? 'Hide' : 'Show'} components for ${b.name}`} onClick={() => toggleBike(b.id)}><span aria-hidden="true">{open ? '▾' : '▸'}</span></button>
           </div>

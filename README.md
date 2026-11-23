@@ -67,6 +67,26 @@ npm run preview  # preview the production build
 npm test         # run the calculation unit tests (Vitest)
 ```
 
+## iPhone home-screen app
+
+Open a calculator in Safari and choose **Share → Add to Home Screen**. The web
+manifest scopes the app to the whole calculator directory. Home-screen mode uses
+same-document hash navigation so switching calculators also stays inside older
+installs saved from an individual calculator page. Ordinary browser visits keep
+the search-friendly page URLs; embedded views retain their existing behavior.
+The iPhone touch icon (180×180) and manifest icons (192×192 and 512×512) in
+`public/icons/` use `src/assets/rueckenwind-mark.png`, fitted within an opaque
+white square with padding for home-screen corner rounding.
+Settings and shared links continue to work in both modes. An internet connection
+is still required; this does not add offline caching.
+
+After an update, fully close and reopen the home-screen app. If iOS retains old
+installation metadata or an old icon, remove its home-screen icon and add it
+again from Safari.
+To verify on an iPhone, install from a nested calculator URL, switch calculators,
+change settings, and reopen a copied link. Switching should not open a Safari
+view. Desktop tests emulate standalone detection but cannot validate iOS chrome.
+
 ## Deployment
 
 The project can be deployed from a local checkout with `scripts/deploy.sh`.

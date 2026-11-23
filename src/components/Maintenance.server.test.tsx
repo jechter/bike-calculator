@@ -368,3 +368,39 @@ it('does not restore an earlier remember-me choice when reloading a pending sign
   render(<Maintenance />);
   expect((screen.getByRole('checkbox', { name: /Remember me for up to 180 days/ }) as HTMLInputElement).checked).toBe(false);
 });
+
+it('dismisses sign-in notifications without clearing the code-entry step and shows later messages', async () => {
+  render(<Maintenance />);
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'rider@example.com' } });
+  fireEvent.click(screen.getByText('Send sign-in code'));
+  const code = await screen.findByLabelText('Type or paste the code we sent to your email here');
+  fireEvent.change(code, { target: { value: '123456' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Dismiss notification' }));
+  expect(screen.queryByText(/Check your email for your sign-in code/)).toBeNull();
+  expect((code as HTMLInputElement).value).toBe('123456');
+  expect((screen.getByLabelText('Email') as HTMLInputElement).value).toBe('rider@example.com');
+  fireEvent.click(screen.getByText('Verify code'));
+  await screen.findByText('Signed in. Your bikes and maintenance are saved to your cloud account.');
+  fireEvent.click(screen.getByRole('button', { name: 'Dismiss notification' }));
+  expect(screen.queryByText('Signed in. Your bikes and maintenance are saved to your cloud account.')).toBeNull();
+  expect(screen.getByRole('region', { name: 'Performed maintenance' })).toBeTruthy();
+  expect(mocks.logout).not.toHaveBeenCalled();
+  expect(mocks.write).not.toHaveBeenCalled();
+});
+
+it('dismisses an error without clearing inputs or preventing a verification retry', async () => {
+  mocks.verify.mockRejectedValueOnce(new Error('Invalid sign-in code'));
+  render(<Maintenance />);
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'rider@example.com' } });
+  fireEvent.click(screen.getByText('Send sign-in code'));
+  const code = await screen.findByLabelText('Type or paste the code we sent to your email here');
+  fireEvent.change(code, { target: { value: '123456' } });
+  fireEvent.click(screen.getByText('Verify code'));
+  await screen.findByRole('alert');
+  fireEvent.click(screen.getByRole('button', { name: 'Dismiss error' }));
+  expect(screen.queryByRole('alert')).toBeNull();
+  expect((code as HTMLInputElement).value).toBe('123456');
+  fireEvent.click(screen.getByText('Verify code'));
+  await screen.findByRole('region', { name: 'Performed maintenance' });
+  expect(mocks.verify).toHaveBeenCalledTimes(2);
+});

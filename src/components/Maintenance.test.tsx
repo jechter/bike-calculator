@@ -582,3 +582,11 @@ it('omits the last-sync label for garages that have never synced', async () => {
   expect(screen.getByRole('heading', { name: 'Bikes' })).toBeTruthy();
   expect(screen.queryByText(/^Last sync:/)).toBeNull();
 });
+
+it('keeps the complete bike name accessible when narrow layouts visually truncate it', async () => {
+  const name = 'A very long custom bicycle name that should never wrap onto a second line';
+  await cloudGarage({ ...sampleMaintenance(), bikes: [{ id: 'long-bike', name, distance: 5300500 }], entries: [] });
+  const button = screen.getByRole('button', { name: `${name}. Total distance: 5,300.5 km.` });
+  expect(within(button).getByText(name).getAttribute('title')).toBe(name);
+  expect(screen.getByRole('button', { name: `Edit bike: ${name}` })).toBeTruthy();
+});

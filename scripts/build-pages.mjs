@@ -13,6 +13,8 @@ function pageHtml(page, nested) {
     : 'Use this free interactive calculator from the Rückenwind community bike workshop. Enable JavaScript to enter your measurements and see results.';
   return template
     .replaceAll('./assets/', `${prefix}assets/`)
+    .replaceAll('./icons/', `${prefix}icons/`)
+    .replace('./manifest.webmanifest', `${prefix}manifest.webmanifest`)
     .replace(/<title>.*?<\/title>/, `<title>${escape(page.title)} | Rückenwind</title>\n    <meta name="description" content="${escape(page.description)}" />\n    <link rel="canonical" href="${origin}${page.slug}/" />`)
     .replace('<div id="root"></div>', `<div id="root"><main><h1>${escape(page.title)}</h1><p>${escape(page.description)}</p><p>${introduction}</p><nav aria-label="Calculators"><ul>${links}</ul></nav><p><a href="${prefix}privacy/index.html">Privacy notice</a></p></main></div>`);
 }

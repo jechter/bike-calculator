@@ -3,6 +3,13 @@ import { isEmbedded, notifyConfigChanged } from "./embed";
 import routes from "./routes.json";
 
 const NAVIGATION = "bikecalc:navigate";
+
+/** Keep home-screen navigation inside even an older, page-scoped iOS install. */
+function usesHashNavigation(): boolean {
+  return isEmbedded() ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true ||
+    window.matchMedia?.("(display-mode: standalone)").matches === true;
+}
 const routeSlugs = (route: (typeof routes)[number]) => [route.slug, ...route.legacySlugs];
 const matchPath = (path: string) => {
   for (const route of routes) {
@@ -25,7 +32,7 @@ export function getBasePath(): string {
 }
 
 export function routeHref(id: string): string {
-  if (isEmbedded()) return `#/${id}`;
+  if (usesHashNavigation()) return `#/${id}`;
   const page = routes.find(r => r.id === id) ?? routes[0];
   return `${getBasePath()}${page.slug}/`;
 }
@@ -56,7 +63,7 @@ export function buildHash(routeId: string, params: Record<string, unknown>): str
 
 /** Migrate old bookmarks without losing their configuration or adding history. */
 export function normalizeRoute(): void {
-  if (isEmbedded()) return;
+  if (usesHashNavigation()) return;
   const id = currentRoute();
   const query = getHashQuery().toString();
   const anchor = legacyRoute() ? "" : window.location.hash;
@@ -65,7 +72,7 @@ export function normalizeRoute(): void {
 
 export function navigateTo(id: string, params?: Record<string, unknown>): void {
   const hash = buildHash(id, params ?? {});
-  if (isEmbedded()) {
+  if (usesHashNavigation()) {
     window.location.hash = hash;
     return;
   }
@@ -82,8 +89,8 @@ export function handleRouteLinkClick(event: MouseEvent<HTMLAnchorElement>): void
       (link.target && link.target !== "_self")) return;
   const url = new URL(link.href, window.location.href);
   if (url.origin !== window.location.origin) return;
-  // Embedded links already use native hash navigation and need no interception.
-  if (isEmbedded()) return;
+  // Embedded and home-screen links use native same-document hash navigation.
+  if (usesHashNavigation()) return;
   if (!routes.some(r => url.pathname === `${getBasePath()}${r.slug}/`)) return;
   event.preventDefault();
   if (url.href === window.location.href) return;
@@ -109,7 +116,7 @@ export function useUrlConfigSync(routeId: string, params: Record<string, unknown
   useEffect(() => {
     const id = window.setTimeout(() => {
       if (currentRoute() !== routeId) return;
-      if (isEmbedded()) history.replaceState(null, "", hash);
+      if (usesHashNavigation()) history.replaceState(null, "", hash);
       else {
         const qi = hash.indexOf("?");
         history.replaceState(null, "", routeHref(routeId) + (qi < 0 ? "" : hash.slice(qi)) + window.location.hash);

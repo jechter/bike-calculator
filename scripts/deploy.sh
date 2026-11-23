@@ -3,8 +3,7 @@
 # Deploy the Bike Workshop Calculator to the Rückenwind Strato host.
 #
 # Steps: push the current branch, build, then sync dist/ to the server over
-# SFTP — uploads index.html + the freshly-hashed assets and prunes any stale
-# asset files left from previous builds.
+# SFTP — uploads all build output and prunes stale hashed assets.
 
 set -euo pipefail
 
@@ -31,14 +30,20 @@ npm run build
 LOCAL_ASSETS="$(cd dist/assets && printf '%s ' *)"
 echo "==> Built assets: $LOCAL_ASSETS"
 
-# 3. Upload all generated HTML entry points as well as assets.
+# 3. Upload every generated directory and file, including public web-app assets.
+# Keep hashed assets first and index.html last so the entry point is published
+# after its dependencies. Paths are generated locally, never from remote input.
 PAGE_CMDS=""
-for page in dist/*/index.html; do
-  dir="$(basename "$(dirname "$page")")"
+while IFS= read -r dir; do
+  dir="${dir#dist/}"
   PAGE_CMDS="$PAGE_CMDS
-send -- \"mkdir $dir\r\"; expect \"sftp>\"
-send -- \"put $dir/index.html $dir/index.html\r\"; expect \"sftp>\""
-done
+send -- \"mkdir $dir\r\"; expect \"sftp>\""
+done < <(find dist -mindepth 1 -type d | LC_ALL=C sort)
+while IFS= read -r file; do
+  file="${file#dist/}"
+  PAGE_CMDS="$PAGE_CMDS
+send -- \"put $file $file\r\"; expect \"sftp>\""
+done < <(find dist -type f ! -path 'dist/assets/*' ! -path 'dist/index.html' | LC_ALL=C sort)
 echo "==> Uploading"
 OUT="$(expect <<EOF
 log_user 1
@@ -51,9 +56,8 @@ send -- "cd $REMOTE_DIR/assets\r"; expect "sftp>"
 send -- "put *\r"; expect "sftp>"
 send -- "lcd $REPO/dist\r"; expect "sftp>"
 send -- "cd $REMOTE_DIR\r"; expect "sftp>"
-send -- "put index.html\r"; expect "sftp>"
-send -- "put sitemap.xml\r"; expect "sftp>"
 $PAGE_CMDS
+send -- "put index.html\r"; expect "sftp>"
 send -- "ls -1 assets\r"; expect "sftp>"
 send -- "bye\r"
 expect eof
@@ -103,14 +107,20 @@ fi
 
 # 5. Verify the live site references the freshly-built files.
 echo "==> Verifying live site"
-LIVE="$(curl -s "$DEPLOY_URL" \
+LIVE="$(curl -fsSL "$DEPLOY_URL" \
   | grep -oE 'index-[A-Za-z0-9_-]+\.(js|css)' | sort -u || true)"
 echo "    live references: $LIVE"
 for f in $LOCAL_ASSETS; do
+  # Images are loaded by the JavaScript, not referenced in the entry HTML.
+  case "$f" in index-*.js|index-*.css) ;; *) continue ;; esac
   case "$LIVE" in
     *"$f"*) : ;;
-    *) echo "    WARNING: $f not referenced live yet (CDN/browser cache?)" ;;
+    *) echo "    ERROR: $f not referenced live yet (CDN/browser cache?)"; exit 1 ;;
   esac
 done
+
+# Verify the manifest and icons too: a successful HTML upload alone is not
+# sufficient for home-screen installation.
+node scripts/verify-web-app.mjs
 
 echo "==> Done."

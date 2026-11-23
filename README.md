@@ -91,8 +91,8 @@ view. Desktop tests emulate standalone detection but cannot validate iOS chrome.
 
 The project can be deployed from a local checkout with `scripts/deploy.sh`.
 It pushes the current branch (best-effort), builds the site, uploads `dist/`
-over SFTP, prunes obsolete hashed assets, and checks the live page. From this
-workspace, install `expect` if needed, then provide the host settings only in
+over SFTP (including the manifest and icons), prunes obsolete hashed assets,
+and checks the live page and exact web-app asset contents. From this workspace, install `expect` if needed, then provide the host settings only in
 the current shell and run the script:
 
 ```bash

@@ -107,7 +107,7 @@ fi
 
 # 5. Verify the live site references the freshly-built files.
 echo "==> Verifying live site"
-LIVE="$(curl -s "$DEPLOY_URL" \
+LIVE="$(curl -fsSL "$DEPLOY_URL" \
   | grep -oE 'index-[A-Za-z0-9_-]+\.(js|css)' | sort -u || true)"
 echo "    live references: $LIVE"
 for f in $LOCAL_ASSETS; do

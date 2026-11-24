@@ -3,3 +3,7 @@ verify_jwt = false
 
 [functions.maintenance-storage]
 verify_jwt = false
+
+# Verify the caller with Auth getUser in the handler (supports publishable keys).
+[functions.intervals-connection]
+verify_jwt = false

@@ -6,9 +6,9 @@ import { useIsMobile } from '../useIsMobile';
 import { ResponsivePopover } from './ResponsivePopover';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { bikeComponents, suggestedServices, componentHistory, componentMileage, componentName, componentNames, maintenanceIntervals, kilometersAgo, localDate, type MaintenanceData, type MaintenanceEntry, type MaintenanceKind } from '../lib/maintenance';
-import { loadIntervals } from '../lib/intervals';
-import { cancelIntervalsOAuth, createIntervalsAuthorizationUrl, finishIntervalsOAuth, hasIntervalsOAuthCallback, revokeIntervalsConnection } from '../lib/intervals-oauth';
-import { accountEnabled, accountSessionKey, hasSavedAccount, clearPendingEmailSignIn, loadPendingEmailSignIn, rememberPendingEmailSignIn, AccountGarage, downloadGarage, forgetAccount, mergeIntervalsBikes, restoreAccountOnce, sendSignInCode, verifySignInCode } from '../lib/maintenance-account';
+import type { IntervalsGarage } from '../lib/intervals';
+import { cancelIntervalsOAuth, createIntervalsAuthorizationUrl, finishIntervalsOAuth, hasIntervalsOAuthCallback } from '../lib/intervals-oauth';
+import { accountEnabled, accountSessionKey, hasSavedAccount, clearPendingEmailSignIn, loadPendingEmailSignIn, rememberPendingEmailSignIn, AccountGarage, intervalsNeedsReconnect, downloadGarage, forgetAccount, mergeIntervalsBikes, restoreAccountOnce, sendSignInCode, verifySignInCode } from '../lib/maintenance-account';
 import { RepeatIcon, EditIcon, DeleteIcon, BikeIcon, WrenchIcon, ThreadIcon } from '../icons';
 import { MaintenanceComponentIcon } from './MaintenanceComponentIcon';
 import { MaintenancePreview } from './MaintenancePreview';
@@ -20,7 +20,7 @@ const km = (value: number) => value.toLocaleString(undefined, { maximumFractionD
 export function Maintenance() {
   const [data, setData] = useState<MaintenanceData | null>(null);
   const [busy, setBusy] = useState(false);
-  const accessToken = useRef('');
+  const initializedIntervalsOwner = useRef<AccountGarage | null>(null);
   const [oauthCallbackPending, setOAuthCallbackPending] = useState(hasIntervalsOAuthCallback);
   const [intervalsConnected, setIntervalsConnected] = useState(false);
   const store = useRef<AccountGarage | null>(null);
@@ -86,7 +86,7 @@ export function Maintenance() {
       sessionGeneration.current++;
       try { sessionStorage.removeItem(accountSessionKey); } catch { /* Tab storage may be unavailable. */ }
       store.current = null; setData(null); setAccountEmail(''); setFormOpen(false); setBikeEditor(null);
-      accessToken.current = ''; cancelIntervalsOAuth(); setOAuthCallbackPending(false); setIntervalsConnected(false); setSyncOpen(false); setImportOpen(false); setBackupImport(null); setMoreOpen(false);
+      initializedIntervalsOwner.current = null; cancelIntervalsOAuth(); setOAuthCallbackPending(false); setIntervalsConnected(false); setSyncOpen(false); setImportOpen(false); setBackupImport(null); setMoreOpen(false);
       setMessage('Sign-in changed in another tab. Reload or sign in again to continue.');
     };
     window.addEventListener('storage', changed);
@@ -113,11 +113,8 @@ export function Maintenance() {
     await requireStore().write(garage);
     setData(garage);
   };
-  const syncMileage = async (token: string) => {
-    if (!data) return;
-    const owner = requireStore();
-    const incoming = await loadIntervals(token);
-    if (store.current !== owner) throw new Error('Your account changed. No bikes or mileage were imported.');
+  const importMileage = async (owner: AccountGarage, incoming: IntervalsGarage) => {
+    if (!data || store.current !== owner) throw new Error('Your account changed. No bikes or mileage were imported.');
     const bikes = mergeIntervalsBikes(data.bikes, incoming.bikes, incoming.athleteId);
     const garage = { ...data, bikes, synced_at: incoming.synced_at };
     await owner.write(garage);
@@ -125,22 +122,48 @@ export function Maintenance() {
     setData(garage); setIntervalsConnected(true); setSyncOpen(false);
     setMessage('Bike mileage synced. Manual bikes and service history were kept.');
   };
+  const syncMileage = async () => {
+    const owner = requireStore();
+    try { await importMileage(owner, await owner.syncIntervals()); }
+    catch (error) { if (store.current === owner && intervalsNeedsReconnect(error)) setIntervalsConnected(false); throw error; }
+  };
   useEffect(() => {
-    if (!data || !oauthCallbackPending || !store.current) return;
+    if (!data || !store.current || initializedIntervalsOwner.current === store.current) return;
     let mounted = true;
     const owner = store.current;
-    setBusy(true); setError(''); setMessage('');
-    void finishIntervalsOAuth(owner.userId).then(async connection => {
-      if (!mounted || store.current !== owner) return;
-      accessToken.current = connection.accessToken; setIntervalsConnected(true);
-      await syncMileage(connection.accessToken);
-    }).catch(error => { if (mounted && store.current === owner) setError(error instanceof Error ? error.message : 'Could not connect Intervals.icu.'); })
-      .finally(() => { if (mounted && store.current === owner) { setOAuthCallbackPending(false); setBusy(false); } });
+    setBusy(true);
+    if (oauthCallbackPending) { setError(''); setMessage(''); }
+    const restoreConnection = async () => {
+      if (oauthCallbackPending) {
+        const connection = await finishIntervalsOAuth(owner.userId);
+        if (!mounted || store.current !== owner) return;
+        const incoming = await owner.connectIntervals(connection.accessToken);
+        if (!mounted || store.current !== owner) return;
+        setIntervalsConnected(true);
+        await importMileage(owner, incoming);
+      } else {
+        const status = await owner.intervalsStatus();
+        if (!mounted || store.current !== owner) return;
+        setIntervalsConnected(status.connected);
+        if (status.connected) {
+          const incoming = await owner.syncIntervals();
+          if (mounted && store.current === owner) await importMileage(owner, incoming);
+        }
+      }
+    };
+    void restoreConnection().catch(error => {
+      if (mounted && store.current === owner) {
+        if (intervalsNeedsReconnect(error)) setIntervalsConnected(false);
+        setError(error instanceof Error ? error.message : 'Could not restore your Intervals.icu connection.');
+      }
+    }).finally(() => {
+      if (mounted && store.current === owner) { initializedIntervalsOwner.current = owner; setOAuthCallbackPending(false); setBusy(false); }
+    });
     return () => { mounted = false; };
   }, [Boolean(data), oauthCallbackPending]);
   useEffect(() => {
     if (!intervalsConnected || busy || formOpen || bikeEditor || syncOpen || importOpen || !data) return;
-    const timer = window.setInterval(() => { if (document.visibilityState === 'visible') void run(() => syncMileage(accessToken.current)); }, 5 * 60 * 1000);
+    const timer = window.setInterval(() => { if (document.visibilityState === 'visible') void run(syncMileage); }, 5 * 60 * 1000);
     return () => window.clearInterval(timer);
   }, [intervalsConnected, busy, formOpen, bikeEditor, syncOpen, importOpen, data]);
   const connect = (event: FormEvent) => {
@@ -155,15 +178,16 @@ export function Maintenance() {
   const disconnectIntervals = () => {
     setMoreOpen(false);
     void run(async () => {
-      const token = accessToken.current;
-      try { if (token) await revokeIntervalsConnection(token); }
-      finally { accessToken.current = ''; setIntervalsConnected(false); setSyncOpen(false); cancelIntervalsOAuth(); }
-      setMessage('Intervals.icu disconnected. Your bikes and records were kept.');
+      const owner = requireStore();
+      const result = await owner.disconnectIntervals();
+      if (store.current !== owner) return;
+      setIntervalsConnected(false); setSyncOpen(false); cancelIntervalsOAuth();
+      setMessage(result.revoked ? 'Intervals.icu disconnected. Your bikes and records were kept.' : 'The saved Intervals.icu connection was removed. Revoke this app’s access in Intervals.icu Settings → Apps; the provider could not be reached. Your bikes and records were kept.');
     });
   };
   const clearSignedInState = () => {
     sessionGeneration.current++;
-    store.current = null; setAccountEmail(''); accessToken.current = ''; cancelIntervalsOAuth(); setOAuthCallbackPending(false); setIntervalsConnected(false);
+    store.current = null; setAccountEmail(''); initializedIntervalsOwner.current = null; cancelIntervalsOAuth(); setOAuthCallbackPending(false); setIntervalsConnected(false);
     setMoreOpen(false); setData(null); setSyncOpen(false); setImportOpen(false); setBackupImport(null); clearFilter(); setFormOpen(false); setBikeEditor(null); clearPendingEmailSignIn(); setCodeSent(false); setCode(''); setEmail(''); setRememberMe(false);
   };
   const disconnect = () => {
@@ -177,12 +201,13 @@ export function Maintenance() {
     if (!confirm(`Permanently delete the account ${accountEmail} and ALL its bikes and maintenance history? This cannot be undone. Download a garage backup first if you want a copy. Intervals.icu data and files you downloaded are not deleted. Provider logs/backups may expire separately.`)) return;
     void run(async () => {
       const account = requireStore();
-      const token = accessToken.current;
+      let warning = '';
+      try { const result = await account.disconnectIntervals(); setIntervalsConnected(false); if (!result.revoked) warning = ' Revoke this app’s access in Intervals.icu Settings → Apps.'; }
+      catch { warning = ' Revoke this app’s access in Intervals.icu Settings → Apps.'; }
+      if (store.current !== account) throw new Error('Your account changed. No account was deleted.');
       await account.deleteAccount();
       if (store.current !== account) return;
       clearSignedInState();
-      let warning = '';
-      if (token) { try { await revokeIntervalsConnection(token); } catch { warning = ' Revoke this app’s access in Intervals.icu Settings → Apps.'; } }
       setMessage('Your account and cloud garage have been deleted. Downloaded files and your Intervals.icu account are unchanged.' + warning);
     });
   };
@@ -264,7 +289,7 @@ export function Maintenance() {
   };
   const headerActions = data && <div className="maintenance-header-actions">
     <button className="copy-link-btn maintenance-primary" disabled={busy || formOpen || Boolean(bikeEditor) || importOpen || !data.bikes.length} onClick={() => openForm()} aria-label="+ Log maintenance">{isMobile ? '+ Log' : '+ Log maintenance'}</button>
-    {accessToken.current && <button className="copy-link-btn maintenance-refresh" aria-label="Refresh mileage" title="Refresh mileage" disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => void run(() => syncMileage(accessToken.current))}><ThreadIcon /><span className="maintenance-action-label">Refresh mileage</span></button>}
+    {intervalsConnected && <button className="copy-link-btn maintenance-refresh" aria-label="Refresh mileage" title="Refresh mileage" disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => void run(syncMileage)}><ThreadIcon /><span className="maintenance-action-label">Refresh mileage</span></button>}
     <div className="maintenance-more" ref={moreRef}>
       <button className="copy-link-btn" aria-expanded={moreOpen} aria-controls="maintenance-more-menu" onClick={() => setMoreOpen(open => !open)}>More <span aria-hidden="true">▾</span></button>
       {moreOpen && <ResponsivePopover id="maintenance-more-menu" className="maintenance-more-popup" anchorRef={moreRef} onClose={() => setMoreOpen(false)}>
@@ -333,7 +358,7 @@ export function Maintenance() {
       <div className="maintenance-actions"><button className="maintenance-primary" disabled={busy || !backupImport || (!backupImport.plan.addedBikes && !backupImport.plan.addedEntries)}>Import backup</button><button type="button" disabled={busy} onClick={() => { setImportOpen(false); setBackupImport(null); }}>Cancel</button></div>
     </form>}
     {syncOpen && <form className="maintenance-form" aria-label="Intervals.icu connection" onSubmit={connect}><h2>Connect Intervals.icu</h2><p>Continue to Intervals.icu to authorize read-only access to athlete settings, including bike names and mileage. No activity or write permission is requested. Your manual bikes and maintenance history are kept.</p>
-      <p className="maintenance-fine">You will return here after approval. While connected, mileage refreshes every five minutes when this page is visible and no editing form is open. Access is held only in page memory, not saved in browser storage or the cloud garage. Reconnect after leaving this page.</p>
+      <p className="maintenance-fine">The connection is saved securely to your maintenance account, not in browser storage. The log fetches current mileage when you return and every five minutes while visible and idle. Use More → Disconnect Intervals.icu to remove access.</p>
       <div className="maintenance-actions"><button className="maintenance-primary" disabled={busy}>Continue to Intervals.icu</button><button type="button" disabled={busy} onClick={() => { cancelIntervalsOAuth(); setSyncOpen(false); }}>Cancel</button></div>
     </form>}
     {!data ? <div className="maintenance-locked">

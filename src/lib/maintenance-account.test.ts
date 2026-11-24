@@ -293,3 +293,64 @@ it('does not extend an existing 30-day deadline when restoring after the lifetim
   await restoreAccount();
   expect(JSON.parse(localStorage.getItem(sessionKey)!).remembered_until).toBe(until);
 });
+
+const intervalsIncoming = () => ({ athleteId: 'i1', name: 'Rider', synced_at: new Date().toISOString(), bikes: [{ id: 'bike-1', name: 'Road bike', distance: 1234567 }], entries: [] });
+function tabAccountSession() {
+  sessionStorage.setItem('maintenance-account-v1', JSON.stringify({ ...session, remember_me: false, remembered_until: Date.now() + day, expires_at: Date.now() / 1000 + 3600 }));
+}
+it('manages persistent Intervals.icu access only through the authenticated backend, without storing the OAuth credential in the browser', async () => {
+  tabAccountSession();
+  const fetch = vi.spyOn(globalThis, 'fetch')
+    .mockResolvedValueOnce(new Response(JSON.stringify({ connected: false })))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ ...intervalsIncoming(), access_token: 'should-not-return' })))
+    .mockResolvedValueOnce(new Response(JSON.stringify(intervalsIncoming())))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ connected: false, revoked: true })));
+  const { AccountGarage } = await import('./maintenance-account');
+  const account = new AccountGarage(session);
+  expect(await account.intervalsStatus()).toEqual({ connected: false });
+  const incoming = await account.connectIntervals('provider-oauth-token');
+  expect(JSON.stringify(incoming)).not.toContain('should-not-return');
+  expect(incoming.bikes[0].distance).toBe(1234567);
+  await account.syncIntervals();
+  expect(await account.disconnectIntervals()).toEqual({ revoked: true });
+  const bodies = fetch.mock.calls.map(([, options]) => JSON.parse(options?.body as string));
+  expect(bodies).toEqual([{ action: 'status' }, { action: 'connect', accessToken: 'provider-oauth-token' }, { action: 'sync' }, { action: 'disconnect' }]);
+  for (const [url, options] of fetch.mock.calls) {
+    expect(url).toBe('https://example.supabase.co/functions/v1/intervals-connection');
+    expect(options?.method).toBe('POST');
+    expect(new Headers(options?.headers).get('Authorization')).toBe('Bearer access');
+    expect(options?.credentials).toBe('omit');
+    expect(options?.redirect).toBe('error');
+  }
+  expect(JSON.stringify({ ...sessionStorage, ...localStorage })).not.toContain('provider-oauth-token');
+});
+it('keeps provider revocation separate from an expired Supabase sign-in, avoiding an unrelated session refresh', async () => {
+  tabAccountSession();
+  const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ message: 'Connect Intervals.icu again.', code: 'INTERVALS_RECONNECT_REQUIRED' }), { status: 409 }));
+  const { AccountGarage, intervalsNeedsReconnect } = await import('./maintenance-account');
+  let caught;
+  try { await new AccountGarage(session).syncIntervals(); } catch (error) { caught = error; }
+  expect(intervalsNeedsReconnect(caught)).toBe(true);
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(sessionStorage.getItem('maintenance-account-v1')).not.toBeNull();
+});
+it('refuses saved-connection requests after the Maintenance Log account changes', async () => {
+  tabAccountSession();
+  const { AccountGarage } = await import('./maintenance-account');
+  const account = new AccountGarage(session);
+  sessionStorage.setItem('maintenance-account-v1', JSON.stringify({ ...session, user: { id: 'another-user' } }));
+  const fetch = vi.spyOn(globalThis, 'fetch');
+  await expect(account.syncIntervals()).rejects.toThrow('sign-in expired or changed');
+  expect(fetch).not.toHaveBeenCalled();
+});
+it('rejects malformed backend status, mileage, and disconnect replies without changing browser records', async () => {
+  tabAccountSession();
+  const { AccountGarage } = await import('./maintenance-account');
+  const account = new AccountGarage(session);
+  const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ connected: 'yes' })));
+  await expect(account.intervalsStatus()).rejects.toThrow('invalid status');
+  fetch.mockResolvedValue(new Response(JSON.stringify({ ...intervalsIncoming(), bikes: [{ id: 'bike-1', name: 'Road', distance: -1 }] })));
+  await expect(account.syncIntervals()).rejects.toThrow('invalid mileage');
+  fetch.mockResolvedValue(new Response(JSON.stringify({ connected: true, revoked: true })));
+  await expect(account.disconnectIntervals()).rejects.toThrow('could not be disconnected');
+});

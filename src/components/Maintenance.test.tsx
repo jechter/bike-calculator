@@ -7,10 +7,18 @@ import { Maintenance } from './Maintenance';
 import { saveApiKey, loadSavedApiKey } from '../lib/intervals';
 import { componentHistory, componentMileage, componentNames, kilometersAgo, localDate } from '../lib/maintenance';
 const cloudMocks = vi.hoisted(() => ({ restore: vi.fn() }));
+const oauthMocks = vi.hoisted(() => ({ hasIntervalsOAuthCallback: vi.fn(), finishIntervalsOAuth: vi.fn(), createIntervalsAuthorizationUrl: vi.fn(), revokeIntervalsConnection: vi.fn(), cancelIntervalsOAuth: vi.fn() }));
+vi.mock('../lib/intervals-oauth', () => oauthMocks);
 vi.mock('../lib/maintenance-account', async original => ({ ...await original<typeof import('../lib/maintenance-account')>(), accountEnabled: true, restoreAccountOnce: cloudMocks.restore }));
 import { testMaintenanceAccount } from '../test-fixtures/maintenance-account';
 import { emptyGarage } from '../lib/maintenance-account';
-beforeEach(() => { cloudMocks.restore.mockReset(); });
+beforeEach(() => {
+  cloudMocks.restore.mockReset();
+  for (const mock of Object.values(oauthMocks)) mock.mockReset();
+  oauthMocks.hasIntervalsOAuthCallback.mockReturnValue(false);
+  oauthMocks.finishIntervalsOAuth.mockResolvedValue({ accessToken: 'oauth-test-token' });
+  oauthMocks.revokeIntervalsConnection.mockResolvedValue(undefined);
+});
 afterEach(() => { cleanup(); localStorage.clear(); sessionStorage.clear(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 async function cloudGarage(initial = sampleMaintenance()) {
   const account = testMaintenanceAccount(initial);
@@ -162,11 +170,11 @@ function mockAccount() {
   return vi.spyOn(globalThis, 'fetch').mockImplementation(async url => new Response(JSON.stringify(String(url).endsWith('/gear') ? [{ id: 'b1', name: 'Real bike', type: 'Bike', component: false, distance: 4826537 }] : { id: 'i-test', name: 'Real rider' })));
 }
 async function openSync() {
-  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
-  fireEvent.click(screen.getByText('Connect Intervals.icu (sync bikes and mileage)'));
-  fireEvent.change(screen.getByLabelText('Intervals.icu API key'), { target: { value: 'test-key' } });
-  fireEvent.click(screen.getByText('Sync bikes'));
-  await waitFor(() => expect(screen.queryByRole('form', { name: 'Intervals.icu sync (Experimental)' })).toBeNull());
+  // Model the full-page OAuth return, retaining the signed-in cloud account.
+  cleanup();
+  oauthMocks.hasIntervalsOAuthCallback.mockReturnValue(true);
+  render(<StrictMode><Maintenance /></StrictMode>);
+  await screen.findByText('Bike mileage synced. Manual bikes and service history were kept.');
 }
 it('persists manual bikes and records, then restores without Intervals.icu or a selected filter', async () => {
   const request = vi.spyOn(globalThis, 'fetch');
@@ -195,13 +203,10 @@ it('does not reconnect legacy saved keys automatically or delete their records',
   expect(loadSavedApiKey()).toBe('legacy-key');
   expect(localStorage.getItem('maintenance-intervals-v1:i1')).toBe('[]');
 });
-it('does not save a rejected optional sync key or lose the current garage', async () => {
+it('does not save a rejected OAuth token or lose the current garage', async () => {
   vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status: 401 }));
+  oauthMocks.hasIntervalsOAuthCallback.mockReturnValue(true);
   await cloudGarage(emptyGarage());
-  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
-  fireEvent.click(screen.getByText('Connect Intervals.icu (sync bikes and mileage)'));
-  fireEvent.change(screen.getByLabelText('Intervals.icu API key'), { target: { value: 'invalid-key' } });
-  fireEvent.click(screen.getByText('Sync bikes'));
   await screen.findByRole('alert');
   expect(loadSavedApiKey()).toBeNull();
   expect(screen.getByText('No bikes found')).toBeTruthy();
@@ -544,8 +549,9 @@ it('offers only bike/mileage sync, without legacy recovery, key controls, or his
   fireEvent.click(screen.getByText('Connect Intervals.icu (sync bikes and mileage)'));
   expect(screen.queryByText('Recover legacy cloud records')).toBeNull();
   expect(screen.queryByText('Forget legacy saved key')).toBeNull();
-  fireEvent.change(screen.getByLabelText('Intervals.icu API key'), { target: { value: 'test-key' } });
-  fireEvent.click(screen.getByText('Sync bikes'));
+  expect(screen.queryByLabelText('Intervals.icu API key')).toBeNull();
+  expect(screen.getByRole('button', { name: 'Continue to Intervals.icu' })).toBeTruthy();
+  await openSync();
   await screen.findByRole('button', { name: /^Real bike. Total distance/ });
   expect(confirm).not.toHaveBeenCalled();
   expect(request.mock.calls).toHaveLength(2);
@@ -589,4 +595,58 @@ it('keeps the complete bike name accessible when narrow layouts visually truncat
   const button = screen.getByRole('button', { name: `${name}. Total distance: 5,300.5 km.` });
   expect(within(button).getByText(name).getAttribute('title')).toBe(name);
   expect(screen.getByRole('button', { name: `Edit bike: ${name}` })).toBeTruthy();
+});
+
+it('keeps the garage unchanged when OAuth consent is canceled or the callback is rejected', async () => {
+  oauthMocks.hasIntervalsOAuthCallback.mockReturnValue(true);
+  oauthMocks.finishIntervalsOAuth.mockRejectedValue(new Error('Intervals.icu connection canceled or declined.'));
+  const request = vi.spyOn(globalThis, 'fetch');
+  const { account } = await cloudGarage();
+  await screen.findByRole('alert');
+  expect(log().getAllByRole('article')).toHaveLength(4);
+  expect(account.write).not.toHaveBeenCalled();
+  expect(request).not.toHaveBeenCalled();
+});
+
+it('revokes OAuth on explicit disconnect without deleting imported bikes or maintenance', async () => {
+  mockAccount();
+  const { account } = await cloudGarage();
+  await openSync();
+  const writes = account.write.mock.calls.length;
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  fireEvent.click(screen.getByText('Disconnect Intervals.icu'));
+  await screen.findByText('Intervals.icu disconnected. Your bikes and records were kept.');
+  expect(oauthMocks.revokeIntervalsConnection).toHaveBeenCalledWith('oauth-test-token');
+  expect(screen.getByText('Real bike')).toBeTruthy();
+  expect(log().getAllByRole('article')).toHaveLength(4);
+  expect(account.write).toHaveBeenCalledTimes(writes);
+  expect(screen.queryByText('Refresh mileage')).toBeNull();
+});
+
+it('does not write an OAuth import to a changed Maintenance Log account', async () => {
+  oauthMocks.hasIntervalsOAuthCallback.mockReturnValue(true);
+  let finish!: (value: { accessToken: string }) => void;
+  oauthMocks.finishIntervalsOAuth.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+  const { account } = await cloudGarage();
+  await waitFor(() => expect(oauthMocks.finishIntervalsOAuth).toHaveBeenCalled());
+  fireEvent(window, new StorageEvent('storage', { key: 'maintenance-account-v1', newValue: null }));
+  finish({ accessToken: 'old-account-token' });
+  await screen.findByRole('form', { name: 'Email sign-in' });
+  expect(account.write).not.toHaveBeenCalled();
+  expect(screen.queryByText('Refresh mileage')).toBeNull();
+});
+
+it('revokes an active Intervals.icu grant after successful account deletion', async () => {
+  mockAccount();
+  vi.spyOn(window, 'confirm').mockReturnValue(true);
+  const { account } = await cloudGarage();
+  const deleted = vi.fn(async () => {});
+  Object.assign(account, { deleteAccount: deleted });
+  await openSync();
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  fireEvent.click(screen.getByText('Delete account'));
+  await screen.findByText(/Your account and cloud garage have been deleted/);
+  expect(deleted).toHaveBeenCalledTimes(1);
+  expect(oauthMocks.revokeIntervalsConnection).toHaveBeenCalledWith('oauth-test-token');
+  expect(screen.getByRole('form', { name: 'Email sign-in' })).toBeTruthy();
 });

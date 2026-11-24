@@ -62,11 +62,13 @@
   and namespaces IDs by provider/athlete. A second athlete cannot overwrite the first.
   Syncing replaces the upstream bike's current name/mileage, including manual edits.
   Reconnect to a different athlete only when intentionally adding that athlete's bikes.
-- The Intervals.icu key is held only in memory until disconnect/navigation/reload.
+- Intervals.icu uses public-client OAuth with S256 PKCE, not personal API keys.
+  The access token is held only in page memory until disconnect/navigation/reload.
   Sync runs immediately on connect and every five minutes while the page is visible,
   not busy, and no bike or maintenance form is open. Refresh is also available manually.
   There is no server scheduler or closed-page background sync. Strava's own mileage
-  refresh must still be performed in Intervals.icu. All upstream calls are GET requests.
+  refresh must still be performed in Intervals.icu. Bike/mileage requests are GETs;
+  OAuth exchanges use POST and explicit grant revocation uses DELETE.
 - **More → Download garage backup** exports bikes and maintenance, not credentials.
   **More → Import garage backup** accepts a version 1 JSON garage backup (up to 20 MB
   on disk). It validates fields, calendar dates, mileage, unique IDs, and bike
@@ -80,6 +82,40 @@
   This is an additive restore, not a replace-all or overwrite-existing operation.
   Legacy browser-record exports (`bike-maintenance-backup`) are a different format
   and are not accepted by this file importer.
+
+## Intervals.icu OAuth
+
+- Public client **2006**, with **Require PKCE** enabled. Register this exact redirect:
+  `https://rueckenwind.berlin/bikeworkshopcalc/maintenance-log/` (trailing slash included).
+- Authorization: `https://intervals.icu/oauth/authorize`; token exchange:
+  `https://intervals.icu/api/oauth/token`. Only `SETTINGS:READ` is requested for
+  profile/gear, not activity access or write permission. No client secret is used.
+- A random state and S256 verifier are stored in tab sessionStorage for up to ten
+  minutes, bound to the Maintenance Log user ID and exact redirect URI. Successful
+  callbacks require matching state, owner, origin/path, and verifier. Callback query
+  credentials are scrubbed immediately. A documented state-less denial can only
+  cancel; it cannot authorize anything. Exchanges are single-flight for StrictMode.
+- Supabase email sign-in remains separate. The returning user must be signed in to
+  the same garage account before the token exchange/import can run. An expired
+  garage session can be reauthenticated; a different account cannot import the grant.
+- Tokens never enter Supabase, garage JSON, localStorage, or sessionStorage. Reload
+  or leaving Maintenance requires reconnecting. Five-minute refresh only runs while
+  connected, visible, and idle. Manual bikes, existing entries, and missing upstream
+  bikes are preserved; namespaced imported IDs are unchanged from the API-key flow.
+- Explicit **Disconnect Intervals.icu** calls
+  `DELETE https://intervals.icu/api/v1/disconnect-app` with Bearer authorization,
+  then discards local access without deleting bikes/history. Revocation failures
+  instruct the user to revoke access in Intervals.icu Settings → Apps. Deleting an
+  account attempts revocation of the page's active token after successful deletion;
+  sign-out/navigation only discard local access, not the provider-side grant.
+- Optional public build settings: `VITE_INTERVALS_CLIENT_ID` and
+  `VITE_INTERVALS_REDIRECT_URI`. Production defaults are the values above. For
+  preview/local testing, first register the exact preview/local redirect in
+  Intervals.icu, then set the redirect variable and restart Vite. Starting OAuth
+  from an unregistered origin/path is blocked rather than sending the user to a
+  different origin that cannot read the tab's PKCE state. Never add a client secret
+  to a `VITE_` variable.
+- Provider documentation: [Intervals.icu OAuth support](https://forum.intervals.icu/t/intervals-icu-oauth-support/2759).
 
 ## Operator setup (not performed automatically)
 

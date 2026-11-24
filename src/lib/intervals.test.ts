@@ -19,7 +19,7 @@ it('loads only profile and bikes with GET, preserves meters, and never persists 
     expect(options?.method).toBe('GET');
     expect(options?.credentials).toBe('omit');
     expect(options?.redirect).toBe('error');
-    expect((options?.headers as Record<string, string>).Authorization).toBe('Basic ' + btoa('API_KEY:test-key'));
+    expect((options?.headers as Record<string, string>).Authorization).toBe('Bearer test-key');
   }
   expect(localStorage.length).toBe(0);
   expect(JSON.stringify(data)).not.toContain('test-key');
@@ -47,7 +47,7 @@ it('reports storage write failures', () => {
 });
 it('rejects invalid credentials without sending a request', async () => {
   const request = vi.spyOn(globalThis, 'fetch');
-  await expect(loadIntervals('API_KEY:password')).rejects.toThrow('personal Intervals.icu API key');
+  await expect(loadIntervals('API_KEY:password')).rejects.toThrow('Connect Intervals.icu with OAuth');
   expect(request).not.toHaveBeenCalled();
 });
 

@@ -38,8 +38,10 @@ with a sign-in banner. There is no editable demo, browser-only editing mode, or
 independent browser-garage import option.
 
 Intervals.icu is an optional, read-only bike/mileage integration, not an identity
-provider. Its API key stays in memory only, and visible pages refresh mileage
-every five minutes while no form is open. Maintenance is never sent upstream.
+provider. It uses public-client OAuth with S256 PKCE and read-only settings access,
+not personal API keys. Its access token stays in page memory only; visible pages
+refresh mileage every five minutes while no form is open. Maintenance is never sent
+upstream. Explicit disconnect revokes the Intervals.icu grant.
 
 See [setup, security, and migration](docs/maintenance-accounts.md). Cloud setup
 requires a database migration, public frontend configuration, and an email-code

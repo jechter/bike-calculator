@@ -138,11 +138,18 @@
 
 Before publishing this frontend:
 
-1. Apply pending migrations with `supabase db push`, including
-   `202611240001_persistent_intervals_oauth.sql`. It enables the managed Supabase
-   Vault extension and creates only the new connection table/RPCs/cleanup trigger;
-   it does not rewrite garage records or legacy data. Do not reset the database.
-2. Deploy `supabase functions deploy intervals-connection --no-verify-jwt`.
+1. In a project with accurate CLI migration tracking, review
+   `supabase db push --remote --dry-run` before applying pending migrations.
+   **The existing BikeMaintenanceDatabase project was provisioned outside CLI
+   migration history.** A blind push would replay existing tables and install
+   retired scaffolds that were never deployed. For this project, apply only
+   `202611240001_persistent_intervals_oauth.sql` through the SQL editor or Management
+   API in one transaction; do not reset the database, replay historical migrations,
+   or mark absent schemas as applied. This migration enables managed Supabase Vault
+   and creates only the new connection table/RPCs/cleanup trigger, without rewriting
+   garage records or legacy data. The initial rollout applied this file directly.
+2. Deploy `supabase functions deploy intervals-connection --no-verify-jwt --remote --yes`
+   (the explicit remote target/confirmation flags apply to the installed v3 CLI).
    The handler validates bearer identities itself with Supabase Auth, supporting
    the project's publishable API key. `SUPABASE_URL` and
    `SUPABASE_SERVICE_ROLE_KEY` are platform-provided server-only settings; never
@@ -157,6 +164,12 @@ Before publishing this frontend:
    disposable Supabase database, not production. It rolls back fixtures and checks
    Vault encryption, denied browser access, replacement/version guards, and
    per-user deletion cleanup. Handler tests use a stateful DB double, not Vault.
+   The initial rollout also verified the live endpoint with isolated temporary
+   Auth identities and synthetic credentials: encryption/roundtrip, cross-user
+   isolation, denied browser token/table access, invalid-grant handling, disconnect,
+   and Auth-user/Vault cleanup. Those identities were deleted afterward and the
+   existing garage-data fingerprint was unchanged. No real OAuth credential was
+   inspected or used for this verification.
 5. On the preview, reconnect Intervals.icu once to save the previously memory-only
    grant, then reload and verify mileage refresh without new authorization. Check
    another account cannot see/use it, and disconnect erases it without deleting

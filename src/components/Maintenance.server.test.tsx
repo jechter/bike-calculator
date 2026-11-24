@@ -7,7 +7,7 @@ import { readLegacyBrowserGarageFixture, seedLegacyBrowserGarage } from '../test
 const mocks = vi.hoisted(() => ({ enabled: true, restore: vi.fn(), load: vi.fn(), save: vi.fn(), write: vi.fn(), logout: vi.fn(), deleteAccount: vi.fn(), send: vi.fn(), verify: vi.fn() }));
 vi.mock('../lib/maintenance-account', async original => ({ ...await original<typeof import('../lib/maintenance-account')>(), get accountEnabled() { return mocks.enabled; }, restoreAccountOnce: mocks.restore, sendSignInCode: mocks.send, verifySignInCode: mocks.verify }));
 import { Maintenance } from './Maintenance';
-const account = { email: 'rider@example.com', loadGarage: mocks.load, save: mocks.save, write: mocks.write, logout: mocks.logout, deleteAccount: mocks.deleteAccount };
+const account = { email: 'rider@example.com', userId: 'user-1', loadGarage: mocks.load, save: mocks.save, write: mocks.write, logout: mocks.logout, deleteAccount: mocks.deleteAccount };
 beforeEach(() => {
   vi.resetAllMocks(); mocks.enabled = true;
   mocks.load.mockResolvedValue(sampleMaintenance()); mocks.restore.mockResolvedValue(account);
@@ -208,7 +208,7 @@ it('replaces the illustration with the actual empty cloud garage without importi
   const connect = screen.getByRole('button', { name: 'connect Intervals.icu' });
   expect(connect.parentElement?.textContent).toBe('Or connect Intervals.icu to import your bikes');
   fireEvent.click(connect);
-  expect(screen.getByRole('form', { name: 'Intervals.icu sync (Experimental)' })).toBeTruthy();
+  expect(screen.getByRole('form', { name: 'Intervals.icu connection' })).toBeTruthy();
   expect(document.querySelector('.maintenance-preview')).toBeNull();
   expect(screen.queryByText('City commuter')).toBeNull();
   expect(mocks.save).not.toHaveBeenCalled(); expect(mocks.write).not.toHaveBeenCalled();

@@ -8,6 +8,7 @@ export function testMaintenanceAccount(initial: MaintenanceData = sampleMaintena
   const write = vi.fn(async (next: MaintenanceData) => { garage = structuredClone(next); return structuredClone(garage); });
   return {
     email: 'rider@example.com',
+    userId: 'user-1',
     loadGarage: vi.fn(async () => structuredClone(garage)),
     write,
     save: vi.fn(async (entry: MaintenanceEntry, editing: boolean) => {

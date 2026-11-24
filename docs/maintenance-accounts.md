@@ -63,8 +63,9 @@
   Syncing replaces the upstream bike's current name/mileage, including manual edits.
   Reconnect to a different athlete only when intentionally adding that athlete's bikes.
 - Intervals.icu uses public-client OAuth with S256 PKCE, not personal API keys.
-  The access token is held only in page memory until disconnect/navigation/reload.
-  Sync runs immediately on connect and every five minutes while the page is visible,
+  The connection is encrypted in Supabase Vault, scoped to the cloud account, and
+  restored on page load/sign-in, including later days and other devices.
+  Sync runs immediately on connect/reload and every five minutes while the page is visible,
   not busy, and no bike or maintenance form is open. Refresh is also available manually.
   There is no server scheduler or closed-page background sync. Strava's own mileage
   refresh must still be performed in Intervals.icu. Bike/mileage requests are GETs;
@@ -98,16 +99,32 @@
 - Supabase email sign-in remains separate. The returning user must be signed in to
   the same garage account before the token exchange/import can run. An expired
   garage session can be reauthenticated; a different account cannot import the grant.
-- Tokens never enter Supabase, garage JSON, localStorage, or sessionStorage. Reload
-  or leaving Maintenance requires reconnecting. Five-minute refresh only runs while
-  connected, visible, and idle. Manual bikes, existing entries, and missing upstream
-  bikes are preserved; namespaced imported IDs are unchanged from the API-key flow.
-- Explicit **Disconnect Intervals.icu** calls
-  `DELETE https://intervals.icu/api/v1/disconnect-app` with Bearer authorization,
-  then discards local access without deleting bikes/history. Revocation failures
-  instruct the user to revoke access in Intervals.icu Settings → Apps. Deleting an
-  account attempts revocation of the page's active token after successful deletion;
-  sign-out/navigation only discard local access, not the provider-side grant.
+- After OAuth, the browser sends the token once over HTTPS to the authenticated
+  `intervals-connection` Edge Function. It validates the token with Intervals.icu,
+  stores it encrypted in Supabase Vault, and returns only whitelisted bike/profile
+  metadata. It never returns a saved token to a browser. Credentials never enter
+  garage JSON, localStorage, sessionStorage, or downloadable backups.
+- Subsequent status/sync/disconnect calls authenticate with the Maintenance Log
+  account's Supabase access token. The Edge Function verifies it with Auth `getUser`,
+  derives the owner server-side, and ignores caller-provided owner/athlete IDs.
+  Browser roles cannot read the connection table or call credential RPCs. All reads
+  from Intervals.icu now run on the backend; no maintenance records are sent there.
+- Every page load/sign-in checks the saved connection and fetches current mileage.
+  Five-minute refresh continues only while connected, visible, and idle; there is
+  no closed-page scheduler. Manual bikes, existing entries, and missing upstream
+  bikes are preserved. A temporary provider/network failure retains the grant;
+  a rejected/revoked grant is erased and asks for reconnection (HTTP 409, not a
+  Supabase-session 401). There is no browser-only credential fallback.
+- Explicit **Disconnect Intervals.icu** revokes the grant using
+  `DELETE https://intervals.icu/api/v1/disconnect-app`, then erases the encrypted
+  secret even if upstream revocation is unavailable. That case asks the user to
+  revoke access manually in Intervals.icu Settings → Apps. Version checks prevent
+  an old in-flight request from erasing a newer connection. Bikes/history remain.
+- Signing out or leaving the page keeps the server-side connection for next time.
+  Account deletion attempts disconnect first; the Auth-user cascade also deletes
+  the connection and its Vault secret even when the function is unavailable.
+  A failed provider revoke is reported, not treated as deletion of the Intervals.icu
+  account. Provider logs/backups remain subject to their own retention policies.
 - Optional public build settings: `VITE_INTERVALS_CLIENT_ID` and
   `VITE_INTERVALS_REDIRECT_URI`. Production defaults are the values above. For
   preview/local testing, first register the exact preview/local redirect in
@@ -116,6 +133,34 @@
   different origin that cannot read the tab's PKCE state. Never add a client secret
   to a `VITE_` variable.
 - Provider documentation: [Intervals.icu OAuth support](https://forum.intervals.icu/t/intervals-icu-oauth-support/2759).
+
+### Persistent-connection backend rollout (required)
+
+Before publishing this frontend:
+
+1. Apply pending migrations with `supabase db push`, including
+   `202611240001_persistent_intervals_oauth.sql`. It enables the managed Supabase
+   Vault extension and creates only the new connection table/RPCs/cleanup trigger;
+   it does not rewrite garage records or legacy data. Do not reset the database.
+2. Deploy `supabase functions deploy intervals-connection --no-verify-jwt`.
+   The handler validates bearer identities itself with Supabase Auth, supporting
+   the project's publishable API key. `SUPABASE_URL` and
+   `SUPABASE_SERVICE_ROLE_KEY` are platform-provided server-only settings; never
+   copy the service-role key into frontend variables or browser storage.
+3. Set `MAINTENANCE_APP_ORIGINS` to a comma-separated list of permitted extra
+   browser origins, including the current preview origin for testing. Production
+   `https://rueckenwind.berlin` is always allowed. The existing single
+   `MAINTENANCE_APP_ORIGIN` is also accepted when the plural setting is absent.
+   Origins contain no paths; the OAuth redirect registration still needs the
+   complete exact Maintenance Log URL. CORS is not the authentication boundary.
+4. Check the SQL regression script `supabase/tests/intervals_connection.sql` in a
+   disposable Supabase database, not production. It rolls back fixtures and checks
+   Vault encryption, denied browser access, replacement/version guards, and
+   per-user deletion cleanup. Handler tests use a stateful DB double, not Vault.
+5. On the preview, reconnect Intervals.icu once to save the previously memory-only
+   grant, then reload and verify mileage refresh without new authorization. Check
+   another account cannot see/use it, and disconnect erases it without deleting
+   bikes. Existing users need this one-time reconnect after rollout.
 
 ## Operator setup (not performed automatically)
 

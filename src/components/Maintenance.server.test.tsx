@@ -4,18 +4,19 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import { readLegacyBrowserGarageFixture, seedLegacyBrowserGarage } from '../test-fixtures/maintenance-account';
-const mocks = vi.hoisted(() => ({ enabled: true, restore: vi.fn(), load: vi.fn(), save: vi.fn(), write: vi.fn(), logout: vi.fn(), deleteAccount: vi.fn(), send: vi.fn(), verify: vi.fn() }));
+const mocks = vi.hoisted(() => ({ enabled: true, restore: vi.fn(), load: vi.fn(), save: vi.fn(), write: vi.fn(), logout: vi.fn(), deleteAccount: vi.fn(), send: vi.fn(), verify: vi.fn(), intervalsStatus: vi.fn(), disconnectIntervals: vi.fn() }));
 vi.mock('../lib/maintenance-account', async original => ({ ...await original<typeof import('../lib/maintenance-account')>(), get accountEnabled() { return mocks.enabled; }, restoreAccountOnce: mocks.restore, sendSignInCode: mocks.send, verifySignInCode: mocks.verify }));
 import { Maintenance } from './Maintenance';
-const account = { email: 'rider@example.com', userId: 'user-1', loadGarage: mocks.load, save: mocks.save, write: mocks.write, logout: mocks.logout, deleteAccount: mocks.deleteAccount };
+const account = { intervalsStatus: mocks.intervalsStatus, disconnectIntervals: mocks.disconnectIntervals, email: 'rider@example.com', userId: 'user-1', loadGarage: mocks.load, save: mocks.save, write: mocks.write, logout: mocks.logout, deleteAccount: mocks.deleteAccount };
 beforeEach(() => {
   vi.resetAllMocks(); mocks.enabled = true;
   mocks.load.mockResolvedValue(sampleMaintenance()); mocks.restore.mockResolvedValue(account);
   mocks.deleteAccount.mockResolvedValue(undefined);
+  mocks.intervalsStatus.mockResolvedValue({ connected: false }); mocks.disconnectIntervals.mockResolvedValue({ revoked: true });
   mocks.logout.mockResolvedValue(undefined); mocks.send.mockResolvedValue(undefined); mocks.verify.mockResolvedValue(account);
 });
 afterEach(() => { cleanup(); localStorage.clear(); sessionStorage.clear(); vi.restoreAllMocks(); });
-async function cloud() { sessionStorage.setItem('maintenance-account-v1', '{}'); render(<Maintenance />); await screen.findByRole('button', { name: /^Everyday road bike. Total distance/ }); }
+async function cloud() { sessionStorage.setItem('maintenance-account-v1', '{}'); render(<Maintenance />); await screen.findByRole('button', { name: /^Everyday road bike. Total distance/ }); await waitFor(() => expect(screen.queryByText('Connecting / loading…')).toBeNull()); }
 it('restores an independent account without calling Intervals.icu', async () => {
   const fetch = vi.spyOn(globalThis, 'fetch');
   await cloud();
@@ -331,6 +332,7 @@ it('deletes the account and hides the garage only after server success', async (
   fireEvent.click(screen.getByText('Delete account'));
   expect((screen.getByText('Delete account') as HTMLButtonElement).disabled).toBe(true);
   expect(screen.getByRole('region', { name: 'Performed maintenance' })).toBeTruthy();
+  await waitFor(() => expect(mocks.deleteAccount).toHaveBeenCalledTimes(1));
   resolve();
   await screen.findByText(/Your account and cloud garage have been deleted/);
   expect(screen.queryByRole('region', { name: 'Performed maintenance' })).toBeNull();

@@ -51,6 +51,8 @@ it('serves the linked privacy document in Vite without falling back to the calcu
     expect(html).toContain('not a backup-deletion deadline for our Supabase garage');
     expect(html).toContain('OAuth with PKCE');
     expect(html).toContain('SETTINGS:READ');
+    expect(html).toContain('encrypted in Supabase Vault');
+    expect(html).not.toContain('OAuth access token is kept only in page memory');
     expect(html).toContain('maintenance-intervals-oauth-v1');
     expect(html).not.toContain('your browser sends your API key');
     expect(html).not.toContain('The linked policy has not yet been reviewed');

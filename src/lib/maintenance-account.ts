@@ -1,4 +1,5 @@
 import type { MaintenanceBike, MaintenanceData, MaintenanceEntry } from './maintenance';
+import type { IntervalsGarage } from './intervals';
 import { garageBackup } from './maintenance-backup';
 
 const project = import.meta.env.VITE_SUPABASE_URL as string | undefined;
@@ -63,8 +64,9 @@ function readSession(): RememberedSession | null {
   return saved;
 }
 class AccountServiceError extends Error {
-  constructor(message: string, readonly status: number) { super(message); }
+  constructor(message: string, readonly status: number, readonly code?: string) { super(message); }
 }
+export const intervalsNeedsReconnect = (error: unknown) => error instanceof AccountServiceError && error.code === 'INTERVALS_RECONNECT_REQUIRED';
 const refreshing = new Map<string, Promise<RememberedSession>>();
 function refreshSession(previous: Session): Promise<RememberedSession> {
   const key = previous.user.id + ':' + previous.refresh_token;
@@ -118,7 +120,7 @@ async function request(path: string, method: string, body?: unknown, token?: str
     try { result = JSON.parse(text); }
     catch { throw new Error('Account service returned an unexpected response. Please retry. Your browser backup is unchanged.'); }
   }
-  if (!response.ok) throw new AccountServiceError(response.status === 401 ? 'Your session expired. Sign out and sign in again. Your draft and browser backup are unchanged.' : result?.msg || result?.message || result?.error_description || 'Account service failed. Nothing was saved locally as a fallback.', response.status);
+  if (!response.ok) throw new AccountServiceError(response.status === 401 ? 'Your session expired. Sign out and sign in again. Your draft and browser backup are unchanged.' : result?.msg || result?.message || result?.error_description || 'Account service failed. Nothing was saved locally as a fallback.', response.status, typeof result?.code === 'string' ? result.code : undefined);
   return result;
 }
 export async function sendSignInCode(email: string) { await request('/auth/v1/otp', 'POST', { email, create_user: true }); }
@@ -164,6 +166,27 @@ export class AccountGarage {
 
   private call(method: string, body?: unknown, suffix = '', extra?: Record<string, string>) {
     return this.authenticatedRequest('/rest/v1/maintenance_user_garages?user_id=eq.' + encodeURIComponent(this.session.user.id) + suffix, method, body, extra);
+  }
+
+  private intervals(action: string, body: Record<string, unknown> = {}) {
+    return this.authenticatedRequest('/functions/v1/intervals-connection', 'POST', { action, ...body });
+  }
+  async intervalsStatus(): Promise<{ connected: boolean }> {
+    const result = await this.intervals('status');
+    if (typeof result?.connected !== 'boolean') throw new Error('The Intervals.icu connection service returned an invalid status.');
+    return { connected: result.connected };
+  }
+  private async intervalsGarage(action: 'connect' | 'sync', accessToken?: string): Promise<IntervalsGarage> {
+    const result = await this.intervals(action, accessToken === undefined ? {} : { accessToken });
+    if (typeof result?.athleteId !== 'string' || !result.athleteId || typeof result.name !== 'string' || typeof result.synced_at !== 'string' || !Number.isFinite(Date.parse(result.synced_at)) || !Array.isArray(result.bikes) || !result.bikes.every((bike: MaintenanceBike) => typeof bike?.id === 'string' && bike.id && typeof bike.name === 'string' && typeof bike.distance === 'number' && Number.isFinite(bike.distance) && bike.distance >= 0)) throw new Error('The Intervals.icu connection service returned invalid mileage. Your garage is unchanged.');
+    return { athleteId: result.athleteId, name: result.name, synced_at: result.synced_at, bikes: result.bikes.map((bike: MaintenanceBike) => ({ id: bike.id, name: bike.name, distance: bike.distance })), entries: [] };
+  }
+  connectIntervals(accessToken: string) { return this.intervalsGarage('connect', accessToken); }
+  syncIntervals() { return this.intervalsGarage('sync'); }
+  async disconnectIntervals(): Promise<{ revoked: boolean }> {
+    const result = await this.intervals('disconnect');
+    if (result?.connected !== false || typeof result?.revoked !== 'boolean') throw new Error('The Intervals.icu connection could not be disconnected. Please retry.');
+    return { revoked: result.revoked };
   }
 
   async deleteAccount() {

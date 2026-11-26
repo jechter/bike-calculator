@@ -159,6 +159,36 @@
    Monitor normal Supabase Auth issuance/rate limits; the backend bridge issues a
    standard session and does not bypass Auth's account bans or token policies.
 
+### Production rollout verification
+
+The optional-login implementation (`baea55e`, branch `feature/maintenance-log`)
+was published with explicit operator authorization. Only the additive
+`202611260001_intervals_login.sql` file was applied, transactionally; both Edge
+Functions were deployed and production/preview redirects configured before the
+frontend was uploaded. Existing garage count and the full garage-content/revision
+fingerprint were unchanged afterward.
+
+- All 753 automated tests passed. The real frontend and handler also passed a
+  mocked-provider browser flow covering automatic matching, remembered login,
+  email fallback, changed/unverified email stability, and explicit unlink/relink.
+- Live checks used isolated temporary Auth users and synthetic credentials only.
+  They verified actual SQL resolution, verified/unconfirmed-email rules, stable
+  mappings, conflicts, concurrent linking, browser-role denial, cross-account RLS,
+  encrypted one-use transactions, callback-owner guards, independent mileage/login
+  state, and account-deletion/Vault cleanup. All temporary users and their records
+  were removed. Native Auth Admin token generation and OTP verification opened the
+  same temporary garage without sending an email or rewriting its contents.
+- All 16 deployed pages/assets, including the sitemap and privacy page, matched
+  the local build byte-for-byte. A fresh browser exercised the deployed mobile UI,
+  actual backend start, and declined callback without contacting a provider account.
+- Docker remained unavailable: the standalone disposable-database SQL regression
+  script was not run. Live isolated checks are not a claim that it was executed.
+  Final successful OAuth consent/code exchange with a real Intervals.icu account
+  remains an operator/user acceptance check; no real provider grant was used here.
+- Deployment warnings were the existing large JavaScript bundle and the host's
+  lack of post-quantum SSH key exchange. The script's image-reference warnings are
+  due to its JS/CSS-only reference matcher; both image files were verified directly.
+
 ## Intervals.icu OAuth for mileage
 
 - Public client **2006**, with **Require PKCE** enabled. Register this exact redirect:

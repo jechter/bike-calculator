@@ -19,6 +19,12 @@ it('offers optional Intervals.icu login alongside email-code sign-in and honors 
   mocks.start.mockRejectedValue(new Error('Navigation stopped in test'));
   render(<Maintenance />);
   expect(screen.getByRole('button', { name: 'Send sign-in code' })).toBeTruthy();
+  const providerButton = screen.getByRole('button', { name: 'Continue with Intervals.icu' });
+  const logo = providerButton.querySelector('img');
+  expect(logo?.getAttribute('src')).toContain('intervals-icu-logo.png');
+  expect(logo?.getAttribute('alt')).toBe('');
+  expect(logo?.getAttribute('aria-hidden')).toBe('true');
+  expect(providerButton.querySelector('svg')).toBeNull();
   fireEvent.click(screen.getByRole('checkbox', { name: /Remember me/ }));
   fireEvent.click(screen.getByRole('button', { name: 'Continue with Intervals.icu' }));
   await screen.findByRole('alert'); expect(mocks.start).toHaveBeenCalledWith(true); expect(mocks.send).not.toHaveBeenCalled();

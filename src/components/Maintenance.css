@@ -337,4 +337,5 @@ html.embedded .maintenance--connected .maintenance-layout { flex: auto; grid-tem
 
 .maintenance-signin-provider { max-width: 640px; margin-top: 18px; }
 .maintenance .maintenance-provider-button { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; width: 100%; max-width: 320px; font-weight: 600; }
+.maintenance-provider-logo { width: 24px; height: 24px; flex-shrink: 0; object-fit: contain; }
 .maintenance-signin-banner .maintenance-signin-or { margin-top: 12px; font-size: 12px; color: var(--muted); }

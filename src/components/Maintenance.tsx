@@ -14,6 +14,7 @@ import { MaintenanceComponentIcon } from './MaintenanceComponentIcon';
 import { MaintenancePreview } from './MaintenancePreview';
 import { planGarageImport, readGarageBackupFile } from '../lib/maintenance-backup';
 import { formatSyncTime } from '../lib/maintenance-sync-time';
+import intervalsLogo from '../assets/intervals-icu-logo.png';
 import './Maintenance.css';
 import { captureIntervalsLoginCallback, createIntervalsSignInUrl, createIntervalsLoginLinkUrl, finishIntervalsSignIn, finishIntervalsLoginLink, cancelIntervalsLogin } from '../lib/intervals-login';
 import { getBasePath } from '../useHashRoute';
@@ -373,7 +374,7 @@ export function Maintenance() {
         setMessage('Signed in. Your bikes and maintenance are saved to your cloud account.');
       }
     }); }}><h2>Sign in</h2><p className="maintenance-fine">This page lets you track maintenance and mileage for all your bikes. You need a free account to store your maintenance data in the cloud database.</p><p className="maintenance-fine">Use Intervals.icu or enter your email address to log in or create an account.</p>
-      {!codeSent && <div className="maintenance-signin-provider"><button type="button" className="maintenance-provider-button" disabled={busy} onClick={signInWithIntervals}><BikeIcon />Continue with Intervals.icu</button><p className="maintenance-signin-or">or use email</p></div>}
+      {!codeSent && <div className="maintenance-signin-provider"><button type="button" className="maintenance-provider-button" disabled={busy} onClick={signInWithIntervals}><img className="maintenance-provider-logo" src={intervalsLogo} width={24} height={24} alt="" aria-hidden="true" />Continue with Intervals.icu</button><p className="maintenance-signin-or">or use email</p></div>}
       <label>Email<input required type="email" name="contact_email" inputMode="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} disabled={busy || codeSent} value={email} onChange={e => setEmail(e.target.value)} /></label>
       {codeSent && <label>Type or paste the code we sent to your email here<input required type="text" name="verification_code" autoCapitalize="none" spellCheck={false} inputMode="numeric" autoComplete="one-time-code" value={code} onChange={e => setCode(e.target.value)} /></label>}
       <label className="maintenance-remember"><input type="checkbox" checked={rememberMe} disabled={busy} onChange={event => setRememberMe(event.target.checked)} />Remember me for up to 180 days on this browser</label>

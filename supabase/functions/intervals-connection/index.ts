@@ -61,7 +61,8 @@ Deno.serve(async request => {
     if (!body || typeof body !== 'object' || Array.isArray(body)) throw new HttpError(400, 'Invalid request.');
     if (body.action === 'status') {
       const { data } = checked(await db.from('maintenance_intervals_connections').select('athlete_id').eq('user_id', owner).maybeSingle());
-      return json(data ? { connected: true, athleteId: data.athlete_id } : { connected: false });
+      const login = checked(await db.from('maintenance_intervals_identities').select('athlete_id').eq('user_id', owner).maybeSingle());
+      return json(data ? { connected: true, athleteId: data.athlete_id, loginLinked: Boolean(login.data) } : { connected: false, loginLinked: Boolean(login.data) });
     }
     if (body.action === 'connect') {
       const token = body.accessToken;

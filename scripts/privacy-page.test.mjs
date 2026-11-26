@@ -54,6 +54,9 @@ it('serves the linked privacy document in Vite without falling back to the calcu
     expect(html).toContain('encrypted in Supabase Vault');
     expect(html).not.toContain('OAuth access token is kept only in page memory');
     expect(html).toContain('maintenance-intervals-oauth-v1');
+    expect(html).toContain('maintenance-intervals-login-v1');
+    expect(html).toContain('icu_email_verified');
+    expect(html).toContain('later changes to the provider email do not move your garage');
     expect(html).not.toContain('your browser sends your API key');
     expect(html).not.toContain('The linked policy has not yet been reviewed');
     expect(html).toContain('href="https://rueckenwind.berlin/datenschutzerklaerung/"');

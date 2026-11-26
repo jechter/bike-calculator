@@ -30,8 +30,8 @@ You can try the calculator live on the [Rückenwind web site](https://rueckenwin
 ## Maintenance log
 
 The **Maintenance Log** supports manual bikes, mileage updates, and service
-history without an Intervals.icu account. **Email-code sign-in with Supabase Auth**
-is required; bikes and maintenance are stored in the cloud and available across
+history without an Intervals.icu account. **Supabase Auth sign-in**
+(email code or optional Intervals.icu login) is required; bikes and maintenance are stored in the cloud and available across
 devices. Sign-in is tab-only by default; opting into “Remember me” keeps it for up
 to 180 days, with automatic access-token refresh. Signed-out visitors see a muted, non-interactive sample log
 with a sign-in banner. There is no editable demo, browser-only editing mode, or
@@ -45,6 +45,12 @@ Visible, idle pages also refresh every five minutes. Tokens are never returned t
 the browser after connection setup or included in garage backups. Maintenance is
 never sent upstream. Explicit disconnect revokes the grant and erases the saved
 credential; signing out keeps the connection for the next sign-in.
+
+Optional Intervals.icu login is separate from mileage synchronization. Verified
+provider emails can link to an existing confirmed email account, keeping the same
+garage and email-code fallback. A stable athlete-ID mapping takes precedence over
+later email changes. Signed-in users can explicitly enable or disable that login
+method from More without changing their mileage connection.
 
 See [setup, security, and migration](docs/maintenance-accounts.md). Cloud setup
 requires a database migration, public frontend configuration, and an email-code

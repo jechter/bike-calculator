@@ -307,7 +307,7 @@ it('manages persistent Intervals.icu access only through the authenticated backe
     .mockResolvedValueOnce(new Response(JSON.stringify({ connected: false, revoked: true })));
   const { AccountGarage } = await import('./maintenance-account');
   const account = new AccountGarage(session);
-  expect(await account.intervalsStatus()).toEqual({ connected: false });
+  expect(await account.intervalsStatus()).toEqual({ connected: false, loginLinked: false });
   const incoming = await account.connectIntervals('provider-oauth-token');
   expect(JSON.stringify(incoming)).not.toContain('should-not-return');
   expect(incoming.bikes[0].distance).toBe(1234567);
@@ -353,4 +353,32 @@ it('rejects malformed backend status, mileage, and disconnect replies without ch
   await expect(account.syncIntervals()).rejects.toThrow('invalid mileage');
   fetch.mockResolvedValue(new Response(JSON.stringify({ connected: true, revoked: true })));
   await expect(account.disconnectIntervals()).rejects.toThrow('could not be disconnected');
+});
+
+it('accepts only a normal backend-issued Supabase session and never persists provider credentials or one-time Auth tokens', async () => {
+  const payload = { session: { ...session, provider_token: 'never-persist', user: { ...session.user, private_profile: 'not-needed' } }, rememberMe: false, hashed_token: 'one-time-private' };
+  const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(payload)));
+  const { completeIntervalsSignIn, acceptIntervalsSignIn } = await import('./maintenance-account');
+  const result = await completeIntervalsSignIn({ state: 'state', proof: 'proof', code: 'code' });
+  expect(fetch.mock.calls[0][0]).toBe('https://example.supabase.co/functions/v1/intervals-login');
+  expect(fetch.mock.calls[0][1]?.headers).not.toHaveProperty('Authorization');
+  expect(sessionStorage.getItem('maintenance-account-v1')).toBeNull();
+  const account = acceptIntervalsSignIn(result);
+  expect(account.userId).toBe('user-1');
+  expect(localStorage.getItem('maintenance-account-v1')).toBeNull();
+  expect(sessionStorage.getItem('maintenance-account-v1')).not.toMatch(/never-persist|one-time-private|not-needed/);
+});
+it('preserves explicit persistent login choice for Intervals.icu sessions and uses authenticated owner-bound requests for linking controls', async () => {
+  const { acceptIntervalsSignIn } = await import('./maintenance-account');
+  const account = acceptIntervalsSignIn({ session, rememberMe: true });
+  expect(localStorage.getItem('maintenance-account-v1')).not.toBeNull(); expect(sessionStorage.getItem('maintenance-account-v1')).toBeNull();
+  const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ authorizationUrl: 'https://intervals.icu/oauth/authorize', state: 'state' }))).mockResolvedValueOnce(new Response(JSON.stringify({ linked: true }))).mockResolvedValueOnce(new Response(JSON.stringify({ linked: false })));
+  await account.startIntervalsLoginLink('proof', 'https://example.com/maintenance-log/');
+  await account.completeIntervalsLoginLink({ state: 'state', proof: 'proof', code: 'code' });
+  await account.unlinkIntervalsLogin();
+  const bodies = fetch.mock.calls.map(([, options]) => JSON.parse(options?.body as string));
+  expect(bodies.map(body => body.action)).toEqual(['start', 'complete', 'unlink']);
+  expect(bodies[0]).toMatchObject({ mode: 'link', rememberMe: false });
+  for (const [url, options] of fetch.mock.calls) { expect(url).toBe('https://example.supabase.co/functions/v1/intervals-login'); expect(new Headers(options?.headers).get('Authorization')).toBe('Bearer access'); }
+  expect(bodies.every(body => body.userId === undefined)).toBe(true);
 });

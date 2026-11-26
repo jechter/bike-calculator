@@ -116,3 +116,27 @@ it('offers a single-speed sprocket with its own services and history', () => {
   const entries = ['Sprocket', 'Cassette', 'Chainring'].map((component, index) => ({ ...template, id: String(index), component }));
   expect(componentHistory(entries, 'Sprocket').map(entry => entry.id)).toEqual(['0']);
 });
+
+it('offers saddles, internally geared hubs, and individual batteries with separate histories', () => {
+  const components = [
+    ['Saddle', 'saddle', 'Adjusted saddle tilt'],
+    ['Internally geared hub', 'geared-hub', 'Changed hub oil'],
+    ['Front derailleur battery', 'battery', 'Charged derailleur battery'],
+    ['Rear derailleur battery', 'battery', 'Charged derailleur battery'],
+    ['Front shifter battery', 'battery', 'Checked shifter battery charge'],
+    ['Rear shifter battery', 'battery', 'Checked shifter battery charge'],
+    ['Power meter battery', 'battery', 'Checked power meter battery charge'],
+    ['Electronic groupset battery', 'battery', 'Charged groupset battery'],
+  ];
+  const template = sampleMaintenance().entries[0];
+  const entries = components.map(([component], index) => ({ ...template, id: String(index), component }));
+  expect(componentNames(entries)).toEqual(components.map(([name]) => name));
+  components.forEach(([name, icon, service], index) => {
+    expect(bikeComponents).toContain(name);
+    expect(componentName(` ${name.toUpperCase()} `)).toBe(name);
+    expect(getComponentType(name).icon).toBe(icon);
+    expect(suggestedServices(name)).toContain(service);
+    expect(componentHistory(entries, name).map(entry => entry.id)).toEqual([String(index)]);
+  });
+  expect(suggestedServices('Front shifter battery')).not.toContain('Charged derailleur battery');
+});

@@ -223,7 +223,7 @@ it('shows email entry immediately with the free-account copy and no intermediate
   expect(screen.queryByRole('button', { name: 'Sign in / create account with email' })).toBeNull();
   expect(screen.queryByText(/No password or Intervals.icu account needed/)).toBeNull();
   expect(screen.getByText('This page lets you track maintenance and mileage for all your bikes. You need a free account to store your maintenance data in the cloud database.')).toBeTruthy();
-  expect(screen.getByText('Enter your email address to login or create an account.')).toBeTruthy();
+  expect(screen.getByText('Use Intervals.icu or enter your email address to log in or create an account.')).toBeTruthy();
   expect(screen.queryByText(/By default, sign-in is saved|How we use your email/)).toBeNull();
   const privacy = screen.getByRole('link', { name: 'Privacy notice' });
   expect(privacy.getAttribute('href')).toMatch(/privacy\/index\.html$/);

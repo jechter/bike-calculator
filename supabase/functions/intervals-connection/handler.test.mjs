@@ -5,7 +5,7 @@ import ts from 'typescript';
 import { expect, it, vi } from 'vitest';
 const source = readFileSync('supabase/functions/intervals-connection/index.ts', 'utf8').replace(/^import .*;\n/, '');
 const compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText;
-function setup({ saved = true, providerStatus = 200, databaseError = false, revokeStatus = 204, offline = false } = {}) {
+function setup({ saved = true, providerStatus = 200, databaseError = false, revokeStatus = 204, offline = false, loginLinked = false } = {}) {
   const connections = new Map(saved ? [['a', { access_token: 'token-a', athlete_id: 'athlete-a', connection_id: 'version-a' }], ['b', { access_token: 'token-b', athlete_id: 'athlete-b', connection_id: 'version-b' }]] : []);
   const calls = [];
   let sequence = 0, handler;
@@ -16,7 +16,7 @@ function setup({ saved = true, providerStatus = 200, databaseError = false, revo
       const query = {
         select: fields => { call.fields = fields; return query; },
         eq: (key, value) => { call.key = key; call.owner = value; return query; },
-        maybeSingle: async () => ({ error: databaseError ? { message: 'private token-a database details' } : null, data: connections.has(call.owner) ? { athlete_id: connections.get(call.owner).athlete_id } : null }),
+        maybeSingle: async () => ({ error: databaseError ? { message: 'private token-a database details' } : null, data: table === 'maintenance_intervals_identities' ? (loginLinked && call.owner === 'a' ? { athlete_id: 'athlete-a' } : null) : (connections.has(call.owner) ? { athlete_id: connections.get(call.owner).athlete_id } : null) }),
       }; return query;
     },
     rpc: vi.fn(async (name, args) => {
@@ -67,8 +67,8 @@ it('allows configured preview and production origins and the browser preflight h
 });
 it('returns only connection status for the verified account, ignoring supplied owner IDs', async () => {
   const app = setup(); const response = await app.request({ action: 'status', userId: 'b', athleteId: 'victim' });
-  expect(await response.json()).toEqual({ connected: true, athleteId: 'athlete-a' });
-  expect(app.calls).toEqual([{ table: 'maintenance_intervals_connections', fields: 'athlete_id', key: 'user_id', owner: 'a' }]);
+  expect(await response.json()).toEqual({ connected: true, athleteId: 'athlete-a', loginLinked: false });
+  expect(app.calls).toEqual([{ table: 'maintenance_intervals_connections', fields: 'athlete_id', key: 'user_id', owner: 'a' }, { table: 'maintenance_intervals_identities', fields: 'athlete_id', key: 'user_id', owner: 'a' }]);
 });
 it('validates the OAuth token upstream before saving it to the verified user’s Vault entry', async () => {
   const app = setup({ saved: false });
@@ -93,7 +93,7 @@ it('refreshes using only the server-held credential, not a caller-supplied token
 });
 it('does not expose another user’s connection when the caller has none', async () => {
   const app = setup(); app.connections.delete('a');
-  expect(await (await app.request({ action: 'status' })).json()).toEqual({ connected: false });
+  expect(await (await app.request({ action: 'status' })).json()).toEqual({ connected: false, loginLinked: false });
   const response = await app.request({ action: 'sync', userId: 'b' });
   expect(response.status).toBe(409); expect((await response.json()).code).toBe('INTERVALS_RECONNECT_REQUIRED');
   expect(app.fetch).not.toHaveBeenCalled(); expect(app.connections.has('b')).toBe(true);
@@ -155,4 +155,10 @@ it('rejects malformed bodies, oversized requests, unknown actions and unexpected
   expect((await app.request({ action: 'other' })).status).toBe(400);
   expect((await app.request({}, { raw: 'x'.repeat(12001) })).status).toBe(413);
   expect((await app.request({}, { method: 'GET' })).status).toBe(405);
+});
+
+it('reports login linking independently from the optional mileage connection', async () => {
+  const app = setup({ saved: false, loginLinked: true });
+  expect(await (await app.request({ action: 'status' })).json()).toEqual({ connected: false, loginLinked: true });
+  expect(app.fetch).not.toHaveBeenCalled();
 });

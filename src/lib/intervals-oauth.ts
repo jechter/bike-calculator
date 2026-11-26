@@ -16,6 +16,7 @@ function configuration() {
   if (url.username || url.password || url.search || url.hash || (url.protocol !== 'https:' && !(url.protocol === 'http:' && url.hostname === 'localhost'))) throw new Error('Invalid Intervals.icu OAuth redirect configuration.');
   return { clientId, redirectUri, url };
 }
+export function intervalsOAuthConfiguration() { const { clientId, redirectUri } = configuration(); return { clientId, redirectUri }; }
 function onRedirectPage() {
   const { url } = configuration();
   return window.location.origin === url.origin && window.location.pathname === url.pathname;

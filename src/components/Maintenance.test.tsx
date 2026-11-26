@@ -615,7 +615,7 @@ it('revokes OAuth on explicit disconnect without deleting imported bikes or main
   await openSync();
   const writes = account.write.mock.calls.length;
   fireEvent.click(screen.getByRole('button', { name: /^More/ }));
-  fireEvent.click(screen.getByText('Disconnect Intervals.icu'));
+  fireEvent.click(screen.getByText('Disconnect Intervals.icu sync'));
   await screen.findByText('Intervals.icu disconnected. Your bikes and records were kept.');
   expect(account.disconnectIntervals).toHaveBeenCalledTimes(1);
   expect(screen.getByText('Real bike')).toBeTruthy();
@@ -676,7 +676,7 @@ it('restores the saved connection on reload and fetches newer mileage without an
 
 it('keeps the garage available and the saved connection intact when automatic mileage refresh fails temporarily', async () => {
   const account = testMaintenanceAccount();
-  account.intervalsStatus.mockResolvedValue({ connected: true });
+  account.intervalsStatus.mockResolvedValue({ connected: true, loginLinked: false });
   account.syncIntervals.mockRejectedValue(new Error('Intervals.icu is temporarily unavailable'));
   cloudMocks.restore.mockResolvedValue(account);
   sessionStorage.setItem('maintenance-account-v1', '{}');
@@ -697,5 +697,5 @@ it('signs out without removing the saved Intervals.icu connection', async () => 
   await screen.findByRole('form', { name: 'Email sign-in' });
   expect(account.logout).toHaveBeenCalledTimes(1);
   expect(account.disconnectIntervals).not.toHaveBeenCalled();
-  expect(await account.intervalsStatus()).toEqual({ connected: true });
+  expect(await account.intervalsStatus()).toEqual({ connected: true, loginLinked: false });
 });

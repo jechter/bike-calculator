@@ -62,14 +62,11 @@ Deno.serve(async request => {
     if (body.action === 'status') {
       const { data } = checked(await db.from('maintenance_intervals_connections').select('athlete_id').eq('user_id', owner).maybeSingle());
       const login = checked(await db.from('maintenance_intervals_identities').select('athlete_id').eq('user_id', owner).maybeSingle());
-      return json(data ? { connected: true, athleteId: data.athlete_id, loginLinked: Boolean(login.data) } : { connected: false, loginLinked: Boolean(login.data) });
+      const connected = Boolean(data && login.data?.athlete_id === data.athlete_id);
+      return json(connected ? { connected: true, athleteId: data!.athlete_id, loginLinked: true } : { connected: false, loginLinked: Boolean(login.data) });
     }
     if (body.action === 'connect') {
-      const token = body.accessToken;
-      if (typeof token !== 'string' || !/^[A-Za-z0-9._~+\/-]+=*$/.test(token) || token.length > 4096) throw new HttpError(400, 'Invalid Intervals.icu authorization. Connect again.');
-      const garage = await incomingGarage(token, owner);
-      checked(await db.rpc('save_maintenance_intervals_token', { p_user_id: owner, p_token: token, p_athlete_id: garage.athleteId }));
-      return json(garage);
+      throw new HttpError(400, 'Use the secure Intervals.icu authorization to connect login and mileage together.');
     }
     if (body.action === 'sync') {
       const connection = await readConnection(owner);
@@ -78,13 +75,17 @@ Deno.serve(async request => {
     }
     if (body.action === 'disconnect') {
       const connection = await readConnection(owner);
-      if (!connection) return json({ connected: false, revoked: true });
+      if (!connection) {
+        const removed = checked(await db.rpc('disconnect_maintenance_intervals_account', { p_user_id: owner, p_connection_id: null }));
+        if (removed.data !== true) throw new HttpError(409, 'The connection changed on another device. Reload before disconnecting again.');
+        return json({ connected: false, revoked: true });
+      }
       let revoked = false;
       try {
         const response = await fetch(provider + '/api/v1/disconnect-app', { method: 'DELETE', credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(25000), headers: { Authorization: 'Bearer ' + connection.access_token } });
         revoked = response.ok || response.status === 401;
       } catch { /* Erase the saved credential even when upstream revocation is unavailable. */ }
-      if (!await removeConnection(owner, connection)) throw new HttpError(409, 'The connection changed on another device. Reload before disconnecting again.');
+      if (checked(await db.rpc('disconnect_maintenance_intervals_account', { p_user_id: owner, p_connection_id: connection.connection_id })).data !== true) throw new HttpError(409, 'The connection changed on another device. Reload before disconnecting again.');
       return json({ connected: false, revoked });
     }
     throw new HttpError(400, 'Unknown connection action.');

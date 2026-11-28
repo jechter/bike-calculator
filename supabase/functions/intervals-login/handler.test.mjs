@@ -32,9 +32,10 @@ function setup(opts={}) {
    if(name==='consume_maintenance_intervals_login'){const tx=pending.get(args.p_state_hash);if(!tx||tx.proof_hash!==args.p_proof_hash||opts.expired)return{data:[],error:null};pending.delete(args.p_state_hash);return{data:[tx],error:null};}
    if(name==='unlink_maintenance_intervals_identity'){if(!users.get(args.p_user_id)?.email_confirmed_at)return error('P0004');for(const [athlete,uid]of identities)if(uid===args.p_user_id)identities.delete(athlete);return{data:null,error:null};}
    if(name==='save_maintenance_intervals_token'){connections.set(args.p_user_id,{athlete_id:args.p_athlete_id,access_token:args.p_token});return{data:'version',error:null};}
-   if(name==='resolve_maintenance_intervals_identity'){
+   if(name==='connect_maintenance_intervals_account'){
+    if(opts.banned)return error('P0005');
     let target=identities.get(args.p_athlete_id);
-    if(target){if(args.p_owner_id&&args.p_owner_id!==target)return error('P0003');return{data:[{user_id:target,email:users.get(target)?.email,needs_account:false}],error:null};}
+    if(target){if(args.p_owner_id&&args.p_owner_id!==target)return error('P0003');if(opts.saveFails)return error('failure');connections.set(target,{athlete_id:args.p_athlete_id,access_token:args.p_token});return{data:[{user_id:target,email:users.get(target)?.email,needs_account:false}],error:null};}
     if(args.p_owner_id){target=args.p_owner_id;if(!users.get(target)?.email_confirmed_at)return error('P0004');}
     else{
      if(!args.p_verified_email)return error('P0004');
@@ -44,7 +45,7 @@ function setup(opts={}) {
      if(!matches[0].email_confirmed_at)return error('P0004');target=matches[0].id;
     }
     if([...identities.values()].includes(target))return error('P0003');
-    identities.set(args.p_athlete_id,target);return{data:[{user_id:target,email:users.get(target).email,needs_account:false}],error:null};
+    if(opts.saveFails)return error('failure');connections.set(target,{athlete_id:args.p_athlete_id,access_token:args.p_token});identities.set(args.p_athlete_id,target);return{data:[{user_id:target,email:users.get(target).email,needs_account:false}],error:null};
    }
    throw new Error('Unexpected RPC');
   }),
@@ -84,13 +85,13 @@ it('automatically links only a provider-verified email to a confirmed existing a
  expect(app.isolated.auth.verifyOtp).toHaveBeenCalledWith({token_hash:'private-one-time-hash',type:'magiclink'});
  expect(app.db.auth.verifyOtp).not.toHaveBeenCalled();expect(app.clients).toEqual(['service-role-secret','public-anon-key']);
  expect(JSON.stringify(result)).not.toMatch(/provider-secret|private-one-time-hash|never-return|service-role-secret/);
- expect(app.db.auth.admin.createUser).not.toHaveBeenCalled();expect(app.connections.size).toBe(0);
+ expect(app.db.auth.admin.createUser).not.toHaveBeenCalled();expect(app.connections.size).toBe(1);expect([...app.connections.values()][0].access_token).toBe('provider-secret-token');
 });
-it('creates an email-capable account for a new verified provider email without sending email or creating a mileage connection',async()=>{
+it('creates an email-capable account for a new verified provider email without sending email, enabling login and mileage together',async()=>{
  const app=setup({email:'New.Rider@example.com'});const {body}=await app.start();const response=await app.complete(body.state);
  expect(response.status).toBe(200);expect((await response.json()).session.user.id).toBe('new-user');
  expect(app.db.auth.admin.createUser).toHaveBeenCalledWith({email:'new.rider@example.com',email_confirm:true});
- expect(app.identities.get('athlete-1')).toBe('new-user');expect(app.connections.size).toBe(0);
+ expect(app.identities.get('athlete-1')).toBe('new-user');expect(app.connections.size).toBe(1);expect([...app.connections.values()][0].access_token).toBe('provider-secret-token');
 });
 it.each([false,'true',null])('does not auto-link an unverified/missing verification flag (%s)',async verified=>{
  const app=setup({verified});const{body}=await app.start();const response=await app.complete(body.state);
@@ -142,13 +143,14 @@ it.each([{tokenStatus:400},{tokenStatus:500},{profileStatus:401},{offline:true},
 it('discards and revokes a wrongly addressed Supabase session rather than returning access to another user',async()=>{
  const app=setup({wrongSession:true});const{body}=await app.start();const response=await app.complete(body.state);expect(response.status).toBe(503);expect(app.isolated.auth.signOut).toHaveBeenCalledWith({scope:'local'});expect(await response.text()).not.toContain('supabase-access');
 });
-it('refreshes only a previously enabled mileage credential for the same account and athlete',async()=>{
- const app=setup({mileage:true});const{body}=await app.start();await app.complete(body.state);expect(app.connections.get('u1').access_token).toBe('provider-secret-token');
- const other=setup({mileage:true,otherMileage:true});const tx=await other.start();await other.complete(tx.body.state);expect(other.connections.get('u1').access_token).toBeUndefined();
+it('enables mileage on fresh login, including replacing a different old credential with the proven athlete',async()=>{
+ for(const opts of [{},{mileage:true},{mileage:true,otherMileage:true}]){const app=setup(opts);const{body}=await app.start();expect((await app.complete(body.state)).status).toBe(200);expect(app.connections.get('u1')).toEqual({athlete_id:'athlete-1',access_token:'provider-secret-token'});}
 });
-it('unlinks only the authenticated user, keeps mileage enabled, and requires a verified email fallback',async()=>{
- const app=setup({linked:true,mileage:true});const response=await app.request({action:'unlink',userId:'u2'},{auth:'session-u1'});expect(await response.json()).toEqual({linked:false});expect(app.identities.size).toBe(0);expect(app.connections.has('u1')).toBe(true);expect(app.fetch).not.toHaveBeenCalled();
- expect((await app.request({action:'unlink'})).status).toBe(401);const bad=setup({linked:true,unconfirmed:true});expect((await bad.request({action:'unlink'},{auth:'session-u1'})).status).toBe(409);expect(bad.identities.size).toBe(1);
+it('does not expose a separate unlink-login operation',async()=>{
+ const app=setup({linked:true,mileage:true});expect((await app.request({action:'unlink'},{auth:'session-u1'})).status).toBe(400);expect(app.identities.size).toBe(1);expect(app.connections.has('u1')).toBe(true);
+});
+it('does not issue a session or partially link when the atomic connection save fails',async()=>{
+ const app=setup({saveFails:true});const{body}=await app.start();expect((await app.complete(body.state)).status).toBe(503);expect(app.identities.size).toBe(0);expect(app.connections.size).toBe(0);expect(app.db.auth.admin.generateLink).not.toHaveBeenCalled();
 });
 it('returns sanitized pending-request limits instead of raw SQL or credential details',async()=>{
  const app=setup({dbError:'P0002'});const response=(await app.start()).response;expect(response.status).toBe(429);expect(await response.text()).not.toMatch(/private|service-role/);
@@ -156,4 +158,8 @@ it('returns sanitized pending-request limits instead of raw SQL or credential de
 
 it('respects disabled Supabase signups instead of bypassing them with Admin createUser',async()=>{
  const app=setup({email:'new@example.com',signupsDisabled:true});const{body}=await app.start();const response=await app.complete(body.state);expect(response.status).toBe(403);expect(app.db.auth.admin.createUser).not.toHaveBeenCalled();expect(app.identities.size).toBe(0);
+});
+
+it('rejects banned accounts without saving credentials or issuing a session',async()=>{
+ const app=setup({banned:true});const{body}=await app.start();expect((await app.complete(body.state)).status).toBe(403);expect(app.identities.size).toBe(0);expect(app.connections.size).toBe(0);expect(app.db.auth.admin.generateLink).not.toHaveBeenCalled();
 });

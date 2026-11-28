@@ -14,10 +14,10 @@ export function testMaintenanceAccount(initial: MaintenanceData = sampleMaintena
     userId: 'user-1',
     intervalsStatus: vi.fn(async () => ({ connected, loginLinked })),
     unlinkIntervalsLogin: vi.fn(async () => { loginLinked = false; }),
-    completeIntervalsLoginLink: vi.fn(async () => { loginLinked = true; }),
+    completeIntervalsLoginLink: vi.fn(async () => { loginLinked = true; connected = true; }),
     connectIntervals: vi.fn(async (_accessToken: string) => { connected = true; return incoming(); }),
     syncIntervals: vi.fn(async () => incoming()),
-    disconnectIntervals: vi.fn(async () => { connected = false; return { revoked: true }; }),
+    disconnectIntervals: vi.fn(async () => { connected = false; loginLinked = false; return { revoked: true }; }),
     loadGarage: vi.fn(async () => structuredClone(garage)),
     write,
     save: vi.fn(async (entry: MaintenanceEntry, editing: boolean) => {

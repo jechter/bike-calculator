@@ -7,11 +7,12 @@ import { testMaintenanceAccount } from '../test-fixtures/maintenance-account';
 const mocks = vi.hoisted(() => ({ restore: vi.fn(), accept: vi.fn(), send: vi.fn(), capture: vi.fn(), finish: vi.fn(), finishLink: vi.fn(), start: vi.fn(), startLink: vi.fn() }));
 vi.mock('../lib/maintenance-account', async original => ({ ...await original<typeof import('../lib/maintenance-account')>(), accountEnabled: true, restoreAccountOnce: mocks.restore, acceptIntervalsSignIn: mocks.accept, sendSignInCode: mocks.send }));
 vi.mock('../lib/intervals-login', () => ({ captureIntervalsLoginCallback: mocks.capture, finishIntervalsSignIn: mocks.finish, finishIntervalsLoginLink: mocks.finishLink, createIntervalsSignInUrl: mocks.start, createIntervalsLoginLinkUrl: mocks.startLink, cancelIntervalsLogin: vi.fn() }));
-beforeEach(() => { vi.resetAllMocks(); mocks.capture.mockReturnValue(null); mocks.finishLink.mockResolvedValue(undefined); });
+beforeEach(() => { vi.resetAllMocks(); vi.spyOn(window, 'confirm').mockReturnValue(true); mocks.capture.mockReturnValue(null); mocks.finishLink.mockResolvedValue(undefined); });
 afterEach(() => { cleanup(); sessionStorage.clear(); localStorage.clear(); vi.restoreAllMocks(); });
 const ready = () => waitFor(() => expect(screen.queryByText('Connecting / loading…')).toBeNull());
-async function garage(linked = false, synced = false) {
-  const account = testMaintenanceAccount(); account.intervalsStatus.mockResolvedValue({ connected: synced, loginLinked: linked });
+async function garage(connected = false) {
+  const account = testMaintenanceAccount(); account.intervalsStatus.mockResolvedValue({ connected, loginLinked: connected });
+  mocks.finishLink.mockImplementation(async () => { account.intervalsStatus.mockResolvedValue({ connected: true, loginLinked: true }); });
   mocks.restore.mockResolvedValue(account); sessionStorage.setItem('maintenance-account-v1', '{}'); render(<Maintenance />);
   await screen.findByRole('region', { name: 'Performed maintenance' }); await ready(); return account;
 }
@@ -31,13 +32,14 @@ it('offers optional Intervals.icu login alongside email-code sign-in and honors 
   expect((screen.getByLabelText('Email') as HTMLInputElement).value).toBe('');
 });
 it('accepts the backend Supabase session once after a StrictMode OAuth return and opens the same existing garage', async () => {
-  const account = testMaintenanceAccount();
+  const account = testMaintenanceAccount(); account.intervalsStatus.mockResolvedValue({ connected: true, loginLinked: true });
   mocks.capture.mockReturnValue('signin'); mocks.finish.mockResolvedValue({ session: { user: { id: 'user-1' } }, rememberMe: false }); mocks.accept.mockReturnValue(account);
   render(<StrictMode><Maintenance /></StrictMode>);
   await screen.findByRole('region', { name: 'Performed maintenance' }); await ready();
   expect(mocks.accept).toHaveBeenCalledTimes(1); expect(mocks.restore).not.toHaveBeenCalled();
-  expect(screen.getAllByRole('article')).toHaveLength(4); expect(account.write).not.toHaveBeenCalled();
-  expect(screen.getByText('Signed in with Intervals.icu. Email-code sign-in opens the same garage.')).toBeTruthy();
+  expect(screen.getAllByRole('article')).toHaveLength(4); expect(account.syncIntervals).toHaveBeenCalledTimes(1);
+  expect(account.write.mock.calls[0][0].entries).toHaveLength(4);
+  expect(screen.getByRole('button', { name: 'Refresh mileage' })).toBeTruthy();
 });
 it('keeps email login available after an unverified-email or conflicting-identity rejection', async () => {
   mocks.capture.mockReturnValue('signin'); mocks.finish.mockRejectedValue(new Error('Verify your email or sign in by email to link.'));
@@ -53,25 +55,42 @@ it('does not expose a garage if loading it fails after authentication', async ()
   expect(screen.queryByRole('region', { name: 'Performed maintenance' })).toBeNull();
   expect(screen.getByRole('form', { name: 'Email sign-in' })).toBeTruthy();
 });
-it('provides an explicit signed-in linking action, not an automatic side effect of mileage sync', async () => {
+it('starts the unified secure authorization from Connect, without accepting a browser token', async () => {
   const account = await garage(); mocks.startLink.mockRejectedValue(new Error('Navigation stopped in test'));
-  fireEvent.click(screen.getByRole('button', { name: /^More/ })); fireEvent.click(screen.getByText('Enable Intervals.icu login'));
+  fireEvent.click(screen.getByRole('button', { name: /^More/ })); fireEvent.click(screen.getByText('Connect Intervals.icu'));
+  expect(screen.getByText(/sign in and automatically sync/)).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'Continue to Intervals.icu' }));
   await screen.findByRole('alert'); expect(mocks.startLink).toHaveBeenCalledWith(account); expect(account.connectIntervals).not.toHaveBeenCalled();
 });
-it('completes a link return for the same authenticated account without replacing its session or garage', async () => {
+it('completes authorization for the same account, enables sync, and does not replace the session or maintenance history', async () => {
   mocks.capture.mockReturnValue('link'); const account = await garage();
-  expect(mocks.finishLink).toHaveBeenCalledWith(account); expect(mocks.accept).not.toHaveBeenCalled(); expect(account.write).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole('button', { name: /^More/ })); expect(screen.getByText('Disable Intervals.icu login')).toBeTruthy();
+  expect(mocks.finishLink).toHaveBeenCalledWith(account); expect(mocks.accept).not.toHaveBeenCalled();
+  expect(account.syncIntervals).toHaveBeenCalledTimes(1); expect(account.write.mock.calls[0][0].entries).toHaveLength(4);
+  fireEvent.click(screen.getByRole('button', { name: /^More/ })); expect(screen.getByText('Disconnect Intervals.icu')).toBeTruthy();
+  expect(screen.queryByText('Connect Intervals.icu')).toBeNull();
 });
-it('disables login linking separately from mileage sync and keeps email access and records', async () => {
-  vi.spyOn(window, 'confirm').mockReturnValue(true); const account = await garage(true, true); const writes = account.write.mock.calls.length;
-  fireEvent.click(screen.getByRole('button', { name: /^More/ })); fireEvent.click(screen.getByText('Disable Intervals.icu login'));
-  await screen.findByText('Intervals.icu login disabled. Email-code sign-in, your garage, and mileage sync are unchanged.');
-  expect(account.unlinkIntervalsLogin).toHaveBeenCalledTimes(1); expect(account.disconnectIntervals).not.toHaveBeenCalled(); expect(account.write).toHaveBeenCalledTimes(writes);
-  expect(screen.getAllByRole('article')).toHaveLength(4); expect(screen.getByRole('button', { name: 'Refresh mileage' })).toBeTruthy();
+it.each([false, true])('shows one connection action when connected=%s, with no independent login controls', async connected => {
+  await garage(connected); fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  expect(Boolean(screen.queryByText('Connect Intervals.icu', { selector: 'button' }))).toBe(!connected);
+  expect(Boolean(screen.queryByText('Disconnect Intervals.icu', { selector: 'button' }))).toBe(connected);
+  expect(screen.queryByText('Enable Intervals.icu login')).toBeNull(); expect(screen.queryByText('Disable Intervals.icu login')).toBeNull();
+  expect(screen.queryByText('Complete Intervals.icu setup')).toBeNull();
 });
-it('requires confirmation before disabling the login method', async () => {
+it('disconnects through one backend operation, keeping the session, bikes, history, and email access', async () => {
+  const account = await garage(true); const writes = account.write.mock.calls.length;
+  fireEvent.click(screen.getByRole('button', { name: /^More/ })); fireEvent.click(screen.getByText('Disconnect Intervals.icu'));
+  await screen.findByText('Intervals.icu disconnected. Your bikes and records were kept.'); await ready();
+  fireEvent.click(screen.getByRole('button', { name: /^More/ }));
+  expect(screen.getByText('Connect Intervals.icu', { selector: 'button' })).toBeTruthy();
+  expect(screen.queryByText('Disconnect Intervals.icu', { selector: 'button' })).toBeNull();
+  expect(account.disconnectIntervals).toHaveBeenCalledTimes(1); expect(account.logout).not.toHaveBeenCalled();
+  expect(account.write).toHaveBeenCalledTimes(writes); expect(screen.getAllByRole('article')).toHaveLength(4);
+});
+
+it('can cancel disconnect without losing either capability', async () => {
   vi.spyOn(window, 'confirm').mockReturnValue(false); const account = await garage(true);
-  fireEvent.click(screen.getByRole('button', { name: /^More/ })); fireEvent.click(screen.getByText('Disable Intervals.icu login'));
-  expect(account.unlinkIntervalsLogin).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: /^More/ })); fireEvent.click(screen.getByText('Disconnect Intervals.icu'));
+  expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining('sign-in and mileage sync'));
+  expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining('rider@example.com'));
+  expect(account.disconnectIntervals).not.toHaveBeenCalled(); expect(screen.getByRole('button', { name: 'Refresh mileage' })).toBeTruthy();
 });

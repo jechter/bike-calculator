@@ -30,7 +30,7 @@ async function createAuthorizationUrl(mode: Mode, rememberMe: boolean, owner?: A
   const config = intervalsOAuthConfiguration();
   if (!matchingPage(config.redirectUri)) throw new Error('Open the registered Maintenance Log URL to use Intervals.icu login. Configure the preview redirect for local testing.');
   if (mode === 'link' && (!owner || storedAccountUserId() !== owner.userId)) throw new Error('Sign in to the maintenance account you want to link.');
-  cancelIntervalsOAuth(); cancelIntervalsLogin();
+  cancelIntervalsLogin();
   const proof = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   const pending: Pending = { mode, proof, state: '', redirectUri: config.redirectUri, previousUserId: storedAccountUserId(), ownerId: owner?.userId ?? null, rememberMe, createdAt: Date.now() };
   writePending(pending); // Require storage BEFORE allocating a backend transaction.
@@ -72,4 +72,4 @@ function complete(mode: Mode, owner?: AccountGarage): Promise<IntervalsLoginResu
 }
 export const finishIntervalsSignIn = () => complete('signin') as Promise<IntervalsLoginResult>;
 export const finishIntervalsLoginLink = (owner: AccountGarage) => complete('link', owner) as Promise<void>;
-export function cancelIntervalsLogin() { removePending(); callback = null; job = null; }
+export function cancelIntervalsLogin() { cancelIntervalsOAuth(); removePending(); callback = null; job = null; }

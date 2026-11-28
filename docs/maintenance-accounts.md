@@ -132,7 +132,7 @@
   connection or prevent email access. Manual bikes/history are preserved. There
   is no background scheduler when the page is closed.
 
-### Unified-connection rollout (not yet deployed)
+### Unified-connection rollout
 
 1. Validate `supabase/tests/intervals_account.sql` in a disposable Supabase database.
    Docker is unavailable here; this SQL regression is not part of the mocked tests.
@@ -147,6 +147,42 @@
    connection both enable sync, disconnect removes both capabilities, email opens
    the same garage, and sign-out keeps the connection. No provider token should be
    exposed to the browser. Use isolated test identities; preserve real garage data.
+
+### Unified-connection production verification
+
+The unified implementation (`0f316e9`, branch `feature/maintenance-log`) was
+committed, pushed, and published with explicit operator authorization. Only
+`202611260002_unified_intervals_connection.sql` was applied, in one transaction;
+both Edge Functions were deployed before the frontend. The existing garage count
+and full garage-content/revision fingerprint were unchanged afterward.
+
+- Build and all 758 automated tests passed. The real frontend and login handler
+  passed a mocked-provider browser flow for combined connection, automatic mileage
+  refresh, remember-me reload, email fallback, changed-email identity stability,
+  disconnect, and signed-in reconnection without changing sessions or history.
+- Live checks used isolated temporary Auth users and synthetic credentials. They
+  verified atomic rollback on invalid credentials, encrypted Vault roundtrips,
+  confirmed-email matching, explicit ownership, identity conflicts, stable
+  changed-email mappings, concurrent setup locking, banned-account rollback,
+  denied browser RPC/table access, and stale-disconnect protection.
+- The deployed disconnect endpoint removed both identity and credential, left the
+  other test user's connection untouched, and preserved manual bikes/history.
+  Native email-capable Auth session issuance still opened the same test garage
+  after disconnect, without sending email. Retired browser-token connect and
+  login-only unlink requests were rejected. All temporary users, garages,
+  credentials, identities, and pending verifier secrets were removed afterward.
+- All 17 deployed entry pages/assets, including the sitemap, privacy page, and
+  provider logo, matched the build byte-for-byte. A fresh browser exercised the
+  actual deployed mobile UI, backend start, and declined callback; no real
+  provider account or grant was accessed. Successful real-provider consent/code
+  exchange remains the user's acceptance check.
+- Docker remained unavailable, so the standalone disposable-database SQL script
+  was not executed. The live isolated checks exercised the deployed SQL functions
+  but are not a claim that the standalone regression script ran.
+- Warnings were the existing large JavaScript bundle, unavailable local Docker
+  during remote function deployment, and the host's older SSH key exchange. Image
+  reference warnings from the deployment script's JS/CSS matcher were resolved by
+  direct byte verification of all three deployed images.
 
 ### Historical optional-login rollout verification (before unification)
 

@@ -56,6 +56,10 @@ it('serves the linked privacy document in Vite without falling back to the calcu
     expect(html).toContain('maintenance-intervals-oauth-v1');
     expect(html).toContain('maintenance-intervals-login-v1');
     expect(html).toContain('icu_email_verified');
+    expect(html).toContain('sign-in and automatic bike mileage sync together');
+    expect(html).toContain('saved mileage credential together');
+    expect(html).not.toContain('Login linking is separate from mileage sync');
+    expect(html).not.toContain('your browser exchanges a short-lived authorization code');
     expect(html).toContain('later changes to the provider email do not move your garage');
     expect(html).not.toContain('your browser sends your API key');
     expect(html).not.toContain('The linked policy has not yet been reviewed');

@@ -5,8 +5,9 @@ import ts from 'typescript';
 import { expect, it, vi } from 'vitest';
 const source = readFileSync('supabase/functions/intervals-connection/index.ts', 'utf8').replace(/^import .*;\n/, '');
 const compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText;
-function setup({ saved = true, providerStatus = 200, databaseError = false, revokeStatus = 204, offline = false, loginLinked = false } = {}) {
+function setup({ saved = true, providerStatus = 200, databaseError = false, revokeStatus = 204, offline = false, loginLinked = saved } = {}) {
   const connections = new Map(saved ? [['a', { access_token: 'token-a', athlete_id: 'athlete-a', connection_id: 'version-a' }], ['b', { access_token: 'token-b', athlete_id: 'athlete-b', connection_id: 'version-b' }]] : []);
+  const identities = new Map(loginLinked ? [['a', 'athlete-a'], ['b', 'athlete-b']] : []);
   const calls = [];
   let sequence = 0, handler;
   const db = {
@@ -16,7 +17,7 @@ function setup({ saved = true, providerStatus = 200, databaseError = false, revo
       const query = {
         select: fields => { call.fields = fields; return query; },
         eq: (key, value) => { call.key = key; call.owner = value; return query; },
-        maybeSingle: async () => ({ error: databaseError ? { message: 'private token-a database details' } : null, data: table === 'maintenance_intervals_identities' ? (loginLinked && call.owner === 'a' ? { athlete_id: 'athlete-a' } : null) : (connections.has(call.owner) ? { athlete_id: connections.get(call.owner).athlete_id } : null) }),
+        maybeSingle: async () => ({ error: databaseError ? { message: 'private token-a database details' } : null, data: table === 'maintenance_intervals_identities' ? (identities.has(call.owner) ? { athlete_id: identities.get(call.owner) } : null) : (connections.has(call.owner) ? { athlete_id: connections.get(call.owner).athlete_id } : null) }),
       }; return query;
     },
     rpc: vi.fn(async (name, args) => {
@@ -28,9 +29,9 @@ function setup({ saved = true, providerStatus = 200, databaseError = false, revo
         connections.set(args.p_user_id, { access_token: args.p_token, athlete_id: args.p_athlete_id, connection_id: version });
         return { data: version, error: null };
       }
-      if (name === 'remove_maintenance_intervals_token') {
-        const matches = connections.get(args.p_user_id)?.connection_id === args.p_connection_id;
-        if (matches) connections.delete(args.p_user_id);
+      if (name === 'remove_maintenance_intervals_token' || name === 'disconnect_maintenance_intervals_account') {
+        const matches = (connections.get(args.p_user_id)?.connection_id ?? null) === args.p_connection_id;
+        if (matches) { connections.delete(args.p_user_id); if (name === 'disconnect_maintenance_intervals_account') identities.delete(args.p_user_id); }
         return { data: matches, error: null };
       }
       throw new Error('Unexpected RPC');
@@ -50,7 +51,7 @@ function setup({ saved = true, providerStatus = 200, databaseError = false, revo
   });
   runInNewContext(compiled, { createClient: () => db, URL, Request, Response, Date, Set, AbortSignal, fetch, Deno: { env: { get: key => key === 'MAINTENANCE_APP_ORIGINS' ? 'https://preview.example.com' : key === 'SUPABASE_URL' ? 'https://database.example.com' : key === 'SUPABASE_SERVICE_ROLE_KEY' ? 'service-role-secret' : undefined }, serve: value => { handler = value; } } });
   const request = (body, { origin = 'https://preview.example.com', auth = 'session-a', method = 'POST', raw } = {}) => handler(new Request('https://function.example.com', { method, headers: { ...(origin ? { Origin: origin } : {}), ...(auth ? { Authorization: 'Bearer ' + auth } : {}), 'Content-Type': 'application/json' }, ...(method === 'GET' || method === 'OPTIONS' ? {} : { body: raw ?? JSON.stringify(body) }) }));
-  return { request, calls, connections, db, fetch };
+  return { request, calls, connections, identities, db, fetch };
 }
 it('validates origin and Supabase identity before accessing any saved credential', async () => {
   for (const options of [{ origin: 'https://attacker.example' }, { origin: '' }, { auth: '' }, { auth: 'invalid' }]) {
@@ -67,21 +68,13 @@ it('allows configured preview and production origins and the browser preflight h
 });
 it('returns only connection status for the verified account, ignoring supplied owner IDs', async () => {
   const app = setup(); const response = await app.request({ action: 'status', userId: 'b', athleteId: 'victim' });
-  expect(await response.json()).toEqual({ connected: true, athleteId: 'athlete-a', loginLinked: false });
+  expect(await response.json()).toEqual({ connected: true, athleteId: 'athlete-a', loginLinked: true });
   expect(app.calls).toEqual([{ table: 'maintenance_intervals_connections', fields: 'athlete_id', key: 'user_id', owner: 'a' }, { table: 'maintenance_intervals_identities', fields: 'athlete_id', key: 'user_id', owner: 'a' }]);
 });
-it('validates the OAuth token upstream before saving it to the verified user’s Vault entry', async () => {
+it('rejects browser-token connect: linking and mileage setup require server-held OAuth PKCE', async () => {
   const app = setup({ saved: false });
-  const response = await app.request({ action: 'connect', accessToken: 'token-a', userId: 'b', athleteId: 'forged' });
-  expect(response.status).toBe(200);
-  const incoming = await response.json();
-  expect(incoming.bikes).toEqual([{ id: 'bike-1', name: 'Road bike', distance: 123456 }]);
-  expect(incoming.athleteId).toBe('athlete-a'); expect(incoming.entries).toEqual([]);
-  expect(app.connections.has('b')).toBe(false);
-  expect(app.connections.get('a').access_token).toBe('token-a');
-  expect(app.db.rpc).toHaveBeenCalledWith('save_maintenance_intervals_token', { p_user_id: 'a', p_token: 'token-a', p_athlete_id: 'athlete-a' });
-  expect(JSON.stringify(incoming)).not.toMatch(/token-a|private@example|not-returned|service-role-secret/);
-  expect(app.fetch.mock.calls.every(([, options]) => options.method === 'GET' && options.headers.Authorization === 'Bearer token-a')).toBe(true);
+  const response = await app.request({ action: 'connect', accessToken: 'token-a', userId: 'b' });
+  expect(response.status).toBe(400); expect(app.connections.size).toBe(0); expect(app.fetch).not.toHaveBeenCalled(); expect(app.db.rpc).not.toHaveBeenCalled();
 });
 it('refreshes using only the server-held credential, not a caller-supplied token or athlete', async () => {
   const app = setup(); const response = await app.request({ action: 'sync', accessToken: 'token-b', userId: 'b', athleteId: 'athlete-b' });
@@ -92,7 +85,7 @@ it('refreshes using only the server-held credential, not a caller-supplied token
   expect(app.calls.every(call => !call.table || call.table === 'maintenance_intervals_connections')).toBe(true);
 });
 it('does not expose another user’s connection when the caller has none', async () => {
-  const app = setup(); app.connections.delete('a');
+  const app = setup({ loginLinked: false }); app.connections.delete('a');
   expect(await (await app.request({ action: 'status' })).json()).toEqual({ connected: false, loginLinked: false });
   const response = await app.request({ action: 'sync', userId: 'b' });
   expect(response.status).toBe(409); expect((await response.json()).code).toBe('INTERVALS_RECONNECT_REQUIRED');
@@ -114,12 +107,15 @@ it('retains a saved connection on network failure and hides raw provider errors'
 });
 it('does not replace a valid saved connection with a rejected new token', async () => {
   const app = setup({ providerStatus: 401 }); const response = await app.request({ action: 'connect', accessToken: 'new-token' });
-  expect(response.status).toBe(409); expect(app.connections.get('a').access_token).toBe('token-a');
+  expect(response.status).toBe(400); expect(app.connections.get('a').access_token).toBe('token-a');
 });
 it('revokes and erases only the caller’s connection, never their garage or another user’s grant', async () => {
   const app = setup(); const response = await app.request({ action: 'disconnect', userId: 'b' });
   expect(await response.json()).toEqual({ connected: false, revoked: true });
   expect(app.connections.has('a')).toBe(false); expect(app.connections.has('b')).toBe(true);
+  expect(app.db.rpc).toHaveBeenCalledWith('disconnect_maintenance_intervals_account', { p_user_id: 'a', p_connection_id: 'version-a' });
+  expect(app.identities.has('a')).toBe(false); expect(app.identities.has('b')).toBe(true);
+  expect(await (await app.request({ action: 'status' })).json()).toEqual({ connected: false, loginLinked: false });
   expect(app.fetch.mock.calls[0][0]).toBe('https://intervals.icu/api/v1/disconnect-app');
   expect(app.fetch.mock.calls[0][1].method).toBe('DELETE');
   expect(app.fetch.mock.calls[0][1].headers.Authorization).toBe('Bearer token-a');
@@ -134,7 +130,7 @@ it('does not erase a newer connection when an older disconnect finishes late', a
     return new Response(null, { status: 204 });
   });
   const response = await app.request({ action: 'disconnect' });
-  expect(response.status).toBe(409); expect(app.connections.get('a').access_token).toBe('new-token');
+  expect(response.status).toBe(409); expect(app.connections.get('a').access_token).toBe('new-token'); expect(app.identities.has('a')).toBe(true);
 });
 it('reports an already-disconnected account without a provider call', async () => {
   const app = setup({ saved: false }); expect(await (await app.request({ action: 'disconnect' })).json()).toEqual({ connected: false, revoked: true });
@@ -157,7 +153,7 @@ it('rejects malformed bodies, oversized requests, unknown actions and unexpected
   expect((await app.request({}, { method: 'GET' })).status).toBe(405);
 });
 
-it('reports login linking independently from the optional mileage connection', async () => {
+it('reports disconnected when a saved identity has no mileage credential', async () => {
   const app = setup({ saved: false, loginLinked: true });
   expect(await (await app.request({ action: 'status' })).json()).toEqual({ connected: false, loginLinked: true });
   expect(app.fetch).not.toHaveBeenCalled();

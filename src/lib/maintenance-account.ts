@@ -195,13 +195,12 @@ export class AccountGarage {
     if (typeof result?.connected !== 'boolean') throw new Error('The Intervals.icu connection service returned an invalid status.');
     return { connected: result.connected, loginLinked: result.loginLinked === true };
   }
-  private async intervalsGarage(action: 'connect' | 'sync', accessToken?: string): Promise<IntervalsGarage> {
-    const result = await this.intervals(action, accessToken === undefined ? {} : { accessToken });
+  private async intervalsGarage(): Promise<IntervalsGarage> {
+    const result = await this.intervals('sync');
     if (typeof result?.athleteId !== 'string' || !result.athleteId || typeof result.name !== 'string' || typeof result.synced_at !== 'string' || !Number.isFinite(Date.parse(result.synced_at)) || !Array.isArray(result.bikes) || !result.bikes.every((bike: MaintenanceBike) => typeof bike?.id === 'string' && bike.id && typeof bike.name === 'string' && typeof bike.distance === 'number' && Number.isFinite(bike.distance) && bike.distance >= 0)) throw new Error('The Intervals.icu connection service returned invalid mileage. Your garage is unchanged.');
     return { athleteId: result.athleteId, name: result.name, synced_at: result.synced_at, bikes: result.bikes.map((bike: MaintenanceBike) => ({ id: bike.id, name: bike.name, distance: bike.distance })), entries: [] };
   }
-  connectIntervals(accessToken: string) { return this.intervalsGarage('connect', accessToken); }
-  syncIntervals() { return this.intervalsGarage('sync'); }
+  syncIntervals() { return this.intervalsGarage(); }
   async disconnectIntervals(): Promise<{ revoked: boolean }> {
     const result = await this.intervals('disconnect');
     if (result?.connected !== false || typeof result?.revoked !== 'boolean') throw new Error('The Intervals.icu connection could not be disconnected. Please retry.');
@@ -213,13 +212,8 @@ export class AccountGarage {
   }
   async completeIntervalsLoginLink(callback: IntervalsLoginCallback): Promise<void> {
     const result = await this.authenticatedRequest('/functions/v1/intervals-login', 'POST', { ...callback, action: 'complete', mode: 'link' });
-    if (result?.linked !== true) throw new Error('Could not enable Intervals.icu login. Try again.');
+    if (result?.linked !== true) throw new Error('Could not connect Intervals.icu. Try again.');
   }
-  async unlinkIntervalsLogin(): Promise<void> {
-    const result = await this.authenticatedRequest('/functions/v1/intervals-login', 'POST', { action: 'unlink' });
-    if (result?.linked !== false) throw new Error('Could not disable Intervals.icu login. Try again.');
-  }
-
   async deleteAccount() {
     // Only clear the session after confirmed server success. Never fall back to
     // deleting a local snapshot or send a caller-selected account ID.

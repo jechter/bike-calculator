@@ -14,6 +14,7 @@ function checked<T extends { error: unknown }>(result: T): T {
     const code = (result.error as { code?: string }).code;
     if (code === 'P0002') throw new HttpError(429, 'Too many pending login requests. Wait a few minutes and try again.');
     if (code === 'P0003' || code === '23505') throw new HttpError(409, 'This Intervals.icu identity or maintenance account is already linked differently. Sign in by email to review the link.', 'INTERVALS_LOGIN_CONFLICT');
+    if (code === 'P0005') throw new HttpError(403, 'This maintenance account cannot sign in. Use email sign-in or contact support.');
     if (code === 'P0004') throw new HttpError(409, 'A verified email is needed for automatic linking. Verify your Intervals.icu email, or sign in by email and explicitly enable Intervals.icu login.', 'INTERVALS_EMAIL_VERIFICATION_REQUIRED');
     throw new HttpError(503, 'Intervals.icu login is temporarily unavailable. Your existing account and garage are unchanged.');
   }
@@ -56,9 +57,9 @@ async function providerIdentity(code: string, verifier: string, redirectUri: str
   if (!athlete || typeof athlete.id !== 'string' || !athlete.id || athlete.id.length > 100) throw new HttpError(503, 'Intervals.icu returned an invalid identity.');
   return { athleteId: athlete.id, verifiedEmail: athlete.icu_email_verified === true ? emailAddress(athlete.email) : null, accessToken: token.access_token as string };
 }
-async function resolveIdentity(athleteId: string, verifiedEmail: string | null, ownerId: string | null) {
-  const args = { p_athlete_id: athleteId, p_verified_email: verifiedEmail, p_owner_id: ownerId };
-  let result = checked(await db.rpc('resolve_maintenance_intervals_identity', args)).data?.[0];
+async function resolveIdentity(athleteId: string, verifiedEmail: string | null, ownerId: string | null, token: string) {
+  const args = { p_athlete_id: athleteId, p_verified_email: verifiedEmail, p_owner_id: ownerId, p_token: token };
+  let result = checked(await db.rpc('connect_maintenance_intervals_account', args)).data?.[0];
   if (result?.needs_account === true && !ownerId && verifiedEmail) {
     // No matching account exists. A verified provider email creates an email-capable
     // Auth account, preserving email-code recovery. Never confirm an existing
@@ -72,21 +73,12 @@ async function resolveIdentity(athleteId: string, verifiedEmail: string | null, 
     } catch { throw new HttpError(503, 'Could not check account registration settings. Try email sign-in.'); }
     if (signupSettings?.disable_signup !== false) throw new HttpError(403, 'New account registration is disabled. Existing users can sign in by email.');
     const created = await db.auth.admin.createUser({ email: verifiedEmail, email_confirm: true });
-    result = checked(await db.rpc('resolve_maintenance_intervals_identity', args)).data?.[0];
+    result = checked(await db.rpc('connect_maintenance_intervals_account', args)).data?.[0];
     if (created.error && result?.needs_account) throw new HttpError(503, 'Could not create the maintenance account. Try email sign-in.');
   }
   if (!result?.user_id || result.needs_account || typeof result.email !== 'string') throw new HttpError(503, 'Could not resolve your maintenance account. Try email sign-in.');
   return result as { user_id: string; email: string };
 }
-async function keepExistingMileageCredential(owner: string, athleteId: string, token: string) {
-  // Login is not mileage opt-in. Only refresh a credential for an integration the
-  // account already enabled, and only for the same athlete. Never create one here.
-  try {
-    const result = await db.from('maintenance_intervals_connections').select('athlete_id').eq('user_id', owner).maybeSingle();
-    if (!result.error && result.data?.athlete_id === athleteId) await db.rpc('save_maintenance_intervals_token', { p_user_id: owner, p_token: token, p_athlete_id: athleteId });
-  } catch { /* A mileage-service failure must not block a verified login. */ }
-}
-
 Deno.serve(async request => {
   const origin = request.headers.get('Origin');
   if (!origin || !origins.has(origin)) return new Response('Forbidden', { status: 403 });
@@ -100,11 +92,6 @@ Deno.serve(async request => {
     let body: Record<string, unknown>;
     try { body = JSON.parse(raw); } catch { throw new HttpError(400, 'Invalid request.'); }
     if (!body || typeof body !== 'object' || Array.isArray(body)) throw new HttpError(400, 'Invalid request.');
-    if (body.action === 'unlink') {
-      const user = await authenticatedUser(request);
-      checked(await db.rpc('unlink_maintenance_intervals_identity', { p_user_id: user.id }));
-      return json({ linked: false });
-    }
     if (body.action === 'start') {
       if ((body.mode !== 'signin' && body.mode !== 'link') || typeof body.proof !== 'string' || !proofPattern.test(body.proof) || !allowedRedirect(body.redirectUri, origin) || typeof body.rememberMe !== 'boolean') throw new HttpError(400, 'Invalid login request or unregistered redirect URL.');
       const owner = body.mode === 'link' ? (await authenticatedUser(request)).id : null;
@@ -127,9 +114,8 @@ Deno.serve(async request => {
     }
     if (typeof body.code !== 'string' || !body.code || body.code.length > 4096) throw new HttpError(400, 'Intervals.icu did not return a valid login code.');
     const identity = await providerIdentity(body.code, tx.verifier, tx.redirect_uri);
-    const target = await resolveIdentity(identity.athleteId, identity.verifiedEmail, owner);
+    const target = await resolveIdentity(identity.athleteId, identity.verifiedEmail, owner, identity.accessToken);
     if (owner) {
-      await keepExistingMileageCredential(owner, identity.athleteId, identity.accessToken);
       return json({ linked: true });
     }
     // Issue a normal Supabase session for the resolved UUID, without sending mail.
@@ -148,7 +134,6 @@ Deno.serve(async request => {
       if (session) await auth.auth.signOut({ scope: 'local' }).catch(() => {});
       throw new HttpError(503, 'Could not establish the expected maintenance session. Try email sign-in.');
     }
-    await keepExistingMileageCredential(target.user_id, identity.athleteId, identity.accessToken);
     return json({ session: { access_token: session.access_token, refresh_token: session.refresh_token, expires_at: session.expires_at, expires_in: session.expires_in, user: { id: session.user.id, email: session.user.email || user.email } }, rememberMe: tx.remember_me === true });
   } catch (error) {
     return json({ message: error instanceof HttpError ? error.message : 'Intervals.icu login is unavailable. Try email sign-in; your garage is unchanged.', ...(error instanceof HttpError && error.code ? { code: error.code } : {}) }, error instanceof HttpError ? error.status : 503);

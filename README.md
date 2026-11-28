@@ -37,20 +37,19 @@ to 180 days, with automatic access-token refresh. Signed-out visitors see a mute
 with a sign-in banner. There is no editable demo, browser-only editing mode, or
 independent browser-garage import option.
 
-Intervals.icu is an optional, read-only bike/mileage integration, not an identity
-provider. It uses public-client OAuth with S256 PKCE and read-only settings access,
-not personal API keys. The connection is encrypted in Supabase Vault and restored
-when you reopen your cloud garage, so mileage refreshes without another approval.
-Visible, idle pages also refresh every five minutes. Tokens are never returned to
-the browser after connection setup or included in garage backups. Maintenance is
-never sent upstream. Explicit disconnect revokes the grant and erases the saved
-credential; signing out keeps the connection for the next sign-in.
+Intervals.icu is one optional connection for **sign-in and automatic bike/mileage
+sync together**. Connect through More or sign in with Intervals.icu; both use
+server-held S256 PKCE with public client 2006 and read-only settings access, not
+personal API keys. OAuth tokens never enter the browser or garage backups. They
+are encrypted in Supabase Vault, so mileage refreshes when you reopen the garage
+and every five visible, idle minutes. Maintenance is never sent upstream.
 
-Optional Intervals.icu login is separate from mileage synchronization. Verified
-provider emails can link to an existing confirmed email account, keeping the same
-garage and email-code fallback. A stable athlete-ID mapping takes precedence over
-later email changes. Signed-in users can explicitly enable or disable that login
-method from More without changing their mileage connection.
+Verified provider emails can match an existing confirmed email account, keeping
+the same garage and email-code fallback. Stable athlete-ID mappings take priority
+over later email changes. **More → Disconnect Intervals.icu** removes the login
+link and encrypted mileage credential together, attempts provider revocation, and
+keeps bikes, history, email access, and current Supabase sessions. Signing out
+keeps the connection for next time. There are no separate login/sync toggles.
 
 See [setup, security, and migration](docs/maintenance-accounts.md). Cloud setup
 requires a database migration, public frontend configuration, and an email-code

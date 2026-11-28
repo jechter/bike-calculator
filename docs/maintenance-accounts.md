@@ -84,82 +84,71 @@
   Legacy browser-record exports (`bike-maintenance-backup`) are a different format
   and are not accepted by this file importer.
 
-## Optional Intervals.icu login and account linking
+## Unified Intervals.icu connection
 
-- Email-code login remains available for every account. The provider is optional,
-  not an implicit consequence of importing bikes. **More → Enable Intervals.icu
-  login** explicitly links a currently signed-in account. **Disable Intervals.icu
-  login** requires confirmation, removes only that login link, and keeps the garage
-  and mileage integration. It requires a confirmed email for recovery.
-- Signed-out **Continue with Intervals.icu** uses a separate `intervals-login` Edge
-  Function. The backend—not the browser—owns the S256 verifier, exchanges the code
-  for client 2006, and fetches `/api/v1/athlete/0`. It never accepts a browser-supplied
-  access token, email, athlete ID, or target user ID as login evidence.
-- Start/return are public only in the sense that no existing Supabase login is
-  needed. A random browser proof lives in tab storage; the backend stores its hash,
-  random state hash, encrypted Vault verifier, exact redirect, purpose, owner for
-  explicit links, remember-me choice, and a salted IP hash. Returns require the
-  matching private proof, one-use state, exact origin/redirect and purpose. Requests
-  expire after ten minutes; consumption deletes the row and Vault secret. Abandoned
-  expired rows are pruned on subsequent starts. Pending-request limits reduce abuse.
-- The protected `maintenance_intervals_identities` table maps one athlete ID to one
-  Supabase user ID, and permits one Intervals.icu login per user. Existing athlete
-  mappings are looked up first and never reassigned because the provider email
-  changes or becomes unverified. No existing mileage connections are auto-promoted.
-- Only for an unlinked athlete, a server-fetched `icu_email_verified === true` email
-  is eligible for automatic matching. Matching is case-insensitive, with no plus-tag
-  or dot removal. The matching Supabase email must already be confirmed. Ambiguous
-  matches, another linked athlete/user, or existing unconfirmed email accounts are
-  rejected with instructions to use email sign-in; no garage snapshots are merged.
-- A new verified provider email can create a confirmed, email-capable Auth account.
-  The backend checks public Auth settings first and respects disabled signups.
-  Explicit signed-in linking proves both identities and need not trust the provider
-  email. Linking to another user's already-linked athlete is always rejected.
-- After resolution, the backend uses Auth Admin `generateLink` to create a one-use
-  magic-link token **without sending an email**, verifies it on a new isolated Auth
-  client, checks that the resulting session subject is the mapped UUID, and returns
-  a normal Supabase session. Never call user sign-in methods on the shared service-
-  role client. The database continues using the existing `auth.uid()` RLS policies.
-  Auth's built-in audit/provider metadata sees this as an email/magic-link session;
-  this is an application-owned login bridge, not a native Supabase provider.
-- The browser accepts that session only if the original login context is unchanged.
-  The shared Remember me checkbox applies to both methods; its immutable backend
-  transaction choice must match the browser's saved choice. Token storage/lifetimes
-  use the existing Supabase rules. Callback codes and provider tokens are never
-  persisted in browser storage. Email login opens the same UUID/garage even when
-  Intervals.icu is down or no longer accessible.
-- Login does not enable mileage sync or store a new mileage token. If this account
-  already enabled sync for the same athlete, the backend may refresh that existing
-  encrypted credential using the fresh grant, avoiding stale tokens after reapproval.
-  Disabling login does not revoke the shared provider grant or existing Supabase
-  sessions. Use sign-out for the current session and Disconnect sync for API access.
+- There is one user-visible connection, enabling **sign-in and automatic mileage
+  sync together**. Signed-out **Continue with Intervals.icu** and signed-in
+  **More → Connect Intervals.icu** use the same server-held OAuth PKCE handshake.
+  More shows only Connect or Disconnect, never independent login/sync toggles.
+  There is no partial-setup migration or special completion UI.
+- Email-code access remains available, opening the same UUID/garage. Disconnect
+  asks the user to confirm they can receive email codes, removes the login mapping
+  and Vault credential together, and attempts provider revocation. Bikes, history,
+  email access, and already-issued Supabase sessions remain. Sign-out keeps the
+  connection; account deletion cascades both mapping and encrypted credential.
+- `intervals-login` owns the S256 verifier, exchanges the code for public client
+  2006, and fetches `/api/v1/athlete/0`. Browser-supplied tokens, email, athlete IDs,
+  and target UUIDs are never login/link evidence. The old browser-token `connect`
+  action and separate `unlink` action are rejected by the handlers.
+- A private browser proof lives in tab storage. The backend stores hashed state
+  and proof, a Vault-encrypted verifier, exact redirect, purpose, authenticated
+  owner for explicit connection, immutable remember-me choice, and salted IP hash.
+  Returns require matching proof/state/context; transactions expire after ten
+  minutes, are consumed once, and delete the verifier. Later starts prune expired
+  requests. Pending-request limits reduce abuse. Callbacks are scrubbed and
+  single-flight; session acceptance rejects account changes and remember mismatch.
+- The protected athlete-to-UUID mapping takes precedence over later provider
+  email changes, including unverified changes. For an unmapped athlete only,
+  `icu_email_verified === true` may match an already-confirmed Supabase email.
+  Matching is case-insensitive without dot/plus normalization; ambiguous,
+  unconfirmed, or conflicting identities fail closed. Fresh verified emails may
+  create an email-capable confirmed Auth user, respecting disabled signups.
+  Explicit authenticated connection proves both identities without requiring
+  matching provider/account emails. Banned accounts cannot connect.
+- `connect_maintenance_intervals_account` resolves the identity and stores the
+  credential atomically. Either both succeed or both roll back. The account and
+  credential locks also protect `disconnect_maintenance_intervals_account`, whose
+  connection-version check prevents a stale disconnect from deleting a newer
+  credential or identity. A failed provider refresh retains the connection; a
+  rejected credential is removed, while the stable identity is retained for safe
+  fresh OAuth reconnection rather than rerouting by a changed email.
+- Login sessions remain ordinary Supabase sessions: Admin `generateLink` creates a
+  one-use magic-link token without sending email, then an isolated Auth client
+  verifies it and checks the subject UUID. Never sign in on the shared service-role
+  client. RLS still uses `auth.uid()`. Provider credentials never enter browser
+  storage, session responses, garage JSON, or backups.
+- After OAuth, or on later email sign-in/reload, the browser fetches mileage from
+  `intervals-connection`. A transient gear/API failure does not discard a successful
+  connection or prevent email access. Manual bikes/history are preserved. There
+  is no background scheduler when the page is closed.
 
-### Optional-login rollout (required before enabling the new frontend)
+### Unified-connection rollout (not yet deployed)
 
-1. Validate `supabase/tests/intervals_login.sql` in a disposable Supabase database.
-   It rolls back fixtures. Docker is unavailable in this workspace, so the SQL
-   integration test is separate from the automated handler/client/UI suite.
-2. Apply only `202611260001_intervals_login.sql` to the existing linked project in
-   one transaction (see the historical migration-tracking caveat below). This adds
-   identity/request tables and private RPCs; it does not rewrite garages or
-   automatically link existing mileage connections.
-3. Set `INTERVALS_LOGIN_REDIRECT_URIS` to the complete registered production and
-   preview URLs, comma-separated. Production is allowed by default; preview must
-   be explicit. Keep `MAINTENANCE_APP_ORIGINS` configured for their origins. Optional
-   `INTERVALS_OAUTH_CLIENT_ID` defaults to 2006 and must match the frontend client ID.
-4. Deploy **both** `intervals-login` and the updated `intervals-connection` function
-   with `--no-verify-jwt --remote --yes`. The former validates public login returns
-   by proof/PKCE and manually authenticates link/unlink; the latter still validates
-   every request with Auth `getUser` and now returns the caller's login-link status.
-   Platform-provided `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and
-   `SUPABASE_ANON_KEY` stay backend-only. Never expose a service key in frontend env.
-5. Publish the frontend only after those dependencies. Verify existing verified
-   email linking, new signup, unverified/conflicting rejection, changed-email
-   stability, email-code fallback, remember-me behavior, and explicit link/unlink.
-   Monitor normal Supabase Auth issuance/rate limits; the backend bridge issues a
-   standard session and does not bypass Auth's account bans or token policies.
+1. Validate `supabase/tests/intervals_account.sql` in a disposable Supabase database.
+   Docker is unavailable here; this SQL regression is not part of the mocked tests.
+2. Apply only `202611260002_unified_intervals_connection.sql` transactionally to the
+   current project. Earlier login/Vault migrations are already deployed; do not
+   replay historical migrations or reset data. The new file adds two private RPCs
+   without rewriting any garage or automatically connecting any account.
+3. Redeploy **both** `intervals-login` and `intervals-connection` with
+   `--no-verify-jwt --remote --yes`. Existing origin, client ID, and exact
+   production/preview redirect settings remain unchanged.
+4. Publish the frontend only after the backend. Verify OAuth sign-in and signed-in
+   connection both enable sync, disconnect removes both capabilities, email opens
+   the same garage, and sign-out keeps the connection. No provider token should be
+   exposed to the browser. Use isolated test identities; preserve real garage data.
 
-### Production rollout verification
+### Historical optional-login rollout verification (before unification)
 
 The optional-login implementation (`baea55e`, branch `feature/maintenance-log`)
 was published with explicit operator authorization. Only the additive
@@ -196,19 +185,11 @@ fingerprint were unchanged afterward.
 - Authorization: `https://intervals.icu/oauth/authorize`; token exchange:
   `https://intervals.icu/api/oauth/token`. Only `SETTINGS:READ` is requested for
   profile/gear, not activity access or write permission. No client secret is used.
-- A random state and S256 verifier are stored in tab sessionStorage for up to ten
-  minutes, bound to the Maintenance Log user ID and exact redirect URI. Successful
-  callbacks require matching state, owner, origin/path, and verifier. Callback query
-  credentials are scrubbed immediately. A documented state-less denial can only
-  cancel; it cannot authorize anything. Exchanges are single-flight for StrictMode.
-- Supabase email sign-in remains separate. The returning user must be signed in to
-  the same garage account before the token exchange/import can run. An expired
-  garage session can be reauthenticated; a different account cannot import the grant.
-- After OAuth, the browser sends the token once over HTTPS to the authenticated
-  `intervals-connection` Edge Function. It validates the token with Intervals.icu,
-  stores it encrypted in Supabase Vault, and returns only whitelisted bike/profile
-  metadata. It never returns a saved token to a browser. Credentials never enter
-  garage JSON, localStorage, sessionStorage, or downloadable backups.
+- The backend holds the S256 verifier and encrypted provider credential. The
+  browser stores only the short-lived private proof/state/context described above;
+  it neither exchanges provider codes nor receives provider access tokens.
+- Both Connect and provider sign-in establish the combined connection. Email
+  sign-in restores any saved connection without another provider approval.
 - Subsequent status/sync/disconnect calls authenticate with the Maintenance Log
   account's Supabase access token. The Edge Function verifies it with Auth `getUser`,
   derives the owner server-side, and ignores caller-provided owner/athlete IDs.
@@ -239,7 +220,7 @@ fingerprint were unchanged afterward.
   to a `VITE_` variable.
 - Provider documentation: [Intervals.icu OAuth support](https://forum.intervals.icu/t/intervals-icu-oauth-support/2759).
 
-### Persistent-connection backend rollout (required)
+### Historical persistent-connection backend rollout
 
 Before publishing this frontend:
 

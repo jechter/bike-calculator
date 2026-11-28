@@ -308,13 +308,13 @@ it('manages persistent Intervals.icu access only through the authenticated backe
   const { AccountGarage } = await import('./maintenance-account');
   const account = new AccountGarage(session);
   expect(await account.intervalsStatus()).toEqual({ connected: false, loginLinked: false });
-  const incoming = await account.connectIntervals('provider-oauth-token');
+  const incoming = await account.syncIntervals();
   expect(JSON.stringify(incoming)).not.toContain('should-not-return');
   expect(incoming.bikes[0].distance).toBe(1234567);
   await account.syncIntervals();
   expect(await account.disconnectIntervals()).toEqual({ revoked: true });
   const bodies = fetch.mock.calls.map(([, options]) => JSON.parse(options?.body as string));
-  expect(bodies).toEqual([{ action: 'status' }, { action: 'connect', accessToken: 'provider-oauth-token' }, { action: 'sync' }, { action: 'disconnect' }]);
+  expect(bodies).toEqual([{ action: 'status' }, { action: 'sync' }, { action: 'sync' }, { action: 'disconnect' }]);
   for (const [url, options] of fetch.mock.calls) {
     expect(url).toBe('https://example.supabase.co/functions/v1/intervals-connection');
     expect(options?.method).toBe('POST');
@@ -372,13 +372,13 @@ it('preserves explicit persistent login choice for Intervals.icu sessions and us
   const { acceptIntervalsSignIn } = await import('./maintenance-account');
   const account = acceptIntervalsSignIn({ session, rememberMe: true });
   expect(localStorage.getItem('maintenance-account-v1')).not.toBeNull(); expect(sessionStorage.getItem('maintenance-account-v1')).toBeNull();
-  const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ authorizationUrl: 'https://intervals.icu/oauth/authorize', state: 'state' }))).mockResolvedValueOnce(new Response(JSON.stringify({ linked: true }))).mockResolvedValueOnce(new Response(JSON.stringify({ linked: false })));
+  const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ authorizationUrl: 'https://intervals.icu/oauth/authorize', state: 'state' }))).mockResolvedValueOnce(new Response(JSON.stringify({ linked: true }))).mockResolvedValueOnce(new Response(JSON.stringify({ connected: false, revoked: true })));
   await account.startIntervalsLoginLink('proof', 'https://example.com/maintenance-log/');
   await account.completeIntervalsLoginLink({ state: 'state', proof: 'proof', code: 'code' });
-  await account.unlinkIntervalsLogin();
+  await account.disconnectIntervals();
   const bodies = fetch.mock.calls.map(([, options]) => JSON.parse(options?.body as string));
-  expect(bodies.map(body => body.action)).toEqual(['start', 'complete', 'unlink']);
+  expect(bodies.map(body => body.action)).toEqual(['start', 'complete', 'disconnect']);
   expect(bodies[0]).toMatchObject({ mode: 'link', rememberMe: false });
-  for (const [url, options] of fetch.mock.calls) { expect(url).toBe('https://example.supabase.co/functions/v1/intervals-login'); expect(new Headers(options?.headers).get('Authorization')).toBe('Bearer access'); }
+  for (const [index, [url, options]] of fetch.mock.calls.entries()) { expect(url).toBe('https://example.supabase.co/functions/v1/' + (index === 2 ? 'intervals-connection' : 'intervals-login')); expect(new Headers(options?.headers).get('Authorization')).toBe('Bearer access'); }
   expect(bodies.every(body => body.userId === undefined)).toBe(true);
 });

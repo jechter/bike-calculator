@@ -3,3 +3,11 @@ verify_jwt = false
 
 [functions.maintenance-storage]
 verify_jwt = false
+
+# Verify the caller with Auth getUser in the handler (supports publishable keys).
+[functions.intervals-connection]
+verify_jwt = false
+
+# Public OAuth start/return use state + a browser proof; link/unlink also verify Auth.
+[functions.intervals-login]
+verify_jwt = false

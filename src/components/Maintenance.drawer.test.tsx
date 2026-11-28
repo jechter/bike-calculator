@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within, waitFor } from '@testing-library/react';
 import { App } from '../App';
 
 import { testMaintenanceAccount } from '../test-fixtures/maintenance-account';
@@ -24,6 +24,7 @@ async function renderCompactApp() {
   fireEvent.click(screen.getByRole('button', { name: 'Close navigation' }));
   expect(screen.queryByRole('button', { name: 'Open Bikes and components' })).toBeNull();
   await screen.findByRole('region', { name: 'Performed maintenance' });
+  await waitFor(() => expect(screen.queryByText('Connecting / loading…')).toBeNull());
 }
 afterEach(() => {
   cleanup(); localStorage.clear(); sessionStorage.clear(); changes.clear(); vi.unstubAllGlobals();

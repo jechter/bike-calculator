@@ -227,6 +227,20 @@ export const GenericComponentIcon = () => (
   </svg>
 );
 
+export const SaddleIcon = () => (
+  <svg {...SVG_PROPS}>
+    <path d="M4 7c3 0 5 3 9 3h6a2 2 0 0 1 0 4H6a3 3 0 0 1-3-3V8a1 1 0 0 1 1-1ZM7 14l3 4h6l2-4M12 18v3" />
+  </svg>
+);
+
+export const GearedHubIcon = () => (
+  <svg {...SVG_PROPS}>
+    <path d="M2 12h4M18 12h4M6 7v10M18 7v10M6 9h3M15 9h3M6 15h3M15 15h3" />
+    <rect x="9" y="6" width="6" height="12" rx="2" />
+    <path d="M12 9v6" />
+  </svg>
+);
+
 export const BatteryIcon = () => (
   <svg {...SVG_PROPS}>
     <rect x="3" y="6" width="17" height="12" rx="2" />

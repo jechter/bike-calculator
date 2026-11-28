@@ -4,18 +4,19 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import { readLegacyBrowserGarageFixture, seedLegacyBrowserGarage } from '../test-fixtures/maintenance-account';
-const mocks = vi.hoisted(() => ({ enabled: true, restore: vi.fn(), load: vi.fn(), save: vi.fn(), write: vi.fn(), logout: vi.fn(), deleteAccount: vi.fn(), send: vi.fn(), verify: vi.fn() }));
+const mocks = vi.hoisted(() => ({ enabled: true, restore: vi.fn(), load: vi.fn(), save: vi.fn(), write: vi.fn(), logout: vi.fn(), deleteAccount: vi.fn(), send: vi.fn(), verify: vi.fn(), intervalsStatus: vi.fn(), disconnectIntervals: vi.fn() }));
 vi.mock('../lib/maintenance-account', async original => ({ ...await original<typeof import('../lib/maintenance-account')>(), get accountEnabled() { return mocks.enabled; }, restoreAccountOnce: mocks.restore, sendSignInCode: mocks.send, verifySignInCode: mocks.verify }));
 import { Maintenance } from './Maintenance';
-const account = { email: 'rider@example.com', loadGarage: mocks.load, save: mocks.save, write: mocks.write, logout: mocks.logout, deleteAccount: mocks.deleteAccount };
+const account = { intervalsStatus: mocks.intervalsStatus, disconnectIntervals: mocks.disconnectIntervals, email: 'rider@example.com', userId: 'user-1', loadGarage: mocks.load, save: mocks.save, write: mocks.write, logout: mocks.logout, deleteAccount: mocks.deleteAccount };
 beforeEach(() => {
   vi.resetAllMocks(); mocks.enabled = true;
   mocks.load.mockResolvedValue(sampleMaintenance()); mocks.restore.mockResolvedValue(account);
   mocks.deleteAccount.mockResolvedValue(undefined);
+  mocks.intervalsStatus.mockResolvedValue({ connected: false }); mocks.disconnectIntervals.mockResolvedValue({ revoked: true });
   mocks.logout.mockResolvedValue(undefined); mocks.send.mockResolvedValue(undefined); mocks.verify.mockResolvedValue(account);
 });
 afterEach(() => { cleanup(); localStorage.clear(); sessionStorage.clear(); vi.restoreAllMocks(); });
-async function cloud() { sessionStorage.setItem('maintenance-account-v1', '{}'); render(<Maintenance />); await screen.findByRole('button', { name: /^Everyday road bike. Total distance/ }); }
+async function cloud() { sessionStorage.setItem('maintenance-account-v1', '{}'); render(<Maintenance />); await screen.findByRole('button', { name: /^Everyday road bike. Total distance/ }); await waitFor(() => expect(screen.queryByText('Connecting / loading…')).toBeNull()); }
 it('restores an independent account without calling Intervals.icu', async () => {
   const fetch = vi.spyOn(globalThis, 'fetch');
   await cloud();
@@ -40,7 +41,7 @@ it('does not offer browser import or change legacy records after cloud sign-in',
   expect(screen.queryByText('Import existing browser records')).toBeNull();
   expect(screen.queryByText('Local-only bike')).toBeNull();
   expect(screen.getByText('Download garage backup')).toBeTruthy();
-  expect(screen.getByText('Connect Intervals.icu (sync bikes and mileage)')).toBeTruthy();
+  expect(screen.getByText('Connect Intervals.icu')).toBeTruthy();
   expect(screen.getByText('Sign out')).toBeTruthy();
   expect(mocks.write).not.toHaveBeenCalled();
   expect(readLegacyBrowserGarageFixture()).toEqual(backup);
@@ -208,7 +209,7 @@ it('replaces the illustration with the actual empty cloud garage without importi
   const connect = screen.getByRole('button', { name: 'connect Intervals.icu' });
   expect(connect.parentElement?.textContent).toBe('Or connect Intervals.icu to import your bikes');
   fireEvent.click(connect);
-  expect(screen.getByRole('form', { name: 'Intervals.icu sync (Experimental)' })).toBeTruthy();
+  expect(screen.getByRole('form', { name: 'Intervals.icu connection' })).toBeTruthy();
   expect(document.querySelector('.maintenance-preview')).toBeNull();
   expect(screen.queryByText('City commuter')).toBeNull();
   expect(mocks.save).not.toHaveBeenCalled(); expect(mocks.write).not.toHaveBeenCalled();
@@ -222,7 +223,7 @@ it('shows email entry immediately with the free-account copy and no intermediate
   expect(screen.queryByRole('button', { name: 'Sign in / create account with email' })).toBeNull();
   expect(screen.queryByText(/No password or Intervals.icu account needed/)).toBeNull();
   expect(screen.getByText('This page lets you track maintenance and mileage for all your bikes. You need a free account to store your maintenance data in the cloud database.')).toBeTruthy();
-  expect(screen.getByText('Enter your email address to login or create an account.')).toBeTruthy();
+  expect(screen.getByText('Use Intervals.icu or enter your email address to log in or create an account.')).toBeTruthy();
   expect(screen.queryByText(/By default, sign-in is saved|How we use your email/)).toBeNull();
   const privacy = screen.getByRole('link', { name: 'Privacy notice' });
   expect(privacy.getAttribute('href')).toMatch(/privacy\/index\.html$/);
@@ -331,6 +332,7 @@ it('deletes the account and hides the garage only after server success', async (
   fireEvent.click(screen.getByText('Delete account'));
   expect((screen.getByText('Delete account') as HTMLButtonElement).disabled).toBe(true);
   expect(screen.getByRole('region', { name: 'Performed maintenance' })).toBeTruthy();
+  await waitFor(() => expect(mocks.deleteAccount).toHaveBeenCalledTimes(1));
   resolve();
   await screen.findByText(/Your account and cloud garage have been deleted/);
   expect(screen.queryByRole('region', { name: 'Performed maintenance' })).toBeNull();
@@ -367,4 +369,40 @@ it('does not restore an earlier remember-me choice when reloading a pending sign
   sessionStorage.setItem('maintenance-pending-email-v1', JSON.stringify({ email: 'rider@example.com', createdAt: Date.now() }));
   render(<Maintenance />);
   expect((screen.getByRole('checkbox', { name: /Remember me for up to 180 days/ }) as HTMLInputElement).checked).toBe(false);
+});
+
+it('dismisses sign-in notifications without clearing the code-entry step and shows later messages', async () => {
+  render(<Maintenance />);
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'rider@example.com' } });
+  fireEvent.click(screen.getByText('Send sign-in code'));
+  const code = await screen.findByLabelText('Type or paste the code we sent to your email here');
+  fireEvent.change(code, { target: { value: '123456' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Dismiss notification' }));
+  expect(screen.queryByText(/Check your email for your sign-in code/)).toBeNull();
+  expect((code as HTMLInputElement).value).toBe('123456');
+  expect((screen.getByLabelText('Email') as HTMLInputElement).value).toBe('rider@example.com');
+  fireEvent.click(screen.getByText('Verify code'));
+  await screen.findByText('Signed in. Your bikes and maintenance are saved to your cloud account.');
+  fireEvent.click(screen.getByRole('button', { name: 'Dismiss notification' }));
+  expect(screen.queryByText('Signed in. Your bikes and maintenance are saved to your cloud account.')).toBeNull();
+  expect(screen.getByRole('region', { name: 'Performed maintenance' })).toBeTruthy();
+  expect(mocks.logout).not.toHaveBeenCalled();
+  expect(mocks.write).not.toHaveBeenCalled();
+});
+
+it('dismisses an error without clearing inputs or preventing a verification retry', async () => {
+  mocks.verify.mockRejectedValueOnce(new Error('Invalid sign-in code'));
+  render(<Maintenance />);
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'rider@example.com' } });
+  fireEvent.click(screen.getByText('Send sign-in code'));
+  const code = await screen.findByLabelText('Type or paste the code we sent to your email here');
+  fireEvent.change(code, { target: { value: '123456' } });
+  fireEvent.click(screen.getByText('Verify code'));
+  await screen.findByRole('alert');
+  fireEvent.click(screen.getByRole('button', { name: 'Dismiss error' }));
+  expect(screen.queryByRole('alert')).toBeNull();
+  expect((code as HTMLInputElement).value).toBe('123456');
+  fireEvent.click(screen.getByText('Verify code'));
+  await screen.findByRole('region', { name: 'Performed maintenance' });
+  expect(mocks.verify).toHaveBeenCalledTimes(2);
 });

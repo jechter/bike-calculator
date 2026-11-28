@@ -6,21 +6,23 @@ import { useIsMobile } from '../useIsMobile';
 import { ResponsivePopover } from './ResponsivePopover';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { bikeComponents, suggestedServices, componentHistory, componentMileage, componentName, componentNames, maintenanceIntervals, kilometersAgo, localDate, type MaintenanceData, type MaintenanceEntry, type MaintenanceKind } from '../lib/maintenance';
-import { loadIntervals } from '../lib/intervals';
-import { accountEnabled, accountSessionKey, hasSavedAccount, clearPendingEmailSignIn, loadPendingEmailSignIn, rememberPendingEmailSignIn, AccountGarage, downloadGarage, forgetAccount, mergeIntervalsBikes, restoreAccountOnce, sendSignInCode, verifySignInCode } from '../lib/maintenance-account';
+import type { IntervalsGarage } from '../lib/intervals';
+import { accountEnabled, acceptIntervalsSignIn, storedAccountUserId, accountSessionKey, hasSavedAccount, clearPendingEmailSignIn, loadPendingEmailSignIn, rememberPendingEmailSignIn, AccountGarage, intervalsNeedsReconnect, downloadGarage, forgetAccount, mergeIntervalsBikes, restoreAccountOnce, sendSignInCode, verifySignInCode } from '../lib/maintenance-account';
 import { RepeatIcon, EditIcon, DeleteIcon, BikeIcon, WrenchIcon, ThreadIcon } from '../icons';
 import { MaintenanceComponentIcon } from './MaintenanceComponentIcon';
 import { MaintenancePreview } from './MaintenancePreview';
 import { planGarageImport, readGarageBackupFile } from '../lib/maintenance-backup';
 import { formatSyncTime } from '../lib/maintenance-sync-time';
+import intervalsLogo from '../assets/intervals-icu-logo.png';
 import './Maintenance.css';
+import { captureIntervalsLoginCallback, createIntervalsSignInUrl, createIntervalsLoginLinkUrl, finishIntervalsSignIn, finishIntervalsLoginLink, cancelIntervalsLogin } from '../lib/intervals-login';
 import { getBasePath } from '../useHashRoute';
 const km = (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 1 });
 export function Maintenance() {
   const [data, setData] = useState<MaintenanceData | null>(null);
   const [busy, setBusy] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState('');
-  const apiKey = useRef('');
+  const initializedIntervalsOwner = useRef<AccountGarage | null>(null);
+  const [loginReturn, setLoginReturn] = useState(captureIntervalsLoginCallback);
   const [intervalsConnected, setIntervalsConnected] = useState(false);
   const store = useRef<AccountGarage | null>(null);
   const sessionGeneration = useRef(0);
@@ -62,6 +64,7 @@ export function Maintenance() {
   useEffect(() => {
     let mounted = true;
     const generation = sessionGeneration.current;
+    if (loginReturn === 'signin') return;
     try {
       if (!accountEnabled || !hasSavedAccount()) return;
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not read browser storage.'); return; }
@@ -85,7 +88,7 @@ export function Maintenance() {
       sessionGeneration.current++;
       try { sessionStorage.removeItem(accountSessionKey); } catch { /* Tab storage may be unavailable. */ }
       store.current = null; setData(null); setAccountEmail(''); setFormOpen(false); setBikeEditor(null);
-      apiKey.current = ''; setIntervalsConnected(false); setSyncOpen(false); setImportOpen(false); setBackupImport(null); setMoreOpen(false);
+      initializedIntervalsOwner.current = null; cancelIntervalsLogin(); setLoginReturn(null); setBusy(false); setIntervalsConnected(false); setSyncOpen(false); setImportOpen(false); setBackupImport(null); setMoreOpen(false);
       setMessage('Sign-in changed in another tab. Reload or sign in again to continue.');
     };
     window.addEventListener('storage', changed);
@@ -108,27 +111,107 @@ export function Maintenance() {
     if (!store.current) throw new Error('Sign in to save your maintenance log. No changes were saved.');
     return store.current;
   };
+  useEffect(() => {
+    if (loginReturn !== 'signin') return;
+    let mounted = true;
+    const generation = sessionGeneration.current;
+    setBusy(true); setError(''); setMessage('');
+    void finishIntervalsSignIn().then(async result => {
+      if (!mounted || sessionGeneration.current !== generation) return;
+      const account = acceptIntervalsSignIn(result);
+      let garage: MaintenanceData;
+      try { garage = await account.loadGarage(); }
+      catch (error) { if (storedAccountUserId() === account.userId) forgetAccount(); throw error; }
+      if (!mounted || sessionGeneration.current !== generation) return;
+      store.current = account; initializedIntervalsOwner.current = null;
+      setAccountEmail(account.email); setData(garage); clearFilter();
+      clearPendingEmailSignIn(); setCodeSent(false); setCode('');
+      setMessage('Signed in with Intervals.icu. Email-code sign-in opens the same garage.');
+    }).catch(error => { if (mounted && sessionGeneration.current === generation) setError(error instanceof Error ? error.message : 'Could not sign in with Intervals.icu. Try email sign-in.'); })
+      .finally(() => { if (mounted && sessionGeneration.current === generation) { setBusy(false); setLoginReturn(null); } });
+    return () => { mounted = false; };
+  }, [loginReturn]);
+  const signInWithIntervals = () => {
+    void run(async () => { window.location.assign(await createIntervalsSignInUrl(rememberMe)); });
+  };
   const persistGarage = async (garage: MaintenanceData) => {
     await requireStore().write(garage);
     setData(garage);
   };
-  const syncMileage = async (key: string) => {
-    if (!data) return;
-    const incoming = await loadIntervals(key);
+  const importMileage = async (owner: AccountGarage, incoming: IntervalsGarage) => {
+    if (!data || store.current !== owner) throw new Error('Your account changed. No bikes or mileage were imported.');
     const bikes = mergeIntervalsBikes(data.bikes, incoming.bikes, incoming.athleteId);
-    await persistGarage({ ...data, bikes, synced_at: incoming.synced_at });
-    apiKey.current = key; setIntervalsConnected(true); setApiKeyInput(''); setSyncOpen(false);
-    setMessage('Bike mileage synced. Manual bikes and service history were kept. The API key is held only until you leave this page.');
+    const garage = { ...data, bikes, synced_at: incoming.synced_at };
+    await owner.write(garage);
+    if (store.current !== owner) return;
+    setData(garage); setIntervalsConnected(true); setSyncOpen(false);
+    setMessage('Bike mileage synced. Manual bikes and service history were kept.');
+  };
+  const syncMileage = async () => {
+    const owner = requireStore();
+    try { await importMileage(owner, await owner.syncIntervals()); }
+    catch (error) { if (store.current === owner && intervalsNeedsReconnect(error)) setIntervalsConnected(false); throw error; }
   };
   useEffect(() => {
+    if (!data || !store.current || loginReturn === 'signin' || (initializedIntervalsOwner.current === store.current && loginReturn !== 'link')) return;
+    let mounted = true;
+    const owner = store.current;
+    setBusy(true);
+    const restoreConnection = async () => {
+      let status = await owner.intervalsStatus();
+      if (!mounted || store.current !== owner) return;
+      let linkedNow = false;
+      if (loginReturn === 'link') {
+        await finishIntervalsLoginLink(owner);
+        if (!mounted || store.current !== owner) return;
+        status = await owner.intervalsStatus(); linkedNow = true;
+      }
+      if (!mounted || store.current !== owner) return;
+      setIntervalsConnected(status.connected);
+      if (status.connected) {
+        const incoming = await owner.syncIntervals();
+        if (mounted && store.current === owner) await importMileage(owner, incoming);
+      }
+      if (linkedNow) setMessage('Intervals.icu connected for sign-in and mileage sync. Email-code sign-in still opens this garage.');
+    };
+    void restoreConnection().catch(error => {
+      if (mounted && store.current === owner) {
+        if (intervalsNeedsReconnect(error)) setIntervalsConnected(false);
+        setError(error instanceof Error ? error.message : 'Could not restore your Intervals.icu connection.');
+      }
+    }).finally(() => {
+      if (mounted && store.current === owner) { initializedIntervalsOwner.current = owner; if (loginReturn === 'link') setLoginReturn(null); setBusy(false); }
+    });
+    return () => { mounted = false; };
+  }, [Boolean(data), loginReturn]);
+  useEffect(() => {
     if (!intervalsConnected || busy || formOpen || bikeEditor || syncOpen || importOpen || !data) return;
-    const timer = window.setInterval(() => { if (document.visibilityState === 'visible') void run(() => syncMileage(apiKey.current)); }, 5 * 60 * 1000);
+    const timer = window.setInterval(() => { if (document.visibilityState === 'visible') void run(syncMileage); }, 5 * 60 * 1000);
     return () => window.clearInterval(timer);
   }, [intervalsConnected, busy, formOpen, bikeEditor, syncOpen, importOpen, data]);
-  const connect = (event: FormEvent) => { event.preventDefault(); void run(() => syncMileage(apiKeyInput.trim())); };
+  const connect = (event: FormEvent) => {
+    event.preventDefault();
+    void run(async () => {
+      const owner = requireStore();
+      const url = await createIntervalsLoginLinkUrl(owner);
+      if (store.current !== owner) { cancelIntervalsLogin(); throw new Error('Your account changed. Connect Intervals.icu again.'); }
+      window.location.assign(url);
+    });
+  };
+  const disconnectIntervals = () => {
+    if (!confirm(`Disconnect Intervals.icu? This disables Intervals.icu sign-in and mileage sync. Make sure you can receive email sign-in codes at ${accountEmail}. Your bikes and maintenance history will be kept.`)) return;
+    setMoreOpen(false);
+    void run(async () => {
+      const owner = requireStore();
+      const result = await owner.disconnectIntervals();
+      if (store.current !== owner) return;
+      setIntervalsConnected(false); setSyncOpen(false); cancelIntervalsLogin();
+      setMessage(result.revoked ? 'Intervals.icu disconnected. Your bikes and records were kept.' : 'The saved Intervals.icu connection was removed. Revoke this app’s access in Intervals.icu Settings → Apps; the provider could not be reached. Your bikes and records were kept.');
+    });
+  };
   const clearSignedInState = () => {
     sessionGeneration.current++;
-    store.current = null; setAccountEmail(''); apiKey.current = ''; setIntervalsConnected(false); setApiKeyInput('');
+    store.current = null; setAccountEmail(''); initializedIntervalsOwner.current = null; cancelIntervalsLogin(); setLoginReturn(null); setIntervalsConnected(false);
     setMoreOpen(false); setData(null); setSyncOpen(false); setImportOpen(false); setBackupImport(null); clearFilter(); setFormOpen(false); setBikeEditor(null); clearPendingEmailSignIn(); setCodeSent(false); setCode(''); setEmail(''); setRememberMe(false);
   };
   const disconnect = () => {
@@ -142,10 +225,14 @@ export function Maintenance() {
     if (!confirm(`Permanently delete the account ${accountEmail} and ALL its bikes and maintenance history? This cannot be undone. Download a garage backup first if you want a copy. Intervals.icu data and files you downloaded are not deleted. Provider logs/backups may expire separately.`)) return;
     void run(async () => {
       const account = requireStore();
+      let warning = '';
+      try { const result = await account.disconnectIntervals(); setIntervalsConnected(false); if (!result.revoked) warning = ' Revoke this app’s access in Intervals.icu Settings → Apps.'; }
+      catch { warning = ' Revoke this app’s access in Intervals.icu Settings → Apps.'; }
+      if (store.current !== account) throw new Error('Your account changed. No account was deleted.');
       await account.deleteAccount();
       if (store.current !== account) return;
       clearSignedInState();
-      setMessage('Your account and cloud garage have been deleted. Downloaded files and your Intervals.icu account are unchanged.');
+      setMessage('Your account and cloud garage have been deleted. Downloaded files and your Intervals.icu account are unchanged.' + warning);
     });
   };
   const saveBike = (event: FormEvent) => {
@@ -226,15 +313,16 @@ export function Maintenance() {
   };
   const headerActions = data && <div className="maintenance-header-actions">
     <button className="copy-link-btn maintenance-primary" disabled={busy || formOpen || Boolean(bikeEditor) || importOpen || !data.bikes.length} onClick={() => openForm()} aria-label="+ Log maintenance">{isMobile ? '+ Log' : '+ Log maintenance'}</button>
-    {apiKey.current && <button className="copy-link-btn maintenance-refresh" disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => void run(() => syncMileage(apiKey.current))}><ThreadIcon /><span className="maintenance-action-label">Refresh mileage</span></button>}
+    {intervalsConnected && <button className="copy-link-btn maintenance-refresh" aria-label="Refresh mileage" title="Refresh mileage" disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => void run(syncMileage)}><ThreadIcon /><span className="maintenance-action-label">Refresh mileage</span></button>}
     <div className="maintenance-more" ref={moreRef}>
       <button className="copy-link-btn" aria-expanded={moreOpen} aria-controls="maintenance-more-menu" onClick={() => setMoreOpen(open => !open)}>More <span aria-hidden="true">▾</span></button>
       {moreOpen && <ResponsivePopover id="maintenance-more-menu" className="maintenance-more-popup" anchorRef={moreRef} onClose={() => setMoreOpen(false)}>
         <p className="maintenance-menu-account">{accountEmail}</p>
         <button disabled={busy} onClick={() => { setMoreOpen(false); downloadGarage(data); }}>Download garage backup</button>
         <button disabled={busy || formOpen || Boolean(bikeEditor) || importOpen || syncOpen} onClick={() => { setMoreOpen(false); setError(''); setMessage(''); setBackupImport(null); setImportOpen(true); }}>Import garage backup</button>
-        <button disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => { setMoreOpen(false); setSyncOpen(true); }}>Connect Intervals.icu (sync bikes and mileage)</button>
-        {apiKey.current && <button disabled={busy} onClick={() => { apiKey.current = ''; setIntervalsConnected(false); setMoreOpen(false); setMessage('Intervals.icu disconnected. Your bikes and records were kept.'); }}>Disconnect Intervals.icu</button>}
+        {intervalsConnected
+          ? <button disabled={busy} onClick={disconnectIntervals}>Disconnect Intervals.icu</button>
+          : <button disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => { setMoreOpen(false); setSyncOpen(true); }}>Connect Intervals.icu</button>}
         <button disabled={busy} onClick={disconnect}>Sign out</button>
         <button className="maintenance-danger" disabled={busy} onClick={deleteAccount}>Delete account</button>
       </ResponsivePopover>}
@@ -257,7 +345,8 @@ export function Maintenance() {
         store.current = account; setAccountEmail(account.email); setData(garage); clearFilter(); clearPendingEmailSignIn(); setCode(''); setCodeSent(false);
         setMessage('Signed in. Your bikes and maintenance are saved to your cloud account.');
       }
-    }); }}><h2>Sign in with email</h2><p className="maintenance-fine">This page lets you track maintenance and mileage for all your bikes. You need a free account to store your maintenance data in the cloud database.</p><p className="maintenance-fine">Enter your email address to login or create an account.</p>
+    }); }}><h2>Sign in</h2><p className="maintenance-fine">This page lets you track maintenance and mileage for all your bikes. You need a free account to store your maintenance data in the cloud database.</p><p className="maintenance-fine">Use Intervals.icu or enter your email address to log in or create an account.</p>
+      {!codeSent && <div className="maintenance-signin-provider"><button type="button" className="maintenance-provider-button" disabled={busy} onClick={signInWithIntervals}><img className="maintenance-provider-logo" src={intervalsLogo} width={24} height={24} alt="" aria-hidden="true" />Continue with Intervals.icu</button><p className="maintenance-fine">Includes sign-in and automatic bike mileage sync.</p><p className="maintenance-signin-or">or use email</p></div>}
       <label>Email<input required type="email" name="contact_email" inputMode="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} disabled={busy || codeSent} value={email} onChange={e => setEmail(e.target.value)} /></label>
       {codeSent && <label>Type or paste the code we sent to your email here<input required type="text" name="verification_code" autoCapitalize="none" spellCheck={false} inputMode="numeric" autoComplete="one-time-code" value={code} onChange={e => setCode(e.target.value)} /></label>}
       <label className="maintenance-remember"><input type="checkbox" checked={rememberMe} disabled={busy} onChange={event => setRememberMe(event.target.checked)} />Remember me for up to 180 days on this browser</label>
@@ -265,8 +354,8 @@ export function Maintenance() {
     </form>;
   return <div className={'maintenance' + (data ? ' maintenance--connected' : '')}>
     <div className="main-head maintenance-page-head"><div><h1>Maintenance Log</h1><p className="subtitle">Track maintenance tasks for your bikes</p></div>{actionSlot ? createPortal(headerActions, actionSlot) : <div className="main-actions">{headerActions}</div>}</div>
-    {error && <div className="maintenance-notice maintenance-error" role="alert">{error}{!data && <button disabled={busy} onClick={disconnect}>Clear saved sign-in</button>}</div>}
-    {message && <div className="maintenance-notice" role="status">{message}</div>}
+    {error && <div className="maintenance-notice maintenance-error maintenance-notice--dismissible" role="alert"><div>{error}{!data && <button disabled={busy} onClick={disconnect}>Clear saved sign-in</button>}</div><button type="button" className="maintenance-notice-close" aria-label="Dismiss error" title="Dismiss error" onClick={() => setError('')}><span aria-hidden="true">×</span></button></div>}
+    {message && <div className="maintenance-notice maintenance-notice--dismissible" role="status"><span>{message}</span><button type="button" className="maintenance-notice-close" aria-label="Dismiss notification" title="Dismiss notification" onClick={() => setMessage('')}><span aria-hidden="true">×</span></button></div>}
     {busy && <p role="status">Connecting / loading…</p>}
     {data && importOpen && <form className="maintenance-form" aria-label="Import garage backup" onSubmit={importBackup}>
       <h2>Import garage backup</h2>
@@ -294,10 +383,9 @@ export function Maintenance() {
       </div>}
       <div className="maintenance-actions"><button className="maintenance-primary" disabled={busy || !backupImport || (!backupImport.plan.addedBikes && !backupImport.plan.addedEntries)}>Import backup</button><button type="button" disabled={busy} onClick={() => { setImportOpen(false); setBackupImport(null); }}>Cancel</button></div>
     </form>}
-    {syncOpen && <form className="maintenance-form" aria-label="Intervals.icu sync (Experimental)" onSubmit={connect}><h2>Intervals.icu sync (Experimental)</h2><p>Read bike names and current mileage. Manual bikes and maintenance records are never overwritten. While connected, mileage refreshes automatically every five minutes when this page is visible and no form is open. Reconnect after leaving the page.</p>
-      <label>Intervals.icu API key<input type="password" required autoComplete="off" spellCheck={false} value={apiKeyInput} maxLength={4096} onChange={e => setApiKeyInput(e.target.value)} /></label>
-      <p className="maintenance-fine">Find your key in <a href="https://intervals.icu/settings" target="_blank" rel="noopener noreferrer">Developer Settings</a>. Sent only to Intervals.icu and held in memory for refresh, not saved. Only use a deployment you trust; this key may grant broader write access.</p>
-      <div className="maintenance-actions"><button className="maintenance-primary" disabled={busy}>Sync bikes</button><button type="button" disabled={busy} onClick={() => { setSyncOpen(false); setApiKeyInput(''); }}>Cancel</button></div>
+    {syncOpen && <form className="maintenance-form" aria-label="Intervals.icu connection" onSubmit={connect}><h2>Connect Intervals.icu</h2><p>Connect Intervals.icu to sign in and automatically sync bike names and mileage. This requests read-only access to athlete settings. No activity or write permission is requested. Your manual bikes and maintenance history are kept.</p>
+      <p className="maintenance-fine">The connection is saved securely to your maintenance account, not in browser storage. The log fetches current mileage when you return and every five minutes while visible and idle. Use More → Disconnect Intervals.icu to disable Intervals.icu sign-in and sync. Your email-code access, bikes, and maintenance history are kept.</p>
+      <div className="maintenance-actions"><button className="maintenance-primary" disabled={busy}>Continue to Intervals.icu</button><button type="button" disabled={busy} onClick={() => {  setSyncOpen(false); }}>Cancel</button></div>
     </form>}
     {!data ? <div className="maintenance-locked">
       <section className="maintenance-signin-banner" aria-label="Sign in to maintenance">
@@ -323,7 +411,7 @@ export function Maintenance() {
         const panelId = `bike-components-${index}`;
         return <li key={b.id}>
           <div className="maintenance-bike-row">
-            <button className={'maintenance-bike' + (open ? ' selected' : '')} aria-label={`${b.name}. Total distance: ${km(b.distance / 1000)} km.`} aria-pressed={open} aria-expanded={open} aria-controls={panelId} disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => toggleBike(b.id)}><strong className="maintenance-item-label"><BikeIcon /><span>{b.name}</span></strong><span className="maintenance-bike-distance"><span className="maintenance-mileage">{km(b.distance / 1000)} <small>km</small></span></span></button>
+            <button className={'maintenance-bike' + (open ? ' selected' : '')} aria-label={`${b.name}. Total distance: ${km(b.distance / 1000)} km.`} aria-pressed={open} aria-expanded={open} aria-controls={panelId} disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => toggleBike(b.id)}><strong className="maintenance-item-label"><BikeIcon /><span title={b.name}>{b.name}</span></strong><span className="maintenance-bike-distance"><span className="maintenance-mileage">{km(b.distance / 1000)} <small>km</small></span></span></button>
             <button className="maintenance-bike-edit" type="button" title="Edit bike / update mileage" aria-label={`Edit bike: ${b.name}`} disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} onClick={() => { setError(''); setMessage(''); setBikeEditor({ id: b.id, name: b.name, mileage: String(b.distance / 1000) }); if (isMobile) filtersDrawer.setOpen(false); }}><EditIcon /></button>
             <button className="maintenance-bike-toggle" disabled={busy || formOpen || Boolean(bikeEditor) || importOpen} aria-expanded={open} aria-controls={panelId} aria-label={`${open ? 'Hide' : 'Show'} components for ${b.name}`} onClick={() => toggleBike(b.id)}><span aria-hidden="true">{open ? '▾' : '▸'}</span></button>
           </div>

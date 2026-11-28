@@ -30,16 +30,26 @@ You can try the calculator live on the [Rückenwind web site](https://rueckenwin
 ## Maintenance log
 
 The **Maintenance Log** supports manual bikes, mileage updates, and service
-history without an Intervals.icu account. **Email-code sign-in with Supabase Auth**
-is required; bikes and maintenance are stored in the cloud and available across
-devices. Sign-in is remembered on this browser for up to 30 days, with automatic
-access-token refresh. Signed-out visitors see a muted, non-interactive sample log
+history without an Intervals.icu account. **Supabase Auth sign-in**
+(email code or optional Intervals.icu login) is required; bikes and maintenance are stored in the cloud and available across
+devices. Sign-in is tab-only by default; opting into “Remember me” keeps it for up
+to 180 days, with automatic access-token refresh. Signed-out visitors see a muted, non-interactive sample log
 with a sign-in banner. There is no editable demo, browser-only editing mode, or
 independent browser-garage import option.
 
-Intervals.icu is an optional, read-only bike/mileage integration, not an identity
-provider. Its API key stays in memory only, and visible pages refresh mileage
-every five minutes while no form is open. Maintenance is never sent upstream.
+Intervals.icu is one optional connection for **sign-in and automatic bike/mileage
+sync together**. Connect through More or sign in with Intervals.icu; both use
+server-held S256 PKCE with public client 2006 and read-only settings access, not
+personal API keys. OAuth tokens never enter the browser or garage backups. They
+are encrypted in Supabase Vault, so mileage refreshes when you reopen the garage
+and every five visible, idle minutes. Maintenance is never sent upstream.
+
+Verified provider emails can match an existing confirmed email account, keeping
+the same garage and email-code fallback. Stable athlete-ID mappings take priority
+over later email changes. **More → Disconnect Intervals.icu** removes the login
+link and encrypted mileage credential together, attempts provider revocation, and
+keeps bikes, history, email access, and current Supabase sessions. Signing out
+keeps the connection for next time. There are no separate login/sync toggles.
 
 See [setup, security, and migration](docs/maintenance-accounts.md). Cloud setup
 requires a database migration, public frontend configuration, and an email-code

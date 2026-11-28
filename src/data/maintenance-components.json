@@ -91,6 +91,36 @@
       "services": ["Cleaned rear shock", "Serviced shock air can", "Serviced shock damper", "Checked shock air pressure"]
     },
     {
+      "id": "saddle",
+      "names": ["Saddle"],
+      "icon": "saddle",
+      "services": ["Adjusted saddle height", "Adjusted saddle position", "Adjusted saddle tilt", "Checked saddle rails and clamp"]
+    },
+    {
+      "id": "internally-geared-hub",
+      "names": ["Internally geared hub"],
+      "icon": "geared-hub",
+      "services": ["Changed hub oil", "Serviced internal hub gears", "Adjusted hub shifting", "Checked hub bearing play"]
+    },
+    {
+      "id": "derailleur-battery",
+      "names": ["Front derailleur battery", "Rear derailleur battery"],
+      "icon": "battery",
+      "services": ["Charged derailleur battery", "Checked derailleur battery charge", "Cleaned battery contacts"]
+    },
+    {
+      "id": "shifter-battery",
+      "names": ["Front shifter battery", "Rear shifter battery"],
+      "icon": "battery",
+      "services": ["Checked shifter battery charge", "Cleaned battery contacts"]
+    },
+    {
+      "id": "power-meter-battery",
+      "names": ["Power meter battery"],
+      "icon": "battery",
+      "services": ["Charged power meter battery", "Checked power meter battery charge", "Cleaned battery contacts"]
+    },
+    {
       "id": "groupset-battery",
       "names": ["Electronic groupset battery"],
       "icon": "battery",

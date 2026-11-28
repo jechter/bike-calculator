@@ -1,4 +1,5 @@
 import type { MaintenanceBike, MaintenanceData, MaintenanceEntry } from './maintenance';
+import type { IntervalsGarage } from './intervals';
 import { garageBackup } from './maintenance-backup';
 
 const project = import.meta.env.VITE_SUPABASE_URL as string | undefined;
@@ -28,7 +29,7 @@ export function rememberPendingEmailSignIn(email: string): boolean {
 export function clearPendingEmailSignIn() {
   try { sessionStorage.removeItem(pendingEmailKey); } catch { /* Sign-in still works without tab storage. */ }
 }
-interface Session { access_token: string; refresh_token: string; expires_at?: number; expires_in?: number; user: { id: string; email?: string } }
+export interface Session { access_token: string; refresh_token: string; expires_at?: number; expires_in?: number; user: { id: string; email?: string } }
 interface RememberedSession extends Session { remembered_until: number; remember_me: boolean }
 const signInAgain = () => new Error('Your saved sign-in expired or changed. Sign in again to continue. Your draft is unchanged.');
 function rememberSession(session: Session, until: number, rememberMe: boolean): RememberedSession {
@@ -63,8 +64,9 @@ function readSession(): RememberedSession | null {
   return saved;
 }
 class AccountServiceError extends Error {
-  constructor(message: string, readonly status: number) { super(message); }
+  constructor(message: string, readonly status: number, readonly code?: string) { super(message); }
 }
+export const intervalsNeedsReconnect = (error: unknown) => error instanceof AccountServiceError && error.code === 'INTERVALS_RECONNECT_REQUIRED';
 const refreshing = new Map<string, Promise<RememberedSession>>();
 function refreshSession(previous: Session): Promise<RememberedSession> {
   const key = previous.user.id + ':' + previous.refresh_token;
@@ -109,7 +111,7 @@ async function request(path: string, method: string, body?: unknown, token?: str
   if (!project || !publicKey) throw new Error('Email sign-in is not configured on this installation.');
   const url = new URL(project);
   if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname))) throw new Error('Account service requires HTTPS.');
-  const response = await fetch(url.origin + path, { method, credentials: 'omit', redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(30000), headers: { apikey: publicKey, 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+  const response = await fetch(url.origin + path, { method, credentials: 'omit', redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(path === '/functions/v1/intervals-login' ? 65000 : 30000), headers: { apikey: publicKey, 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
   // PostgREST returns an empty 201 body for successful inserts by default.
   // Parsing that as JSON fails after an otherwise successful email sign-in.
   const text = await response.text();
@@ -118,7 +120,7 @@ async function request(path: string, method: string, body?: unknown, token?: str
     try { result = JSON.parse(text); }
     catch { throw new Error('Account service returned an unexpected response. Please retry. Your browser backup is unchanged.'); }
   }
-  if (!response.ok) throw new AccountServiceError(response.status === 401 ? 'Your session expired. Sign out and sign in again. Your draft and browser backup are unchanged.' : result?.msg || result?.message || result?.error_description || 'Account service failed. Nothing was saved locally as a fallback.', response.status);
+  if (!response.ok) throw new AccountServiceError(response.status === 401 ? 'Your session expired. Sign out and sign in again. Your draft and browser backup are unchanged.' : result?.msg || result?.message || result?.error_description || 'Account service failed. Nothing was saved locally as a fallback.', response.status, typeof result?.code === 'string' ? result.code : undefined);
   return result;
 }
 export async function sendSignInCode(email: string) { await request('/auth/v1/otp', 'POST', { email, create_user: true }); }
@@ -126,6 +128,25 @@ export async function verifySignInCode(email: string, code: string, rememberMe =
   const session: Session = await request('/auth/v1/verify', 'POST', { email, token: code, type: 'email' });
   return new AccountGarage(rememberSession(session, Date.now() + rememberedLifetime, rememberMe));
 }
+export interface IntervalsLoginCallback { state: string; proof: string; code?: string; denied?: boolean }
+export interface IntervalsLoginResult { session: Session; rememberMe: boolean }
+export function storedAccountUserId(): string | null {
+  try { const raw = localStorage.getItem(sessionKey) || sessionStorage.getItem(sessionKey); const user = raw ? JSON.parse(raw).user : null; return typeof user?.id === 'string' ? user.id : null; }
+  catch { return null; }
+}
+export function startIntervalsSignIn(proof: string, redirectUri: string, rememberMe: boolean) {
+  return request('/functions/v1/intervals-login', 'POST', { action: 'start', mode: 'signin', proof, redirectUri, rememberMe });
+}
+export async function completeIntervalsSignIn(callback: IntervalsLoginCallback): Promise<IntervalsLoginResult> {
+  const result = await request('/functions/v1/intervals-login', 'POST', { ...callback, action: 'complete', mode: 'signin' });
+  const session = result?.session;
+  if (typeof session?.access_token !== 'string' || !session.access_token || typeof session.refresh_token !== 'string' || !session.refresh_token || typeof session.user?.id !== 'string' || !session.user.id || typeof session.user.email !== 'string' || typeof result.rememberMe !== 'boolean') throw new Error('The login service returned an invalid session. Try email sign-in.');
+  return { session: { access_token: session.access_token, refresh_token: session.refresh_token, expires_at: Number.isFinite(session.expires_at) ? session.expires_at : undefined, expires_in: Number.isFinite(session.expires_in) ? session.expires_in : undefined, user: { id: session.user.id, email: session.user.email } }, rememberMe: result.rememberMe };
+}
+export function acceptIntervalsSignIn(result: IntervalsLoginResult): AccountGarage {
+  return new AccountGarage(rememberSession(result.session, Date.now() + rememberedLifetime, result.rememberMe));
+}
+
 export async function restoreAccount(): Promise<AccountGarage | null> {
   const previous = readSession();
   if (!previous) return null;
@@ -166,6 +187,33 @@ export class AccountGarage {
     return this.authenticatedRequest('/rest/v1/maintenance_user_garages?user_id=eq.' + encodeURIComponent(this.session.user.id) + suffix, method, body, extra);
   }
 
+  private intervals(action: string, body: Record<string, unknown> = {}) {
+    return this.authenticatedRequest('/functions/v1/intervals-connection', 'POST', { action, ...body });
+  }
+  async intervalsStatus(): Promise<{ connected: boolean; loginLinked: boolean }> {
+    const result = await this.intervals('status');
+    if (typeof result?.connected !== 'boolean') throw new Error('The Intervals.icu connection service returned an invalid status.');
+    return { connected: result.connected, loginLinked: result.loginLinked === true };
+  }
+  private async intervalsGarage(): Promise<IntervalsGarage> {
+    const result = await this.intervals('sync');
+    if (typeof result?.athleteId !== 'string' || !result.athleteId || typeof result.name !== 'string' || typeof result.synced_at !== 'string' || !Number.isFinite(Date.parse(result.synced_at)) || !Array.isArray(result.bikes) || !result.bikes.every((bike: MaintenanceBike) => typeof bike?.id === 'string' && bike.id && typeof bike.name === 'string' && typeof bike.distance === 'number' && Number.isFinite(bike.distance) && bike.distance >= 0)) throw new Error('The Intervals.icu connection service returned invalid mileage. Your garage is unchanged.');
+    return { athleteId: result.athleteId, name: result.name, synced_at: result.synced_at, bikes: result.bikes.map((bike: MaintenanceBike) => ({ id: bike.id, name: bike.name, distance: bike.distance })), entries: [] };
+  }
+  syncIntervals() { return this.intervalsGarage(); }
+  async disconnectIntervals(): Promise<{ revoked: boolean }> {
+    const result = await this.intervals('disconnect');
+    if (result?.connected !== false || typeof result?.revoked !== 'boolean') throw new Error('The Intervals.icu connection could not be disconnected. Please retry.');
+    return { revoked: result.revoked };
+  }
+
+  startIntervalsLoginLink(proof: string, redirectUri: string) {
+    return this.authenticatedRequest('/functions/v1/intervals-login', 'POST', { action: 'start', mode: 'link', proof, redirectUri, rememberMe: false });
+  }
+  async completeIntervalsLoginLink(callback: IntervalsLoginCallback): Promise<void> {
+    const result = await this.authenticatedRequest('/functions/v1/intervals-login', 'POST', { ...callback, action: 'complete', mode: 'link' });
+    if (result?.linked !== true) throw new Error('Could not connect Intervals.icu. Try again.');
+  }
   async deleteAccount() {
     // Only clear the session after confirmed server success. Never fall back to
     // deleting a local snapshot or send a caller-selected account ID.

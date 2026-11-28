@@ -5,9 +5,19 @@ import { sampleMaintenance } from './maintenance';
 // Stateful cloud double: UI tests exercise the same asynchronous save/load boundary.
 export function testMaintenanceAccount(initial: MaintenanceData = sampleMaintenance()) {
   let garage = structuredClone(initial);
+  let connected = false;
+  let loginLinked = false;
+  const incoming = () => ({ athleteId: 'i-test', name: 'Real rider', synced_at: new Date().toISOString(), bikes: [{ id: 'b1', name: 'Real bike', distance: 4826537 }], entries: [] });
   const write = vi.fn(async (next: MaintenanceData) => { garage = structuredClone(next); return structuredClone(garage); });
   return {
     email: 'rider@example.com',
+    userId: 'user-1',
+    intervalsStatus: vi.fn(async () => ({ connected, loginLinked })),
+    unlinkIntervalsLogin: vi.fn(async () => { loginLinked = false; }),
+    completeIntervalsLoginLink: vi.fn(async () => { loginLinked = true; connected = true; }),
+    connectIntervals: vi.fn(async (_accessToken: string) => { connected = true; return incoming(); }),
+    syncIntervals: vi.fn(async () => incoming()),
+    disconnectIntervals: vi.fn(async () => { connected = false; loginLinked = false; return { revoked: true }; }),
     loadGarage: vi.fn(async () => structuredClone(garage)),
     write,
     save: vi.fn(async (entry: MaintenanceEntry, editing: boolean) => {

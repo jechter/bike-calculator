@@ -18,7 +18,7 @@
   and their history are unchanged; a failed cloud write leaves the editor open.
   Deleting a synced bike does not delete upstream gear, so a later Intervals.icu
   sync can add that bike again (without restoring its deleted maintenance history).
-- The sign-in banner opens directly to the email field. **Send sign-in code** uses
+- The sign-in banner offers **Continue with Intervals.icu** alongside email entry. **Send sign-in code** uses
   a Supabase Auth one-time email code.
   The first successful code creates a free account. No password, Intervals.icu account,
   or user-owned Supabase project is needed. Cloud garages are keyed to Auth user IDs.
@@ -38,7 +38,7 @@
 - Sign-in is **tab-session-only by default**, using sessionStorage. The unchecked
   **Remember me for up to 180 days on this browser** checkbox explicitly enables
   localStorage persistence across tabs/browser restarts. The choice is used when
-  verifying the email code and is not saved with the pending-email step; a reload
+  verifying the email code (or completing OAuth) and is not saved with the pending-email step; a reload
   before verification resets it to unchecked. Browser session restoration may
   restore sessionStorage too, so sign out rather than relying on closing a tab
   on shared devices. Both modes have an absolute maximum 180-day acceptance window.
@@ -62,11 +62,14 @@
   and namespaces IDs by provider/athlete. A second athlete cannot overwrite the first.
   Syncing replaces the upstream bike's current name/mileage, including manual edits.
   Reconnect to a different athlete only when intentionally adding that athlete's bikes.
-- The Intervals.icu key is held only in memory until disconnect/navigation/reload.
-  Sync runs immediately on connect and every five minutes while the page is visible,
+- Intervals.icu uses public-client OAuth with S256 PKCE, not personal API keys.
+  The connection is encrypted in Supabase Vault, scoped to the cloud account, and
+  restored on page load/sign-in, including later days and other devices.
+  Sync runs immediately on connect/reload and every five minutes while the page is visible,
   not busy, and no bike or maintenance form is open. Refresh is also available manually.
   There is no server scheduler or closed-page background sync. Strava's own mileage
-  refresh must still be performed in Intervals.icu. All upstream calls are GET requests.
+  refresh must still be performed in Intervals.icu. Bike/mileage requests are GETs;
+  OAuth exchanges use POST and explicit grant revocation uses DELETE.
 - **More → Download garage backup** exports bikes and maintenance, not credentials.
   **More → Import garage backup** accepts a version 1 JSON garage backup (up to 20 MB
   on disk). It validates fields, calendar dates, mileage, unique IDs, and bike
@@ -80,6 +83,219 @@
   This is an additive restore, not a replace-all or overwrite-existing operation.
   Legacy browser-record exports (`bike-maintenance-backup`) are a different format
   and are not accepted by this file importer.
+
+## Unified Intervals.icu connection
+
+- There is one user-visible connection, enabling **sign-in and automatic mileage
+  sync together**. Signed-out **Continue with Intervals.icu** and signed-in
+  **More → Connect Intervals.icu** use the same server-held OAuth PKCE handshake.
+  More shows only Connect or Disconnect, never independent login/sync toggles.
+  There is no partial-setup migration or special completion UI.
+- Email-code access remains available, opening the same UUID/garage. Disconnect
+  asks the user to confirm they can receive email codes, removes the login mapping
+  and Vault credential together, and attempts provider revocation. Bikes, history,
+  email access, and already-issued Supabase sessions remain. Sign-out keeps the
+  connection; account deletion cascades both mapping and encrypted credential.
+- `intervals-login` owns the S256 verifier, exchanges the code for public client
+  2006, and fetches `/api/v1/athlete/0`. Browser-supplied tokens, email, athlete IDs,
+  and target UUIDs are never login/link evidence. The old browser-token `connect`
+  action and separate `unlink` action are rejected by the handlers.
+- A private browser proof lives in tab storage. The backend stores hashed state
+  and proof, a Vault-encrypted verifier, exact redirect, purpose, authenticated
+  owner for explicit connection, immutable remember-me choice, and salted IP hash.
+  Returns require matching proof/state/context; transactions expire after ten
+  minutes, are consumed once, and delete the verifier. Later starts prune expired
+  requests. Pending-request limits reduce abuse. Callbacks are scrubbed and
+  single-flight; session acceptance rejects account changes and remember mismatch.
+- The protected athlete-to-UUID mapping takes precedence over later provider
+  email changes, including unverified changes. For an unmapped athlete only,
+  `icu_email_verified === true` may match an already-confirmed Supabase email.
+  Matching is case-insensitive without dot/plus normalization; ambiguous,
+  unconfirmed, or conflicting identities fail closed. Fresh verified emails may
+  create an email-capable confirmed Auth user, respecting disabled signups.
+  Explicit authenticated connection proves both identities without requiring
+  matching provider/account emails. Banned accounts cannot connect.
+- `connect_maintenance_intervals_account` resolves the identity and stores the
+  credential atomically. Either both succeed or both roll back. The account and
+  credential locks also protect `disconnect_maintenance_intervals_account`, whose
+  connection-version check prevents a stale disconnect from deleting a newer
+  credential or identity. A failed provider refresh retains the connection; a
+  rejected credential is removed, while the stable identity is retained for safe
+  fresh OAuth reconnection rather than rerouting by a changed email.
+- Login sessions remain ordinary Supabase sessions: Admin `generateLink` creates a
+  one-use magic-link token without sending email, then an isolated Auth client
+  verifies it and checks the subject UUID. Never sign in on the shared service-role
+  client. RLS still uses `auth.uid()`. Provider credentials never enter browser
+  storage, session responses, garage JSON, or backups.
+- After OAuth, or on later email sign-in/reload, the browser fetches mileage from
+  `intervals-connection`. A transient gear/API failure does not discard a successful
+  connection or prevent email access. Manual bikes/history are preserved. There
+  is no background scheduler when the page is closed.
+
+### Unified-connection rollout
+
+1. Validate `supabase/tests/intervals_account.sql` in a disposable Supabase database.
+   Docker is unavailable here; this SQL regression is not part of the mocked tests.
+2. Apply only `202611260002_unified_intervals_connection.sql` transactionally to the
+   current project. Earlier login/Vault migrations are already deployed; do not
+   replay historical migrations or reset data. The new file adds two private RPCs
+   without rewriting any garage or automatically connecting any account.
+3. Redeploy **both** `intervals-login` and `intervals-connection` with
+   `--no-verify-jwt --remote --yes`. Existing origin, client ID, and exact
+   production/preview redirect settings remain unchanged.
+4. Publish the frontend only after the backend. Verify OAuth sign-in and signed-in
+   connection both enable sync, disconnect removes both capabilities, email opens
+   the same garage, and sign-out keeps the connection. No provider token should be
+   exposed to the browser. Use isolated test identities; preserve real garage data.
+
+### Unified-connection production verification
+
+The unified implementation (`0f316e9`, branch `feature/maintenance-log`) was
+committed, pushed, and published with explicit operator authorization. Only
+`202611260002_unified_intervals_connection.sql` was applied, in one transaction;
+both Edge Functions were deployed before the frontend. The existing garage count
+and full garage-content/revision fingerprint were unchanged afterward.
+
+- Build and all 758 automated tests passed. The real frontend and login handler
+  passed a mocked-provider browser flow for combined connection, automatic mileage
+  refresh, remember-me reload, email fallback, changed-email identity stability,
+  disconnect, and signed-in reconnection without changing sessions or history.
+- Live checks used isolated temporary Auth users and synthetic credentials. They
+  verified atomic rollback on invalid credentials, encrypted Vault roundtrips,
+  confirmed-email matching, explicit ownership, identity conflicts, stable
+  changed-email mappings, concurrent setup locking, banned-account rollback,
+  denied browser RPC/table access, and stale-disconnect protection.
+- The deployed disconnect endpoint removed both identity and credential, left the
+  other test user's connection untouched, and preserved manual bikes/history.
+  Native email-capable Auth session issuance still opened the same test garage
+  after disconnect, without sending email. Retired browser-token connect and
+  login-only unlink requests were rejected. All temporary users, garages,
+  credentials, identities, and pending verifier secrets were removed afterward.
+- All 17 deployed entry pages/assets, including the sitemap, privacy page, and
+  provider logo, matched the build byte-for-byte. A fresh browser exercised the
+  actual deployed mobile UI, backend start, and declined callback; no real
+  provider account or grant was accessed. Successful real-provider consent/code
+  exchange remains the user's acceptance check.
+- Docker remained unavailable, so the standalone disposable-database SQL script
+  was not executed. The live isolated checks exercised the deployed SQL functions
+  but are not a claim that the standalone regression script ran.
+- Warnings were the existing large JavaScript bundle, unavailable local Docker
+  during remote function deployment, and the host's older SSH key exchange. Image
+  reference warnings from the deployment script's JS/CSS matcher were resolved by
+  direct byte verification of all three deployed images.
+
+### Historical optional-login rollout verification (before unification)
+
+The optional-login implementation (`baea55e`, branch `feature/maintenance-log`)
+was published with explicit operator authorization. Only the additive
+`202611260001_intervals_login.sql` file was applied, transactionally; both Edge
+Functions were deployed and production/preview redirects configured before the
+frontend was uploaded. Existing garage count and the full garage-content/revision
+fingerprint were unchanged afterward.
+
+- All 753 automated tests passed. The real frontend and handler also passed a
+  mocked-provider browser flow covering automatic matching, remembered login,
+  email fallback, changed/unverified email stability, and explicit unlink/relink.
+- Live checks used isolated temporary Auth users and synthetic credentials only.
+  They verified actual SQL resolution, verified/unconfirmed-email rules, stable
+  mappings, conflicts, concurrent linking, browser-role denial, cross-account RLS,
+  encrypted one-use transactions, callback-owner guards, independent mileage/login
+  state, and account-deletion/Vault cleanup. All temporary users and their records
+  were removed. Native Auth Admin token generation and OTP verification opened the
+  same temporary garage without sending an email or rewriting its contents.
+- All 16 deployed pages/assets, including the sitemap and privacy page, matched
+  the local build byte-for-byte. A fresh browser exercised the deployed mobile UI,
+  actual backend start, and declined callback without contacting a provider account.
+- Docker remained unavailable: the standalone disposable-database SQL regression
+  script was not run. Live isolated checks are not a claim that it was executed.
+  Final successful OAuth consent/code exchange with a real Intervals.icu account
+  remains an operator/user acceptance check; no real provider grant was used here.
+- Deployment warnings were the existing large JavaScript bundle and the host's
+  lack of post-quantum SSH key exchange. The script's image-reference warnings are
+  due to its JS/CSS-only reference matcher; both image files were verified directly.
+
+## Intervals.icu OAuth for mileage
+
+- Public client **2006**, with **Require PKCE** enabled. Register this exact redirect:
+  `https://rueckenwind.berlin/bikeworkshopcalc/maintenance-log/` (trailing slash included).
+- Authorization: `https://intervals.icu/oauth/authorize`; token exchange:
+  `https://intervals.icu/api/oauth/token`. Only `SETTINGS:READ` is requested for
+  profile/gear, not activity access or write permission. No client secret is used.
+- The backend holds the S256 verifier and encrypted provider credential. The
+  browser stores only the short-lived private proof/state/context described above;
+  it neither exchanges provider codes nor receives provider access tokens.
+- Both Connect and provider sign-in establish the combined connection. Email
+  sign-in restores any saved connection without another provider approval.
+- Subsequent status/sync/disconnect calls authenticate with the Maintenance Log
+  account's Supabase access token. The Edge Function verifies it with Auth `getUser`,
+  derives the owner server-side, and ignores caller-provided owner/athlete IDs.
+  Browser roles cannot read the connection table or call credential RPCs. All reads
+  from Intervals.icu now run on the backend; no maintenance records are sent there.
+- Every page load/sign-in checks the saved connection and fetches current mileage.
+  Five-minute refresh continues only while connected, visible, and idle; there is
+  no closed-page scheduler. Manual bikes, existing entries, and missing upstream
+  bikes are preserved. A temporary provider/network failure retains the grant;
+  a rejected/revoked grant is erased and asks for reconnection (HTTP 409, not a
+  Supabase-session 401). There is no browser-only credential fallback.
+- Explicit **Disconnect Intervals.icu** revokes the grant using
+  `DELETE https://intervals.icu/api/v1/disconnect-app`, then erases the encrypted
+  secret even if upstream revocation is unavailable. That case asks the user to
+  revoke access manually in Intervals.icu Settings → Apps. Version checks prevent
+  an old in-flight request from erasing a newer connection. Bikes/history remain.
+- Signing out or leaving the page keeps the server-side connection for next time.
+  Account deletion attempts disconnect first; the Auth-user cascade also deletes
+  the connection and its Vault secret even when the function is unavailable.
+  A failed provider revoke is reported, not treated as deletion of the Intervals.icu
+  account. Provider logs/backups remain subject to their own retention policies.
+- Optional public build settings: `VITE_INTERVALS_CLIENT_ID` and
+  `VITE_INTERVALS_REDIRECT_URI`. Production defaults are the values above. For
+  preview/local testing, first register the exact preview/local redirect in
+  Intervals.icu, then set the redirect variable and restart Vite. Starting OAuth
+  from an unregistered origin/path is blocked rather than sending the user to a
+  different origin that cannot read the tab's PKCE state. Never add a client secret
+  to a `VITE_` variable.
+- Provider documentation: [Intervals.icu OAuth support](https://forum.intervals.icu/t/intervals-icu-oauth-support/2759).
+
+### Historical persistent-connection backend rollout
+
+Before publishing this frontend:
+
+1. In a project with accurate CLI migration tracking, review
+   `supabase db push --remote --dry-run` before applying pending migrations.
+   **The existing BikeMaintenanceDatabase project was provisioned outside CLI
+   migration history.** A blind push would replay existing tables and install
+   retired scaffolds that were never deployed. For this project, apply only
+   `202611240001_persistent_intervals_oauth.sql` through the SQL editor or Management
+   API in one transaction; do not reset the database, replay historical migrations,
+   or mark absent schemas as applied. This migration enables managed Supabase Vault
+   and creates only the new connection table/RPCs/cleanup trigger, without rewriting
+   garage records or legacy data. The initial rollout applied this file directly.
+2. Deploy `supabase functions deploy intervals-connection --no-verify-jwt --remote --yes`
+   (the explicit remote target/confirmation flags apply to the installed v3 CLI).
+   The handler validates bearer identities itself with Supabase Auth, supporting
+   the project's publishable API key. `SUPABASE_URL` and
+   `SUPABASE_SERVICE_ROLE_KEY` are platform-provided server-only settings; never
+   copy the service-role key into frontend variables or browser storage.
+3. Set `MAINTENANCE_APP_ORIGINS` to a comma-separated list of permitted extra
+   browser origins, including the current preview origin for testing. Production
+   `https://rueckenwind.berlin` is always allowed. The existing single
+   `MAINTENANCE_APP_ORIGIN` is also accepted when the plural setting is absent.
+   Origins contain no paths; the OAuth redirect registration still needs the
+   complete exact Maintenance Log URL. CORS is not the authentication boundary.
+4. Check the SQL regression script `supabase/tests/intervals_connection.sql` in a
+   disposable Supabase database, not production. It rolls back fixtures and checks
+   Vault encryption, denied browser access, replacement/version guards, and
+   per-user deletion cleanup. Handler tests use a stateful DB double, not Vault.
+   The initial rollout also verified the live endpoint with isolated temporary
+   Auth identities and synthetic credentials: encryption/roundtrip, cross-user
+   isolation, denied browser token/table access, invalid-grant handling, disconnect,
+   and Auth-user/Vault cleanup. Those identities were deleted afterward and the
+   existing garage-data fingerprint was unchanged. No real OAuth credential was
+   inspected or used for this verification.
+5. On the preview, reconnect Intervals.icu once to save the previously memory-only
+   grant, then reload and verify mileage refresh without new authorization. Check
+   another account cannot see/use it, and disconnect erases it without deleting
+   bikes. Existing users need this one-time reconnect after rollout.
 
 ## Operator setup (not performed automatically)
 
